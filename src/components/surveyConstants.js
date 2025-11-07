@@ -121,7 +121,7 @@ export const SECTIONS = [
   { id: 2, name: 'Cofounder Info' },
   { id: 3, name: 'Equity Allocation' },
   { id: 4, name: 'Decision-Making' },
-  { id: 5, name: 'Equity & Vesting' },
+  { id: 5, name: 'Vesting Schedule' },
   { id: 6, name: 'IP & Ownership' },
   { id: 7, name: 'Compensation' },
   { id: 8, name: 'Performance' },
