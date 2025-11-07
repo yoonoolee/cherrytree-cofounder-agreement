@@ -1,84 +1,9 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { US_STATES } from './surveyConstants';
 import { auth } from '../firebase';
+import CustomSelect from './CustomSelect';
 
 function Section10Final({ formData, handleChange, isReadOnly, project, showValidation }) {
-  const inputRef = useRef(null);
-  const isDeleting = useRef(false);
-
-  const findMatch = (input) => {
-    if (!input) return '';
-    const match = US_STATES.find(state =>
-      state.label.toLowerCase().startsWith(input.toLowerCase())
-    );
-    return match ? match.label : '';
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Backspace' || e.key === 'Delete') {
-      isDeleting.current = true;
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (inputRef.current) {
-        inputRef.current.blur();
-      }
-    }
-  };
-
-  const handleGoverningLawChange = (e) => {
-    const value = e.target.value;
-
-    // Don't autocomplete if user is deleting
-    if (isDeleting.current) {
-      isDeleting.current = false;
-      handleChange('governingLaw', value);
-      return;
-    }
-
-    if (value) {
-      // Check if the typed value matches any state
-      const matchesAnyState = US_STATES.some(state =>
-        state.label.toLowerCase().startsWith(value.toLowerCase())
-      );
-
-      // Only allow typing if it matches a state
-      if (!matchesAnyState) {
-        return; // Don't update if it doesn't match any state
-      }
-
-      const match = findMatch(value);
-      if (match && match.toLowerCase().startsWith(value.toLowerCase())) {
-        handleChange('governingLaw', match);
-        // Set cursor position after the typed text
-        setTimeout(() => {
-          if (inputRef.current) {
-            inputRef.current.setSelectionRange(value.length, match.length);
-          }
-        }, 0);
-      } else {
-        handleChange('governingLaw', value);
-      }
-    } else {
-      handleChange('governingLaw', value);
-    }
-  };
-
-  const handleGoverningLawBlur = () => {
-    const value = formData.governingLaw;
-    if (value) {
-      const isExactMatch = US_STATES.some(state =>
-        state.label.toLowerCase() === value.toLowerCase()
-      );
-      if (!isExactMatch) {
-        const match = findMatch(value);
-        if (match) {
-          handleChange('governingLaw', match);
-        } else {
-          handleChange('governingLaw', '');
-        }
-      }
-    }
-  };
   return (
     <div>
       <h2 className="text-3xl font-bold text-gray-800 mb-2">Final Details</h2>
@@ -127,25 +52,20 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
         </div>
 
         {/* Governing Law */}
-        <div>
+        <div style={{ overflow: 'visible', position: 'relative', zIndex: 100, marginBottom: '3rem' }}>
           <label className="block text-base font-medium text-gray-900 mb-2">
             Which state's laws will govern this agreement?
             {showValidation && !formData.governingLaw && <span className="text-red-700 ml-0.5 validation-error">*</span>}
           </label>
-          <input
-            ref={inputRef}
-            type="text"
+          <CustomSelect
             value={formData.governingLaw || ''}
-            onChange={handleGoverningLawChange}
-            onKeyDown={handleKeyDown}
-            onBlur={handleGoverningLawBlur}
+            onChange={(value) => handleChange('governingLaw', value)}
+            options={US_STATES.map(state => ({
+              value: state.label,
+              label: `${state.label} (${state.value})`
+            }))}
+            placeholder="Select state"
             disabled={isReadOnly}
-            className="w-full bg-transparent border-none border-b-2 border-gray-300 py-3 text-gray-700 focus:outline-none focus:border-black disabled:opacity-60 disabled:cursor-not-allowed"
-            placeholder="Start typing state..."
-            style={{
-              paddingLeft: 0,
-              borderBottom: '2px solid #D1D5DB',
-            }}
           />
         </div>
 
