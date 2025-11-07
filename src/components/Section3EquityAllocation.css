@@ -61,10 +61,3 @@
   animation: slideOutToRight 0.3s ease-in forwards !important;
 }
 
-/* Disable global space-y animations for children inside equity calculator */
-.equity-calculator-container .space-y-6 > *,
-.equity-calculator-container .space-y-6 > div,
-.equity-calculator-container > .space-y-6 > * {
-  animation: none !important;
-  opacity: 1 !important;
-}
