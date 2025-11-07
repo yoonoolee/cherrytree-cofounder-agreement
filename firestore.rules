@@ -1,0 +1,41 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Projects collection
+    match /projects/{projectId} {
+      // Anyone authenticated can create a project
+      allow create: if isSignedIn() &&
+                      request.resource.data.ownerEmail == request.auth.token.email;
+
+      // Allow reading own projects or projects where user is a collaborator
+      // For queries (list operations), check the query constraints
+      allow read: if isSignedIn() && (
+        // Allow reading if user is the owner
+        resource.data.ownerEmail == request.auth.token.email ||
+        // Allow reading if user is in the collaborators list
+        request.auth.token.email in resource.data.get('collaborators', [])
+      );
+
+      // Owner and collaborators can update
+      allow update: if isSignedIn() && (
+        resource.data.ownerEmail == request.auth.token.email ||
+        request.auth.token.email in resource.data.get('collaborators', [])
+      );
+
+      // Only owner can delete
+      allow delete: if isSignedIn() &&
+                      resource.data.ownerEmail == request.auth.token.email;
+    }
+
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

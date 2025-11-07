@@ -1,0 +1,27 @@
+import React, { useState } from 'react';
+
+function Tooltip({ text }) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  return (
+    <div className="relative inline-block ml-1 align-super">
+      <div
+        onMouseEnter={() => setIsVisible(true)}
+        onMouseLeave={() => setIsVisible(false)}
+        className="inline-flex items-center justify-center w-2.5 h-2.5 rounded-full border border-gray-400 text-gray-500 cursor-help hover:border-gray-600 hover:text-gray-700 transition-colors"
+        style={{ fontSize: '8px', lineHeight: '1' }}
+      >
+        ?
+      </div>
+
+      {isVisible && (
+        <div className="absolute z-50 w-max max-w-xs px-3 py-2 text-sm text-white bg-gray-900 rounded-lg shadow-lg -top-2 left-6">
+          {text}
+          <div className="absolute top-3 -left-1 w-2 h-2 bg-gray-900 transform rotate-45"></div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default Tooltip;

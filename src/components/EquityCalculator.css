@@ -1,0 +1,245 @@
+.equity-calculator-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Container matching: bg-white rounded border border-gray-200 overflow-x-auto */
+.spreadsheet-wrapper {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.25rem !important;
+  width: 100% !important;
+  display: block !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: 0 !important;
+  position: relative !important;
+}
+
+/* Table matching: min-w-full divide-y divide-gray-200 */
+.Spreadsheet {
+  border: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  line-height: 0 !important;
+  position: relative !important;
+}
+
+.Spreadsheet__table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  font-family: inherit !important;
+  table-layout: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-spacing: 0 !important;
+}
+
+/* Header row matching: bg-gray-50 */
+.Spreadsheet thead,
+.Spreadsheet__header {
+  background-color: #d1d5db !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 20 !important;
+}
+
+.Spreadsheet tbody {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Header cells matching: px-4 py-3 text-left text-sm font-medium text-gray-900 border-r border-gray-200 */
+.Spreadsheet th,
+.Spreadsheet thead .Spreadsheet__cell {
+  padding: 0.75rem 1rem !important;
+  text-align: left !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+  background-color: #d1d5db !important;
+  border-right: 1px solid #e5e7eb !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  border-top: none !important;
+  border-left: none !important;
+  line-height: 1.5 !important;
+  pointer-events: none !important;
+  cursor: default !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 20 !important;
+}
+
+.Spreadsheet th:last-child,
+.Spreadsheet thead .Spreadsheet__cell:last-child {
+  border-right: 0 !important;
+}
+
+/* Body cells matching: px-4 py-3 text-sm border-r border-gray-200 */
+.Spreadsheet tbody .Spreadsheet__cell,
+.Spreadsheet td {
+  padding: 0.75rem 1rem !important;
+  font-size: 0.875rem !important;
+  color: #374151 !important;
+  background-color: #ffffff !important;
+  border-right: 1px solid #e5e7eb !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  border-top: none !important;
+  border-left: none !important;
+  text-align: left !important;
+  line-height: 1.5 !important;
+}
+
+.Spreadsheet tbody .Spreadsheet__cell:last-child,
+.Spreadsheet td:last-child,
+.Spreadsheet th:last-child {
+  border-right: 0 !important;
+}
+
+/* Remove bottom border from last row to match divide-y behavior */
+.Spreadsheet tbody tr:last-child .Spreadsheet__cell,
+.Spreadsheet tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+/* Ensure consistent row height */
+.Spreadsheet tr {
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.Spreadsheet tbody tr {
+  background-color: #ffffff !important;
+}
+
+/* Remove any vertical align issues */
+.Spreadsheet td,
+.Spreadsheet th,
+.Spreadsheet__cell {
+  vertical-align: middle !important;
+}
+
+/* Ensure no extra space from the wrapper */
+.spreadsheet-wrapper::after {
+  content: none !important;
+  display: none !important;
+}
+
+
+.Spreadsheet__cell input {
+  width: 100% !important;
+  border: none !important;
+  outline: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 0.875rem !important;
+  font-family: inherit !important;
+  background: transparent !important;
+  text-align: inherit !important;
+  color: inherit !important;
+  font-weight: inherit !important;
+}
+
+.Spreadsheet__cell input:focus {
+  background-color: #f0f9ff !important;
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: -2px !important;
+}
+
+/* Force left align for first column inputs */
+.Spreadsheet__cell:first-child input,
+.Spreadsheet td:first-child input,
+.Spreadsheet tr td:first-of-type input,
+.Spreadsheet tbody tr td:first-child input {
+  text-align: left !important;
+}
+
+/* Extra override for tbody first cells */
+.Spreadsheet tbody tr td:first-child,
+.Spreadsheet tbody tr td:first-of-type {
+  text-align: left !important;
+}
+
+/* Hide row index column (only the actual index, not data columns) */
+.Spreadsheet tbody th {
+  display: none !important;
+}
+
+/* First column (category names) matching: font-medium text-gray-900 bg-gray-50 */
+.Spreadsheet tbody .Spreadsheet__cell:first-child,
+.Spreadsheet tbody td:first-child,
+.Spreadsheet tbody tr td:first-child {
+  font-weight: 500 !important;
+  color: #111827 !important;
+  background-color: #f9fafb !important;
+  pointer-events: none !important;
+  cursor: default !important;
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 10 !important;
+}
+
+/* First header cell - needs both sticky top and left */
+.Spreadsheet th:first-child,
+.Spreadsheet thead .Spreadsheet__cell:first-child {
+  position: sticky !important;
+  left: 0 !important;
+  top: 0 !important;
+  z-index: 30 !important;
+}
+
+/* Group header cells - bold styling with smaller height */
+.Spreadsheet .group-header-cell,
+.Spreadsheet td.group-header-cell {
+  font-weight: 700 !important;
+  color: #111827 !important;
+  background-color: #e5e7eb !important;
+  pointer-events: none !important;
+  cursor: default !important;
+  padding: 0.375rem 1rem !important;
+  line-height: 1.25 !important;
+}
+
+/* First column group header cells - need sticky left positioning */
+.Spreadsheet tbody tr td:first-child.group-header-cell {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 10 !important;
+}
+
+/* Header cell styling using className */
+.Spreadsheet .header-cell,
+.Spreadsheet td.header-cell,
+td.header-cell {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+  background-color: #d1d5db !important;
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+/* Category cell styling */
+.Spreadsheet .category-cell,
+.Spreadsheet td.category-cell,
+td.category-cell {
+  font-weight: 500 !important;
+  color: #111827 !important;
+  background-color: #f9fafb !important;
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+/* Second column (importance) styling - center aligned */
+.Spreadsheet__cell:nth-child(2),
+.Spreadsheet td:nth-child(2) {
+  text-align: center !important;
+}
