@@ -611,7 +611,16 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           allCollaborators.every(email => formData.acknowledgeEquityAllocation?.[email]);
         return allAcknowledgedEquityAllocation;
 
-      case 4: // Decision-Making
+      case 4: // Vesting Schedule
+        const allAcknowledgedForfeiture = allCollaborators.length > 0 &&
+          allCollaborators.every(email => formData.acknowledgeForfeiture?.[email]);
+        return formData.vestingStartDate &&
+               isOtherFieldValid(formData.vestingSchedule, formData.vestingScheduleOther) &&
+               formData.cliffPercentage && formData.accelerationTrigger &&
+               formData.sharesSellNoticeDays && formData.sharesBuybackDays &&
+               allAcknowledgedForfeiture && formData.vestedSharesDisposal;
+
+      case 5: // Decision-Making
         const allAcknowledgedTieResolution = allCollaborators.length > 0 &&
           allCollaborators.every(email => formData.acknowledgeTieResolution?.[email]);
         const allAcknowledgedShotgunClause = formData.includeShotgunClause === 'Yes' ? (
@@ -623,15 +632,6 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                isOtherFieldValid(formData.tieResolution, formData.tieResolutionOther) &&
                allAcknowledgedTieResolution &&
                formData.includeShotgunClause && allAcknowledgedShotgunClause;
-
-      case 5: // Equity & Vesting
-        const allAcknowledgedForfeiture = allCollaborators.length > 0 &&
-          allCollaborators.every(email => formData.acknowledgeForfeiture?.[email]);
-        return formData.vestingStartDate &&
-               isOtherFieldValid(formData.vestingSchedule, formData.vestingScheduleOther) &&
-               formData.cliffPercentage && formData.accelerationTrigger &&
-               formData.sharesSellNoticeDays && formData.sharesBuybackDays &&
-               allAcknowledgedForfeiture && formData.vestedSharesDisposal;
 
       case 6: // IP & Ownership
         const allAcknowledgedIPOwnership = allCollaborators.length > 0 &&
@@ -734,7 +734,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: '#FFFFFF' }}>
       {/* Sidebar Navigation */}
-      <div className="w-64 border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF', boxShadow: '2px 0 7px rgba(0, 0, 0, 0.04)' }}>
+      <div className="border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF', boxShadow: '2px 0 7px rgba(0, 0, 0, 0.04)', width: '270px' }}>
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900 mb-3">{project?.name || 'Loading...'}</h2>
@@ -940,7 +940,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto ml-64">
+      <div className="flex-1 overflow-y-auto" style={{ marginLeft: '270px' }}>
         <div className="max-w-4xl mx-auto p-8 pr-24 pb-32" key={currentSection}>
           {/* Section Content */}
           {currentSection === 1 && (
@@ -976,7 +976,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
             />
           )}
           {currentSection === 4 && (
-            <Section4DecisionMaking
+            <Section5EquityVesting
               formData={formData}
               handleChange={handleChange}
               isReadOnly={isReadOnly}
@@ -985,7 +985,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
             />
           )}
           {currentSection === 5 && (
-            <Section5EquityVesting
+            <Section4DecisionMaking
               formData={formData}
               handleChange={handleChange}
               isReadOnly={isReadOnly}

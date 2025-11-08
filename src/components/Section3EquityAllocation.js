@@ -432,22 +432,28 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                           <div>
                             {/* Stacked Progress Bar */}
                             <div className="w-full h-7 bg-gray-200 rounded-lg flex relative" style={{ overflow: 'visible' }}>
-                              {allCollaborators.map((cofounderEmail, index) => {
-                                const percentage = calculation[cofounderEmail] || 0;
-                                if (percentage === 0) return null;
+                              {(() => {
+                                const nonZeroEntries = allCollaborators
+                                  .map((email, idx) => ({ email, idx, percentage: calculation[email] || 0 }))
+                                  .filter(entry => entry.percentage > 0);
 
-                                const color = colors[index % colors.length];
+                                return nonZeroEntries.map((entry, barIndex) => {
+                                  const { email: cofounderEmail, idx: index, percentage } = entry;
+                                  const color = colors[index % colors.length];
+                                  const isFirst = barIndex === 0;
+                                  const isLast = barIndex === nonZeroEntries.length - 1;
+                                  const borderRadiusClass = isFirst ? 'rounded-l-lg' : isLast ? 'rounded-r-lg' : '';
 
-                                return (
-                                  <div
-                                    key={cofounderEmail}
-                                    className="transition-all duration-300 flex items-center justify-center relative"
-                                    style={{
-                                      width: `${percentage}%`,
-                                      backgroundColor: color,
-                                      overflow: 'visible'
-                                    }}
-                                  >
+                                  return (
+                                    <div
+                                      key={cofounderEmail}
+                                      className={`transition-all duration-300 flex items-center justify-center relative ${borderRadiusClass}`}
+                                      style={{
+                                        width: `${percentage}%`,
+                                        backgroundColor: color,
+                                        overflow: 'visible'
+                                      }}
+                                    >
                                     <span
                                       className="font-semibold whitespace-nowrap"
                                       style={{
@@ -462,8 +468,9 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                                       {percentage.toFixed(1)}%
                                     </span>
                                   </div>
-                                );
-                              })}
+                                  );
+                                });
+                              })()}
                             </div>
 
                             {/* Legend */}

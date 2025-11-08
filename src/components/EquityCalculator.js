@@ -293,11 +293,14 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
             if (percentage === 0) return null;
 
             const color = colors[index % colors.length];
+            const isFirst = index === 0;
+            const isLast = index === entries.length - 1;
+            const borderRadiusClass = isFirst ? 'rounded-l-lg' : isLast ? 'rounded-r-lg' : '';
 
             return (
               <div
                 key={email}
-                className="transition-all duration-300 flex items-center justify-center relative"
+                className={`transition-all duration-300 flex items-center justify-center relative ${borderRadiusClass}`}
                 style={{
                   width: `${percentage}%`,
                   backgroundColor: color.bg,
