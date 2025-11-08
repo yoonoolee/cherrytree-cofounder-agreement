@@ -243,3 +243,27 @@ td.category-cell {
 .Spreadsheet td:nth-child(2) {
   text-align: center !important;
 }
+
+/* Make cells editable on single click */
+.Spreadsheet__cell--readonly {
+  pointer-events: auto !important;
+}
+
+.Spreadsheet__cell:not(.Spreadsheet__cell--readonly) {
+  cursor: text !important;
+}
+
+/* Ensure input is visible and clickable immediately */
+.Spreadsheet__cell input {
+  pointer-events: auto !important;
+  cursor: text !important;
+}
+
+/* Make single click behave like double click for edit mode */
+.single-click-edit .Spreadsheet__cell:not(.Spreadsheet__cell--readonly) {
+  cursor: text !important;
+}
+
+.single-click-edit .Spreadsheet__cell:not(.Spreadsheet__cell--readonly):active {
+  pointer-events: none !important;
+}

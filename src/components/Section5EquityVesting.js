@@ -17,7 +17,7 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
         This is exactly why vesting exists. Without it, a cofounder can walk away with a huge slice of the company without putting in the work, leaving the remaining founders carrying the burden. Vesting means you earn your equity over time by building the company.
       </p>
 
-      <hr className="border-gray-300 mb-8" />
+      <hr className="border-gray-200 mb-8" />
 
       <div className="space-y-12">
         {/* Vesting Start Date */}

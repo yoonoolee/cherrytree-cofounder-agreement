@@ -34,7 +34,7 @@ function Section7Compensation({ formData, handleChange, isReadOnly, showValidati
         Money talks, even among cofounders. Don't wait until someone's scraping by or resenting late nights. Decide who gets what, when, and how early. Nothing kills a startup vibe faster than vague pay talk.
       </p>
 
-      <hr className="border-gray-300 mb-8" />
+      <hr className="border-gray-200 mb-8" />
 
       <div className="space-y-12" style={{ overflow: 'visible' }}>
         {/* Taking Compensation */}

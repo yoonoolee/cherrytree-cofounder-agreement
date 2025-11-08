@@ -195,6 +195,7 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
 
   const [data, setData] = useState(initializeData());
   const prevCofounderNamesRef = useRef(cofounderNames);
+  const spreadsheetRef = useRef(null);
 
   // Calculate equity percentages from current data
   const calculateCurrentEquity = () => {
@@ -377,6 +378,39 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
     });
   }, [cofounderNames]);
 
+  // Make single click behave like double click
+  useEffect(() => {
+    const handleClick = (e) => {
+      const cell = e.target.closest('.Spreadsheet__cell');
+      if (cell && !cell.classList.contains('Spreadsheet__cell--readonly')) {
+        // Prevent default single click behavior
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Create and dispatch double-click event
+        const dblClickEvent = new MouseEvent('dblclick', {
+          view: window,
+          bubbles: true,
+          cancelable: true,
+          clientX: e.clientX,
+          clientY: e.clientY
+        });
+        cell.dispatchEvent(dblClickEvent);
+      }
+    };
+
+    const wrapper = spreadsheetRef.current;
+    if (wrapper) {
+      wrapper.addEventListener('click', handleClick, true);
+    }
+
+    return () => {
+      if (wrapper) {
+        wrapper.removeEventListener('click', handleClick, true);
+      }
+    };
+  }, []);
+
   // Reset to fresh data with all 18 categories
   const handleReset = () => {
     const numCofounders = cofounders.length || 2;
@@ -526,7 +560,11 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
         <h4 className="text-base font-semibold text-gray-900 mb-3">Private Assessment</h4>
 
         {/* Spreadsheet */}
-        <div className="spreadsheet-wrapper" style={{ maxHeight: '450px', overflowY: 'auto', overflowX: 'auto' }}>
+        <div
+          ref={spreadsheetRef}
+          className="spreadsheet-wrapper single-click-edit"
+          style={{ maxHeight: '450px', overflowY: 'auto', overflowX: 'auto' }}
+        >
           <Spreadsheet
             data={data}
             onChange={handleChange}

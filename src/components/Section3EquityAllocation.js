@@ -329,7 +329,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
         Be very reluctant to change equity allocation once you've agreed. The #1 reason for cofounder breakups in the most recent YC batch was cofounders trying to revisit a settled split.
       </p>
 
-      <hr className="border-gray-300 mb-8" />
+      <hr className="border-gray-200 mb-8" />
 
       <div className="space-y-6">
         <div className="mb-2">
@@ -361,7 +361,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
 
         {/* Single container that stays intact - only content inside animates */}
         <div className="mb-8">
-          <div className="p-8" style={{ height: '700px', overflow: 'hidden' }}>
+          <div style={{ height: '700px', overflow: 'hidden' }}>
             {/* Edit View - Show calculator */}
             {viewMode === 'edit' && (
               <div className={`h-full flex flex-col ${
@@ -624,77 +624,79 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
         </div>
 
         {/* Final Equity Allocation */}
-        <div ref={finalEquityRef} className="space-y-6 pt-24">
-          <h3 className="text-xl font-bold text-gray-800">Final Equity Allocation</h3>
+        <div ref={finalEquityRef} className="pt-24">
+          <h3 className="text-xl font-bold text-gray-800 mb-6">Final Equity Allocation</h3>
 
-          {allCollaborators.map((email, index) => (
-            <div key={email}>
-              <label className="block text-base font-medium text-gray-900 mb-2">
-                {getCofounderName(email)}
-                {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-                {email === auth.currentUser?.email && <span className="ml-2 text-xs text-blue-600">(You)</span>}
-                {showValidation && !formData.finalEquityPercentages?.[email] && <span className="text-red-700 ml-0.5">*</span>}
-              </label>
-              <input
-                type="text"
-                value={formData.finalEquityPercentages?.[email] ? `${formData.finalEquityPercentages[email]}%` : ''}
-                onChange={(e) => {
-                  const input = e.target;
-                  const cursorPos = input.selectionStart;
-                  const value = e.target.value.replace('%', '');
+          <div className="flex gap-4 mb-6">
+            {allCollaborators.map((email, index) => (
+              <div key={email} className="flex-1">
+                <label className="block text-base font-medium text-gray-900 mb-2">
+                  {getCofounderName(email)}
+                  {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
+                  {email === auth.currentUser?.email && <span className="ml-2 text-xs text-blue-600">(You)</span>}
+                  {showValidation && !formData.finalEquityPercentages?.[email] && <span className="text-red-700 ml-0.5">*</span>}
+                </label>
+                <input
+                  type="text"
+                  value={formData.finalEquityPercentages?.[email] ? `${formData.finalEquityPercentages[email]}%` : ''}
+                  onChange={(e) => {
+                    const input = e.target;
+                    const cursorPos = input.selectionStart;
+                    const value = e.target.value.replace('%', '');
 
-                  if (value === '' || (!isNaN(value) && parseFloat(value) >= 0 && parseFloat(value) <= 100)) {
-                    handleEquityChange(email, value);
+                    if (value === '' || (!isNaN(value) && parseFloat(value) >= 0 && parseFloat(value) <= 100)) {
+                      handleEquityChange(email, value);
 
-                    // Keep cursor before the %
-                    setTimeout(() => {
-                      const newPos = Math.min(cursorPos, value.length);
-                      input.setSelectionRange(newPos, newPos);
-                    }, 0);
-                  }
-                }}
-                onKeyDown={(e) => {
-                  const input = e.target;
-                  const value = input.value.replace('%', '');
-                  const cursorPos = input.selectionStart;
+                      // Keep cursor before the %
+                      setTimeout(() => {
+                        const newPos = Math.min(cursorPos, value.length);
+                        input.setSelectionRange(newPos, newPos);
+                      }, 0);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    const input = e.target;
+                    const value = input.value.replace('%', '');
+                    const cursorPos = input.selectionStart;
 
-                  // Prevent cursor from going past the number into %
-                  if (e.key === 'ArrowRight' && cursorPos >= value.length) {
-                    e.preventDefault();
-                  }
+                    // Prevent cursor from going past the number into %
+                    if (e.key === 'ArrowRight' && cursorPos >= value.length) {
+                      e.preventDefault();
+                    }
 
-                  // Keep cursor before % on arrow left at the end
-                  if (e.key === 'ArrowLeft' && cursorPos > value.length) {
-                    e.preventDefault();
-                    input.setSelectionRange(value.length, value.length);
-                  }
-                }}
-                onClick={(e) => {
-                  const input = e.target;
-                  const value = input.value.replace('%', '');
-                  const cursorPos = input.selectionStart;
+                    // Keep cursor before % on arrow left at the end
+                    if (e.key === 'ArrowLeft' && cursorPos > value.length) {
+                      e.preventDefault();
+                      input.setSelectionRange(value.length, value.length);
+                    }
+                  }}
+                  onClick={(e) => {
+                    const input = e.target;
+                    const value = input.value.replace('%', '');
+                    const cursorPos = input.selectionStart;
 
-                  // If clicked after the %, move cursor before %
-                  if (cursorPos > value.length) {
+                    // If clicked after the %, move cursor before %
+                    if (cursorPos > value.length) {
+                      setTimeout(() => {
+                        input.setSelectionRange(value.length, value.length);
+                      }, 0);
+                    }
+                  }}
+                  onFocus={(e) => {
+                    const input = e.target;
+                    const value = input.value.replace('%', '');
+                    // Position cursor at end of number, before %
                     setTimeout(() => {
                       input.setSelectionRange(value.length, value.length);
                     }, 0);
-                  }
-                }}
-                onFocus={(e) => {
-                  const input = e.target;
-                  const value = input.value.replace('%', '');
-                  // Position cursor at end of number, before %
-                  setTimeout(() => {
-                    input.setSelectionRange(value.length, value.length);
-                  }, 0);
-                }}
-                disabled={isReadOnly}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-                placeholder="25%"
-              />
-            </div>
-          ))}
+                  }}
+                  disabled={isReadOnly}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                  placeholder="25%"
+                />
+              </div>
+            ))}
+          </div>
 
           {/* Total Equity Validation */}
           <div>
