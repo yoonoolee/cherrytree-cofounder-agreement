@@ -103,18 +103,11 @@ function CollaboratorManager({ project }) {
       <div>
         <div className="space-y-3">
           {project.collaborators?.map((collab, index) => (
-            <div key={index} className="flex items-center gap-3 py-2">
-              <div className="w-9 h-9 bg-gray-900 rounded-full flex items-center justify-center">
-                <span className="text-white font-medium text-sm">
-                  {collab.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <div className="flex-1">
-                <p className="text-gray-900 text-sm">{collab}</p>
-                {collab === project.ownerEmail && (
-                  <p className="text-xs text-gray-500">Owner</p>
-                )}
-              </div>
+            <div key={index} className="py-2">
+              <p className="text-gray-900 text-sm">{collab}</p>
+              {collab === project.ownerEmail && (
+                <p className="text-xs text-gray-500">Owner</p>
+              )}
             </div>
           ))}
         </div>
@@ -126,14 +119,11 @@ function CollaboratorManager({ project }) {
     <div>
       {/* Note about cofounders */}
       <p className="text-sm text-gray-700 font-medium mb-4">
-        Note: All cofounders must be added as collaborators.
+        Every cofounder needs to be added as a collaborator.
       </p>
 
       {/* Add Collaborator Form */}
       <form onSubmit={handleAddCollaborator} className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Add by email
-        </label>
         <div className="flex gap-2">
           <input
             type="email"
@@ -167,21 +157,11 @@ function CollaboratorManager({ project }) {
             key={index}
             className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 transition"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gray-900 rounded-full flex items-center justify-center">
-                <span className="text-white font-medium text-sm">
-                  {collab.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <div>
-                <p className="text-gray-900 text-sm">{collab}</p>
-                {collab === project.ownerEmail && (
-                  <p className="text-xs text-gray-500">Owner</p>
-                )}
-              </div>
-            </div>
+            <p className="text-gray-900 text-sm">{collab}</p>
 
-            {collab !== project.ownerEmail && (
+            {collab === project.ownerEmail ? (
+              <p className="text-xs text-gray-500">Owner</p>
+            ) : (
               <button
                 onClick={() => handleRemoveCollaborator(collab)}
                 className="text-red-700 hover:text-red-900 text-xs font-medium"
@@ -194,7 +174,7 @@ function CollaboratorManager({ project }) {
       </div>
 
       <p className="text-xs text-gray-500 mt-4">
-        Collaborators can view and edit this document, but only the owner can submit it.
+        Collaborators can edit the survey, but only the owner can submit it.
       </p>
     </div>
   );
