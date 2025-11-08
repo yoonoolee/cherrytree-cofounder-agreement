@@ -6,14 +6,12 @@ function Section8Performance({ formData, handleChange, isReadOnly, showValidatio
     <div>
       <h2 className="text-3xl font-bold text-gray-800 mb-2">Cofounder Performance & Departure</h2>
 
-      <p className="text-gray-700 mb-8 leading-relaxed">
+      <p className="text-gray-700 mb-4 leading-relaxed">
         In every startup, execution is everything. You can have the best idea in the world, the perfect cofounder team, and a shiny product plan, but if the work doesn't get done, nothing happens. However, sometimes, for one reason or another, we can't perform at the level that's necessary.
       </p>
       <p className="text-gray-700 mb-8 leading-relaxed">
         In those cases, the best we can do is protect the company and the friendship. You do that by planning for the what-ifs ahead of time. Performance isn't just about grinding harder. It's about foresight, flexibility, and keeping the company moving even when things don't go perfectly.
       </p>
-
-      <hr className="border-gray-200 mb-8" />
 
       <div className="space-y-12">
         {/* Performance Consequences */}

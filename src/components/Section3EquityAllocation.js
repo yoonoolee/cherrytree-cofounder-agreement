@@ -319,17 +319,15 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
     <div className="equity-calculator-container">
       <h2 className="text-3xl font-bold text-gray-800 mb-2">Equity Allocation</h2>
 
-      <p className="text-gray-700 mb-8 leading-relaxed">
+      <p className="text-gray-700 mb-4 leading-relaxed">
         A few years ago, two friends from Stanford launched a startup that took off fast. Within six months, they were in YC, had a long waiting list, and investors were calling.
       </p>
-      <p className="text-gray-700 mb-8 leading-relaxed">
+      <p className="text-gray-700 mb-4 leading-relaxed">
         But one cofounder started feeling like they were doing more. "I'm the CEO, I'm fundraising, I'm working longer hours." They tried to renegotiate the equity split from 50/50 to 70/30. The other cofounder felt blindsided, trust collapsed, and by Demo Day they'd split, both emotionally and legally.
       </p>
       <p className="text-gray-700 mb-8 leading-relaxed">
         Be very reluctant to change equity allocation once you've agreed. The #1 reason for cofounder breakups in the most recent YC batch was cofounders trying to revisit a settled split.
       </p>
-
-      <hr className="border-gray-200 mb-8" />
 
       <div className="space-y-6">
         <div className="mb-2">

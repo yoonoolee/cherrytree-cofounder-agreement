@@ -734,7 +734,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: '#FFFFFF' }}>
       {/* Sidebar Navigation */}
-      <div className="w-64 border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+      <div className="w-64 border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF', boxShadow: '2px 0 7px rgba(0, 0, 0, 0.04)' }}>
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900 mb-3">{project?.name || 'Loading...'}</h2>
@@ -928,7 +928,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                   onClick={() => setShowCollaborators(false)}
                   className="text-gray-400 hover:text-gray-600"
                 >
-                  <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>

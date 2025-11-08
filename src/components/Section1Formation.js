@@ -287,8 +287,6 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
         You've been talking about this idea for weeks, maybe months. Now you're sitting with your cofounder, naming the company, buying the domain, imagining what it could become. Coffee in hand, takeout on the table. Creating a cofounder agreement is what makes it real. Let's get started.
       </p>
 
-      <hr className="border-gray-200 mb-8" />
-
       <div className="space-y-12" style={{ overflow: 'visible' }}>
         {/* Company Name */}
         <div>
@@ -346,7 +344,7 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
         {/* Registered State */}
         <div style={{ overflow: 'visible', position: 'relative', zIndex: 100, marginBottom: '3rem' }}>
           <label className="block text-base font-medium text-gray-900 mb-2">
-            What state will the company be registered in?
+            What state will your company be registered in?
             <Tooltip text="Delaware is a popular choice for many startups because its laws and courts are well established. Just be aware you may have additional fees or filings if your business is based elsewhere." />
             {showValidation && !formData.registeredState && <span className="text-red-700 ml-0.5">*</span>}
           </label>
@@ -365,7 +363,7 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
         {/* Mailing Address */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-3">
-            What's the company mailing address?
+            What's your company mailing address?
             {showValidation && (!formData.mailingStreet || !formData.mailingCity || !formData.mailingState || !formData.mailingZip) && <span className="text-red-700 ml-0.5">*</span>}
           </label>
 

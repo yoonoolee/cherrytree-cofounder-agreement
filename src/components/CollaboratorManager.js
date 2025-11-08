@@ -135,7 +135,7 @@ function CollaboratorManager({ project }) {
           <button
             type="submit"
             disabled={loading}
-            className="bg-black text-white px-5 py-2 rounded text-sm font-medium hover:bg-gray-800 transition disabled:opacity-50"
+            className="bg-black text-white px-7 py-2 rounded text-sm font-medium hover:bg-gray-800 transition disabled:opacity-50"
           >
             {loading ? 'Adding...' : 'Add'}
           </button>
@@ -164,7 +164,7 @@ function CollaboratorManager({ project }) {
             ) : (
               <button
                 onClick={() => handleRemoveCollaborator(collab)}
-                className="text-red-700 hover:text-red-900 text-xs font-medium"
+                className="text-red-600 hover:text-red-800 text-xs font-medium"
               >
                 Remove
               </button>
