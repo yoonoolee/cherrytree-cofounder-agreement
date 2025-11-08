@@ -318,13 +318,24 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
   return (
     <div className="equity-calculator-container">
       <h2 className="text-3xl font-bold text-gray-800 mb-2">Equity Allocation</h2>
-      <p className="text-gray-600 mb-8">Calculate equity split among cofounders</p>
+
+      <p className="text-gray-700 mb-8 leading-relaxed">
+        A few years ago, two friends from Stanford launched a startup that took off fast. Within six months, they were in YC, had a long waiting list, and investors were calling.
+      </p>
+      <p className="text-gray-700 mb-8 leading-relaxed">
+        But one cofounder started feeling like they were doing more. "I'm the CEO, I'm fundraising, I'm working longer hours." They tried to renegotiate the equity split from 50/50 to 70/30. The other cofounder felt blindsided, trust collapsed, and by Demo Day they'd split, both emotionally and legally.
+      </p>
+      <p className="text-gray-700 mb-8 leading-relaxed">
+        Be very reluctant to change equity allocation once you've agreed. The #1 reason for cofounder breakups in the most recent YC batch was cofounders trying to revisit a settled split.
+      </p>
+
+      <hr className="border-gray-300 mb-8" />
 
       <div className="space-y-6">
         <div className="mb-2">
           <h3 className="text-xl font-bold text-gray-800 mb-4">Equity Calculator</h3>
           <div className="mb-6">
-            <div className="mb-4 pb-4 border-b border-gray-200">
+            <div className="mb-4 pb-4">
               <p className="text-base text-gray-700 mb-3">Each cofounder fills out the spreadsheet separately. They can't see your answers until you submit. Once everyone's done, review the results together. Edit your spreadsheet any time to make changes.</p>
               <p className="text-base text-gray-700 mb-3">Enter the final allocation when you've come to an agreement. If you already know your equity split, skip ahead and add it straight to the agreement in the next section.</p>
               <p className="text-base text-gray-700">Using the tool is optional. Your agreement only includes the final allocation entered below.</p>

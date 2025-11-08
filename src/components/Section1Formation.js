@@ -282,8 +282,12 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
   return (
     <div>
       <h2 className="text-3xl font-bold text-gray-800 mb-2">Formation & Purpose</h2>
-      <p className="text-gray-600 mb-8">Basic information about your company</p>
 
+      <p className="text-gray-700 mb-8 leading-relaxed">
+        You've been talking about this idea for weeks, maybe months. Now you're sitting with your cofounder, naming the company, buying the domain, imagining what it could become. Coffee in hand, takeout on the table. Creating a cofounder agreement is what makes it real. Let's get started.
+      </p>
+
+      <hr className="border-gray-300 mb-8" />
 
       <div className="space-y-12" style={{ overflow: 'visible' }}>
         {/* Company Name */}
