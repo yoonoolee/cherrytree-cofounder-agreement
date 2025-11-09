@@ -725,16 +725,16 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
   if (!project) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFFFF' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f8fafc' }}>
         <div className="text-gray-600">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: '#FFFFFF' }}>
+    <div className="min-h-screen flex" style={{ backgroundColor: '#f8fafc' }}>
       {/* Sidebar Navigation */}
-      <div className="border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF', boxShadow: '2px 0 7px rgba(0, 0, 0, 0.04)', width: '270px' }}>
+      <div className="border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF', width: '270px' }}>
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900 mb-3">{project?.name || 'Loading...'}</h2>
@@ -940,8 +940,10 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto" style={{ marginLeft: '270px' }}>
-        <div className="max-w-4xl mx-auto p-8 pr-24 pb-32" key={currentSection}>
+      <div className="flex-1 overflow-y-auto" style={{ marginLeft: '270px', backgroundColor: '#f8fafc' }}>
+        <div className="max-w-5xl mx-auto pt-9 px-6 pr-12 pb-32" key={currentSection}>
+          {/* White Card Container */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-12">
           {/* Section Content */}
           {currentSection === 1 && (
             isLoaded ? (
@@ -1066,6 +1068,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               )}
             </div>
           )}
+          </div>
+          {/* End White Card Container */}
         </div>
       </div>
     </div>

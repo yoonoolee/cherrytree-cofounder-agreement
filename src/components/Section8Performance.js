@@ -13,6 +13,8 @@ function Section8Performance({ formData, handleChange, isReadOnly, showValidatio
         In those cases, the best we can do is protect the company and the friendship. You do that by planning for the what-ifs ahead of time. Performance isn't just about grinding harder. It's about foresight, flexibility, and keeping the company moving even when things don't go perfectly.
       </p>
 
+      <div className="border-b border-gray-200 mb-8"></div>
+
       <div className="space-y-12">
         {/* Performance Consequences */}
         <div>

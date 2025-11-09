@@ -8,13 +8,25 @@
 .spreadsheet-wrapper {
   background: #ffffff !important;
   border: 1px solid #e5e7eb !important;
-  border-radius: 0.25rem !important;
+  border-radius: 0.5rem !important;
   width: 100% !important;
-  display: block !important;
+  display: flex !important;
+  flex-direction: column !important;
   padding: 0 !important;
   margin: 0 !important;
   line-height: 0 !important;
   position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Scrollable container for spreadsheet */
+.spreadsheet-scroll-container {
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+  position: relative !important;
+  /* Enable sticky positioning for child elements */
+  -webkit-overflow-scrolling: touch !important;
 }
 
 /* Table matching: min-w-full divide-y divide-gray-200 */
@@ -28,18 +40,19 @@
   padding: 0 !important;
   background: transparent !important;
   line-height: 0 !important;
-  position: relative !important;
+  /* Don't use position: relative as it can interfere with sticky children */
 }
 
 .Spreadsheet__table {
-  border-collapse: collapse !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
   width: 100% !important;
   min-width: 100% !important;
   font-family: inherit !important;
   table-layout: auto !important;
   margin: 0 !important;
   padding: 0 !important;
-  border-spacing: 0 !important;
+  /* border-collapse: separate is required for sticky positioning to work */
 }
 
 /* Header row matching: bg-gray-50 */
@@ -51,10 +64,42 @@
   z-index: 20 !important;
 }
 
+/* Make the first row sticky - header row stays at top when scrolling */
+.spreadsheet-scroll-container .Spreadsheet tbody tr:first-child,
+.spreadsheet-scroll-container .Spreadsheet__table tbody tr:first-child,
+.single-click-edit .Spreadsheet tbody tr:first-child,
+.single-click-edit .Spreadsheet__table tbody tr:first-child {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 25 !important;
+  background-color: #d1d5db !important;
+  isolation: isolate !important;
+}
+
+.spreadsheet-scroll-container .Spreadsheet tbody tr:first-child td,
+.spreadsheet-scroll-container .Spreadsheet__table tbody tr:first-child td,
+.spreadsheet-scroll-container .Spreadsheet tbody tr:first-child .Spreadsheet__cell,
+.spreadsheet-scroll-container .Spreadsheet__table tbody tr:first-child .Spreadsheet__cell,
+.single-click-edit .Spreadsheet tbody tr:first-child td,
+.single-click-edit .Spreadsheet__table tbody tr:first-child td,
+.single-click-edit .Spreadsheet tbody tr:first-child .Spreadsheet__cell,
+.single-click-edit .Spreadsheet__table tbody tr:first-child .Spreadsheet__cell {
+  background-color: #d1d5db !important;
+  font-weight: 600 !important;
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 25 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
 .Spreadsheet tbody {
   margin: 0 !important;
   padding: 0 !important;
+  /* Don't set position to allow sticky children to work */
 }
+
 
 /* Header cells matching: px-4 py-3 text-left text-sm font-medium text-gray-900 border-r border-gray-200 */
 .Spreadsheet th,
@@ -65,7 +110,7 @@
   font-weight: 600 !important;
   color: #111827 !important;
   background-color: #d1d5db !important;
-  border-right: 1px solid #e5e7eb !important;
+  border-right: none !important;
   border-bottom: 1px solid #e5e7eb !important;
   border-top: none !important;
   border-left: none !important;
@@ -75,6 +120,14 @@
   position: sticky !important;
   top: 0 !important;
   z-index: 20 !important;
+}
+
+/* Add border-right only for the first two header columns (Category and Importance) */
+.Spreadsheet th:nth-child(1),
+.Spreadsheet thead .Spreadsheet__cell:nth-child(1),
+.Spreadsheet th:nth-child(2),
+.Spreadsheet thead .Spreadsheet__cell:nth-child(2) {
+  border-right: 1px solid #e5e7eb !important;
 }
 
 .Spreadsheet th:last-child,
@@ -89,12 +142,20 @@
   font-size: 0.875rem !important;
   color: #374151 !important;
   background-color: #ffffff !important;
-  border-right: 1px solid #e5e7eb !important;
+  border-right: none !important;
   border-bottom: 1px solid #e5e7eb !important;
   border-top: none !important;
   border-left: none !important;
   text-align: left !important;
   line-height: 1.5 !important;
+}
+
+/* Add border-right only for the first two columns (Category and Importance) */
+.Spreadsheet tbody .Spreadsheet__cell:nth-child(1),
+.Spreadsheet tbody td:nth-child(1),
+.Spreadsheet tbody .Spreadsheet__cell:nth-child(2),
+.Spreadsheet tbody td:nth-child(2) {
+  border-right: 1px solid #e5e7eb !important;
 }
 
 .Spreadsheet tbody .Spreadsheet__cell:last-child,
@@ -189,7 +250,9 @@
 
 /* First header cell - needs both sticky top and left */
 .Spreadsheet th:first-child,
-.Spreadsheet thead .Spreadsheet__cell:first-child {
+.Spreadsheet thead .Spreadsheet__cell:first-child,
+.Spreadsheet tbody tr:first-child td:first-child,
+.Spreadsheet tbody tr:first-child .Spreadsheet__cell:first-child {
   position: sticky !important;
   left: 0 !important;
   top: 0 !important;
@@ -206,6 +269,13 @@
   cursor: default !important;
   padding: 0.375rem 1rem !important;
   line-height: 1.25 !important;
+  border-right: none !important;
+}
+
+/* Add border-right only for the first two group header columns */
+.Spreadsheet td.group-header-cell:nth-child(1),
+.Spreadsheet td.group-header-cell:nth-child(2) {
+  border-right: 1px solid #e5e7eb !important;
 }
 
 /* First column group header cells - need sticky left positioning */
@@ -216,15 +286,40 @@
 }
 
 /* Header cell styling using className */
-.Spreadsheet .header-cell,
-.Spreadsheet td.header-cell,
-td.header-cell {
+.spreadsheet-scroll-container .Spreadsheet .header-cell,
+.spreadsheet-scroll-container .Spreadsheet td.header-cell,
+.spreadsheet-scroll-container td.header-cell {
   font-size: 1rem !important;
   font-weight: 600 !important;
   color: #111827 !important;
   background-color: #d1d5db !important;
   pointer-events: none !important;
   cursor: default !important;
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 20 !important;
+  border-right: none !important;
+}
+
+/* Add border-right only for the first two header-cell columns */
+.spreadsheet-scroll-container .Spreadsheet .header-cell:nth-child(1),
+.spreadsheet-scroll-container .Spreadsheet td.header-cell:nth-child(1),
+.spreadsheet-scroll-container td.header-cell:nth-child(1),
+.spreadsheet-scroll-container .Spreadsheet .header-cell:nth-child(2),
+.spreadsheet-scroll-container .Spreadsheet td.header-cell:nth-child(2),
+.spreadsheet-scroll-container td.header-cell:nth-child(2) {
+  border-right: 1px solid #e5e7eb !important;
+}
+
+/* First header cell with header-cell class needs higher z-index */
+.spreadsheet-scroll-container .Spreadsheet tbody tr:first-child td:first-child.header-cell,
+.spreadsheet-scroll-container .Spreadsheet tbody tr:first-child .Spreadsheet__cell:first-child.header-cell {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  z-index: 30 !important;
+  left: 0 !important;
+  top: 0 !important;
 }
 
 /* Category cell styling */

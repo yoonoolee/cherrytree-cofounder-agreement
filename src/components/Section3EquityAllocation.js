@@ -14,8 +14,12 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
     const index = allCollaborators.indexOf(email);
     // Get cofounder at that index
     const cofounder = formData.cofounders?.[index];
-    // Return name if it exists and is not empty, otherwise return email
-    return (cofounder?.fullName && cofounder.fullName.trim() !== '') ? cofounder.fullName : email;
+    // Return first name if it exists, otherwise return email
+    if (cofounder?.fullName && cofounder.fullName.trim() !== '') {
+      const firstName = cofounder.fullName.trim().split(' ')[0];
+      return firstName;
+    }
+    return email;
   };
 
   // Initialize equity percentages, acknowledgments, and calculator data if not present
@@ -329,6 +333,8 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
         Be very reluctant to change equity allocation once you've agreed. The #1 reason for cofounder breakups in the most recent YC batch was cofounders trying to revisit a settled split.
       </p>
 
+      <div className="border-b border-gray-200 mb-8"></div>
+
       <div className="space-y-6">
         <div className="mb-2">
           <h3 className="text-xl font-bold text-gray-800 mb-4">Equity Calculator</h3>
@@ -406,16 +412,16 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                     const hasSubmittedAssessment = !!formData.equityCalculatorSubmitted?.[assessorEmail];
                     const calculation = equityCalculations[assessorEmail];
 
-                    // Modern blue gradient palette - light to dark
+                    // Modern startup blue palette - sophisticated shades
                     const colors = [
-                      '#BFDBFE',  // Light sky blue
-                      '#93C5FD',  // Soft blue
-                      '#60A5FA',  // Medium blue
-                      '#3B82F6',  // Bright blue
-                      '#2563EB',  // Royal blue
-                      '#1E40AF',  // Deep blue
-                      '#1E3A8A',  // Navy blue
-                      '#172554'   // Midnight blue
+                      '#7DD3FC',  // Bright sky blue
+                      '#38BDF8',  // Vibrant cyan
+                      '#0EA5E9',  // Modern blue
+                      '#0284C7',  // Deep sky
+                      '#0369A1',  // Ocean blue
+                      '#075985',  // Slate blue
+                      '#1E3A8A',  // Navy
+                      '#1E293B'   // Dark slate
                     ];
 
                     return (
@@ -460,7 +466,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                                         fontSize: percentage >= 10 ? '0.75rem' : '0.5rem',
                                         paddingLeft: percentage >= 10 ? '0.25rem' : '0.125rem',
                                         paddingRight: percentage >= 10 ? '0.25rem' : '0.125rem',
-                                        color: index < 3 ? '#1F2937' : '#FFFFFF',
+                                        color: index < 2 ? '#1F2937' : '#FFFFFF',
                                         position: 'relative',
                                         zIndex: 1
                                       }}

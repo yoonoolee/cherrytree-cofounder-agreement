@@ -287,6 +287,8 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
         You've been talking about this idea for weeks, maybe months. Now you're sitting with your cofounder, naming the company, buying the domain, imagining what it could become. Coffee in hand, takeout on the table. Creating a cofounder agreement is what makes it real. Let's get started.
       </p>
 
+      <div className="border-b border-gray-200 mb-8"></div>
+
       <div className="space-y-12" style={{ overflow: 'visible' }}>
         {/* Company Name */}
         <div>

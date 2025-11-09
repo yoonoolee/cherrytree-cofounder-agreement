@@ -9,10 +9,12 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
     const index = cofounders.indexOf(email);
     // Get cofounder at that index
     const cofounder = cofounderData?.[index];
-    // Return name if it exists and is not empty, otherwise return fallback
-    return (cofounder?.fullName && cofounder.fullName.trim() !== '')
-      ? cofounder.fullName
-      : `Cofounder ${String.fromCharCode(65 + index)}`;
+    // Return first name if it exists, otherwise return fallback
+    if (cofounder?.fullName && cofounder.fullName.trim() !== '') {
+      const firstName = cofounder.fullName.trim().split(' ')[0];
+      return firstName;
+    }
+    return `Cofounder ${String.fromCharCode(65 + index)}`;
   };
 
   // Memoize cofounder names to detect actual changes
@@ -86,19 +88,71 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
 
   // Initialize spreadsheet data with columns as cofounders
   const initializeData = () => {
+    const currentNumCofounders = cofounders.length || 2;
+
     // If user has draft data, convert it from Firebase format
     if (userDraftData) {
+      let loadedData = null;
+
       // Check if it's in Firebase object format (has row_ keys)
       if (typeof userDraftData === 'object' && !Array.isArray(userDraftData) && Object.keys(userDraftData).some(key => key.startsWith('row_'))) {
         const converted = convertFromFirebaseFormat(userDraftData);
         if (converted && converted.length > 0) {
-          return converted;
+          loadedData = converted;
         }
       }
       // Legacy support: if it's already an array, use it directly but clean it
-      if (Array.isArray(userDraftData) && userDraftData.length > 0) {
-        // Clean the legacy data to ensure proper structure
-        return userDraftData.map((row, rowIndex) =>
+      else if (Array.isArray(userDraftData) && userDraftData.length > 0) {
+        loadedData = userDraftData;
+      }
+
+      // If we have loaded data, adjust columns to match current number of cofounders
+      if (loadedData) {
+        const savedNumCofounders = loadedData[0] ? loadedData[0].length - 2 : 0; // Subtract Category and Importance columns
+
+        // If the number of cofounders has changed, adjust the data
+        if (savedNumCofounders !== currentNumCofounders) {
+          return loadedData.map((row, rowIndex) => {
+            const fixedColumns = row.slice(0, 2); // Category and Importance columns
+            const dataColumns = row.slice(2, 2 + savedNumCofounders); // Existing cofounder columns
+
+            // If header row, use current cofounder names
+            if (rowIndex === 0) {
+              return [
+                ...fixedColumns,
+                ...cofounders.map((email) => ({
+                  value: getCofounderName(email),
+                  readOnly: true,
+                  className: 'header-cell'
+                }))
+              ];
+            }
+
+            // For data rows, preserve existing data and add/remove columns as needed
+            let adjustedDataColumns = [...dataColumns];
+
+            // If we need more columns, add them
+            if (currentNumCofounders > savedNumCofounders) {
+              const isGroupHeader = row[0]?.className === 'group-header-cell';
+              for (let i = savedNumCofounders; i < currentNumCofounders; i++) {
+                adjustedDataColumns.push(
+                  isGroupHeader
+                    ? { value: null, readOnly: true, className: 'group-header-cell' }
+                    : { value: 0, readOnly: false }
+                );
+              }
+            }
+            // If we need fewer columns, remove them
+            else if (currentNumCofounders < savedNumCofounders) {
+              adjustedDataColumns = adjustedDataColumns.slice(0, currentNumCofounders);
+            }
+
+            return [...fixedColumns, ...adjustedDataColumns];
+          });
+        }
+
+        // Number of cofounders hasn't changed, just clean the data
+        return loadedData.map((row, rowIndex) =>
           row.map((cell, colIndex) => {
             // Header row (rowIndex 0) - all cells read-only
             if (rowIndex === 0) {
@@ -271,16 +325,16 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
       );
     }
 
-    // Modern blue gradient palette - light to dark
+    // Modern startup blue palette - sophisticated shades
     const colors = [
-      { bg: '#BFDBFE', name: 'Sky' },         // Light sky blue
-      { bg: '#93C5FD', name: 'Soft Blue' },   // Soft blue
-      { bg: '#60A5FA', name: 'Medium Blue' }, // Medium blue
-      { bg: '#3B82F6', name: 'Blue' },        // Bright blue
-      { bg: '#2563EB', name: 'Royal' },       // Royal blue
-      { bg: '#1E40AF', name: 'Deep Blue' },   // Deep blue
-      { bg: '#1E3A8A', name: 'Navy' },        // Navy blue
-      { bg: '#172554', name: 'Midnight' }     // Midnight blue
+      { bg: '#7DD3FC', name: 'Sky' },         // Bright sky blue
+      { bg: '#38BDF8', name: 'Cyan' },        // Vibrant cyan
+      { bg: '#0EA5E9', name: 'Blue' },        // Modern blue
+      { bg: '#0284C7', name: 'Deep Blue' },   // Deep sky
+      { bg: '#0369A1', name: 'Ocean' },       // Ocean blue
+      { bg: '#075985', name: 'Slate' },       // Slate blue
+      { bg: '#1E3A8A', name: 'Navy' },        // Navy
+      { bg: '#1E293B', name: 'Dark Slate' }   // Dark slate
     ];
 
     const entries = Object.entries(equity);
@@ -313,7 +367,7 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
                     fontSize: percentage >= 10 ? '0.75rem' : '0.5rem',
                     paddingLeft: percentage >= 10 ? '0.25rem' : '0.125rem',
                     paddingRight: percentage >= 10 ? '0.25rem' : '0.125rem',
-                    color: index < 3 ? '#1F2937' : '#FFFFFF',
+                    color: index < 2 ? '#1F2937' : '#FFFFFF',
                     position: 'relative',
                     zIndex: 1
                   }}
@@ -410,6 +464,37 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
     return () => {
       if (wrapper) {
         wrapper.removeEventListener('click', handleClick, true);
+      }
+    };
+  }, []);
+
+  // Prevent page scroll when scrolling within spreadsheet
+  useEffect(() => {
+    const handleWheel = (e) => {
+      const wrapper = spreadsheetRef.current;
+      if (!wrapper) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = wrapper;
+      const isScrollingUp = e.deltaY < 0;
+      const isScrollingDown = e.deltaY > 0;
+
+      // Prevent page scroll if we can still scroll within the spreadsheet
+      const canScrollUp = scrollTop > 0;
+      const canScrollDown = scrollTop < scrollHeight - clientHeight;
+
+      if ((isScrollingUp && canScrollUp) || (isScrollingDown && canScrollDown)) {
+        e.stopPropagation();
+      }
+    };
+
+    const wrapper = spreadsheetRef.current;
+    if (wrapper) {
+      wrapper.addEventListener('wheel', handleWheel, { passive: false });
+    }
+
+    return () => {
+      if (wrapper) {
+        wrapper.removeEventListener('wheel', handleWheel);
       }
     };
   }, []);
@@ -562,23 +647,30 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
         {/* Title */}
         <h4 className="text-base font-semibold text-gray-900 mb-3">Private Assessment</h4>
 
-        {/* Spreadsheet */}
-        <div
-          ref={spreadsheetRef}
-          className="spreadsheet-wrapper single-click-edit"
-          style={{ maxHeight: '450px', overflowY: 'auto', overflowX: 'auto' }}
-        >
-          <Spreadsheet
-            data={data}
-            onChange={handleChange}
-            columnLabels={false}
-            rowLabels={false}
-          />
-        </div>
+        {/* Spreadsheet and Progress Bar Container */}
+        <div className="spreadsheet-wrapper">
+          <div
+            ref={spreadsheetRef}
+            className="single-click-edit spreadsheet-scroll-container"
+            style={{
+              maxHeight: '700px',
+              overflowY: 'auto',
+              overflowX: 'auto',
+              position: 'relative'
+            }}
+          >
+            <Spreadsheet
+              data={data}
+              onChange={handleChange}
+              columnLabels={false}
+              rowLabels={false}
+            />
+          </div>
 
-        {/* Equity Progress Bar */}
-        <div className="flex justify-center mt-8 mb-6">
-          <EquityProgressBar equity={currentEquity} />
+          {/* Equity Progress Bar - Always visible at bottom */}
+          <div className="flex justify-center py-6 px-4 border-t border-gray-200" style={{ backgroundColor: '#ffffff' }}>
+            <EquityProgressBar equity={currentEquity} />
+          </div>
         </div>
       </div>
 

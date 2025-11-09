@@ -208,14 +208,14 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
 
   if (!project) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFFFF' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f8fafc' }}>
         <div className="text-gray-600">Loading preview...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: '#FFFFFF' }}>
+    <div className="min-h-screen flex" style={{ backgroundColor: '#f8fafc' }}>
       {/* Sidebar Navigation */}
       <div className="w-64 border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF' }}>
         {/* Header */}
@@ -367,7 +367,9 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto ml-64">
-        <div className="max-w-6xl mx-auto p-8 pr-24 pb-32">
+        <div className="max-w-6xl mx-auto pt-9 px-6 pr-12 pb-32">
+          {/* White Card Container */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-12">
 
           {/* Sections 1-10: Show message to edit in survey mode */}
           {currentSection >= 1 && currentSection <= 10 && (
@@ -542,6 +544,8 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
               )}
             </div>
           )}
+          </div>
+          {/* End White Card Container */}
         </div>
       </div>
     </div>
