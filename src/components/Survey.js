@@ -117,6 +117,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   const [showCollaborators, setShowCollaborators] = useState(false);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
+  const [isEditingProjectName, setIsEditingProjectName] = useState(false);
+  const [editedProjectName, setEditedProjectName] = useState('');
 
   // Helper function to calculate fullMailingAddress
   const calculateFullMailingAddress = (addressData) => {
@@ -737,7 +739,45 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       <div className="border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF', width: '270px' }}>
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">{project?.name || 'Loading...'}</h2>
+          {isEditingProjectName ? (
+            <input
+              type="text"
+              value={editedProjectName}
+              onChange={(e) => setEditedProjectName(e.target.value)}
+              onBlur={async () => {
+                if (editedProjectName.trim() && editedProjectName !== project?.name) {
+                  try {
+                    const projectRef = doc(db, 'projects', projectId);
+                    await updateDoc(projectRef, { name: editedProjectName.trim() });
+                  } catch (error) {
+                    console.error('Error updating project name:', error);
+                  }
+                }
+                setIsEditingProjectName(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.target.blur();
+                }
+                if (e.key === 'Escape') {
+                  setIsEditingProjectName(false);
+                }
+              }}
+              autoFocus
+              className="text-lg font-semibold text-gray-900 mb-3 w-full border-b border-blue-500 focus:outline-none bg-transparent"
+            />
+          ) : (
+            <h2
+              className="text-lg font-semibold text-gray-900 mb-3 cursor-pointer hover:text-gray-700 transition-colors"
+              onClick={() => {
+                setEditedProjectName(project?.name || '');
+                setIsEditingProjectName(true);
+              }}
+              title="Click to edit project name"
+            >
+              {project?.name || 'Loading...'}
+            </h2>
+          )}
 
           {/* Collaborators Button */}
           <button
@@ -897,7 +937,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
           <button
             onClick={() => setShowProjectSelector(!showProjectSelector)}
-            className="w-full text-gray-700 px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-100 transition flex items-center justify-start gap-2 mb-3"
+            className="w-full text-gray-700 px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-200 transition flex items-center justify-start gap-2 mb-3"
           >
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -911,7 +951,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 await signOut(auth);
               }
             }}
-            className="w-full text-gray-700 px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-100 transition flex items-center justify-start gap-2"
+            className="w-full text-gray-700 px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-200 transition flex items-center justify-start gap-2"
           >
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -954,7 +994,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto" style={{ marginLeft: '270px', backgroundColor: '#f8fafc' }}>
-        <div className="max-w-5xl mx-auto pt-9 px-6 pr-12 pb-32" key={currentSection}>
+        <div className="max-w-5xl mx-auto pt-16 px-6 pr-12 pb-20" key={currentSection}>
           {/* White Card Container */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-12">
           {/* Section Content */}
