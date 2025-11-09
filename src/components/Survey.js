@@ -883,8 +883,21 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           )}
 
           <button
+            onClick={() => {
+              // TODO: Add upgrade functionality
+              console.log('Upgrade clicked');
+            }}
+            className="w-full bg-black text-white px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-800 transition flex items-center justify-start gap-2 mb-3"
+          >
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Upgrade
+          </button>
+
+          <button
             onClick={() => setShowProjectSelector(!showProjectSelector)}
-            className="w-full bg-gray-100 text-gray-900 px-4 py-3 rounded-lg font-medium hover:bg-gray-200 transition flex items-center justify-center gap-2 mb-3"
+            className="w-full text-gray-700 px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-100 transition flex items-center justify-start gap-2 mb-3"
           >
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -898,7 +911,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 await signOut(auth);
               }
             }}
-            className="w-full bg-white border border-gray-300 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2"
+            className="w-full text-gray-700 px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-100 transition flex items-center justify-start gap-2"
           >
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

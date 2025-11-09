@@ -11,7 +11,7 @@ function Tooltip({ text }) {
         className="inline-flex items-center justify-center w-2.5 h-2.5 rounded-full border border-gray-400 text-gray-500 cursor-default hover:border-gray-600 hover:text-gray-700 transition-colors"
         style={{ fontSize: '8px', lineHeight: '1' }}
       >
-        ?
+        i
       </div>
 
       {isVisible && (
