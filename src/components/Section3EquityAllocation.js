@@ -359,26 +359,21 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
 
               {showInstructions && (
                 <div className="px-4 pb-4 space-y-4">
-                  <div className="pt-2 space-y-3">
-                    <p className="text-base text-gray-700">Each cofounder fills out the spreadsheet separately. They can't see your answers until you submit. Once everyone's done, review the results together. Edit your spreadsheet any time to make changes.</p>
-                    <p className="text-base text-gray-700">Enter the final allocation when you've come to an agreement. If you already know your equity split, skip ahead and add it straight to the agreement in the next section.</p>
-                    <p className="text-base text-gray-700">Using the tool is optional. Your agreement only includes the final allocation entered below.</p>
-                  </div>
-
-                  <div className="border-t border-gray-200 pt-4">
-                    <div className="space-y-3 text-gray-700 text-base">
-                      <div>
-                        <p className="font-semibold text-gray-900">Step 1: Set Category Importance.</p>
-                        <p>Decide on a scale of 0-100 how important each category is to your team. Assign higher numbers to categories that matter most. The total doesn't need to add up to 100.</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">Step 2: Score Each Cofounder.</p>
-                        <p>Evaluate each cofounder, including yourself, on each category and assign them a score from 0-100. Click Submit once you're done.</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">Step 3: Review & Compare Results.</p>
-                        <p>The calculator shows where you and your cofounder(s) see things differently. Once you've talked it through, enter your final split.</p>
-                      </div>
+                  <div className="pt-2 space-y-4 text-gray-700 text-base">
+                    <div>
+                      <p className="font-semibold text-gray-900">Step 1: Set Category Importance</p>
+                      <p>Each cofounder fills out their own sheet separately. Decide how important each category is on a scale of 0–100 (the total doesn't need to add up to 100).</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Step 2: Score Each Cofounder</p>
+                      <p>Score every cofounder—including yourself—0–100 for each category, then click Submit. You can edit your sheet anytime, but others can't see your answers until you submit.</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Step 3: Review & Finalize</p>
+                      <p>Once everyone's done, compare the results together to spot differences. After discussing, enter your agreed-upon final split below.</p>
+                    </div>
+                    <div className="pt-2 border-t border-gray-200">
+                      <p>Using the calculator is optional. Your agreement only includes the final allocation entered below. If you already know your split, skip ahead and add it here.</p>
                     </div>
                   </div>
                 </div>

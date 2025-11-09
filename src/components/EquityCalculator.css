@@ -9,6 +9,7 @@
   background: #ffffff !important;
   border: 1px solid #d1d5db !important;
   border-radius: 0.5rem !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
   width: 100% !important;
   display: flex !important;
   flex-direction: column !important;
