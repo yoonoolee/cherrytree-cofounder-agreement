@@ -4,12 +4,12 @@ function Tooltip({ text }) {
   const [isVisible, setIsVisible] = useState(false);
 
   return (
-    <div className="relative inline-block ml-1 align-super">
+    <div className="relative inline-block ml-2" style={{ verticalAlign: '0.15em' }}>
       <div
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}
-        className="inline-flex items-center justify-center w-2.5 h-2.5 rounded-full border border-gray-400 text-gray-500 cursor-default hover:border-gray-600 hover:text-gray-700 transition-colors"
-        style={{ fontSize: '8px', lineHeight: '1' }}
+        className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-gray-400 text-gray-500 cursor-default hover:border-gray-600 hover:text-gray-700 transition-colors italic"
+        style={{ fontSize: '10px', lineHeight: '1', fontFamily: 'Georgia, "Times New Roman", serif' }}
       >
         i
       </div>

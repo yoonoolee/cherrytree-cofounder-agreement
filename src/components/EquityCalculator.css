@@ -7,7 +7,7 @@
 /* Container matching: bg-white rounded border border-gray-200 overflow-x-auto */
 .spreadsheet-wrapper {
   background: #ffffff !important;
-  border: 1px solid #e5e7eb !important;
+  border: 1px solid #d1d5db !important;
   border-radius: 0.5rem !important;
   width: 100% !important;
   display: flex !important;

@@ -816,7 +816,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         </div>
 
         {/* Section Navigation */}
-        <div className="flex-1 overflow-y-auto p-2">
+        <div className="flex-1 overflow-y-auto pt-4 pb-2 px-2">
           {SECTIONS.map((section) => {
             const isCompleted = isSectionCompleted(section.id);
             return (
@@ -824,7 +824,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 key={section.id}
                 data-section-id={section.id}
                 onClick={() => setCurrentSection(section.id)}
-                className={`w-full text-left px-3 py-2 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
+                className={`w-full text-left px-3 py-2 rounded-lg mb-1 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
                   currentSection === section.id
                     ? 'bg-gray-100 text-black font-semibold'
                     : 'text-gray-700 hover:bg-gray-50'
@@ -927,7 +927,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               // TODO: Add upgrade functionality
               console.log('Upgrade clicked');
             }}
-            className="w-full bg-black text-white px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-800 transition flex items-center justify-start gap-2 mb-3"
+            className="w-full bg-black text-white px-4 py-1.5 rounded text-sm font-medium hover:bg-gray-800 transition flex items-center justify-start gap-2 mb-2"
           >
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -937,7 +937,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
           <button
             onClick={() => setShowProjectSelector(!showProjectSelector)}
-            className="w-full text-gray-700 px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-200 transition flex items-center justify-start gap-2 mb-3"
+            className="w-full text-gray-700 px-4 py-1.5 rounded text-sm font-medium hover:bg-gray-200 transition flex items-center justify-start gap-2 mb-2"
           >
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -951,7 +951,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 await signOut(auth);
               }
             }}
-            className="w-full text-gray-700 px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-200 transition flex items-center justify-start gap-2"
+            className="w-full text-gray-700 px-4 py-1.5 rounded text-sm font-medium hover:bg-gray-200 transition flex items-center justify-start gap-2"
           >
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -967,15 +967,15 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         <>
           {/* Overlay */}
           <div
-            className="fixed inset-0 bg-black bg-opacity-50"
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm"
             style={{ zIndex: 10000 }}
             onClick={() => setShowCollaborators(false)}
           />
 
           {/* Modal */}
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl w-full max-w-md" style={{ zIndex: 10001 }}>
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-xl rounded-lg shadow-2xl border border-gray-200/50 w-full max-w-lg" style={{ zIndex: 10001 }}>
+            <div className="p-8">
+              <div className="flex justify-between items-center mb-8">
                 <h3 className="text-xl font-semibold text-gray-900">Collaborators</h3>
                 <button
                   onClick={() => setShowCollaborators(false)}

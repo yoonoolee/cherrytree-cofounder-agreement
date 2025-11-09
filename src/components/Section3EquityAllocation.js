@@ -341,10 +341,10 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
           <h3 className="text-xl font-bold text-gray-800 mb-4">Equity Calculator</h3>
           <div className="mb-6">
             {/* Collapsible Instructions */}
-            <div className="border border-gray-200 rounded-lg mb-6">
+            <div className="border border-gray-200/50 rounded-lg mb-6 bg-gray-50/50 backdrop-blur-sm">
               <button
                 onClick={() => setShowInstructions(!showInstructions)}
-                className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors rounded-lg"
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-100/50 transition-colors rounded-lg"
               >
                 <span className="font-semibold text-gray-900">Instructions</span>
                 <svg
