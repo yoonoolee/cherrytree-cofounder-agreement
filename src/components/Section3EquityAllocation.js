@@ -321,7 +321,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
 
   return (
     <div className="equity-calculator-container">
-      <h2 className="text-3xl font-bold text-gray-800 mb-2">Equity Allocation</h2>
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Equity Allocation</h2>
 
       <p className="text-gray-700 mb-4 leading-relaxed">
         A few years ago, two friends from Stanford launched a startup that took off fast. Within six months, they were in YC, had a long waiting list, and investors were calling.
@@ -365,16 +365,16 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
 
         {/* Single container that stays intact - only content inside animates */}
         <div className="mb-8">
-          <div style={{ height: '700px', overflow: 'hidden' }}>
+          <div style={{ minHeight: '700px', overflow: 'visible' }}>
             {/* Edit View - Show calculator */}
             {viewMode === 'edit' && (
-              <div className={`h-full flex flex-col ${
+              <div className={`flex flex-col ${
                 slideDirection === 'exit-left' ? 'equity-view-exit-left' :
                 slideDirection === 'exit-right' ? 'equity-view-exit-right' :
                 slideDirection === 'enter-from-left' ? 'equity-view-enter-from-left' :
                 slideDirection === 'enter-from-right' ? 'equity-view-enter-from-right' :
                 ''
-              }`}>
+              }`} style={{ minHeight: '700px' }}>
                 <EquityCalculator
                   cofounders={allCollaborators}
                   cofounderData={formData.cofounders}
@@ -391,13 +391,13 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
 
             {/* Results View - Show all assessments */}
             {viewMode === 'results' && (
-              <div className={`h-full flex flex-col ${
+              <div className={`flex flex-col ${
                 slideDirection === 'exit-left' ? 'equity-view-exit-left' :
                 slideDirection === 'exit-right' ? 'equity-view-exit-right' :
                 slideDirection === 'enter-from-left' ? 'equity-view-enter-from-left' :
                 slideDirection === 'enter-from-right' ? 'equity-view-enter-from-right' :
                 ''
-              }`}>
+              }`} style={{ minHeight: '700px' }}>
                 {/* Scrollable content area */}
                 <div className="flex-1 overflow-y-auto">
                   <div className="mb-6">
@@ -412,16 +412,9 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                     const hasSubmittedAssessment = !!formData.equityCalculatorSubmitted?.[assessorEmail];
                     const calculation = equityCalculations[assessorEmail];
 
-                    // Modern startup blue palette - sophisticated shades
                     const colors = [
-                      '#7DD3FC',  // Bright sky blue
-                      '#38BDF8',  // Vibrant cyan
-                      '#0EA5E9',  // Modern blue
-                      '#0284C7',  // Deep sky
-                      '#0369A1',  // Ocean blue
-                      '#075985',  // Slate blue
-                      '#1E3A8A',  // Navy
-                      '#1E293B'   // Dark slate
+                      '#1E40AF', '#3B82F6', '#60A5FA', '#93C5FD',
+                      '#BFDBFE', '#DBEAFE', '#EFF6FF', '#F0F9FF'
                     ];
 
                     return (

@@ -164,7 +164,7 @@ function CollaboratorManager({ project }) {
             ) : (
               <button
                 onClick={() => handleRemoveCollaborator(collab)}
-                className="text-red-600 hover:text-red-800 text-xs font-medium"
+                className="text-red-500 hover:text-red-700 text-xs font-medium"
               >
                 Remove
               </button>

@@ -25,7 +25,7 @@ function Section7Compensation({ formData, handleChange, isReadOnly, showValidati
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-gray-800 mb-2">Compensation & Expenses</h2>
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Compensation & Expenses</h2>
 
       <p className="text-gray-700 mb-4 leading-relaxed">
         In the early days of Netflix, they gave their team corporate cards. In an effort to keep them frugal, they told them to spend it as if it were their own money. It came as a surprise then, when a cofounder walked past a group of juniors who were seated in business class, to get to his own seat in economy. Personal spending habits vary.
@@ -90,7 +90,7 @@ function Section7Compensation({ formData, handleChange, isReadOnly, showValidati
                         type="button"
                         onClick={() => handleRemoveCompensation(index)}
                         disabled={isReadOnly}
-                        className="text-red-600 hover:text-red-800 text-sm disabled:text-gray-400"
+                        className="text-red-500 hover:text-red-700 text-sm disabled:text-gray-400"
                       >
                         Remove
                       </button>

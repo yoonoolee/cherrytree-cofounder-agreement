@@ -6,7 +6,7 @@ import CustomSelect from './CustomSelect';
 function Section10Final({ formData, handleChange, isReadOnly, project, showValidation }) {
   return (
     <div>
-      <h2 className="text-3xl font-bold text-gray-800 mb-2">Final Details</h2>
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Final Details</h2>
       <p className="text-gray-600 mb-8">Dispute resolution and governing law</p>
 
 

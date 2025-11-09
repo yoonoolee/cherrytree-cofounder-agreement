@@ -235,9 +235,9 @@
 }
 
 /* First column (category names) matching: font-medium text-gray-900 bg-gray-50 */
-.Spreadsheet tbody .Spreadsheet__cell:first-child,
-.Spreadsheet tbody td:first-child,
-.Spreadsheet tbody tr td:first-child {
+.Spreadsheet tbody .Spreadsheet__cell:first-child:not(.group-header-cell),
+.Spreadsheet tbody td:first-child:not(.group-header-cell),
+.Spreadsheet tbody tr td:first-child:not(.group-header-cell) {
   font-weight: 500 !important;
   color: #111827 !important;
   background-color: #f9fafb !important;
@@ -264,12 +264,18 @@
 .Spreadsheet td.group-header-cell {
   font-weight: 700 !important;
   color: #111827 !important;
-  background-color: #e5e7eb !important;
+  background-color: #d1d5db !important;
   pointer-events: none !important;
   cursor: default !important;
   padding: 0.375rem 1rem !important;
   line-height: 1.25 !important;
   border-right: none !important;
+}
+
+/* Hide the content (0's) in non-first-column group header cells */
+.Spreadsheet .group-header-cell:not(:first-child),
+.Spreadsheet td.group-header-cell:not(:first-child) {
+  color: transparent !important;
 }
 
 /* Add border-right only for the first two group header columns */
@@ -278,11 +284,15 @@
   border-right: 1px solid #e5e7eb !important;
 }
 
-/* First column group header cells - need sticky left positioning */
+/* First column group header cells - need sticky left positioning and darker background */
+.Spreadsheet tbody tr td:first-child.group-header-cell,
+.Spreadsheet tbody .Spreadsheet__cell:first-child.group-header-cell,
 .Spreadsheet tbody tr td:first-child.group-header-cell {
   position: sticky !important;
   left: 0 !important;
   z-index: 10 !important;
+  background-color: #d1d5db !important;
+  font-weight: 700 !important;
 }
 
 /* Header cell styling using className */

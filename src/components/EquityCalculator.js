@@ -325,16 +325,15 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
       );
     }
 
-    // Modern startup blue palette - sophisticated shades
     const colors = [
-      { bg: '#7DD3FC', name: 'Sky' },         // Bright sky blue
-      { bg: '#38BDF8', name: 'Cyan' },        // Vibrant cyan
-      { bg: '#0EA5E9', name: 'Blue' },        // Modern blue
-      { bg: '#0284C7', name: 'Deep Blue' },   // Deep sky
-      { bg: '#0369A1', name: 'Ocean' },       // Ocean blue
-      { bg: '#075985', name: 'Slate' },       // Slate blue
-      { bg: '#1E3A8A', name: 'Navy' },        // Navy
-      { bg: '#1E293B', name: 'Dark Slate' }   // Dark slate
+      { bg: '#1E40AF', name: 'Blue 800' },
+      { bg: '#3B82F6', name: 'Blue 500' },
+      { bg: '#60A5FA', name: 'Blue 400' },
+      { bg: '#93C5FD', name: 'Blue 300' },
+      { bg: '#BFDBFE', name: 'Blue 200' },
+      { bg: '#DBEAFE', name: 'Blue 100' },
+      { bg: '#EFF6FF', name: 'Blue 50' },
+      { bg: '#F0F9FF', name: 'Blue 25' }
     ];
 
     const entries = Object.entries(equity);
@@ -641,21 +640,19 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
   };
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Scrollable content area */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Title */}
-        <h4 className="text-base font-semibold text-gray-900 mb-3">Private Assessment</h4>
+    <div className="flex flex-col">
+      {/* Title */}
+      <h4 className="text-base font-semibold text-gray-900 mb-3">Private Assessment</h4>
 
-        {/* Spreadsheet and Progress Bar Container */}
-        <div className="spreadsheet-wrapper">
+      {/* Spreadsheet Container - No scrolling */}
+      <div className="flex flex-col">
+        <div className="spreadsheet-wrapper" style={{ overflow: 'visible' }}>
           <div
             ref={spreadsheetRef}
             className="single-click-edit spreadsheet-scroll-container"
             style={{
-              maxHeight: '700px',
-              overflowY: 'auto',
               overflowX: 'auto',
+              overflowY: 'visible',
               position: 'relative'
             }}
           >
@@ -666,11 +663,11 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
               rowLabels={false}
             />
           </div>
+        </div>
 
-          {/* Equity Progress Bar - Always visible at bottom */}
-          <div className="flex justify-center py-6 px-4 border-t border-gray-200" style={{ backgroundColor: '#ffffff' }}>
-            <EquityProgressBar equity={currentEquity} />
-          </div>
+        {/* Equity Progress Bar - At bottom */}
+        <div className="flex justify-center py-6 px-4 border-t border-gray-200" style={{ backgroundColor: '#ffffff' }}>
+          <EquityProgressBar equity={currentEquity} />
         </div>
       </div>
 

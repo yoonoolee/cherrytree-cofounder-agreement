@@ -7,7 +7,7 @@ import Tooltip from './Tooltip';
 function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, showValidation }) {
   return (
     <div>
-      <h2 className="text-3xl font-bold text-gray-800 mb-2">Decision-Making & Voting</h2>
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Decision-Making & Voting</h2>
       <p className="text-gray-600 mb-8">How will major decisions be made?</p>
 
 

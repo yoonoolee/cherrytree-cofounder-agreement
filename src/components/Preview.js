@@ -221,7 +221,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
       {/* Sidebar Navigation */}
       <div className="w-64 border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF' }}>
         {/* Header */}
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-3 border-b border-gray-200">
           {isEditingProjectName ? (
             <input
               type="text"
@@ -283,7 +283,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
               <button
                 key={section.id}
                 onClick={() => setCurrentSection(section.id)}
-                className={`w-full text-left px-4 py-3 rounded-lg mb-1 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
+                className={`w-full text-left px-3 py-2 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
                   currentSection === section.id
                     ? 'bg-gray-100 text-black font-semibold'
                     : 'text-gray-700 hover:bg-gray-50'
@@ -292,8 +292,8 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                 <div className="flex items-center">
                   <span className={`flex items-center justify-center w-6 h-6 font-semibold mr-3 ${
                     currentSection === section.id
-                      ? 'text-black text-xs'
-                      : 'text-gray-600 text-xs'
+                      ? 'text-black text-sm'
+                      : 'text-gray-600 text-sm'
                   }`}>
                     {section.id === 11 ? (
                       <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -311,7 +311,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
         </div>
 
         {/* Projects Button - Bottom of Sidebar */}
-        <div className="p-4 border-t border-gray-200 relative">
+        <div className="p-3 border-t border-gray-200 relative">
           {/* Project Selector Popup */}
           {showProjectSelector && (
             <>
@@ -422,7 +422,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
       <div className="flex-1 overflow-y-auto ml-64">
         <div className="max-w-6xl mx-auto pt-16 px-6 pr-12 pb-20">
           {/* White Card Container */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-12">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-20">
 
           {/* Sections 1-10: Show message to edit in survey mode */}
           {currentSection >= 1 && currentSection <= 10 && (

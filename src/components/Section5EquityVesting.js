@@ -5,7 +5,7 @@ import Tooltip from './Tooltip';
 function Section5EquityVesting({ formData, handleChange, isReadOnly, project, showValidation }) {
   return (
     <div>
-      <h2 className="text-3xl font-bold text-gray-800 mb-2">Vesting Schedule</h2>
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Vesting Schedule</h2>
 
       <p className="text-gray-700 mb-4 leading-relaxed">
         When Robin and Antje started Zipcar, they decided to split ownership 50/50. Fair and simple. At first, it seemed like a success story: the company grew, became highly profitable, and eventually went public.

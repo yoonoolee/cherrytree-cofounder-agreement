@@ -5,7 +5,7 @@ import Tooltip from './Tooltip';
 function Section6IP({ formData, handleChange, isReadOnly, project, showValidation }) {
   return (
     <div>
-      <h2 className="text-3xl font-bold text-gray-800 mb-2">IP & Ownership of Work</h2>
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">IP & Ownership of Work</h2>
       <p className="text-gray-600 mb-8">Intellectual property assignment and ownership</p>
 
 

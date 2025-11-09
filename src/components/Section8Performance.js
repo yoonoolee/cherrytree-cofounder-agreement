@@ -4,7 +4,7 @@ import Tooltip from './Tooltip';
 function Section8Performance({ formData, handleChange, isReadOnly, showValidation }) {
   return (
     <div>
-      <h2 className="text-3xl font-bold text-gray-800 mb-2">Cofounder Performance & Departure</h2>
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Cofounder Performance & Departure</h2>
 
       <p className="text-gray-700 mb-4 leading-relaxed">
         In every startup, execution is everything. You can have the best idea in the world, the perfect cofounder team, and a shiny product plan, but if the work doesn't get done, nothing happens. However, sometimes, for one reason or another, we can't perform at the level that's necessary.

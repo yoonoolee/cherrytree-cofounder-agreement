@@ -738,7 +738,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       {/* Sidebar Navigation */}
       <div className="border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF', width: '270px' }}>
         {/* Header */}
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-3 border-b border-gray-200">
           {isEditingProjectName ? (
             <input
               type="text"
@@ -782,21 +782,21 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           {/* Collaborators Button */}
           <button
             onClick={() => setShowCollaborators(true)}
-            className="w-full bg-black text-white px-4 py-2.5 rounded font-medium hover:bg-gray-800 transition text-sm"
+            className="w-full bg-gray-200 text-gray-900 px-4 py-2.5 rounded font-medium hover:bg-gray-300 transition text-sm"
           >
-            Collaborators
+            Add Collaborators
           </button>
         </div>
 
         {/* Progress Bar */}
-        <div className="p-4 border-b border-gray-200">
+        <div className="px-3 py-2.5 border-b border-gray-200">
           <div className="flex justify-between items-center mb-2">
             <span className="text-xs font-medium text-gray-600">Progress</span>
             <span className="text-xs font-medium text-black font-bold">{calculateProgress()}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-1.5">
             <div
-              className="bg-black h-2 rounded-full transition-all duration-300"
+              className="bg-black h-1.5 rounded-full transition-all duration-300"
               style={{ width: `${calculateProgress()}%` }}
             />
           </div>
@@ -824,7 +824,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 key={section.id}
                 data-section-id={section.id}
                 onClick={() => setCurrentSection(section.id)}
-                className={`w-full text-left px-4 py-3 rounded-lg mb-1 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
+                className={`w-full text-left px-3 py-2 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
                   currentSection === section.id
                     ? 'bg-gray-100 text-black font-semibold'
                     : 'text-gray-700 hover:bg-gray-50'
@@ -833,10 +833,10 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 <div className="flex items-center">
                   <span className={`flex items-center justify-center w-6 h-6 font-semibold mr-3 ${
                     currentSection === section.id
-                      ? 'text-black text-xs'
+                      ? 'text-black text-sm'
                       : isCompleted
                         ? ''
-                        : 'text-gray-600 text-xs'
+                        : 'text-gray-600 text-sm'
                   }`}>
                     {isCompleted ? (
                       <svg width="16" height="16" viewBox="22 22 56 56" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
@@ -854,7 +854,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         </div>
 
         {/* Projects Button - Bottom of Sidebar */}
-        <div className="p-4 border-t border-gray-200 relative">
+        <div className="p-3 border-t border-gray-200 relative">
           {/* Project Selector Popup */}
           {showProjectSelector && (
             <>
@@ -996,7 +996,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       <div className="flex-1 overflow-y-auto" style={{ marginLeft: '270px', backgroundColor: '#f8fafc' }}>
         <div className="max-w-5xl mx-auto pt-16 px-6 pr-12 pb-20" key={currentSection}>
           {/* White Card Container */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-12">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-20">
           {/* Section Content */}
           {currentSection === 1 && (
             isLoaded ? (

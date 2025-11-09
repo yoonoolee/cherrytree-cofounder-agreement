@@ -5,7 +5,7 @@ import Tooltip from './Tooltip';
 function Section9NonCompete({ formData, handleChange, isReadOnly, project, showValidation }) {
   return (
     <div>
-      <h2 className="text-3xl font-bold text-gray-800 mb-2">Confidentiality, Non-Competition & Non-Solicitation</h2>
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Confidentiality, Non-Competition & Non-Solicitation</h2>
       <p className="text-gray-600 mb-8">Protections for company interests</p>
 
 
