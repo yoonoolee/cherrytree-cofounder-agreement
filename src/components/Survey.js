@@ -727,14 +727,14 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
   if (!project) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f8fafc' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#ffffff' }}>
         <div className="text-gray-600">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: '#f8fafc' }}>
+    <div className="min-h-screen flex" style={{ backgroundColor: '#ffffff' }}>
       {/* Sidebar Navigation */}
       <div className="border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF', width: '270px' }}>
         {/* Header */}
@@ -1017,10 +1017,10 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       </button>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto" style={{ marginLeft: '270px', backgroundColor: '#f8fafc' }}>
+      <div className="flex-1 overflow-y-auto" style={{ marginLeft: '270px', backgroundColor: '#ffffff' }}>
         <div className="max-w-5xl mx-auto pt-16 px-6 pr-12 pb-20" key={currentSection}>
-          {/* White Card Container */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-lg px-20 pt-20 pb-8">
+          {/* Content Container */}
+          <div className="px-20 pt-20 pb-8">
           {/* Section Content */}
           {currentSection === 1 && (
             isLoaded ? (
