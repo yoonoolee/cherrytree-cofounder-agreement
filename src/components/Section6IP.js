@@ -14,8 +14,8 @@ function Section6IP({ formData, handleChange, isReadOnly, project, showValidatio
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             Has any cofounder created code, designs, or other assets before the company was formed that will now be used in the business?
-            <Tooltip text="Nail down ownership now, or risk ugly debates later over who really owns what once the company takes off." />
             {showValidation && !formData.hasPreExistingIP && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            <Tooltip text="Nail down ownership now, or risk ugly debates later over who really owns what once the company takes off." />
           </label>
           <div className="space-y-2">
             {['Yes', 'No'].map((option) => (

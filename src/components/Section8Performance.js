@@ -89,8 +89,8 @@ function Section8Performance({ formData, handleChange, isReadOnly, showValidatio
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             Which of the following constitutes termination "with cause"?
-            <Tooltip text="Basically, what kind of bad behavior gets you booted." />
             {showValidation && (!formData.terminationWithCause || formData.terminationWithCause.length === 0) && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            <Tooltip text="Basically, what kind of bad behavior gets you booted." />
           </label>
           <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
           <div className="space-y-2">

@@ -294,8 +294,8 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What's your company's name?
-            <Tooltip text="Make sure it's good, your company might go big one day." />
             {showValidation && !formData.companyName && <span className="text-red-700 ml-0.5">*</span>}
+            <Tooltip text="Make sure it's good, your company might go big one day." />
           </label>
           <input
             type="text"
@@ -311,8 +311,8 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What type of entity is it?
-            <Tooltip text="This defines how your company is structured for ownership, taxes, and decision-making. If you plan to raise venture capital, a C-Corp is usually preferred." />
             {showValidation && !formData.entityType && <span className="text-red-700 ml-0.5">*</span>}
+            <Tooltip text="This defines how your company is structured for ownership, taxes, and decision-making. If you plan to raise venture capital, a C-Corp is usually preferred." />
           </label>
           <div className="space-y-2">
             {['C-Corp', 'S-Corp', 'LLC', 'Other'].map((type) => (
@@ -347,8 +347,8 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
         <div style={{ overflow: 'visible', position: 'relative', zIndex: 100, marginBottom: '3rem' }}>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What state will your company be registered in?
-            <Tooltip text="Delaware is a popular choice for many startups because its laws and courts are well established. Just be aware you may have additional fees or filings if your business is based elsewhere." />
             {showValidation && !formData.registeredState && <span className="text-red-700 ml-0.5">*</span>}
+            <Tooltip text="Delaware is a popular choice for many startups because its laws and courts are well established. Just be aware you may have additional fees or filings if your business is based elsewhere." />
           </label>
           <CustomSelect
             value={formData.registeredState || ''}
@@ -510,8 +510,8 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             Can you describe your company in 1 line?
-            <Tooltip text="Describe what you do in plain language. No buzzwords needed." />
             {showValidation && !formData.companyDescription && <span className="text-red-700 ml-0.5">*</span>}
+            <Tooltip text="Describe what you do in plain language. No buzzwords needed." />
           </label>
           <input
             type="text"
@@ -527,8 +527,8 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What industry is it in?
-            <Tooltip text="Pick the industry that best describes what you currently do. Aspirations to conquer all markets can wait." />
             {showValidation && (!formData.industries || formData.industries.length === 0) && <span className="text-red-700 ml-0.5">*</span>}
+            <Tooltip text="Pick the industry that best describes what you currently do. Aspirations to conquer all markets can wait." />
           </label>
           <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
           <div className="space-y-2">

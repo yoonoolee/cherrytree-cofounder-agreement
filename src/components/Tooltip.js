@@ -8,8 +8,8 @@ function Tooltip({ text }) {
       <div
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}
-        className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-gray-400 text-gray-500 cursor-default hover:border-gray-600 hover:text-gray-700 transition-colors italic"
-        style={{ fontSize: '10px', lineHeight: '1', fontFamily: 'Georgia, "Times New Roman", serif' }}
+        className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border border-gray-400 text-gray-500 cursor-default hover:border-gray-600 hover:text-gray-700 transition-colors italic"
+        style={{ fontSize: '9px', lineHeight: '1', fontFamily: 'Georgia, "Times New Roman", serif' }}
       >
         i
       </div>

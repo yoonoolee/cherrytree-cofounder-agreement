@@ -64,8 +64,8 @@ function Section9NonCompete({ formData, handleChange, isReadOnly, project, showV
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             How long should the non-competition obligation last after a cofounder leaves?
-            <Tooltip text="This includes joining or starting a competing company." />
             {showValidation && !formData.nonCompeteDuration && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            <Tooltip text="This includes joining or starting a competing company." />
           </label>
           <div className="space-y-2">
             {[

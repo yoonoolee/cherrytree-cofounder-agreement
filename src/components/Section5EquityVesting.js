@@ -24,8 +24,8 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What date should the vesting start?
-            <Tooltip text="This can start today or retroactively when the work began." />
             {showValidation && !formData.vestingStartDate && <span className="text-red-700 ml-0.5">*</span>}
+            <Tooltip text="This can start today or retroactively when the work began." />
           </label>
           <input
             type="date"
@@ -40,8 +40,8 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What vesting schedule will you use?
-            <Tooltip text='You earn no equity until the "cliff" is hit. Then, once the cliff is reached, you immediately vest the first portion of your equity, and the rest continues to vest gradually over the remaining period.' />
             {showValidation && !formData.vestingSchedule && <span className="text-red-700 ml-0.5">*</span>}
+            <Tooltip text='You earn no equity until the "cliff" is hit. Then, once the cliff is reached, you immediately vest the first portion of your equity, and the rest continues to vest gradually over the remaining period.' />
           </label>
           <p className="text-sm text-gray-500 mb-2">The standard is 4 years with a 1-year cliff</p>
           <div className="space-y-2">
@@ -82,8 +82,8 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What percent of equity will be vested once the cliff is complete?
-            <Tooltip text="If you leave before the cliff, you get nothing." />
             {showValidation && !formData.cliffPercentage && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            <Tooltip text="If you leave before the cliff, you get nothing." />
           </label>
           <p className="text-sm text-gray-500 mb-2">The standard is 25% for 4 years with a 1-year cliff</p>
           <input
@@ -150,8 +150,8 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             Should unvested shares accelerate if the cofounder is terminated and the company is acquired?
-            <Tooltip text="Acceleration decides if unvested shares vest early. Single-trigger happens when the company is acquired. Double-trigger only kicks in if the company is acquired and you're terminated without cause." />
             {showValidation && !formData.accelerationTrigger && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            <Tooltip text="Acceleration decides if unvested shares vest early. Single-trigger happens when the company is acquired. Double-trigger only kicks in if the company is acquired and you're terminated without cause." />
           </label>
           <div className="space-y-2">
             {[
@@ -243,8 +243,8 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
               return (
                 <>
                   You acknowledge that if a cofounder dies, becomes permanently disabled, or is otherwise incapacitated, their unvested shares are automatically forfeited and returned to the company.
-                  <Tooltip text="Knock on wood." />
                   {showValidation && !allAcknowledged && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+                  <Tooltip text="Knock on wood." />
                 </>
               );
             })()}
