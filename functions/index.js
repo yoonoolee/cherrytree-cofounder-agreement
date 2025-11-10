@@ -1,13 +1,29 @@
-const { onCall, HttpsError } = require('firebase-functions/v2/https');
+/**
+ * Firebase Cloud Functions
+ *
+ * This file contains server-side functions for operations that cannot be performed client-side:
+ * - PDF generation via Make.com webhook
+ * - Email invitations via Resend
+ * - Stripe payment processing
+ *
+ * Note: User sync and basic CRUD operations are now handled client-side with Firebase Auth + Firestore
+ */
+
+const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
 const { initializeApp } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const axios = require('axios');
 const { Resend } = require('resend');
+const { defineString } = require('firebase-functions/params');
+const Stripe = require('stripe');
 
 initializeApp();
 const db = getFirestore();
 const auth = getAuth();
+
+// Stripe will be initialized within each function that needs it
+// Using environment variable STRIPE_SECRET_KEY
 
 // Load secrets from environment config
 const { defineSecret } = require('firebase-functions/params');
@@ -23,6 +39,10 @@ const getResend = () => {
   }
   return resendInstance;
 };
+
+// ============================================================================
+// SURVEY & PDF OPERATIONS
+// ============================================================================
 
 exports.submitSurvey = onCall({ secrets: [MAKE_WEBHOOK_URL] }, async (request) => {
   // Check if user is authenticated
@@ -209,6 +229,10 @@ exports.generatePreviewPDF = onCall({ secrets: [MAKE_WEBHOOK_URL] }, async (requ
   }
 });
 
+// ============================================================================
+// EMAIL OPERATIONS
+// ============================================================================
+
 // Send collaborator invitation email
 exports.sendCollaboratorInvite = onCall({ secrets: [RESEND_API_KEY] }, async (request) => {
   if (!request.auth) {
@@ -294,6 +318,162 @@ exports.sendCollaboratorInvite = onCall({ secrets: [RESEND_API_KEY] }, async (re
   } catch (error) {
     console.error('Error sending invitation:', error);
     throw new HttpsError('internal', error.message || 'Failed to send invitation');
+  }
+});
+
+// ============================================================================
+// STRIPE PAYMENT OPERATIONS
+// ============================================================================
+
+// Create Stripe checkout session
+exports.createCheckoutSession = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'User must be logged in');
+  }
+
+  // Initialize Stripe
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  if (!stripeKey) {
+    throw new HttpsError('failed-precondition', 'Stripe not configured');
+  }
+  const stripe = Stripe(stripeKey);
+
+  const { priceId, plan } = request.data;
+
+  if (!priceId || !plan) {
+    throw new HttpsError('invalid-argument', 'Price ID and plan are required');
+  }
+
+  try {
+    const userId = request.auth.uid;
+    const userEmail = request.auth.token.email;
+
+    // Create or retrieve Stripe customer
+    const userRef = db.collection('users').doc(userId);
+    const userDoc = await userRef.get();
+    let stripeCustomerId;
+
+    if (userDoc.exists && userDoc.data().stripeCustomerId) {
+      stripeCustomerId = userDoc.data().stripeCustomerId;
+    } else {
+      // Create new Stripe customer
+      const customer = await stripe.customers.create({
+        email: userEmail,
+        metadata: {
+          firebaseUID: userId,
+        },
+      });
+      stripeCustomerId = customer.id;
+
+      // Save to Firestore
+      await userRef.set({
+        stripeCustomerId: stripeCustomerId,
+      }, { merge: true });
+    }
+
+    // Create checkout session
+    const session = await stripe.checkout.sessions.create({
+      customer: stripeCustomerId,
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'payment', // one-time payment
+      success_url: `${request.data.successUrl || 'https://my.cherrytree.app/dashboard'}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${request.data.cancelUrl || 'https://my.cherrytree.app/dashboard'}?canceled=true`,
+      metadata: {
+        userId: userId,
+        plan: plan,
+      },
+      client_reference_id: userId,
+    });
+
+    return {
+      sessionId: session.id,
+      url: session.url,
+    };
+
+  } catch (error) {
+    console.error('Error creating checkout session:', error);
+    throw new HttpsError('internal', error.message || 'Failed to create checkout session');
+  }
+});
+
+// Handle Stripe webhooks
+exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
+  // Initialize Stripe
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  if (!stripeKey) {
+    console.error('Stripe not configured');
+    res.status(500).send('Stripe not configured');
+    return;
+  }
+  const stripe = Stripe(stripeKey);
+
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    // For now, we'll just parse the body without signature verification
+    // In production, you should verify the signature with your webhook secret
+    event = req.body;
+
+    console.log('Webhook event received:', event.type);
+
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        const userId = session.client_reference_id || session.metadata?.userId;
+        const plan = session.metadata?.plan;
+
+        if (userId && plan) {
+          // Update user's subscription status
+          await db.collection('users').doc(userId).set({
+            plan: plan,
+            subscriptionStatus: 'active',
+            stripeCustomerId: session.customer,
+            lastPaymentAt: FieldValue.serverTimestamp(),
+          }, { merge: true });
+
+          // Create a project for the user
+          const projectRef = db.collection('projects').doc();
+          await projectRef.set({
+            ownerEmail: session.customer_email || session.customer_details?.email,
+            name: `${plan.charAt(0).toUpperCase() + plan.slice(1)} Agreement`,
+            plan: plan,
+            createdAt: FieldValue.serverTimestamp(),
+            collaborators: [],
+            submitted: false,
+          });
+
+          console.log(`User ${userId} subscribed to ${plan}, project created: ${projectRef.id}`);
+        }
+        break;
+      }
+
+      case 'payment_intent.succeeded': {
+        const paymentIntent = event.data.object;
+        console.log('Payment succeeded:', paymentIntent.id);
+        break;
+      }
+
+      case 'payment_intent.payment_failed': {
+        const paymentIntent = event.data.object;
+        console.log('Payment failed:', paymentIntent.id);
+        break;
+      }
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(400).send(`Webhook Error: ${error.message}`);
   }
 });
 

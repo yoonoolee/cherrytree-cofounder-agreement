@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { db, auth } from '../firebase';
+import { auth, db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 function PaymentModal({ onClose, onSuccess }) {
@@ -21,15 +21,20 @@ function PaymentModal({ onClose, onSuccess }) {
     setError('');
 
     try {
-      // Create project directly
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        throw new Error('You must be logged in to create a project');
+      }
+
+      // Create project directly in Firestore
       const projectData = {
         name: projectName.trim(),
-        ownerId: auth.currentUser.uid,
-        ownerEmail: auth.currentUser.email,
-        collaborators: [auth.currentUser.email],
-        collaboratorIds: [auth.currentUser.uid],
+        ownerId: currentUser.uid,
+        ownerEmail: currentUser.email,
+        collaborators: [currentUser.email],
+        collaboratorIds: [currentUser.uid],
         approvals: {
-          [auth.currentUser.email]: true
+          [currentUser.email]: true
         },
         requiresApprovals: true,
         surveyData: {
