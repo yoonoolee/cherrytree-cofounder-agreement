@@ -733,52 +733,107 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
     {
       id: 1,
       name: 'Formation & Purpose',
-      keywords: ['company name', 'entity type', 'LLC', 'C-Corp', 'S-Corp', 'registered state', 'mailing address', 'company description', 'industries', 'purpose', 'formation', 'incorporation']
+      questions: [
+        "What's your company's name?",
+        "What type of entity is it?",
+        "What state will your company be registered in?",
+        "What's your company mailing address?",
+        "Can you describe your company in 1 line?",
+        "What industry is it in?"
+      ]
     },
     {
       id: 2,
       name: 'Cofounder Info',
-      keywords: ['cofounder', 'founder', 'name', 'email', 'role', 'responsibilities', 'contact', 'team', 'people']
+      questions: [
+        "Full Name",
+        "Title",
+        "Email",
+        "Roles & Responsibilities"
+      ]
     },
     {
       id: 3,
       name: 'Equity Allocation',
-      keywords: ['equity', 'shares', 'ownership', 'percentage', 'split', 'allocation', 'stock', 'calculator', 'distribution']
+      questions: [
+        "Individual Assessments",
+        "equity ownership",
+        "equity split",
+        "ownership percentage"
+      ]
     },
     {
       id: 4,
       name: 'Vesting Schedule',
-      keywords: ['vesting', 'cliff', 'schedule', 'start date', 'acceleration', 'forfeiture', 'shares', 'unvested', 'vested']
+      questions: [
+        "What date should the vesting start?",
+        "What vesting schedule will you use?",
+        "What percent of equity will be vested once the cliff is complete?",
+        "Should unvested shares accelerate if the cofounder is terminated and the company is acquired?",
+        "If a cofounder wants to sell their shares, how many days notice do they need to provide the Board and shareholders?",
+        "If a cofounder resigns, how many days does the company have to buy back the shares?",
+        "You acknowledge that if a cofounder dies, becomes permanently disabled, or is otherwise incapacitated, their unvested shares are automatically forfeited and returned to the company",
+        "If a cofounder dies, becomes permanently disabled, or is otherwise incapacitated"
+      ]
     },
     {
       id: 5,
       name: 'Decision-Making',
-      keywords: ['decision', 'voting', 'major decisions', 'tie', 'shotgun clause', 'final say', 'voting power', 'resolution', 'deadlock']
+      questions: [
+        "Should equity ownership reflect voting power?",
+        "Who has final say, regardless of their field of expertise?",
+        "If cofounders are deadlocked, how should the tie be resolved?",
+        "Do you want to include a shotgun clause if you and your cofounder(s) cannot resolve deadlocks?"
+      ]
     },
     {
       id: 6,
       name: 'IP & Ownership',
-      keywords: ['intellectual property', 'IP', 'ownership', 'patents', 'trademarks', 'copyright', 'pre-existing', 'assignment']
+      questions: [
+        "Has any cofounder created code, designs, or other assets before the company was formed that will now be used in the business?",
+        "intellectual property assignment",
+        "IP ownership"
+      ]
     },
     {
       id: 7,
       name: 'Compensation',
-      keywords: ['compensation', 'salary', 'pay', 'payment', 'expenses', 'spending limit', 'budget', 'money', 'income']
+      questions: [
+        "Are any cofounders currently taking compensation or salary from the company?",
+        "Compensation Details",
+        "Compensation (USD/year)",
+        "What's the spending limit, in USD, before a cofounder needs to check with other cofounders?"
+      ]
     },
     {
       id: 8,
       name: 'Performance',
-      keywords: ['performance', 'consequences', 'termination', 'departure', 'notice period', 'firing', 'leaving', 'exit', 'remedy']
+      questions: [
+        "What happens if a cofounder fails to meet their agreed-upon obligations (e.g., time commitment, role performance, or deliverables)?",
+        "How many days does a cofounder have to fix the issue after receiving written notice before termination can occur?",
+        "Which of the following constitutes termination with cause?",
+        "How many days is the notice period if a Cofounder wishes to voluntarily leave?"
+      ]
     },
     {
       id: 9,
       name: 'Non-Competition',
-      keywords: ['non-compete', 'non-competition', 'confidentiality', 'non-solicitation', 'NDA', 'compete', 'solicit']
+      questions: [
+        "How long should the non-competition obligation last after a cofounder leaves?",
+        "How long should the non-solicitation obligation last after a cofounder leaves?",
+        "non-compete agreement",
+        "confidentiality"
+      ]
     },
     {
       id: 10,
       name: 'Final Details',
-      keywords: ['dispute resolution', 'governing law', 'amendment', 'review', 'arbitration', 'mediation', 'legal']
+      questions: [
+        "How should disputes among cofounders be resolved?",
+        "Which state's laws will govern this agreement?",
+        "How can this agreement be amended or modified?",
+        "How often (in months) should this agreement be reviewed by the cofounders?"
+      ]
     }
   ];
 
@@ -791,10 +846,34 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
     }
 
     const lowerQuery = query.toLowerCase();
-    const results = SEARCH_DATA.filter(section =>
-      section.name.toLowerCase().includes(lowerQuery) ||
-      section.keywords.some(keyword => keyword.toLowerCase().includes(lowerQuery))
-    );
+    const results = [];
+
+    SEARCH_DATA.forEach(section => {
+      const sectionNameMatches = section.name.toLowerCase().includes(lowerQuery);
+      const matchingQuestions = section.questions.filter(q =>
+        q.toLowerCase().includes(lowerQuery)
+      );
+
+      // If section name matches, add the section itself
+      if (sectionNameMatches && matchingQuestions.length === 0) {
+        results.push({
+          id: section.id,
+          name: section.name,
+          type: 'section'
+        });
+      }
+
+      // Add each matching question as a separate result
+      matchingQuestions.forEach(question => {
+        results.push({
+          id: section.id,
+          name: section.name,
+          question: question,
+          type: 'question'
+        });
+      });
+    });
+
     setSearchResults(results);
     setShowSearchResults(true);
   };
@@ -817,36 +896,30 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: '#ffffff' }}>
       {/* Top Header */}
-      <div className="fixed top-0 left-0 right-0 h-16 bg-white flex items-center justify-between px-6 gap-4" style={{ zIndex: 50 }}>
-        {/* Cherrytree Logo */}
-        <div className="flex items-center" style={{ width: '270px' }}>
-          <svg width="24" height="24" viewBox="22 22 56 56" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-            <path d="M70.63,61.53c-.77-5.18-5.27-6.64-10.45-5.86l-.39.06C57.39,47.09,53,42.27,49.53,39.66c3.65.71,6.83.23,9.74-3.08,1.9-2.18,2.83-5.14,5.75-7.53a.46.46,0,0,0-.17-.8c-5.07-1.4-11.84-1.08-15.43,3a13.83,13.83,0,0,0-3.17,6.38,18.48,18.48,0,0,0-4.87-1.73.35.35,0,0,0-.41.3l-.23,1.62a.35.35,0,0,0,.28.4A17.86,17.86,0,0,1,45.74,40c2.49,6.14-2.9,13.55-5.88,17-4.7-1.25-9-.37-10.28,4.33a8.89,8.89,0,1,0,17.15,4.67c1.16-4.26-1.42-7.08-5.4-8.54A37.59,37.59,0,0,0,45,52.51c2.59-4.14,3.57-8,2.91-11.25l.42.3A25.14,25.14,0,0,1,58.47,56c-4.28,1.08-7.25,3.73-6.57,8.31a9.47,9.47,0,1,0,18.73-2.79Z" fill="black" shapeRendering="geometricPrecision"/>
-          </svg>
-        </div>
-
+      <div className="fixed top-0 left-0 right-0 h-16 bg-white flex items-center gap-4" style={{ zIndex: 50, paddingLeft: '270px' }}>
         {/* Search Bar */}
-        <div className="flex-1 max-w-md relative">
+        <div className="flex-1 flex justify-center items-center">
+        <div className="max-w-lg w-full relative" style={{ maxWidth: '512px' }}>
           <div className="relative">
-            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
               type="search"
-              placeholder="Search sections..."
+              placeholder="Search"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               onFocus={(e) => {
                 if (searchQuery) setShowSearchResults(true);
-                e.target.style.backgroundColor = '#F3F4F6';
+                e.target.style.backgroundColor = '#E5E7EB';
               }}
               onBlur={(e) => {
-                e.target.style.backgroundColor = '#F9FAFB';
+                e.target.style.backgroundColor = '#F3F4F6';
                 setTimeout(() => setShowSearchResults(false), 200);
               }}
-              className="w-full text-sm transition"
+              className="w-full text-sm transition text-gray-500 placeholder-gray-500"
               style={{
-                backgroundColor: '#F9FAFB',
+                backgroundColor: '#F3F4F6',
                 borderRadius: '0.5rem',
                 border: 'none',
                 paddingLeft: '2.5rem',
@@ -861,13 +934,20 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           {/* Search Results Dropdown */}
           {showSearchResults && searchResults.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto z-50">
-              {searchResults.map((section) => (
+              {searchResults.map((result, index) => (
                 <button
-                  key={section.id}
-                  onClick={() => handleSearchResultClick(section.id)}
+                  key={`${result.id}-${index}`}
+                  onClick={() => handleSearchResultClick(result.id)}
                   className="w-full text-left px-4 py-2.5 hover:bg-gray-50 transition text-sm border-b border-gray-100 last:border-b-0"
                 >
-                  <span className="font-medium text-gray-900">{section.name}</span>
+                  {result.type === 'section' ? (
+                    <span className="font-medium text-gray-900">{result.name}</span>
+                  ) : (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-gray-900">{result.question}</span>
+                      <span className="text-xs text-gray-500">{result.name}</span>
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
@@ -875,13 +955,14 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
           {showSearchResults && searchResults.length === 0 && searchQuery && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50">
-              <p className="text-sm text-gray-500">No sections found</p>
+              <p className="text-sm text-gray-500">No results found</p>
             </div>
           )}
         </div>
+        </div>
 
         {/* Right side icons */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 pr-6">
         {/* Help Icon */}
         <button
           onClick={() => {
@@ -925,7 +1006,10 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       {/* Sidebar Navigation */}
       <div className="border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF', width: '270px', top: 0, height: '100vh', zIndex: 100 }}>
         {/* Header */}
-        <div className="px-3 border-b border-gray-200 flex items-center" style={{ marginTop: '64px', height: '64px' }}>
+        <div className="px-3 flex items-center gap-3" style={{ height: '64px' }}>
+          <svg width="24" height="24" viewBox="22 22 56 56" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+            <path d="M70.63,61.53c-.77-5.18-5.27-6.64-10.45-5.86l-.39.06C57.39,47.09,53,42.27,49.53,39.66c3.65.71,6.83.23,9.74-3.08,1.9-2.18,2.83-5.14,5.75-7.53a.46.46,0,0,0-.17-.8c-5.07-1.4-11.84-1.08-15.43,3a13.83,13.83,0,0,0-3.17,6.38,18.48,18.48,0,0,0-4.87-1.73.35.35,0,0,0-.41.3l-.23,1.62a.35.35,0,0,0,.28.4A17.86,17.86,0,0,1,45.74,40c2.49,6.14-2.9,13.55-5.88,17-4.7-1.25-9-.37-10.28,4.33a8.89,8.89,0,1,0,17.15,4.67c1.16-4.26-1.42-7.08-5.4-8.54A37.59,37.59,0,0,0,45,52.51c2.59-4.14,3.57-8,2.91-11.25l.42.3A25.14,25.14,0,0,1,58.47,56c-4.28,1.08-7.25,3.73-6.57,8.31a9.47,9.47,0,1,0,18.73-2.79Z" fill="black" shapeRendering="geometricPrecision"/>
+          </svg>
           {isEditingProjectName ? (
             <input
               type="text"
@@ -968,7 +1052,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         </div>
 
         {/* Progress Bar */}
-        <div className="px-3 py-2.5 border-b border-gray-200">
+        <div className="px-3 py-2.5">
           <div className="px-3">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-medium text-gray-600">Progress</span>
@@ -997,7 +1081,10 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         </div>
 
         {/* Section Navigation */}
-        <div className="flex-1 overflow-y-auto pt-4 pb-2 px-2">
+        <div className="flex-1 overflow-y-auto pb-2 px-2">
+          <div className="px-4 pt-4 pb-2">
+            <span className="text-xs font-medium text-gray-600">Sections</span>
+          </div>
           {SECTIONS.map((section) => {
             const isCompleted = isSectionCompleted(section.id);
             return (
@@ -1036,7 +1123,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         </div>
 
         {/* Projects Button - Bottom of Sidebar */}
-        <div className="p-3 border-t border-gray-200 relative">
+        <div className="p-3 relative">
           {/* Project Selector Popup */}
           {showProjectSelector && (
             <>
@@ -1296,7 +1383,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 >
                   Next
                   <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </button>
               ) : (
@@ -1307,7 +1394,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 >
                   Next: Preview & Approve
                   <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </button>
               )}

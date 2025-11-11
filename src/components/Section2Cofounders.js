@@ -45,7 +45,7 @@ function Section2Cofounders({ formData, handleChange, isReadOnly, showValidation
     <div>
       <h2 className="text-3xl font-bold text-gray-800 mb-6">Cofounder Info</h2>
 
-      <p className="text-gray-400 mb-8 leading-relaxed">
+      <p className="text-gray-400 mb-16 leading-relaxed">
         Great company starts with great company. Whether it's just the two of you or if there's a dozen of you, this is the crew that decided to go for it. Names, roles, contact info, sure. But it's also a snapshot of the team before the world knows your name. Someday, this will be the "garage team" story you tell in interviews.
       </p>
 

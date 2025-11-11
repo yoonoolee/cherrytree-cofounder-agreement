@@ -30,7 +30,7 @@ function Section7Compensation({ formData, handleChange, isReadOnly, showValidati
       <p className="text-gray-400 mb-4 leading-relaxed">
         In the early days of Netflix, they gave their team corporate cards. In an effort to keep them frugal, they told them to spend it as if it were their own money. It came as a surprise then, when a cofounder walked past a group of juniors who were seated in business class, to get to his own seat in economy. Personal spending habits vary.
       </p>
-      <p className="text-gray-400 mb-8 leading-relaxed">
+      <p className="text-gray-400 mb-16 leading-relaxed">
         Money talks, even among cofounders. Don't wait until someone's scraping by or resenting late nights. Decide who gets what, when, and how early. Nothing kills a startup vibe faster than vague pay talk.
       </p>
 

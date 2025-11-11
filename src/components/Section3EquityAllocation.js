@@ -330,7 +330,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
       <p className="text-gray-400 mb-4 leading-relaxed">
         But one cofounder started feeling like they were doing more. "I'm the CEO, I'm fundraising, I'm working longer hours." They tried to renegotiate the equity split from 50/50 to 70/30. The other cofounder felt blindsided, trust collapsed, and by Demo Day they'd split, both emotionally and legally.
       </p>
-      <p className="text-gray-400 mb-8 leading-relaxed">
+      <p className="text-gray-400 mb-16 leading-relaxed">
         Be very reluctant to change equity allocation once you've agreed. The #1 reason for cofounder breakups in the most recent YC batch was cofounders trying to revisit a settled split.
       </p>
 
