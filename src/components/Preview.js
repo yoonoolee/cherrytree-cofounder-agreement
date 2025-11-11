@@ -218,10 +218,63 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
 
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: '#ffffff' }}>
+      {/* Top Header */}
+      <div className="fixed top-0 left-0 right-0 h-16 bg-white flex items-center justify-between px-6 gap-4" style={{ zIndex: 50 }}>
+        {/* Cherrytree Logo */}
+        <div className="flex items-center" style={{ width: '256px' }}>
+          <svg width="24" height="24" viewBox="22 22 56 56" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+            <path d="M70.63,61.53c-.77-5.18-5.27-6.64-10.45-5.86l-.39.06C57.39,47.09,53,42.27,49.53,39.66c3.65.71,6.83.23,9.74-3.08,1.9-2.18,2.83-5.14,5.75-7.53a.46.46,0,0,0-.17-.8c-5.07-1.4-11.84-1.08-15.43,3a13.83,13.83,0,0,0-3.17,6.38,18.48,18.48,0,0,0-4.87-1.73.35.35,0,0,0-.41.3l-.23,1.62a.35.35,0,0,0,.28.4A17.86,17.86,0,0,1,45.74,40c2.49,6.14-2.9,13.55-5.88,17-4.7-1.25-9-.37-10.28,4.33a8.89,8.89,0,1,0,17.15,4.67c1.16-4.26-1.42-7.08-5.4-8.54A37.59,37.59,0,0,0,45,52.51c2.59-4.14,3.57-8,2.91-11.25l.42.3A25.14,25.14,0,0,1,58.47,56c-4.28,1.08-7.25,3.73-6.57,8.31a9.47,9.47,0,1,0,18.73-2.79Z" fill="black" shapeRendering="geometricPrecision"/>
+          </svg>
+        </div>
+
+        {/* Right side icons */}
+        <div className="flex items-center gap-4">
+        {/* Help Icon */}
+        <button
+          onClick={() => {
+            // TODO: Add help functionality
+            console.log('Help clicked');
+          }}
+          className="text-gray-600 hover:text-gray-900 transition"
+        >
+          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
+
+        {/* Settings Icon */}
+        <button
+          onClick={() => {
+            // TODO: Add settings functionality
+            console.log('Settings clicked');
+          }}
+          className="text-gray-600 hover:text-gray-900 transition"
+        >
+          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+
+        {/* Add Collaborators Plus Button */}
+        <button
+          onClick={() => {
+            // TODO: Add collaborators functionality
+            console.log('Add Collaborators clicked');
+          }}
+          className="bg-[#215aed] text-white p-1.5 rounded-full hover:bg-[#1a48c7] transition"
+        >
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+        </div>
+      </div>
+
       {/* Sidebar Navigation */}
-      <div className="w-64 border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+      <div className="w-64 border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF', top: 0, height: '100vh', zIndex: 100 }}>
         {/* Header */}
-        <div className="p-3 border-b border-gray-200">
+        <div className="p-3 border-b border-gray-200" style={{ marginTop: '64px' }}>
           {isEditingProjectName ? (
             <input
               type="text"
@@ -285,7 +338,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                 onClick={() => setCurrentSection(section.id)}
                 className={`w-full text-left px-2.5 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
                   currentSection === section.id
-                    ? 'text-[#215aed] bg-gray-100'
+                    ? 'text-[#215aed] font-medium'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -419,7 +472,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto ml-64">
+      <div className="flex-1 overflow-y-auto ml-64" style={{ marginTop: '64px' }}>
         <div className="max-w-6xl mx-auto pt-6 px-6 pr-12 pb-20">
           {/* Content Container */}
           <div className="px-20 pt-8 pb-20">
