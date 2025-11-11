@@ -283,16 +283,16 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
               <button
                 key={section.id}
                 onClick={() => setCurrentSection(section.id)}
-                className={`w-full text-left px-3 py-2 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
+                className={`w-full text-left px-2.5 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
                   currentSection === section.id
-                    ? 'bg-gray-100 text-black font-semibold'
-                    : 'text-gray-700 hover:bg-gray-50'
+                    ? 'text-[#215aed] bg-gray-100'
+                    : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 <div className="flex items-center">
                   <span className={`flex items-center justify-center w-6 h-6 font-semibold mr-3 ${
                     currentSection === section.id
-                      ? 'text-black text-sm'
+                      ? 'text-[#215aed] text-sm'
                       : 'text-gray-600 text-sm'
                   }`}>
                     {section.id === 11 ? (
@@ -384,7 +384,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
               // TODO: Add upgrade functionality
               console.log('Upgrade clicked');
             }}
-            className="w-full bg-black text-white px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-800 transition flex items-center justify-start gap-2 mb-3"
+            className="w-full bg-white text-gray-600 px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-100 transition flex items-center justify-start gap-2 mb-3"
           >
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -420,9 +420,9 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto ml-64">
-        <div className="max-w-6xl mx-auto pt-16 px-6 pr-12 pb-20">
+        <div className="max-w-6xl mx-auto pt-6 px-6 pr-12 pb-20">
           {/* Content Container */}
-          <div className="p-20">
+          <div className="px-20 pt-8 pb-20">
 
           {/* Sections 1-10: Show message to edit in survey mode */}
           {currentSection >= 1 && currentSection <= 10 && (
