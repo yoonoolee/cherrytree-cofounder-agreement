@@ -27,10 +27,10 @@ function Section7Compensation({ formData, handleChange, isReadOnly, showValidati
     <div>
       <h2 className="text-3xl font-bold text-gray-800 mb-6">Compensation & Expenses</h2>
 
-      <p className="text-gray-400 mb-4 leading-relaxed">
+      <p className="mb-4 leading-relaxed" style={{ color: '#808894' }}>
         In the early days of Netflix, they gave their team corporate cards. In an effort to keep them frugal, they told them to spend it as if it were their own money. It came as a surprise then, when a cofounder walked past a group of juniors who were seated in business class, to get to his own seat in economy. Personal spending habits vary.
       </p>
-      <p className="text-gray-400 mb-16 leading-relaxed">
+      <p className="mb-16 leading-relaxed" style={{ color: '#808894' }}>
         Money talks, even among cofounders. Don't wait until someone's scraping by or resenting late nights. Decide who gets what, when, and how early. Nothing kills a startup vibe faster than vague pay talk.
       </p>
 
