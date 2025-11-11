@@ -49,8 +49,6 @@ function Section2Cofounders({ formData, handleChange, isReadOnly, showValidation
         Great company starts with great company. Whether it's just the two of you or if there's a dozen of you, this is the crew that decided to go for it. Names, roles, contact info, sure. But it's also a snapshot of the team before the world knows your name. Someday, this will be the "garage team" story you tell in interviews.
       </p>
 
-      <div className="border-b border-gray-200 mb-8"></div>
-
       <div className="space-y-8">
         {/* Cofounder Forms */}
         {calculatedCofounderCount > 0 && (

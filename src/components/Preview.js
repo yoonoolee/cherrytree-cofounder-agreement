@@ -274,7 +274,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
       {/* Sidebar Navigation */}
       <div className="w-64 border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF', top: 0, height: '100vh', zIndex: 100 }}>
         {/* Header */}
-        <div className="p-3 border-b border-gray-200" style={{ marginTop: '64px' }}>
+        <div className="px-3 py-3 border-b border-gray-200" style={{ marginTop: '64px', paddingTop: '1.25rem' }}>
           {isEditingProjectName ? (
             <input
               type="text"
@@ -336,11 +336,12 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
               <button
                 key={section.id}
                 onClick={() => setCurrentSection(section.id)}
-                className={`w-full text-left px-2.5 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
+                className={`text-left px-2.5 py-1.5 rounded-lg mb-0.5 mx-3 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
                   currentSection === section.id
                     ? 'text-[#215aed] font-medium'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
+                style={{ width: 'calc(100% - 1.5rem)' }}
               >
                 <div className="flex items-center">
                   <span className={`flex items-center justify-center w-6 h-6 font-semibold mr-3 ${

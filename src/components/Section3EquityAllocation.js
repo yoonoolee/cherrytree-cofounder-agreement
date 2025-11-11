@@ -334,8 +334,6 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
         Be very reluctant to change equity allocation once you've agreed. The #1 reason for cofounder breakups in the most recent YC batch was cofounders trying to revisit a settled split.
       </p>
 
-      <div className="border-b border-gray-200 mb-8"></div>
-
       <div className="space-y-6">
         <div className="mb-2">
           <h3 className="text-xl font-bold text-gray-800 mb-4">Equity Calculator</h3>

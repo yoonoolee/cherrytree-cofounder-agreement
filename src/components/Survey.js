@@ -838,16 +838,16 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               onChange={(e) => handleSearch(e.target.value)}
               onFocus={(e) => {
                 if (searchQuery) setShowSearchResults(true);
-                e.target.style.backgroundColor = '#E5E7EB';
+                e.target.style.backgroundColor = '#F3F4F6';
               }}
               onBlur={(e) => {
-                e.target.style.backgroundColor = '#F3F4F6';
+                e.target.style.backgroundColor = '#F9FAFB';
                 setTimeout(() => setShowSearchResults(false), 200);
               }}
               className="w-full text-sm transition"
               style={{
-                backgroundColor: '#F3F4F6',
-                borderRadius: '9999px',
+                backgroundColor: '#F9FAFB',
+                borderRadius: '0.5rem',
                 border: 'none',
                 paddingLeft: '2.5rem',
                 paddingRight: '1rem',
@@ -924,7 +924,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       {/* Sidebar Navigation */}
       <div className="border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF', width: '270px', top: 0, height: '100vh', zIndex: 100 }}>
         {/* Header */}
-        <div className="p-3 border-b border-gray-200" style={{ marginTop: '64px' }}>
+        <div className="px-3 border-b border-gray-200 flex items-center" style={{ marginTop: '64px', height: '64px' }}>
           {isEditingProjectName ? (
             <input
               type="text"
@@ -950,11 +950,11 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 }
               }}
               autoFocus
-              className="text-lg font-semibold text-gray-900 mb-3 w-full border-b border-blue-500 focus:outline-none bg-transparent"
+              className="text-lg font-semibold text-gray-900 w-full border-b border-blue-500 focus:outline-none bg-transparent"
             />
           ) : (
             <h2
-              className="text-lg font-semibold text-gray-900 mb-3 cursor-pointer hover:text-gray-700 transition-colors"
+              className="text-lg font-semibold text-gray-900 cursor-pointer hover:text-gray-700 transition-colors"
               onClick={() => {
                 setEditedProjectName(project?.name || '');
                 setIsEditingProjectName(true);
@@ -1002,11 +1002,12 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 key={section.id}
                 data-section-id={section.id}
                 onClick={() => setCurrentSection(section.id)}
-                className={`w-full text-left px-2.5 py-1.5 rounded-lg mb-1 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
+                className={`text-left px-2.5 py-1.5 rounded-lg mb-0.5 mx-3 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
                   currentSection === section.id
                     ? 'text-[#215aed] font-medium'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
+                style={{ width: 'calc(100% - 1.5rem)' }}
               >
                 <div className="flex items-center">
                   <span className={`flex items-center justify-center w-6 h-6 font-semibold mr-3 ${
@@ -1170,22 +1171,6 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         </>
       )}
 
-      {/* Help Icon - Fixed bottom right */}
-      <button
-        className="fixed bottom-6 right-6 w-9 h-9 bg-white text-gray-600 rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105 flex items-center justify-center"
-        style={{ zIndex: 1000 }}
-        onClick={() => {
-          // TODO: Add help functionality
-          console.log('Help clicked');
-        }}
-      >
-        <div className="relative flex items-center justify-center w-full h-full">
-          <svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 36 36" className="absolute">
-            <circle cx="18" cy="18" r="17" strokeWidth="1.5" />
-          </svg>
-          <span style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '14px', fontWeight: '500' }}>?</span>
-        </div>
-      </button>
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto" style={{ marginLeft: '270px', marginTop: '64px', backgroundColor: '#ffffff' }}>
