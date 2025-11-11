@@ -1081,8 +1081,9 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         </div>
 
         {/* Section Navigation */}
-        <div className="flex-1 overflow-y-auto pb-2 px-2">
-          <div className="px-4 pt-4 pb-2">
+        <div className="flex-1 overflow-y-auto pb-2 px-2 flex flex-col justify-center">
+          <div>
+          <div className="px-4 mb-2">
             <span className="text-xs font-medium text-gray-600">Sections</span>
           </div>
           {SECTIONS.map((section) => {
@@ -1092,15 +1093,15 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 key={section.id}
                 data-section-id={section.id}
                 onClick={() => setCurrentSection(section.id)}
-                className={`text-left px-2.5 py-1.5 rounded-lg mb-0.5 mx-3 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
+                className={`text-left px-4 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
                   currentSection === section.id
                     ? 'text-[#215aed] font-medium'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
-                style={{ width: 'calc(100% - 1.5rem)' }}
+                style={{ width: '100%' }}
               >
-                <div className="flex items-center">
-                  <span className={`flex items-center justify-center w-6 h-6 font-semibold mr-3 ${
+                <div className="flex items-center gap-2">
+                  <span className={`flex items-center justify-center w-6 h-6 font-semibold ${
                     currentSection === section.id
                       ? 'text-[#215aed] text-sm'
                       : isCompleted
@@ -1120,10 +1121,14 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               </button>
             );
           })}
+          </div>
         </div>
 
         {/* Projects Button - Bottom of Sidebar */}
         <div className="p-3 relative">
+          <div className="px-3 mb-2">
+            <span className="text-xs font-medium text-gray-600">Account</span>
+          </div>
           {/* Project Selector Popup */}
           {showProjectSelector && (
             <>
