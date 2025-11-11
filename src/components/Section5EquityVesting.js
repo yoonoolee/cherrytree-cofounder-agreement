@@ -7,13 +7,13 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
     <div>
       <h2 className="text-3xl font-bold text-gray-800 mb-6">Vesting Schedule</h2>
 
-      <p className="text-gray-700 mb-4 leading-relaxed">
+      <p className="text-gray-400 mb-4 leading-relaxed">
         When Robin and Antje started Zipcar, they decided to split ownership 50/50. Fair and simple. At first, it seemed like a success story: the company grew, became highly profitable, and eventually went public.
       </p>
-      <p className="text-gray-700 mb-4 leading-relaxed">
+      <p className="text-gray-400 mb-4 leading-relaxed">
         But within a year and a half, cofounder conflicts caused Robin to fire Antje. Except, Antje kept her 50% stake in the company. Robin was stuck working around the clock, for virtually no pay.
       </p>
-      <p className="text-gray-700 mb-8 leading-relaxed">
+      <p className="text-gray-400 mb-8 leading-relaxed">
         This is exactly why vesting exists. Without it, a cofounder can walk away with a huge slice of the company without putting in the work, leaving the remaining founders carrying the burden. Vesting means you earn your equity over time by building the company.
       </p>
 
