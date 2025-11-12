@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Reduce overscroll bounce effect */
+body {
+  overscroll-behavior-y: contain;
+}
+
 /* Make all placeholders lighter */
 ::placeholder {
   color: #D1D5DB !important;

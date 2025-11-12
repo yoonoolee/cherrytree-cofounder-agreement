@@ -430,8 +430,8 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                     const calculation = equityCalculations[assessorEmail];
 
                     const colors = [
-                      '#1E40AF', '#3B82F6', '#60A5FA', '#93C5FD',
-                      '#BFDBFE', '#DBEAFE', '#EFF6FF', '#F0F9FF'
+                      '#0066FF', '#0052CC', '#3D8BFF', '#5B9FFF',
+                      '#79B3FF', '#97C7FF', '#B5DBFF', '#D3EFFF'
                     ];
 
                     return (
@@ -476,7 +476,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                                         fontSize: percentage >= 10 ? '0.75rem' : '0.5rem',
                                         paddingLeft: percentage >= 10 ? '0.25rem' : '0.125rem',
                                         paddingRight: percentage >= 10 ? '0.25rem' : '0.125rem',
-                                        color: index < 2 ? '#1F2937' : '#FFFFFF',
+                                        color: index < 4 ? '#FFFFFF' : '#1F2937',
                                         position: 'relative',
                                         zIndex: 1
                                       }}
