@@ -15,23 +15,25 @@ service cloud.firestore {
 
     // Projects collection
     match /projects/{projectId} {
-      // Anyone authenticated can create a project
-      allow create: if isSignedIn() &&
-                      request.resource.data.ownerEmail == request.auth.token.email;
+      // Helper function to check if user is owner or collaborator
+      function isOwnerOrCollaborator() {
+        return resource.data.ownerEmail == request.auth.token.email ||
+               request.auth.token.email in resource.data.get('collaborators', []);
+      }
+
+      // Projects are created via Stripe webhook (server-side), not client-side
+      // So we don't allow direct client creation
+      allow create: if false;
 
       // Allow reading own projects or projects where user is a collaborator
-      allow read: if isSignedIn() && (
-        // Allow reading if user is the owner
-        resource.data.ownerEmail == request.auth.token.email ||
-        // Allow reading if user is in the collaborators list
-        request.auth.token.email in resource.data.get('collaborators', [])
-      );
+      allow read: if isSignedIn() && isOwnerOrCollaborator();
 
-      // Owner and collaborators can update
-      allow update: if isSignedIn() && (
-        resource.data.ownerEmail == request.auth.token.email ||
-        request.auth.token.email in resource.data.get('collaborators', [])
-      );
+      // Owner and collaborators can update, but cannot change ownership
+      allow update: if isSignedIn() &&
+                      isOwnerOrCollaborator() &&
+                      // Prevent changing the owner
+                      request.resource.data.ownerEmail == resource.data.ownerEmail &&
+                      request.resource.data.ownerId == resource.data.ownerId;
 
       // Only owner can delete
       allow delete: if isSignedIn() &&
