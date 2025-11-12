@@ -135,7 +135,7 @@ function CollaboratorManager({ project }) {
           <button
             type="submit"
             disabled={loading}
-            className="bg-[#215aed] text-white px-7 py-2 rounded text-sm font-medium hover:bg-[#1a48c7] transition disabled:opacity-50"
+            className="bg-[#3b81ec] text-white px-7 py-2 rounded text-sm font-medium hover:bg-[#3069bc] transition disabled:opacity-50"
           >
             {loading ? 'Adding...' : 'Add'}
           </button>

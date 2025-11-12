@@ -263,7 +263,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
             // TODO: Add collaborators functionality
             console.log('Add Collaborators clicked');
           }}
-          className="bg-[#215aed] text-white p-1.5 rounded-full hover:bg-[#1a48c7] transition"
+          className="bg-[#3b81ec] text-white p-1.5 rounded-full hover:bg-[#3069bc] transition"
         >
           <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -339,7 +339,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                 onClick={() => setCurrentSection(section.id)}
                 className={`text-left px-2.5 py-1.5 rounded-lg mb-0.5 mx-3 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
                   currentSection === section.id
-                    ? 'text-[#215aed] font-medium'
+                    ? 'text-[#3b81ec] font-medium'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
                 style={{ width: 'calc(100% - 1.5rem)' }}
@@ -347,7 +347,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                 <div className="flex items-center">
                   <span className={`flex items-center justify-center w-6 h-6 font-semibold mr-3 ${
                     currentSection === section.id
-                      ? 'text-[#215aed] text-sm'
+                      ? 'text-[#3b81ec] text-sm'
                       : 'text-gray-600 text-sm'
                   }`}>
                     {section.id === 11 ? (
