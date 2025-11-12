@@ -53,8 +53,8 @@ function Section2Cofounders({ formData, handleChange, isReadOnly, showValidation
         {/* Cofounder Forms */}
         {calculatedCofounderCount > 0 && (
           <div className="space-y-12">
-            <p className="text-sm text-gray-700 font-medium -mb-6">
-              Note: All cofounders must be added as collaborators in order to be included in this agreement.
+            <p className="text-sm text-gray-700 font-medium -mb-6 bg-gray-100 p-4 rounded-lg">
+              All cofounders must be added as collaborators to be included. Click the + button in the top right to add them.
             </p>
             {cofounders.map((cofounder, index) => (
               <div key={index} className="py-4">

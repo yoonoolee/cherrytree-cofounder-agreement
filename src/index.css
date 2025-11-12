@@ -66,7 +66,7 @@ input[type="date"]:focus,
 input[type="number"]:focus,
 textarea:focus {
   outline: none !important;
-  border-bottom: 3px solid #215aed !important;
+  border-bottom: 2px solid #215aed !important;
   ring: 0 !important;
   box-shadow: none !important;
 }
