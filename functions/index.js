@@ -22,13 +22,11 @@ initializeApp();
 const db = getFirestore();
 const auth = getAuth();
 
-// Stripe will be initialized within each function that needs it
-// Using environment variable STRIPE_SECRET_KEY
-
 // Load secrets from environment config
 const { defineSecret } = require('firebase-functions/params');
 const MAKE_WEBHOOK_URL = defineSecret('MAKE_WEBHOOK_URL');
 const RESEND_API_KEY = defineSecret('RESEND_API_KEY');
+const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const SENDER_EMAIL = 'onboarding@resend.dev';  // Use Resend's test email
 
 // Lazy-load Resend instance
@@ -44,7 +42,10 @@ const getResend = () => {
 // SURVEY & PDF OPERATIONS
 // ============================================================================
 
-exports.submitSurvey = onCall({ secrets: [MAKE_WEBHOOK_URL] }, async (request) => {
+exports.submitSurvey = onCall({
+  secrets: [MAKE_WEBHOOK_URL],
+  invoker: 'public'
+}, async (request) => {
   // Check if user is authenticated
   if (!request.auth) {
     console.error('No auth context');
@@ -137,7 +138,10 @@ exports.submitSurvey = onCall({ secrets: [MAKE_WEBHOOK_URL] }, async (request) =
 });
 
 // Generate preview PDF without submitting
-exports.generatePreviewPDF = onCall({ secrets: [MAKE_WEBHOOK_URL] }, async (request) => {
+exports.generatePreviewPDF = onCall({
+  secrets: [MAKE_WEBHOOK_URL],
+  invoker: 'public'
+}, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be logged in');
   }
@@ -234,7 +238,10 @@ exports.generatePreviewPDF = onCall({ secrets: [MAKE_WEBHOOK_URL] }, async (requ
 // ============================================================================
 
 // Send collaborator invitation email
-exports.sendCollaboratorInvite = onCall({ secrets: [RESEND_API_KEY] }, async (request) => {
+exports.sendCollaboratorInvite = onCall({
+  secrets: [RESEND_API_KEY],
+  invoker: 'public'
+}, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be logged in');
   }
@@ -326,22 +333,25 @@ exports.sendCollaboratorInvite = onCall({ secrets: [RESEND_API_KEY] }, async (re
 // ============================================================================
 
 // Create Stripe checkout session
-exports.createCheckoutSession = onCall(async (request) => {
+exports.createCheckoutSession = onCall({
+  secrets: [STRIPE_SECRET_KEY],
+  invoker: 'public'
+}, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be logged in');
   }
 
   // Initialize Stripe
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
-  if (!stripeKey) {
-    throw new HttpsError('failed-precondition', 'Stripe not configured');
-  }
-  const stripe = Stripe(stripeKey);
+  const stripe = Stripe(STRIPE_SECRET_KEY.value());
 
-  const { priceId, plan } = request.data;
+  const { priceId, plan, projectName } = request.data;
 
   if (!priceId || !plan) {
     throw new HttpsError('invalid-argument', 'Price ID and plan are required');
+  }
+
+  if (!projectName) {
+    throw new HttpsError('invalid-argument', 'Project name is required');
   }
 
   try {
@@ -387,6 +397,8 @@ exports.createCheckoutSession = onCall(async (request) => {
       metadata: {
         userId: userId,
         plan: plan,
+        projectName: projectName,
+        userEmail: userEmail,
       },
       client_reference_id: userId,
     });
@@ -403,15 +415,12 @@ exports.createCheckoutSession = onCall(async (request) => {
 });
 
 // Handle Stripe webhooks
-exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
+exports.stripeWebhook = onRequest({
+  cors: true,
+  secrets: [STRIPE_SECRET_KEY]
+}, async (req, res) => {
   // Initialize Stripe
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
-  if (!stripeKey) {
-    console.error('Stripe not configured');
-    res.status(500).send('Stripe not configured');
-    return;
-  }
-  const stripe = Stripe(stripeKey);
+  const stripe = Stripe(STRIPE_SECRET_KEY.value());
 
   const sig = req.headers['stripe-signature'];
   let event;
@@ -428,8 +437,10 @@ exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
         const session = event.data.object;
         const userId = session.client_reference_id || session.metadata?.userId;
         const plan = session.metadata?.plan;
+        const projectName = session.metadata?.projectName;
+        const userEmail = session.metadata?.userEmail || session.customer_email || session.customer_details?.email;
 
-        if (userId && plan) {
+        if (userId && plan && projectName && userEmail) {
           // Update user's subscription status
           await db.collection('users').doc(userId).set({
             plan: plan,
@@ -438,18 +449,35 @@ exports.stripeWebhook = onRequest({ cors: true }, async (req, res) => {
             lastPaymentAt: FieldValue.serverTimestamp(),
           }, { merge: true });
 
-          // Create a project for the user
+          // Create a project for the user with proper structure
           const projectRef = db.collection('projects').doc();
           await projectRef.set({
-            ownerEmail: session.customer_email || session.customer_details?.email,
-            name: `${plan.charAt(0).toUpperCase() + plan.slice(1)} Agreement`,
+            name: projectName,
+            ownerId: userId,
+            ownerEmail: userEmail,
+            collaborators: [userEmail],
+            collaboratorIds: [userId],
+            approvals: {
+              [userEmail]: true
+            },
+            requiresApprovals: true,
+            surveyData: {
+              companyName: projectName
+            },
+            activeUsers: [],
+            submitted: false,
+            submittedAt: null,
+            submittedBy: null,
+            pdfUrl: null,
+            pdfGeneratedAt: null,
             plan: plan,
             createdAt: FieldValue.serverTimestamp(),
-            collaborators: [],
-            submitted: false,
+            lastUpdated: FieldValue.serverTimestamp()
           });
 
-          console.log(`User ${userId} subscribed to ${plan}, project created: ${projectRef.id}`);
+          console.log(`User ${userId} paid for ${plan}, project created: ${projectRef.id} - ${projectName}`);
+        } else {
+          console.error('Missing required metadata in checkout session:', { userId, plan, projectName, userEmail });
         }
         break;
       }
