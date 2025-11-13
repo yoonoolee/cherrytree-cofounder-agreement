@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLoadScript } from '@react-google-maps/api';
 import { db, auth } from '../firebase';
 import { doc, updateDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
@@ -19,6 +20,7 @@ import CollaboratorManager from './CollaboratorManager';
 const libraries = ['places'];
 
 function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCreateProject }) {
+  const navigate = useNavigate();
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -963,6 +965,18 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
         {/* Right side icons */}
         <div className="flex items-center gap-4 pr-6">
+        {/* Back to Dashboard Button */}
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="text-gray-600 hover:text-gray-900 transition flex items-center gap-1.5"
+          title="Back to Dashboard"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7"/>
+          </svg>
+          <span className="text-sm font-medium">Dashboard</span>
+        </button>
+
         {/* Help Icon */}
         <button
           onClick={() => {
@@ -994,7 +1008,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         {/* Add Collaborators Plus Button */}
         <button
           onClick={() => setShowCollaborators(true)}
-          className="bg-[#3b81ec] text-white w-8 h-8 rounded-lg hover:bg-[#3069bc] transition flex items-center justify-center"
+          className="bg-[#820e22] text-white w-8 h-8 rounded-lg hover:bg-[#620a1a] transition flex items-center justify-center"
         >
           <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
@@ -1035,7 +1049,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 }
               }}
               autoFocus
-              className="text-lg font-semibold text-gray-900 w-full border-b border-blue-500 focus:outline-none bg-transparent"
+              className="text-lg font-semibold text-gray-900 w-full border-b border-red-950 focus:outline-none bg-transparent"
             />
           ) : (
             <h2
@@ -1060,7 +1074,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
             </div>
             <div className="w-full bg-gray-200 rounded-full h-1.5">
               <div
-                className="bg-[#3b81ec] h-1.5 rounded-full transition-all duration-300"
+                className="bg-[#820e22] h-1.5 rounded-full transition-all duration-300"
                 style={{ width: `${calculateProgress()}%` }}
               />
             </div>
@@ -1075,7 +1089,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               </span>
             )}
             {saveStatus === 'error' && (
-              <span className="text-xs text-red-600">Error saving</span>
+              <span className="text-xs text-red-950">Error saving</span>
             )}
           </div>
         </div>
@@ -1095,7 +1109,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 onClick={() => setCurrentSection(section.id)}
                 className={`text-left px-4 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between ${
                   currentSection === section.id
-                    ? 'text-[#3b81ec] font-medium'
+                    ? 'text-[#820e22] font-medium'
                     : 'text-gray-600 hover:bg-gray-200'
                 }`}
                 style={{ width: '100%', fontSize: '15px' }}
@@ -1387,7 +1401,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               {currentSection < 10 ? (
                 <button
                   onClick={() => setCurrentSection(currentSection + 1)}
-                  className="next-button bg-[#3b81ec] text-white px-7 py-2 rounded font-normal hover:bg-[#3069bc] transition flex items-center gap-2"
+                  className="next-button bg-[#820e22] text-white px-7 py-2 rounded font-normal hover:bg-[#620a1a] transition flex items-center gap-2"
                 >
                   Next
                   <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1398,7 +1412,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 <button
                   onClick={handlePreviewClick}
                   disabled={saveStatus === 'saving'}
-                  className="next-button bg-[#3b81ec] text-white px-10 py-2 rounded font-normal hover:bg-[#3069bc] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="next-button bg-[#820e22] text-white px-10 py-2 rounded font-normal hover:bg-[#620a1a] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   Next: Preview & Approve
                   <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">

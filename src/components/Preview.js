@@ -263,7 +263,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
             // TODO: Add collaborators functionality
             console.log('Add Collaborators clicked');
           }}
-          className="bg-[#3b81ec] text-white p-1.5 rounded-full hover:bg-[#3069bc] transition"
+          className="bg-[#820e22] text-white p-1.5 rounded-full hover:bg-[#620a1a] transition"
         >
           <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -301,7 +301,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                 }
               }}
               autoFocus
-              className="text-lg font-semibold text-gray-900 mb-3 w-full border-b border-blue-500 focus:outline-none bg-transparent"
+              className="text-lg font-semibold text-gray-900 mb-3 w-full border-b border-red-950 focus:outline-none bg-transparent"
             />
           ) : (
             <h2
@@ -339,7 +339,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                 onClick={() => setCurrentSection(section.id)}
                 className={`text-left px-2.5 py-1.5 rounded-lg mb-0.5 mx-3 transition-all duration-200 flex items-center justify-between hover:scale-105 ${
                   currentSection === section.id
-                    ? 'text-[#3b81ec] font-medium'
+                    ? 'text-[#820e22] font-medium'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
                 style={{ width: 'calc(100% - 1.5rem)' }}
@@ -347,7 +347,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                 <div className="flex items-center">
                   <span className={`flex items-center justify-center w-6 h-6 font-semibold mr-3 ${
                     currentSection === section.id
-                      ? 'text-[#3b81ec] text-sm'
+                      ? 'text-[#820e22] text-sm'
                       : 'text-gray-600 text-sm'
                   }`}>
                     {section.id === 11 ? (
@@ -567,11 +567,11 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
 
               {/* PDF Error State */}
               {pdfError && !isGeneratingPdf && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-sm text-red-600">Error generating preview: {pdfError}</p>
+                <div className="bg-red-50 border border-red-300 rounded-lg p-4">
+                  <p className="text-sm text-red-950">Error generating preview: {pdfError}</p>
                   <button
                     onClick={() => window.location.reload()}
-                    className="mt-2 text-sm text-red-600 hover:text-red-700 underline"
+                    className="mt-2 text-sm text-red-950 hover:text-red-700 underline"
                   >
                     Try again
                   </button>
@@ -604,7 +604,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                   {isOwner ? (
                     <div>
                       {submitError && (
-                        <p className="text-xs text-red-600 mb-4">{submitError}</p>
+                        <p className="text-xs text-red-950 mb-4">{submitError}</p>
                       )}
                       <button
                         onClick={handleSubmit}

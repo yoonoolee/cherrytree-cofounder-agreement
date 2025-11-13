@@ -301,7 +301,7 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
             value={formData.companyName || ''}
             onChange={(e) => handleChange('companyName', e.target.value)}
             disabled={isReadOnly}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
             placeholder="Enter your company name"
           />
         </div>
@@ -336,7 +336,7 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
               value={formData.entityTypeOther || ''}
               onChange={(e) => handleChange('entityTypeOther', e.target.value)}
               disabled={isReadOnly}
-              className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+              className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
               placeholder="Please specify entity type"
             />
           )}
@@ -392,7 +392,7 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
                 autoComplete="chrome-off"
                 onFocus={() => !isReadOnly && inputValue.length >= 3 && setShowSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                 placeholder="Start typing address..."
               />
 
@@ -434,7 +434,7 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
                 onChange={(e) => handleChange('mailingStreet2', e.target.value)}
                 disabled={isReadOnly}
                 autoComplete="chrome-off"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                 placeholder="Apt, Suite, Floor, etc."
               />
             </div>
@@ -517,7 +517,7 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
             value={formData.companyDescription || ''}
             onChange={(e) => handleChange('companyDescription', e.target.value)}
             disabled={isReadOnly}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
             placeholder="helping cofounders..."
           />
         </div>
@@ -558,7 +558,7 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
                 value={formData.industryOther || ''}
                 onChange={(e) => handleChange('industryOther', e.target.value)}
                 disabled={isReadOnly}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                 placeholder="Please specify other industry"
               />
             </div>

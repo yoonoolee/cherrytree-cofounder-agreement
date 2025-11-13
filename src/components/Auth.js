@@ -91,7 +91,7 @@ function Auth({ onLogin }) {
   const getPasswordStrengthColor = () => {
     if (passwordStrength <= 2) return 'bg-red-500';
     if (passwordStrength <= 3) return 'bg-yellow-500';
-    if (passwordStrength <= 4) return 'bg-blue-500';
+    if (passwordStrength <= 4) return 'bg-red-500';
     return 'bg-green-500';
   };
 
@@ -317,7 +317,7 @@ function Auth({ onLogin }) {
 
         {/* Error Message */}
         {error && (
-          <p className="text-xs text-red-600 mb-4">{error}</p>
+          <p className="text-xs text-red-950 mb-4">{error}</p>
         )}
 
         {/* Success Message */}
@@ -336,12 +336,12 @@ function Auth({ onLogin }) {
                 type="email"
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
-                className={`w-full px-0 py-2 border-0 border-b-2 ${emailError ? 'border-red-500' : 'border-gray-300'} focus:border-black focus:ring-0 bg-transparent text-gray-900 ${wiggleField === 'email' ? 'animate-wiggle' : ''}`}
+                className={`w-full px-0 py-2 border-0 border-b-2 ${emailError ? 'border-red-950' : 'border-gray-300'} focus:border-black focus:ring-0 bg-transparent text-gray-900 ${wiggleField === 'email' ? 'animate-wiggle' : ''}`}
                 placeholder="tim@cherrytree.app"
                 autoFocus
               />
               {emailError && (
-                <p className="text-xs text-red-600 mt-1">{emailError}</p>
+                <p className="text-xs text-red-950 mt-1">{emailError}</p>
               )}
             </div>
 
@@ -354,7 +354,7 @@ function Auth({ onLogin }) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); setCredentialError(''); }}
-                  className={`w-full px-0 py-2 pr-10 border-0 border-b-2 ${credentialError ? 'border-red-500' : 'border-gray-300'} focus:border-black focus:ring-0 bg-transparent text-gray-900 ${wiggleField === 'password' ? 'animate-wiggle' : ''}`}
+                  className={`w-full px-0 py-2 pr-10 border-0 border-b-2 ${credentialError ? 'border-red-950' : 'border-gray-300'} focus:border-black focus:ring-0 bg-transparent text-gray-900 ${wiggleField === 'password' ? 'animate-wiggle' : ''}`}
                   placeholder="••••••••"
                 />
                 <button
@@ -375,7 +375,7 @@ function Auth({ onLogin }) {
                 </button>
               </div>
               {credentialError && (
-                <p className="text-xs text-red-600 mt-1">{credentialError}</p>
+                <p className="text-xs text-red-950 mt-1">{credentialError}</p>
               )}
             </div>
 
@@ -455,12 +455,12 @@ function Auth({ onLogin }) {
                 type="email"
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
-                className={`w-full px-0 py-2 border-0 border-b-2 ${emailError ? 'border-red-500' : 'border-gray-300'} focus:border-black focus:ring-0 bg-transparent text-gray-900 ${wiggleField === 'email' ? 'animate-wiggle' : ''}`}
+                className={`w-full px-0 py-2 border-0 border-b-2 ${emailError ? 'border-red-950' : 'border-gray-300'} focus:border-black focus:ring-0 bg-transparent text-gray-900 ${wiggleField === 'email' ? 'animate-wiggle' : ''}`}
                 placeholder="tim@cherrytree.app"
                 autoFocus
               />
               {emailError && (
-                <p className="text-xs text-red-600 mt-1">{emailError}</p>
+                <p className="text-xs text-red-950 mt-1">{emailError}</p>
               )}
             </div>
 
@@ -601,12 +601,12 @@ function Auth({ onLogin }) {
                 type="email"
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
-                className={`w-full px-0 py-2 border-0 border-b-2 ${emailError ? 'border-red-500' : 'border-gray-300'} focus:border-black focus:ring-0 bg-transparent text-gray-900 ${wiggleField === 'email' ? 'animate-wiggle' : ''}`}
+                className={`w-full px-0 py-2 border-0 border-b-2 ${emailError ? 'border-red-950' : 'border-gray-300'} focus:border-black focus:ring-0 bg-transparent text-gray-900 ${wiggleField === 'email' ? 'animate-wiggle' : ''}`}
                 placeholder="tim@cherrytree.app"
                 autoFocus
               />
               {emailError && (
-                <p className="text-xs text-red-600 mt-1">{emailError}</p>
+                <p className="text-xs text-red-950 mt-1">{emailError}</p>
               )}
             </div>
 

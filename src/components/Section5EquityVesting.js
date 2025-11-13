@@ -30,7 +30,7 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
             value={formData.vestingStartDate || ''}
             onChange={(e) => handleChange('vestingStartDate', e.target.value)}
             disabled={isReadOnly}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
           />
         </div>
 
@@ -70,7 +70,7 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
               value={formData.vestingScheduleOther || ''}
               onChange={(e) => handleChange('vestingScheduleOther', e.target.value)}
               disabled={isReadOnly}
-              className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+              className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
               placeholder="Please specify"
             />
           )}
@@ -139,7 +139,7 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
               }, 0);
             }}
             disabled={isReadOnly}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
             placeholder="25%"
           />
         </div>
@@ -197,7 +197,7 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
               }
             }}
             disabled={isReadOnly}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
             placeholder="30"
           />
         </div>
@@ -227,7 +227,7 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
               }
             }}
             disabled={isReadOnly}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
             placeholder="90"
           />
         </div>
@@ -273,7 +273,7 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
                     <span className="text-gray-700">
                       {email}
                       {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-                      {isCurrentUser && <span className="ml-2 text-xs text-blue-600">(You)</span>}
+                      {isCurrentUser && <span className="ml-2 text-xs text-red-950">(You)</span>}
                       
                     </span>
                   </label>

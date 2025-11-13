@@ -75,7 +75,7 @@ function Section2Cofounders({ formData, handleChange, isReadOnly, showValidation
                       onChange={(e) => handleCofounderChange(index, 'fullName', e.target.value)}
                       disabled={isReadOnly}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                       placeholder="Tim He"
                     />
                   </div>
@@ -92,7 +92,7 @@ function Section2Cofounders({ formData, handleChange, isReadOnly, showValidation
                       onChange={(e) => handleCofounderChange(index, 'title', e.target.value)}
                       disabled={isReadOnly}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                       placeholder="Chief Executive Officer"
                     />
                   </div>
@@ -109,7 +109,7 @@ function Section2Cofounders({ formData, handleChange, isReadOnly, showValidation
                       onChange={(e) => handleCofounderChange(index, 'email', e.target.value)}
                       disabled={isReadOnly}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                       placeholder="tim@cherrytree.app"
                     />
                   </div>
@@ -148,7 +148,7 @@ function Section2Cofounders({ formData, handleChange, isReadOnly, showValidation
                         value={cofounder.rolesOther || ''}
                         onChange={(e) => handleCofounderChange(index, 'rolesOther', e.target.value)}
                         disabled={isReadOnly}
-                        className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                        className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                         placeholder="Please specify"
                       />
                     )}

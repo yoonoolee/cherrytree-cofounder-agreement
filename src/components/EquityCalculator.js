@@ -692,7 +692,7 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
             </svg>
           </button>
           {submissionError && (
-            <p className="text-sm text-red-600 mt-2">
+            <p className="text-sm text-red-950 mt-2">
               {submissionError}
             </p>
           )}

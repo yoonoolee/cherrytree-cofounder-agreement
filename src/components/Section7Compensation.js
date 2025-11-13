@@ -187,7 +187,7 @@ function Section7Compensation({ formData, handleChange, isReadOnly, showValidati
                             }, 0);
                           }}
                           disabled={isReadOnly}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                           placeholder="$100,000.00"
                         />
                       </div>
@@ -266,7 +266,7 @@ function Section7Compensation({ formData, handleChange, isReadOnly, showValidati
               }, 0);
             }}
             disabled={isReadOnly}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
             placeholder="$5000.00"
           />
         </div>

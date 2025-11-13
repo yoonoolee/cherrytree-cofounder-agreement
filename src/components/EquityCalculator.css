@@ -200,7 +200,7 @@
 
 .Spreadsheet__cell input:focus {
   background-color: #f0f9ff !important;
-  outline: 2px solid #3b82f6 !important;
+  outline: 2px solid #820e22 !important;
   outline-offset: -2px !important;
 }
 

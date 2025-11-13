@@ -79,7 +79,7 @@ function CustomSelect({ value, onChange, options, placeholder, disabled, classNa
         disabled={disabled}
         autoComplete="chrome-off"
         className={useBoxStyle
-          ? "w-full text-left px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+          ? "w-full text-left px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
           : "w-full text-left bg-transparent border-none border-b-2 border-gray-300 text-gray-700 focus:outline-none focus:border-black disabled:opacity-60"
         }
         style={useBoxStyle ? {} : {

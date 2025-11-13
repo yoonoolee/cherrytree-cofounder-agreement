@@ -438,7 +438,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                       <div key={assessorEmail} className="mb-4">
                         <p className="font-medium text-gray-900 mb-3">
                           {getCofounderName(assessorEmail)}
-                          {assessorEmail === currentUserEmail && <span className="ml-2 text-xs text-blue-600">(You)</span>}
+                          {assessorEmail === currentUserEmail && <span className="ml-2 text-xs text-red-950">(You)</span>}
                         </p>
                         {!hasSubmittedAssessment ? (
                           <p className="text-sm text-gray-500 italic">
@@ -539,7 +539,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                             <div key={assessorEmail} className="mb-4">
                               <p className="font-medium text-gray-900 mb-3">
                                 {getCofounderName(assessorEmail)}
-                                {assessorEmail === currentUserEmail && <span className="ml-2 text-xs text-blue-600">(You)</span>}
+                                {assessorEmail === currentUserEmail && <span className="ml-2 text-xs text-red-950">(You)</span>}
                               </p>
                               <p className="text-sm text-gray-500 italic">
                                 Submission pending
@@ -573,7 +573,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                           <div key={assessorEmail} className="mb-4">
                             <p className="font-medium text-gray-900 mb-3">
                               {getCofounderName(assessorEmail)}
-                              {assessorEmail === currentUserEmail && <span className="ml-2 text-xs text-blue-600">(You)</span>}
+                              {assessorEmail === currentUserEmail && <span className="ml-2 text-xs text-red-950">(You)</span>}
                             </p>
                             <div className="bg-white rounded border border-gray-200 overflow-x-auto">
                               <table className="min-w-full divide-y divide-gray-200">
@@ -654,7 +654,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                 <label className="block text-base font-medium text-gray-900 mb-2">
                   {getCofounderName(email)}
                   {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-                  {email === auth.currentUser?.email && <span className="ml-2 text-xs text-blue-600">(You)</span>}
+                  {email === auth.currentUser?.email && <span className="ml-2 text-xs text-red-950">(You)</span>}
                   {showValidation && !formData.finalEquityPercentages?.[email] && <span className="text-red-700 ml-0.5">*</span>}
                 </label>
                 <input
@@ -712,7 +712,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                     }, 0);
                   }}
                   disabled={isReadOnly}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                   placeholder="25%"
                 />
               </div>
@@ -767,7 +767,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                     <span className={`${!canAcknowledge ? 'text-gray-400' : 'text-gray-700'}`}>
                       {getCofounderName(email)}
                       {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-                      {isCurrentUser && <span className="ml-2 text-xs text-blue-600">(You)</span>}
+                      {isCurrentUser && <span className="ml-2 text-xs text-red-950">(You)</span>}
                     </span>
                   </label>
                 );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
@@ -7,10 +7,15 @@ import PaymentModal from '../components/PaymentModal';
 
 function Dashboard() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [user, setUser] = useState(null);
   const [allProjects, setAllProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [waitingForNewProject, setWaitingForNewProject] = useState(false);
+
+  // Simple payment redirect - if coming back from Stripe with session_id, go to newest project
+  const [redirectingToProject, setRedirectingToProject] = useState(false);
 
   // Listen to auth state
   useEffect(() => {
@@ -19,6 +24,24 @@ function Dashboard() {
     });
     return () => unsubscribe();
   }, []);
+
+  // Auto-redirect to newest project after Stripe payment
+  useEffect(() => {
+    const sessionId = searchParams.get('session_id');
+
+    // If we have a Stripe session_id AND we're not already redirecting AND projects are loaded
+    if (sessionId && !redirectingToProject && !loadingProjects && allProjects.length > 0 && user) {
+      console.log('Stripe payment detected, redirecting to newest project...');
+      setRedirectingToProject(true);
+
+      // Get the newest project
+      const newestProject = allProjects[0];
+      console.log('Redirecting to:', newestProject.id, newestProject.name);
+
+      // Redirect immediately
+      navigate(`/survey/${newestProject.id}`, { replace: true });
+    }
+  }, [searchParams, redirectingToProject, loadingProjects, allProjects, user, navigate]);
 
   // Listen to projects in real-time
   useEffect(() => {
@@ -114,11 +137,13 @@ function Dashboard() {
     });
   };
 
-  if (!user) {
+  if (!user || redirectingToProject) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">
+            {redirectingToProject ? 'Opening your new project...' : 'Loading...'}
+          </p>
         </div>
       </div>
     );

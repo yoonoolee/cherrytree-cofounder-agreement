@@ -55,7 +55,7 @@ function ApprovalSection({ project, projectId }) {
   }
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+    <div className="bg-red-50 border border-red-300 rounded-lg p-6">
       <h3 className="text-lg font-semibold text-gray-800 mb-4">
         📋 Approval Status ({approvedCount}/{totalRequired})
       </h3>
@@ -77,8 +77,8 @@ function ApprovalSection({ project, projectId }) {
           return (
             <div key={email} className="flex items-center justify-between bg-white rounded-lg p-3">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 font-medium text-sm">
+                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                  <span className="text-red-950 font-medium text-sm">
                     {email.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -91,7 +91,7 @@ function ApprovalSection({ project, projectId }) {
                       <span className="text-xs text-gray-500">(Owner)</span>
                     )}
                     {isCurrentUser && (
-                      <span className="text-xs text-blue-600">(You)</span>
+                      <span className="text-xs text-red-950">(You)</span>
                     )}
                   </div>
                 </div>
@@ -99,7 +99,7 @@ function ApprovalSection({ project, projectId }) {
               
               <div className="flex items-center gap-2">
                 {isThisOwner ? (
-                  <span className="text-blue-600 font-medium flex items-center gap-1">
+                  <span className="text-red-950 font-medium flex items-center gap-1">
                     ✓ Owner
                   </span>
                 ) : approvals[email] ? (

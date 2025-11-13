@@ -102,7 +102,7 @@ function PaymentModal({ onClose, onSuccess }) {
         </div>
 
         {error && (
-          <p className="text-xs text-red-600 mb-4">{error}</p>
+          <p className="text-xs text-red-950 mb-4">{error}</p>
         )}
 
         <form onSubmit={handleSubmit}>

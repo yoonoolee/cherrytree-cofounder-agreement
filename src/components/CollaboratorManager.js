@@ -135,7 +135,7 @@ function CollaboratorManager({ project }) {
           <button
             type="submit"
             disabled={loading}
-            className="bg-[#3b81ec] text-white px-7 py-2 rounded text-sm font-medium hover:bg-[#3069bc] transition disabled:opacity-50"
+            className="bg-[#820e22] text-white px-7 py-2 rounded text-sm font-medium hover:bg-[#620a1a] transition disabled:opacity-50"
           >
             {loading ? 'Adding...' : 'Add'}
           </button>
@@ -144,7 +144,7 @@ function CollaboratorManager({ project }) {
 
       {/* Success/Error Messages */}
       {error && (
-        <p className="text-xs text-red-600 mb-4">{error}</p>
+        <p className="text-xs text-red-950 mb-4">{error}</p>
       )}
       {success && (
         <p className="text-xs text-gray-600 mb-4">{success}</p>
