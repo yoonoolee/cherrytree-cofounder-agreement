@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* That That New Roman font */
+@font-face {
+  font-family: 'That That New Roman';
+  src: url('./fonts/thatthatnewromantest-regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'That That New Roman';
+  src: url('./fonts/thatthatnewromantest-italic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+}
+
 /* Reduce overscroll bounce effect */
 body {
   overscroll-behavior-y: contain;
@@ -11,9 +26,10 @@ body {
 
 /* Heading font utility */
 .font-heading {
-  font-family: 'Playfair Display', serif;
+  font-family: 'That That New Roman', serif;
   letter-spacing: -0.03em;
   line-height: 1em;
+  transform: scaleX(1.15);
 }
 
 /* Make all placeholders lighter */

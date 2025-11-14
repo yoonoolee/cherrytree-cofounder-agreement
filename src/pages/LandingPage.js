@@ -8,6 +8,7 @@ function LandingPage() {
   const [openFaq, setOpenFaq] = useState(null);
   const [user, setUser] = useState(null);
   const [typedText, setTypedText] = useState('');
+  const [activeStep, setActiveStep] = useState(0);
   const fullText = 'with great company.';
 
   useEffect(() => {
@@ -41,9 +42,49 @@ function LandingPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Scroll-based step detection
+  useEffect(() => {
+    const handleScroll = () => {
+      const panels = document.querySelectorAll('.step-panel');
+
+      panels.forEach((panel, index) => {
+        const rect = panel.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+
+        // Check if panel is in the center of viewport
+        if (rect.top <= windowHeight / 2 && rect.bottom >= windowHeight / 2) {
+          setActiveStep(index);
+        }
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Call once on mount
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const logos = [
     'Hubble', 'a16z', 'Berkeley', 'Stanford', 'Sequoia',
     'Y Combinator', 'MIT', 'Harvard', 'Techstars', 'Google'
+  ];
+
+  const steps = [
+    {
+      step: '1',
+      title: 'Answer a few questions',
+      desc: 'Who does what, who owns what, and what you each bring to the table.'
+    },
+    {
+      step: '2',
+      title: 'Smooth things out',
+      desc: 'We show you where you\'re not aligned before it turns into "we need to talk."'
+    },
+    {
+      step: '3',
+      title: 'Seal the deal',
+      desc: 'Get a legit cofounder agreement. No $600/hr lawyers, no 2 a.m. screaming.'
+    }
   ];
 
   const features = [
@@ -218,42 +259,38 @@ function LandingPage() {
       {/* Process Section */}
       <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="font-heading text-4xl font-medium text-center mb-4">
-            Built for <span className="underline-animate">early-stage
-              <svg viewBox="0 0 250 12" preserveAspectRatio="none">
-                <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
-              </svg>
-            </span> cofounders.
-          </h2>
-          <p className="text-xl text-gray-600 text-center mb-16 max-w-3xl mx-auto font-normal">
-            Get your equity, expectations, and everything else right from the start.
-          </p>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                step: '1',
-                title: 'Answer a few questions',
-                desc: 'Tell us about your roles, ownership, and company goals'
-              },
-              {
-                step: '2',
-                title: 'Smooth things out',
-                desc: 'We highlight potential issues before they become problems'
-              },
-              {
-                step: '3',
-                title: 'Seal the deal',
-                desc: 'Get a customized, legally-sound cofounder agreement'
-              }
-            ].map((item) => (
-              <div key={item.step} className="bg-white p-8 rounded-lg shadow-sm hover:shadow-md transition">
-                <div className="w-12 h-12 bg-[#000000] text-white rounded-full flex items-center justify-center text-xl font-bold mb-4">
-                  {item.step}
+          <div className="sticky top-16 bg-white z-20 pb-8 pt-8">
+            <h2 className="font-heading text-4xl font-medium text-center mb-4">
+              Built for <span className="underline-animate">early-stage
+                <svg viewBox="0 0 250 12" preserveAspectRatio="none">
+                  <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
+                </svg>
+              </span> cofounders.
+            </h2>
+            <p className="text-xl text-gray-600 text-center max-w-3xl mx-auto font-normal">
+              Get your equity, expectations, and everything else right from the start.
+            </p>
+          </div>
+
+          <div className="relative">
+            {/* Sticky Card - overlays all panels */}
+            <div className="absolute top-0 left-0 right-0 h-[300vh] pointer-events-none">
+              <div className="sticky top-[220px] max-w-4xl mx-auto pointer-events-auto">
+                <div className="bg-white border-2 border-gray-300 rounded-lg p-12 transition-all duration-500">
+                  <h3 className="text-[22px] font-medium mb-1">{steps[activeStep].title}</h3>
+                  <p className="text-gray-600 mb-8">{steps[activeStep].desc}</p>
+                  {/* Space for image */}
+                  <div className="bg-gray-100 rounded-lg h-[350px] flex items-center justify-center">
+                    <p className="text-gray-400">Image goes here</p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                <p className="text-gray-600">{item.desc}</p>
               </div>
-            ))}
+            </div>
+
+            {/* Invisible scroll panels - full viewport height each, stacked vertically */}
+            <div className="step-panel h-screen"></div>
+            <div className="step-panel h-screen"></div>
+            <div className="step-panel h-screen"></div>
           </div>
         </div>
       </section>
@@ -365,17 +402,17 @@ function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 px-6 bg-[#000000] text-white">
+      <section className="py-20 px-6 bg-white text-gray-900">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="font-heading text-4xl font-medium mb-6">
             Protect your piece of the pie<br />your peace of mind.
           </h2>
-          <p className="text-xl mb-8 opacity-90 font-normal">
+          <p className="text-xl mb-8 text-gray-600 font-normal">
             Join thousands of founders who've secured their partnerships
           </p>
           <button
             onClick={() => navigate('/dashboard')}
-            className="bg-white text-[#000000] px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition"
+            className="bg-[#000000] text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-[#1a1a1a] transition"
           >
             Create your agreement today
           </button>
@@ -383,48 +420,48 @@ function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-12 px-6">
+      <footer className="bg-white text-gray-600 pt-80 pb-12 px-6">
         <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <svg width="24" height="24" viewBox="22 22 56 56" xmlns="http://www.w3.org/2000/svg">
-                <path d="M70.63,61.53c-.77-5.18-5.27-6.64-10.45-5.86l-.39.06C57.39,47.09,53,42.27,49.53,39.66c3.65.71,6.83.23,9.74-3.08,1.9-2.18,2.83-5.14,5.75-7.53a.46.46,0,0,0-.17-.8c-5.07-1.4-11.84-1.08-15.43,3a13.83,13.83,0,0,0-3.17,6.38,18.48,18.48,0,0,0-4.87-1.73.35.35,0,0,0-.41.3l-.23,1.62a.35.35,0,0,0,.28.4A17.86,17.86,0,0,1,45.74,40c2.49,6.14-2.9,13.55-5.88,17-4.7-1.25-9-.37-10.28,4.33a8.89,8.89,0,1,0,17.15,4.67c1.16-4.26-1.42-7.08-5.4-8.54A37.59,37.59,0,0,0,45,52.51c2.59-4.14,3.57-8,2.91-11.25l.42.3A25.14,25.14,0,0,1,58.47,56c-4.28,1.08-7.25,3.73-6.57,8.31a9.47,9.47,0,1,0,18.73-2.79Z" fill="white"/>
+                <path d="M70.63,61.53c-.77-5.18-5.27-6.64-10.45-5.86l-.39.06C57.39,47.09,53,42.27,49.53,39.66c3.65.71,6.83.23,9.74-3.08,1.9-2.18,2.83-5.14,5.75-7.53a.46.46,0,0,0-.17-.8c-5.07-1.4-11.84-1.08-15.43,3a13.83,13.83,0,0,0-3.17,6.38,18.48,18.48,0,0,0-4.87-1.73.35.35,0,0,0-.41.3l-.23,1.62a.35.35,0,0,0,.28.4A17.86,17.86,0,0,1,45.74,40c2.49,6.14-2.9,13.55-5.88,17-4.7-1.25-9-.37-10.28,4.33a8.89,8.89,0,1,0,17.15,4.67c1.16-4.26-1.42-7.08-5.4-8.54A37.59,37.59,0,0,0,45,52.51c2.59-4.14,3.57-8,2.91-11.25l.42.3A25.14,25.14,0,0,1,58.47,56c-4.28,1.08-7.25,3.73-6.57,8.31a9.47,9.47,0,1,0,18.73-2.79Z" fill="black"/>
               </svg>
-              <span className="text-white font-semibold">Cherrytree</span>
+              <span className="text-black font-semibold">Cherrytree</span>
             </div>
             <p className="text-sm">Cofounder coaching for early-stage teams</p>
           </div>
 
           <div>
-            <h4 className="text-white font-semibold mb-4">Product</h4>
+            <h4 className="text-black font-semibold mb-4">Product</h4>
             <ul className="space-y-2 text-sm">
-              <li><button onClick={() => navigate('/dashboard')} className="hover:text-white transition">Contract Creator</button></li>
-              <li><button onClick={() => navigate('/equity-calculator')} className="hover:text-white transition">Equity Calculator</button></li>
-              <li><button onClick={() => navigate('/pricing')} className="hover:text-white transition">Pricing</button></li>
+              <li><button onClick={() => navigate('/dashboard')} className="hover:text-black transition">Contract Creator</button></li>
+              <li><button onClick={() => navigate('/equity-calculator')} className="hover:text-black transition">Equity Calculator</button></li>
+              <li><button onClick={() => navigate('/pricing')} className="hover:text-black transition">Pricing</button></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-white font-semibold mb-4">Resources</h4>
+            <h4 className="text-black font-semibold mb-4">Resources</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">Newsletter</a></li>
-              <li><a href="#" className="hover:text-white transition">Coaching</a></li>
-              <li><a href="#" className="hover:text-white transition">Attorney Services</a></li>
+              <li><a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="hover:text-black transition">Newsletter</a></li>
+              <li><a href="#" className="hover:text-black transition">Coaching</a></li>
+              <li><a href="#" className="hover:text-black transition">Attorney Services</a></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-white font-semibold mb-4">Company</h4>
+            <h4 className="text-black font-semibold mb-4">Company</h4>
             <ul className="space-y-2 text-sm">
-              <li><button onClick={() => navigate('/about')} className="hover:text-white transition">About</button></li>
-              <li><a href="#" className="hover:text-white transition">Contact</a></li>
-              <li><a href="#" className="hover:text-white transition">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-white transition">Terms of Service</a></li>
+              <li><button onClick={() => navigate('/about')} className="hover:text-black transition">About</button></li>
+              <li><a href="#" className="hover:text-black transition">Contact</a></li>
+              <li><a href="#" className="hover:text-black transition">Privacy Policy</a></li>
+              <li><a href="#" className="hover:text-black transition">Terms of Service</a></li>
             </ul>
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto mt-12 pt-8 border-t border-gray-800 text-sm text-center">
+        <div className="max-w-6xl mx-auto mt-12 pt-8 border-t border-gray-200 text-sm text-center">
           © {new Date().getFullYear()} Cherrytree. All rights reserved.
         </div>
       </footer>
