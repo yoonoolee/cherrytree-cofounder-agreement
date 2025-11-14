@@ -223,7 +223,7 @@ function LandingPage() {
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-6xl mx-auto text-center">
-          <h1 className="font-heading text-5xl md:text-6xl font-normal text-gray-900 mb-3 min-h-[120px] md:min-h-[140px]">
+          <h1 className="font-heading text-[72px] font-normal text-gray-900 mb-3 min-h-[140px]">
             Great companies start
             <br />
             <em className="italic">{typedText || '\u00A0'}</em>
@@ -260,7 +260,7 @@ function LandingPage() {
       <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="sticky top-16 bg-white z-20 pb-8 pt-8">
-            <h2 className="font-heading text-4xl font-medium text-center mb-4">
+            <h2 className="font-heading text-[46px] font-medium text-center mb-4">
               Built for <span className="underline-animate">early-stage
                 <svg viewBox="0 0 250 12" preserveAspectRatio="none">
                   <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
@@ -275,12 +275,12 @@ function LandingPage() {
           <div className="relative">
             {/* Sticky Card - overlays all panels */}
             <div className="absolute top-0 left-0 right-0 h-[300vh] pointer-events-none">
-              <div className="sticky top-[220px] max-w-4xl mx-auto pointer-events-auto">
+              <div className="sticky top-[240px] max-w-4xl mx-auto pointer-events-auto">
                 <div className="bg-white border-2 border-gray-300 rounded-lg p-12 transition-all duration-500">
                   <h3 className="text-[22px] font-medium mb-1">{steps[activeStep].title}</h3>
                   <p className="text-gray-600 mb-8">{steps[activeStep].desc}</p>
                   {/* Space for image */}
-                  <div className="bg-gray-100 rounded-lg h-[350px] flex items-center justify-center">
+                  <div className="bg-gray-100 rounded-lg h-[300px] flex items-center justify-center">
                     <p className="text-gray-400">Image goes here</p>
                   </div>
                 </div>
