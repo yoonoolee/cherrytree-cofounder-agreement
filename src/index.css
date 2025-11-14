@@ -9,6 +9,13 @@ body {
   font-weight: 400;
 }
 
+/* Heading font utility */
+.font-heading {
+  font-family: 'Playfair Display', serif;
+  letter-spacing: -0.03em;
+  line-height: 1em;
+}
+
 /* Make all placeholders lighter */
 ::placeholder {
   color: #D1D5DB !important;
@@ -406,6 +413,39 @@ select:disabled {
   }
   40%, 80% {
     transform: translateX(3px);
+  }
+}
+
+/* Animated underline for early-stage */
+.underline-animate {
+  position: relative;
+  display: inline-block;
+}
+
+.underline-animate svg {
+  position: absolute;
+  left: -2%;
+  bottom: -10px;
+  width: 104%;
+  height: 12px;
+  overflow: visible;
+}
+
+.underline-animate svg path {
+  stroke: #000000;
+  stroke-width: 1.85;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawUnderline 1.2s ease-out forwards;
+  animation-delay: 0.5s;
+}
+
+@keyframes drawUnderline {
+  to {
+    stroke-dashoffset: 0;
   }
 }
 

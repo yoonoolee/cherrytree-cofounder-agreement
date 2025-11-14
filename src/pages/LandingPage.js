@@ -7,6 +7,8 @@ function LandingPage() {
   const [activeTab, setActiveTab] = useState(0);
   const [openFaq, setOpenFaq] = useState(null);
   const [user, setUser] = useState(null);
+  const [typedText, setTypedText] = useState('');
+  const fullText = 'with great company.';
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -14,6 +16,22 @@ function LandingPage() {
     });
     return () => unsubscribe();
   }, []);
+
+  // Typewriter effect for second line with loop
+  useEffect(() => {
+    if (typedText.length < fullText.length) {
+      const timeout = setTimeout(() => {
+        setTypedText(fullText.slice(0, typedText.length + 1));
+      }, 150);
+      return () => clearTimeout(timeout);
+    } else {
+      // Reset after completion and pause
+      const resetTimeout = setTimeout(() => {
+        setTypedText('');
+      }, 2000);
+      return () => clearTimeout(resetTimeout);
+    }
+  }, [typedText]);
 
   // Auto-rotate feature tabs
   useEffect(() => {
@@ -164,14 +182,13 @@ function LandingPage() {
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-medium text-gray-900 mb-6" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Great companies start <em className="italic">with great company</em>.
+          <h1 className="font-heading text-5xl md:text-6xl font-normal text-gray-900 mb-3 min-h-[120px] md:min-h-[140px]">
+            Great companies start
+            <br />
+            <em className="italic">{typedText || '\u00A0'}</em>
           </h1>
-          <p className="text-xl text-gray-600 mb-4 max-w-2xl mx-auto" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Create fair agreements to safeguard both your stake and your relationships.
-          </p>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            You and your cofounder deserve it.
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto font-normal">
+            Create fair agreements to safeguard both your stake and your relationships. You and your cofounder deserve it.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <button
@@ -201,10 +218,14 @@ function LandingPage() {
       {/* Process Section */}
       <section className="py-20 px-6 bg-gray-50">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-medium text-center mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Built for early-stage cofounders.
+          <h2 className="font-heading text-4xl font-medium text-center mb-4">
+            Built for <span className="underline-animate">early-stage
+              <svg viewBox="0 0 250 12" preserveAspectRatio="none">
+                <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
+              </svg>
+            </span> cofounders.
           </h2>
-          <p className="text-xl text-gray-600 text-center mb-16 max-w-3xl mx-auto" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+          <p className="text-xl text-gray-600 text-center mb-16 max-w-3xl mx-auto font-normal">
             Get your equity, expectations, and everything else right from the start.
           </p>
           <div className="grid md:grid-cols-3 gap-8">
@@ -240,7 +261,7 @@ function LandingPage() {
       {/* Features Section */}
       <section id="features" className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16">Everything you need</h2>
+          <h2 className="font-heading text-4xl font-bold text-center mb-16">Everything you need</h2>
 
           {/* Feature Tabs */}
           <div className="flex justify-center gap-4 mb-8">
@@ -262,7 +283,7 @@ function LandingPage() {
           {/* Active Feature */}
           <div className="bg-gray-50 p-12 rounded-lg text-center">
             <div className="text-6xl mb-6">{features[activeTab].icon}</div>
-            <h3 className="text-2xl font-bold mb-4">{features[activeTab].title}</h3>
+            <h3 className="font-heading text-2xl font-bold mb-4">{features[activeTab].title}</h3>
             <p className="text-gray-600 max-w-2xl mx-auto text-lg">
               {features[activeTab].description}
             </p>
@@ -273,7 +294,7 @@ function LandingPage() {
       {/* Pricing Section */}
       <section id="pricing" className="py-20 px-6 bg-gray-50">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4">Simple, transparent pricing</h2>
+          <h2 className="font-heading text-4xl font-bold text-center mb-4">Simple, transparent pricing</h2>
           <p className="text-center text-gray-600 mb-16">Choose the plan that's right for your team</p>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -319,7 +340,7 @@ function LandingPage() {
       {/* FAQ Section */}
       <section id="faq" className="py-20 px-6">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16">Frequently asked questions</h2>
+          <h2 className="font-heading text-4xl font-bold text-center mb-16">Frequently asked questions</h2>
           <div className="space-y-4">
             {faqs.map((faq, i) => (
               <div key={i} className="border border-gray-200 rounded-lg overflow-hidden">
@@ -346,10 +367,10 @@ function LandingPage() {
       {/* Final CTA */}
       <section className="py-20 px-6 bg-[#000000] text-white">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-medium mb-6" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <h2 className="font-heading text-4xl font-medium mb-6">
             Protect your piece of the pie<br />your peace of mind.
           </h2>
-          <p className="text-xl mb-8 opacity-90" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+          <p className="text-xl mb-8 opacity-90 font-normal">
             Join thousands of founders who've secured their partnerships
           </p>
           <button
