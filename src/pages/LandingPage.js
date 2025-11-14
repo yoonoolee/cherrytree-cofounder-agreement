@@ -216,7 +216,7 @@ function LandingPage() {
       </section>
 
       {/* Process Section */}
-      <section className="py-20 px-6 bg-gray-50">
+      <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <h2 className="font-heading text-4xl font-medium text-center mb-4">
             Built for <span className="underline-animate">early-stage
@@ -281,7 +281,7 @@ function LandingPage() {
           </div>
 
           {/* Active Feature */}
-          <div className="bg-gray-50 p-12 rounded-lg text-center">
+          <div className="p-12 rounded-lg text-center">
             <div className="text-6xl mb-6">{features[activeTab].icon}</div>
             <h3 className="font-heading text-2xl font-bold mb-4">{features[activeTab].title}</h3>
             <p className="text-gray-600 max-w-2xl mx-auto text-lg">
@@ -292,7 +292,7 @@ function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-6 bg-gray-50">
+      <section id="pricing" className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <h2 className="font-heading text-4xl font-bold text-center mb-4">Simple, transparent pricing</h2>
           <p className="text-center text-gray-600 mb-16">Choose the plan that's right for your team</p>
@@ -346,7 +346,7 @@ function LandingPage() {
               <div key={i} className="border border-gray-200 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition"
+                  className="w-full px-6 py-4 text-left flex justify-between items-center transition"
                 >
                   <span className="font-semibold">{faq.q}</span>
                   <span className="text-2xl text-gray-400">
@@ -354,7 +354,7 @@ function LandingPage() {
                   </span>
                 </button>
                 {openFaq === i && (
-                  <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                  <div className="px-6 py-4 border-t border-gray-200">
                     <p className="text-gray-700">{faq.a}</p>
                   </div>
                 )}

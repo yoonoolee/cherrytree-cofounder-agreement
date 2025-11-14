@@ -439,7 +439,7 @@ select:disabled {
   stroke-linejoin: round;
   stroke-dasharray: 1000;
   stroke-dashoffset: 1000;
-  animation: drawUnderline 1.2s ease-out forwards;
+  animation: drawUnderline 2s ease-out forwards;
   animation-delay: 0.5s;
 }
 
