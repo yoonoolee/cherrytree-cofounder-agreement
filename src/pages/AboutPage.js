@@ -96,7 +96,7 @@ function AboutPage() {
               )}
               <button
                 onClick={() => navigate('/dashboard')}
-                className="button-shimmer bg-[#000000] text-white px-5 py-1.5 rounded-md hover:bg-[#1a1a1a] transition"
+                className="button-shimmer bg-[#000000] text-white px-5 py-2.5 rounded hover:bg-[#1a1a1a] transition"
               >
                 Create agreement
               </button>
@@ -147,7 +147,7 @@ function AboutPage() {
       </section>
 
       {/* Work With Us Section */}
-      <section className="scroll-section py-24 px-6">
+      <section className="scroll-section pt-24 pb-40 px-6">
         <div className="flex justify-center">
           <div className="flex gap-24 items-start" style={{ maxWidth: '1200px' }}>
             <div className="flex-shrink-0" style={{ minWidth: '280px' }}>

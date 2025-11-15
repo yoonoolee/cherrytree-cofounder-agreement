@@ -66,7 +66,7 @@ function Footer() {
               <ul className="space-y-4 text-sm">
                 <li><a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">Newsletter</a></li>
                 <li><a href="https://app.hubble.social/timhe" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">Coaching</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition">Attorney</a></li>
+                <li><button onClick={() => navigate('/attorney')} className="text-gray-400 hover:text-white transition">Attorney</button></li>
               </ul>
             </div>
 

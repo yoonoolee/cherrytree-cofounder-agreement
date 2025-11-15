@@ -40,7 +40,7 @@ function ContactPage() {
               Contact Us<span style={{ marginLeft: '0.05em' }}>.</span>
             </h1>
             <p className="text-[16px] font-normal" style={{ color: '#716B6B' }}>
-              We'd love to hear from you
+              We'd love to hear from you!
             </p>
           </div>
         </div>

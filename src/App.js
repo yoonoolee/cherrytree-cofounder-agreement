@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ResetPagePosition from './components/ResetPagePosition';
 import LandingPage from './pages/LandingPage';
 import EquityCalculatorPage from './pages/EquityCalculatorPage';
+import AttorneyPage from './pages/AttorneyPage';
 import PricingPage from './pages/PricingPage';
 import AboutPage from './pages/AboutPage';
 import PrivacyPage from './pages/PrivacyPage';
@@ -26,6 +27,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/equity-calculator" element={<EquityCalculatorPage />} />
+        <Route path="/attorney" element={<AttorneyPage />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />

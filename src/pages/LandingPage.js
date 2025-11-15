@@ -95,20 +95,57 @@ function LandingPage() {
     return () => clearTimeout(initialTimeout);
   }, []);
 
-  // Scroll-based step detection
+  // Scroll-based step detection with stacking card animation
+  const [cardOffsets, setCardOffsets] = useState([0, 0, 0]);
+
   useEffect(() => {
     const handleScroll = () => {
-      const panels = document.querySelectorAll('.step-panel');
+      const sectionElement = document.querySelector('.process-section');
+      if (!sectionElement) return;
 
-      panels.forEach((panel, index) => {
-        const rect = panel.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
+      const rect = sectionElement.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
 
-        // Check if panel is in the center of viewport
-        if (rect.top <= windowHeight / 2 && rect.bottom >= windowHeight / 2) {
-          setActiveStep(index);
-        }
-      });
+      // The sticky container has top-[120px], so it becomes sticky at rect.top = 120
+      // We only start animating cards AFTER the section has settled at this sticky position
+      // This ensures the "Built for early-stage cofounders" heading is already at the top
+      // before cards start revealing
+      const settlingPoint = 120;
+
+      let scrollProgress = 0;
+
+      if (rect.top <= settlingPoint) {
+        // Section has reached its sticky position, now calculate animation progress
+        // based on how much further the user has scrolled
+        const scrollDistance = settlingPoint - rect.top;
+        const totalScrollRange = windowHeight * 1.0;
+        scrollProgress = Math.max(0, Math.min(1, scrollDistance / totalScrollRange));
+      }
+
+      // Card height + spacing (approximate)
+      const cardHeight = 280; // Approximate height of each card
+      const spacing = 20; // Gap between cards when stacked
+
+      // Calculate offsets for each card based on scroll progress
+      // Card 1: Always at top (offset 0)
+      // Card 2: Slides down early (10-40% of scroll progress)
+      // Card 3: Slides down next (40-70% of scroll progress)
+
+      const card2Progress = Math.max(0, Math.min(1, (scrollProgress - 0.1) / 0.3));
+      const card3Progress = Math.max(0, Math.min(1, (scrollProgress - 0.4) / 0.3));
+
+      const newOffsets = [
+        0,
+        card2Progress * (cardHeight + spacing),
+        card2Progress * (cardHeight + spacing) + card3Progress * (cardHeight + spacing)
+      ];
+
+      setCardOffsets(newOffsets);
+
+      // Set active step based on which card is most "revealed"
+      if (scrollProgress < 0.3) setActiveStep(0);
+      else if (scrollProgress < 0.6) setActiveStep(1);
+      else setActiveStep(2);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -426,44 +463,53 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* Built for Early-Stage Section */}
-      <section className="scroll-section pt-20 pb-10 px-6">
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="section-header font-heading text-[46px] font-medium mb-4">
-            Built for <span className="underline-animate">early-stage
-              <svg viewBox="0 0 250 12" preserveAspectRatio="none">
-                <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
-              </svg>
-            </span> cofounders<span style={{ marginLeft: '0.05em' }}>.</span>
-          </h2>
-          <p className="text-[16px] max-w-3xl mx-auto font-normal" style={{ color: '#716B6B' }}>
-            Get your equity, expectations, and everything else right from the start.
-          </p>
-        </div>
-      </section>
+      {/* Process Section - Combined heading + cards */}
+      <section className="scroll-section scroll-section-early process-section px-6" style={{ paddingTop: '120px', paddingBottom: '200px' }}>
+        <div className="max-w-7xl mx-auto" style={{ minHeight: '180vh' }}>
+          <div className="sticky top-[120px] mx-auto" style={{ maxWidth: '1200px' }}>
+            {/* Heading - now sticky with cards */}
+            <div className="max-w-6xl mx-auto text-center mb-10">
+              <h2 className="section-header font-heading text-[46px] font-medium mb-4">
+                Built for <span className="underline-animate">early-stage
+                  <svg viewBox="0 0 250 12" preserveAspectRatio="none">
+                    <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
+                  </svg>
+                </span> cofounders<span style={{ marginLeft: '0.05em' }}>.</span>
+              </h2>
+              <p className="text-[16px] max-w-3xl mx-auto font-normal" style={{ color: '#716B6B' }}>
+                Get your equity, expectations, and everything else right from the start.
+              </p>
+            </div>
 
-      {/* Process Section */}
-      <section className="scroll-section scroll-section-early pt-10 pb-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="relative">
-              {/* Sticky Card - overlays all panels */}
-              <div className="absolute top-0 left-0 right-0 h-[150vh] pointer-events-none">
-                <div className="sticky top-[280px] max-w-4xl mx-auto pointer-events-auto">
-                  <div className="bg-white rounded-lg p-12 transition-all duration-500">
-                    <h3 className="text-[22px] font-medium mb-1">{steps[activeStep].title}</h3>
-                    <p className="text-gray-600 mb-8">{steps[activeStep].desc}</p>
-                    {/* Space for image */}
-                    <div className="bg-gray-100 rounded-lg h-[300px] flex items-center justify-center">
-                      <p className="text-gray-400">Image goes here</p>
+            {/* Stacked Cards Container */}
+            <div style={{ height: '900px', position: 'relative' }}>
+              {steps.map((step, index) => {
+                const bgColors = ['#f5f5f5', '#e5e5e5', '#d4d4d4'];
+                return (
+                  <div
+                    key={index}
+                    className="absolute left-0 right-0 rounded-2xl border-2 border-gray-300 p-20 transition-all duration-700 ease-out"
+                    style={{
+                      top: `${40 * index}px`,
+                      transform: `translateY(${cardOffsets[index]}px)`,
+                      zIndex: 3 - index,
+                      opacity: 1,
+                      backgroundColor: bgColors[index]
+                    }}
+                  >
+                  <div className="flex items-start gap-8">
+                    <div className="flex-shrink-0 w-16 h-16 rounded-full bg-black text-white flex items-center justify-center font-semibold text-[22px]">
+                      {step.step}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-[40px] font-medium mb-4">{step.title}</h3>
+                      <p className="text-gray-600 text-[24px] leading-relaxed">{step.desc}</p>
                     </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Invisible scroll panels - half viewport height each, stacked vertically */}
-              <div className="step-panel h-[50vh]"></div>
-              <div className="step-panel h-[50vh]"></div>
-              <div className="step-panel h-[50vh]"></div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
