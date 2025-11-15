@@ -27,9 +27,9 @@ body {
 /* Heading font utility */
 .font-heading {
   font-family: 'That That New Roman', serif;
-  letter-spacing: -0.03em;
+  letter-spacing: 0.006em;
   line-height: 1em;
-  transform: scaleX(1.15);
+  transform: scaleX(1.16);
 }
 
 /* Make all placeholders lighter */
@@ -455,14 +455,26 @@ select:disabled {
   stroke-linejoin: round;
   stroke-dasharray: 1000;
   stroke-dashoffset: 1000;
-  animation: drawUnderline 2s ease-out forwards;
-  animation-delay: 0.5s;
+}
+
+.underline-animate.underline-visible svg path {
+  animation: drawUnderline 3.5s ease-out forwards;
 }
 
 @keyframes drawUnderline {
   to {
     stroke-dashoffset: 0;
   }
+}
+
+/* Scroll-triggered section fade-in */
+.scroll-section {
+  opacity: 0;
+  transition: opacity 1.4s ease-out;
+}
+
+.scroll-section.section-visible {
+  opacity: 1;
 }
 
 /* Shimmer effect for CTA buttons */
@@ -502,5 +514,34 @@ select:disabled {
     left: 120%;
     opacity: 0;
   }
+}
+
+/* Footer cascading fade-in animation (top-left to bottom-right) */
+.footer-cascade-1,
+.footer-cascade-2,
+.footer-cascade-3,
+.footer-cascade-4 {
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+}
+
+.section-visible .footer-cascade-1 {
+  opacity: 1;
+  transition-delay: 0ms;
+}
+
+.section-visible .footer-cascade-2 {
+  opacity: 1;
+  transition-delay: 200ms;
+}
+
+.section-visible .footer-cascade-3 {
+  opacity: 1;
+  transition-delay: 400ms;
+}
+
+.section-visible .footer-cascade-4 {
+  opacity: 1;
+  transition-delay: 600ms;
 }
 

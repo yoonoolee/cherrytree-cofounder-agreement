@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
+import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import Footer from '../components/Footer';
 
 function LandingPage() {
   const navigate = useNavigate();
@@ -139,6 +141,50 @@ function LandingPage() {
     return () => window.removeEventListener('scroll', handleTiltScroll);
   }, []);
 
+  // Scroll-triggered section animations
+  useScrollAnimation();
+
+  // Special early trigger for process section
+  useEffect(() => {
+    const earlyObserverOptions = {
+      threshold: 0.2,
+      rootMargin: '0px 0px -100px 0px'
+    };
+
+    const earlyObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('section-visible');
+          earlyObserver.unobserve(entry.target);
+        }
+      });
+    }, earlyObserverOptions);
+
+    const earlySections = document.querySelectorAll('.scroll-section-early');
+    earlySections.forEach(section => earlyObserver.observe(section));
+
+    // Observe underline animation
+    const underlineObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // Only start the delay timer when section is visible
+          setTimeout(() => {
+            entry.target.classList.add('underline-visible');
+          }, 500);
+          underlineObserver.unobserve(entry.target);
+        }
+      });
+    }, earlyObserverOptions);
+
+    const underline = document.querySelector('.underline-animate');
+    if (underline) underlineObserver.observe(underline);
+
+    return () => {
+      earlySections.forEach(section => earlyObserver.unobserve(section));
+      if (underline) underlineObserver.unobserve(underline);
+    };
+  }, []);
+
   const steps = [
     {
       step: '1',
@@ -247,9 +293,9 @@ function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm z-50">
+      <header className="fixed top-0 left-0 right-0 bg-white z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="cursor-pointer" onClick={() => navigate('/')}>
@@ -285,7 +331,7 @@ function LandingPage() {
               )}
               <button
                 onClick={() => navigate('/dashboard')}
-                className="button-shimmer bg-[#000000] text-white px-5 py-1.5 rounded-md hover:bg-[#1a1a1a] transition"
+                className="button-shimmer bg-[#000000] text-white px-5 py-2.5 rounded hover:bg-[#1a1a1a] transition"
               >
                 Create agreement
               </button>
@@ -295,7 +341,7 @@ function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-12 px-6">
+      <section className="scroll-section pt-32 pb-12 px-6">
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="font-heading text-[72px] font-normal text-gray-900 mb-6 min-h-[140px]">
             Great companies start
@@ -313,7 +359,7 @@ function LandingPage() {
               Create agreement
             </button>
             <p className="text-sm text-gray-600">
-              or <a href="#" className="underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
+              or <a href="#" className="text-black underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
             </p>
           </div>
 
@@ -368,25 +414,28 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* Process Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="sticky top-16 bg-white z-20 pb-8 pt-8">
-            <h2 className="font-heading text-[46px] font-medium text-center mb-4">
-              Built for <span className="underline-animate">early-stage
-                <svg viewBox="0 0 250 12" preserveAspectRatio="none">
-                  <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
-                </svg>
-              </span> cofounders<span style={{ marginLeft: '0.05em' }}>.</span>
-            </h2>
-            <p className="text-[16px] text-center max-w-3xl mx-auto font-normal" style={{ color: '#716B6B' }}>
-              Get your equity, expectations, and everything else right from the start.
-            </p>
-          </div>
+      {/* Built for Early-Stage Section */}
+      <section className="scroll-section py-20 px-6">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="font-heading text-[46px] font-medium mb-4">
+            Built for <span className="underline-animate">early-stage
+              <svg viewBox="0 0 250 12" preserveAspectRatio="none">
+                <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
+              </svg>
+            </span> cofounders<span style={{ marginLeft: '0.05em' }}>.</span>
+          </h2>
+          <p className="text-[16px] max-w-3xl mx-auto font-normal" style={{ color: '#716B6B' }}>
+            Get your equity, expectations, and everything else right from the start.
+          </p>
+        </div>
+      </section>
 
+      {/* Process Section */}
+      <section className="scroll-section scroll-section-early py-20 px-6">
+        <div className="max-w-6xl mx-auto">
           <div className="relative">
             {/* Sticky Card - overlays all panels */}
-            <div className="absolute top-0 left-0 right-0 h-[300vh] pointer-events-none">
+            <div className="absolute top-0 left-0 right-0 h-[150vh] pointer-events-none">
               <div className="sticky top-[240px] max-w-4xl mx-auto pointer-events-auto">
                 <div className="bg-white rounded-lg p-12 transition-all duration-500">
                   <h3 className="text-[22px] font-medium mb-1">{steps[activeStep].title}</h3>
@@ -399,16 +448,16 @@ function LandingPage() {
               </div>
             </div>
 
-            {/* Invisible scroll panels - full viewport height each, stacked vertically */}
-            <div className="step-panel h-screen"></div>
-            <div className="step-panel h-screen"></div>
-            <div className="step-panel h-screen"></div>
+            {/* Invisible scroll panels - half viewport height each, stacked vertically */}
+            <div className="step-panel h-[50vh]"></div>
+            <div className="step-panel h-[50vh]"></div>
+            <div className="step-panel h-[50vh]"></div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-6">
+      <section id="features" className="scroll-section py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <h2 className="font-heading text-[46px] font-medium text-center mb-16">Turn your cofoundership into a company, today<span style={{ marginLeft: '0.05em' }}>.</span></h2>
 
@@ -481,7 +530,7 @@ function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-6">
+      <section id="pricing" className="scroll-section py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <h2 className="font-heading text-[46px] font-medium text-center mb-4">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
           <p className="text-center text-[16px] mb-16 font-normal" style={{ color: '#716B6B' }}>Choose the plan that's right for your team</p>
@@ -527,9 +576,9 @@ function LandingPage() {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="py-20 px-6">
+      <section id="faq" className="scroll-section py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="flex gap-16 items-start">
+          <div className="flex gap-80 items-start justify-center ml-32">
             <div className="flex-shrink-0">
               <h2 className="font-heading text-[46px] font-medium">FAQs<span style={{ marginLeft: '0.05em' }}>.</span></h2>
             </div>
@@ -546,7 +595,7 @@ function LandingPage() {
                     </span>
                   </button>
                   <div
-                    className={`accordion-content overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-[1000px] py-4 px-4' : 'max-h-0 py-0 px-4'}`}
+                    className={`accordion-content overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-[1000px] py-8 px-4' : 'max-h-0 py-0 px-4'}`}
                   >
                     <p className="text-gray-600 text-[0.95rem]">{faq.a}</p>
                   </div>
@@ -558,7 +607,7 @@ function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 px-6 bg-white text-gray-900">
+      <section className="scroll-section py-20 px-6 bg-white text-gray-900">
         <div className="headline-container">
           <h1 className="typing-title font-heading">
             <span className="first-line">Protect your piece of the pie</span>
@@ -578,65 +627,31 @@ function LandingPage() {
               Create agreement
             </button>
             <p className="text-sm text-gray-600">
-              or <a href="#" className="underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
+              or <a href="#" className="text-black underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
             </p>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative bg-black text-white pt-24 pb-20 px-6">
-        {/* Rounded top border */}
-        <div className="absolute top-0 left-0 right-0 h-12 bg-white rounded-b-[48px]"></div>
-
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="flex flex-col md:flex-row justify-between gap-12">
-            {/* Left side - Logo and copyright */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <svg width="32" height="32" viewBox="22 22 56 56" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M70.63,61.53c-.77-5.18-5.27-6.64-10.45-5.86l-.39.06C57.39,47.09,53,42.27,49.53,39.66c3.65.71,6.83.23,9.74-3.08,1.9-2.18,2.83-5.14,5.75-7.53a.46.46,0,0,0-.17-.8c-5.07-1.4-11.84-1.08-15.43,3a13.83,13.83,0,0,0-3.17,6.38,18.48,18.48,0,0,0-4.87-1.73.35.35,0,0,0-.41.3l-.23,1.62a.35.35,0,0,0,.28.4A17.86,17.86,0,0,1,45.74,40c2.49,6.14-2.9,13.55-5.88,17-4.7-1.25-9-.37-10.28,4.33a8.89,8.89,0,1,0,17.15,4.67c1.16-4.26-1.42-7.08-5.4-8.54A37.59,37.59,0,0,0,45,52.51c2.59-4.14,3.57-8,2.91-11.25l.42.3A25.14,25.14,0,0,1,58.47,56c-4.28,1.08-7.25,3.73-6.57,8.31a9.47,9.47,0,1,0,18.73-2.79Z" fill="white"/>
-                </svg>
-                <span className="text-white text-xl font-semibold">Cherrytree</span>
-              </div>
-              <p className="text-gray-400 text-sm">© {new Date().getFullYear()} Cherrytree</p>
-            </div>
-
-            {/* Right side - Three columns */}
-            <div className="grid grid-cols-3 gap-12 ml-auto">
-              <div>
-                <h4 className="text-white text-sm mb-4">Product</h4>
-                <ul className="space-y-4 text-sm">
-                  <li><button onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-white transition">Contract Creator</button></li>
-                  <li><button onClick={() => navigate('/equity-calculator')} className="text-gray-400 hover:text-white transition">Equity Calculator</button></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white transition">Compatibility Quiz</a></li>
-                  <li><button onClick={() => navigate('/pricing')} className="text-gray-400 hover:text-white transition">Pricing</button></li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="text-white text-sm mb-4">Resources</h4>
-                <ul className="space-y-4 text-sm">
-                  <li><a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">Newsletter</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white transition">Coaching</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white transition">Attorney</a></li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="text-white text-sm mb-4">Company</h4>
-                <ul className="space-y-4 text-sm">
-                  <li><a href="#" className="text-gray-400 hover:text-white transition">Privacy</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white transition">Terms</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white transition">Contact</a></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       <style jsx>{`
+        /* Disable fadeInDown/fadeInUp animations on landing page only */
+        .scroll-section .text-3xl,
+        .scroll-section .leading-relaxed,
+        .scroll-section .space-y-6 > div,
+        .scroll-section .space-y-8 > div,
+        .scroll-section .space-y-10 > div,
+        .scroll-section .space-y-12 > div,
+        .scroll-section .animate-fade-up,
+        .scroll-section .animate-fade-down,
+        .scroll-section [class*="animate-fade"] {
+          animation: none !important;
+          opacity: 1 !important;
+          transform: none !important;
+        }
+
         .logo-scroller {
           position: relative;
           overflow: hidden;
