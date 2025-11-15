@@ -10,7 +10,12 @@ function LandingPage() {
   const [typedText, setTypedText] = useState('');
   const [activeStep, setActiveStep] = useState(0);
   const [cardTilt, setCardTilt] = useState(15);
+  const [activeFeature, setActiveFeature] = useState(0);
+  const [showSecondImage, setShowSecondImage] = useState(false);
+  const [shrinkFirst, setShrinkFirst] = useState(false);
+  const [typedAnd, setTypedAnd] = useState('');
   const fullText = 'with great company.';
+  const andText = 'and';
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -35,12 +40,57 @@ function LandingPage() {
     }
   }, [typedText]);
 
-  // Auto-rotate feature tabs
+  // Feature animation for Contract Creator
+  useEffect(() => {
+    if (activeFeature !== 0) return;
+
+    const runAnimation = () => {
+      setShrinkFirst(false);
+      setShowSecondImage(false);
+
+      setTimeout(() => setShrinkFirst(false), 500);
+      setTimeout(() => setShrinkFirst(true), 2000);
+      setTimeout(() => setShowSecondImage(true), 2300);
+      setTimeout(() => {
+        setShrinkFirst(false);
+        setShowSecondImage(false);
+      }, 4500);
+    };
+
+    runAnimation();
+    const interval = setInterval(runAnimation, 5700);
+    return () => clearInterval(interval);
+  }, [activeFeature]);
+
+  // Auto-rotate features
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveTab((prev) => (prev + 1) % 3);
-    }, 5000);
+      setActiveFeature((prev) => (prev + 1) % 3);
+    }, 11400);
     return () => clearInterval(interval);
+  }, []);
+
+  // Typing animation for "and"
+  useEffect(() => {
+    const typeLoop = () => {
+      let index = 0;
+      const type = () => {
+        if (index < andText.length) {
+          index++;
+          setTypedAnd(andText.slice(0, index));
+          setTimeout(type, 200);
+        } else {
+          setTimeout(() => {
+            setTypedAnd('');
+            setTimeout(typeLoop, 200);
+          }, 1000);
+        }
+      };
+      type();
+    };
+
+    const initialTimeout = setTimeout(typeLoop, 50);
+    return () => clearTimeout(initialTimeout);
   }, []);
 
   // Scroll-based step detection
@@ -110,18 +160,18 @@ function LandingPage() {
   const features = [
     {
       title: 'Contract Creator',
-      description: 'Generate customized cofounder agreements in minutes, not days. Our intelligent system asks the right questions to create documents tailored to your situation.',
-      icon: '📄'
+      description: 'Generate a ready-to-use, fully customized document in minutes and start building your partnership with confidence.',
+      id: 'contract-creator'
     },
     {
       title: 'Equity Calculator',
-      description: 'AI-powered equity split calculator that considers multiple factors: time commitment, expertise, capital contribution, and opportunity cost to ensure fair distribution.',
-      icon: '📊'
+      description: 'Use our AI to calculate equity without the guesswork. Get precise, fair equity splits instantly, so everyone knows where they stand.',
+      id: 'equity-calculator'
     },
     {
       title: 'Expert Guidance',
-      description: 'Access to experienced cofounder coaches and attorney review. Get professional support when you need it most, without the enterprise price tag.',
-      icon: '👥'
+      description: 'Cofounder coaches and attorneys ready to help. We are here to guide you every step of the way.',
+      id: 'expert-guidance'
     }
   ];
 
@@ -167,32 +217,32 @@ function LandingPage() {
 
   const faqs = [
     {
-      q: 'When should I create a cofounder agreement?',
-      a: 'Ideally before you start working together. The earlier the better - it prevents misunderstandings and protects everyone involved.'
+      q: 'What\'s a cofounder agreement, and why do I need one?',
+      a: 'It\'s basically a prenup for your startup. It spells out equity, roles, and expectations so you don\'t end up in a messy breakup later. Think of it as cheap insurance against expensive fights.'
     },
     {
-      q: 'How long does it take to complete?',
-      a: 'Most teams complete the questionnaire in 30-60 minutes. You can save and return anytime.'
+      q: 'When\'s the right time to create a cofounder agreement?',
+      a: 'As early as possible. Day one is ideal, but day 100 is still better than never. The earlier you do it, the easier (and less awkward) it is.'
     },
     {
-      q: 'Can I update the agreement later?',
-      a: 'Yes, circumstances change. We recommend reviewing and updating annually or when significant changes occur.'
+      q: 'How long does it take to complete with Cherrytree?',
+      a: 'Around 30-60 minutes. That\'s less time than a pitch deck tweak or your daily doomscroll.'
     },
     {
-      q: 'How is this different from templates?',
-      a: 'Templates are one-size-fits-all. Our system asks targeted questions to create a customized agreement specific to your situation.'
+      q: 'Can I update the agreement later if things change?',
+      a: 'Absolutely. Startups evolve, and so can your agreement. You can revisit and revise as roles, equity, or goals shift.'
     },
     {
-      q: 'Do I need a lawyer?',
-      a: 'Our Starter plan is legally sound for most teams. For complex situations or peace of mind, our Pro plan includes attorney review.'
+      q: 'How is Cherrytree different from free templates online?',
+      a: 'Templates are generic and don\'t ask the hard questions. Cherrytree guides you step by step, highlights differences in answers, and gives you a founder-friendly, investor-ready document.'
     },
     {
-      q: 'What if my cofounder disagrees on equity?',
-      a: 'Our equity calculator and coaching services help facilitate fair conversations and find mutually agreeable solutions.'
+      q: 'Do both cofounders need to be present at the same time?',
+      a: 'Nope. You can each fill it out separately, then compare and finalize together.'
     },
     {
-      q: 'Is my data secure?',
-      a: 'Yes. We use enterprise-grade encryption and never share your information. Your data is stored securely on Firebase.'
+      q: 'Can we e-sign the agreement once it\'s done?',
+      a: 'Yes. You\'ll get a ready-to-sign document you can execute digitally. No printer required.'
     }
   ];
 
@@ -202,11 +252,12 @@ function LandingPage() {
       <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <svg width="28" height="28" viewBox="22 22 56 56" xmlns="http://www.w3.org/2000/svg">
-                <path d="M70.63,61.53c-.77-5.18-5.27-6.64-10.45-5.86l-.39.06C57.39,47.09,53,42.27,49.53,39.66c3.65.71,6.83.23,9.74-3.08,1.9-2.18,2.83-5.14,5.75-7.53a.46.46,0,0,0-.17-.8c-5.07-1.4-11.84-1.08-15.43,3a13.83,13.83,0,0,0-3.17,6.38,18.48,18.48,0,0,0-4.87-1.73.35.35,0,0,0-.41.3l-.23,1.62a.35.35,0,0,0,.28.4A17.86,17.86,0,0,1,45.74,40c2.49,6.14-2.9,13.55-5.88,17-4.7-1.25-9-.37-10.28,4.33a8.89,8.89,0,1,0,17.15,4.67c1.16-4.26-1.42-7.08-5.4-8.54A37.59,37.59,0,0,0,45,52.51c2.59-4.14,3.57-8,2.91-11.25l.42.3A25.14,25.14,0,0,1,58.47,56c-4.28,1.08-7.25,3.73-6.57,8.31a9.47,9.47,0,1,0,18.73-2.79Z" fill="black"/>
-              </svg>
-              <span className="text-base font-semibold">Cherrytree</span>
+            <div className="cursor-pointer" onClick={() => navigate('/')}>
+              <img
+                src="/images/cherrytree-logo.png"
+                alt="Cherrytree"
+                style={{ height: '32px', width: 'auto' }}
+              />
             </div>
 
             <nav className="hidden md:flex items-center gap-6 absolute left-1/2 transform -translate-x-1/2 text-sm">
@@ -269,22 +320,22 @@ function LandingPage() {
           {/* Logo Carousel */}
           <div className="logo-scroller">
             <div className="logo-track">
-              <div className="logo-box"><img src="https://i-p.rmcdn.net/628697f4bb204c00329fc3ff/3678102/image-ebaf55a8-a29f-4b96-a4dd-511a1b997a9f.png" alt="Client 1" /></div>
-              <div className="logo-box"><img src="https://app.hubble.social/images/Hubble_Logo_Metadata.png" alt="Client 2" /></div>
-              <div className="logo-box"><img src="https://1000logos.net/wp-content/uploads/2024/10/A16z-Logo.jpg" alt="Client 3" /></div>
-              <div className="logo-box"><img src="https://s8968.pcdn.co/crae/wp-content/uploads/sites/3/2017/07/berkeley-logo.png" alt="Client 4" /></div>
-              <div className="logo-box"><img src="https://widelensleadership.com/wp-content/uploads/2020/10/stanford-bw-logo.png" alt="Client 5" /></div>
-              <div className="logo-box"><img src="https://meta-q.cdn.bubble.io/f1709745653083x789810065436331800/sg-stacked-black.svg" alt="Client 6" /></div>
-              <div className="logo-box"><img src="https://miro.medium.com/v2/resize:fit:1400/1*g8ke5RY7vcZvtxV-1t6ibw.png" alt="Client 7" /></div>
+              <div className="logo-box"><img src="/images/yc-logo.png" alt="Y Combinator" /></div>
+              <div className="logo-box"><img src="/images/hubble-logo.png" alt="Hubble" /></div>
+              <div className="logo-box"><img src="/images/a16z-logo.jpg" alt="a16z" /></div>
+              <div className="logo-box"><img src="/images/berkeley-logo.png" alt="Berkeley" /></div>
+              <div className="logo-box"><img src="/images/stanford-logo.png" alt="Stanford" /></div>
+              <div className="logo-box"><img src="/images/sequoia-logo.png" alt="Sequoia" /></div>
+              <div className="logo-box"><img src="/images/startupgrind-logo.png" alt="Startup Grind" /></div>
 
               {/* duplicate logos for seamless scroll */}
-              <div className="logo-box"><img src="https://i-p.rmcdn.net/628697f4bb204c00329fc3ff/3678102/image-ebaf55a8-a29f-4b96-a4dd-511a1b997a9f.png" alt="Client 1" /></div>
-              <div className="logo-box"><img src="https://app.hubble.social/images/Hubble_Logo_Metadata.png" alt="Client 2" /></div>
-              <div className="logo-box"><img src="https://1000logos.net/wp-content/uploads/2024/10/A16z-Logo.jpg" alt="Client 3" /></div>
-              <div className="logo-box"><img src="https://s8968.pcdn.co/crae/wp-content/uploads/sites/3/2017/07/berkeley-logo.png" alt="Client 4" /></div>
-              <div className="logo-box"><img src="https://widelensleadership.com/wp-content/uploads/2020/10/stanford-bw-logo.png" alt="Client 5" /></div>
-              <div className="logo-box"><img src="https://meta-q.cdn.bubble.io/f1709745653083x789810065436331800/sg-stacked-black.svg" alt="Client 6" /></div>
-              <div className="logo-box"><img src="https://miro.medium.com/v2/resize:fit:1400/1*g8ke5RY7vcZvtxV-1t6ibw.png" alt="Client 7" /></div>
+              <div className="logo-box"><img src="/images/yc-logo.png" alt="Y Combinator" /></div>
+              <div className="logo-box"><img src="/images/hubble-logo.png" alt="Hubble" /></div>
+              <div className="logo-box"><img src="/images/a16z-logo.jpg" alt="a16z" /></div>
+              <div className="logo-box"><img src="/images/berkeley-logo.png" alt="Berkeley" /></div>
+              <div className="logo-box"><img src="/images/stanford-logo.png" alt="Stanford" /></div>
+              <div className="logo-box"><img src="/images/sequoia-logo.png" alt="Sequoia" /></div>
+              <div className="logo-box"><img src="/images/startupgrind-logo.png" alt="Startup Grind" /></div>
             </div>
           </div>
 
@@ -326,7 +377,7 @@ function LandingPage() {
                 <svg viewBox="0 0 250 12" preserveAspectRatio="none">
                   <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
                 </svg>
-              </span> cofounders.
+              </span> cofounders<span style={{ marginLeft: '0.05em' }}>.</span>
             </h2>
             <p className="text-[16px] text-center max-w-3xl mx-auto font-normal" style={{ color: '#716B6B' }}>
               Get your equity, expectations, and everything else right from the start.
@@ -359,32 +410,72 @@ function LandingPage() {
       {/* Features Section */}
       <section id="features" className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="font-heading text-4xl font-bold text-center mb-16">Everything you need</h2>
+          <h2 className="font-heading text-[46px] font-medium text-center mb-16">Turn your cofoundership into a company, today<span style={{ marginLeft: '0.05em' }}>.</span></h2>
 
-          {/* Feature Tabs */}
-          <div className="flex justify-center gap-4 mb-8">
-            {features.map((feature, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveTab(i)}
-                className={`px-6 py-3 rounded-lg font-medium transition ${
-                  activeTab === i
-                    ? 'bg-[#000000] text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+          <div className="features-container">
+            <div className="features-left">
+              {features.map((feature, i) => (
+                <div
+                  key={i}
+                  className={`feature-card ${activeFeature === i ? 'active' : ''}`}
+                  onClick={() => setActiveFeature(i)}
+                >
+                  <h3 className="feature-title">{feature.title}</h3>
+                  <p className={`feature-description ${activeFeature === i ? 'active' : ''}`}>
+                    {feature.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="feature-visual">
+              {/* Contract Creator - Dual Image */}
+              <div
+                className={`visual-content ${activeFeature === 0 ? 'active' : ''}`}
+                id="contract-creator"
+                style={{
+                  opacity: activeFeature === 0 && !showSecondImage ? 1 : 0,
+                  transform: shrinkFirst ? 'translateX(-73%) scale(0.75)' : 'translateX(-50%) scale(1)',
+                  display: activeFeature === 0 ? 'flex' : 'none'
+                }}
               >
-                {feature.icon} {feature.title}
-              </button>
-            ))}
-          </div>
+                <img src="https://i.imgur.com/UkaZJir.png" alt="Contract Creator" />
+              </div>
+              <div
+                className={`visual-content ${showSecondImage ? 'visible' : ''}`}
+                id="contract-creator-secondary"
+                style={{
+                  opacity: showSecondImage ? 1 : 0,
+                  display: activeFeature === 0 ? 'flex' : 'none'
+                }}
+              >
+                <img src="https://i.imgur.com/UkaZJir.png" alt="Contract Creator Secondary" />
+              </div>
 
-          {/* Active Feature */}
-          <div className="p-12 rounded-lg text-center">
-            <div className="text-6xl mb-6">{features[activeTab].icon}</div>
-            <h3 className="font-heading text-2xl font-bold mb-4">{features[activeTab].title}</h3>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              {features[activeTab].description}
-            </p>
+              {/* Equity Calculator */}
+              <div
+                className={`visual-content ${activeFeature === 1 ? 'active' : ''}`}
+                id="equity-calculator"
+                style={{
+                  opacity: activeFeature === 1 ? 1 : 0,
+                  display: activeFeature === 1 ? 'flex' : 'none'
+                }}
+              >
+                <img src="https://i.imgur.com/MkNDfYx.gif" alt="Equity Calculator" />
+              </div>
+
+              {/* Expert Guidance */}
+              <div
+                className={`visual-content ${activeFeature === 2 ? 'active' : ''}`}
+                id="expert-guidance"
+                style={{
+                  opacity: activeFeature === 2 ? 1 : 0,
+                  display: activeFeature === 2 ? 'flex' : 'none'
+                }}
+              >
+                <img src="https://i.imgur.com/UkaZJir.png" alt="Expert Guidance" />
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -392,7 +483,7 @@ function LandingPage() {
       {/* Pricing Section */}
       <section id="pricing" className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="font-heading text-4xl font-bold text-center mb-4">Simple, transparent pricing</h2>
+          <h2 className="font-heading text-[46px] font-medium text-center mb-4">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
           <p className="text-center text-[16px] mb-16 font-normal" style={{ color: '#716B6B' }}>Choose the plan that's right for your team</p>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -437,93 +528,111 @@ function LandingPage() {
 
       {/* FAQ Section */}
       <section id="faq" className="py-20 px-6">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="font-heading text-4xl font-bold text-center mb-16">Frequently asked questions</h2>
-          <div className="space-y-4">
-            {faqs.map((faq, i) => (
-              <div key={i} className="border border-gray-200 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full px-6 py-4 text-left flex justify-between items-center transition"
-                >
-                  <span className="font-semibold">{faq.q}</span>
-                  <span className="text-2xl text-gray-400">
-                    {openFaq === i ? '−' : '+'}
-                  </span>
-                </button>
-                {openFaq === i && (
-                  <div className="px-6 py-4 border-t border-gray-200">
-                    <p className="text-gray-700">{faq.a}</p>
+        <div className="max-w-6xl mx-auto">
+          <div className="flex gap-16 items-start">
+            <div className="flex-shrink-0">
+              <h2 className="font-heading text-[46px] font-medium">FAQs<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+            </div>
+            <div className="flex-1 max-w-[700px]">
+              {faqs.map((faq, i) => (
+                <div key={i} className="accordion-item border-b border-gray-300">
+                  <button
+                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                    className="accordion-title w-full py-5 px-4 flex justify-between items-center transition hover:bg-gray-50 text-left"
+                  >
+                    <span className="font-medium text-black">{faq.q}</span>
+                    <span className={`accordion-icon text-gray-400 font-light transition-all duration-300 flex-shrink-0 ${openFaq === i ? 'rotate-90 scale-110 text-gray-700' : ''}`}>
+                      +
+                    </span>
+                  </button>
+                  <div
+                    className={`accordion-content overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-[1000px] py-4 px-4' : 'max-h-0 py-0 px-4'}`}
+                  >
+                    <p className="text-gray-600 text-[0.95rem]">{faq.a}</p>
                   </div>
-                )}
-              </div>
-            ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Final CTA */}
       <section className="py-20 px-6 bg-white text-gray-900">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-heading text-4xl font-medium mb-6">
-            Protect your piece of the pie<br />your peace of mind.
-          </h2>
-          <p className="text-xl mb-8 text-gray-600 font-normal">
-            Join thousands of founders who've secured their partnerships
-          </p>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="button-shimmer bg-[#000000] text-white px-8 py-4 rounded-md text-lg font-semibold hover:bg-[#1a1a1a] transition"
-          >
-            Create your agreement today
-          </button>
+        <div className="headline-container">
+          <h1 className="typing-title font-heading">
+            <span className="first-line">Protect your piece of the pie</span>
+            <span className="second-line">
+              <span className="typing-container">
+                <em className="typing-and">{typedAnd || '\u00A0'}</em>
+              </span> your peace of mind.
+            </span>
+          </h1>
+        </div>
+        <div className="max-w-4xl mx-auto text-center mt-16">
+          <div className="flex flex-col items-center gap-3">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="button-shimmer bg-[#000000] text-white px-16 py-4 rounded-md text-[16px] font-normal hover:bg-[#1a1a1a] transition"
+            >
+              Create agreement
+            </button>
+            <p className="text-sm text-gray-600">
+              or <a href="#" className="underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
+            </p>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-white text-gray-600 pt-80 pb-12 px-6">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-8">
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <svg width="24" height="24" viewBox="22 22 56 56" xmlns="http://www.w3.org/2000/svg">
-                <path d="M70.63,61.53c-.77-5.18-5.27-6.64-10.45-5.86l-.39.06C57.39,47.09,53,42.27,49.53,39.66c3.65.71,6.83.23,9.74-3.08,1.9-2.18,2.83-5.14,5.75-7.53a.46.46,0,0,0-.17-.8c-5.07-1.4-11.84-1.08-15.43,3a13.83,13.83,0,0,0-3.17,6.38,18.48,18.48,0,0,0-4.87-1.73.35.35,0,0,0-.41.3l-.23,1.62a.35.35,0,0,0,.28.4A17.86,17.86,0,0,1,45.74,40c2.49,6.14-2.9,13.55-5.88,17-4.7-1.25-9-.37-10.28,4.33a8.89,8.89,0,1,0,17.15,4.67c1.16-4.26-1.42-7.08-5.4-8.54A37.59,37.59,0,0,0,45,52.51c2.59-4.14,3.57-8,2.91-11.25l.42.3A25.14,25.14,0,0,1,58.47,56c-4.28,1.08-7.25,3.73-6.57,8.31a9.47,9.47,0,1,0,18.73-2.79Z" fill="black"/>
-              </svg>
-              <span className="text-black font-semibold">Cherrytree</span>
+      <footer className="relative bg-black text-white pt-24 pb-20 px-6">
+        {/* Rounded top border */}
+        <div className="absolute top-0 left-0 right-0 h-12 bg-white rounded-b-[48px]"></div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="flex flex-col md:flex-row justify-between gap-12">
+            {/* Left side - Logo and copyright */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <svg width="32" height="32" viewBox="22 22 56 56" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M70.63,61.53c-.77-5.18-5.27-6.64-10.45-5.86l-.39.06C57.39,47.09,53,42.27,49.53,39.66c3.65.71,6.83.23,9.74-3.08,1.9-2.18,2.83-5.14,5.75-7.53a.46.46,0,0,0-.17-.8c-5.07-1.4-11.84-1.08-15.43,3a13.83,13.83,0,0,0-3.17,6.38,18.48,18.48,0,0,0-4.87-1.73.35.35,0,0,0-.41.3l-.23,1.62a.35.35,0,0,0,.28.4A17.86,17.86,0,0,1,45.74,40c2.49,6.14-2.9,13.55-5.88,17-4.7-1.25-9-.37-10.28,4.33a8.89,8.89,0,1,0,17.15,4.67c1.16-4.26-1.42-7.08-5.4-8.54A37.59,37.59,0,0,0,45,52.51c2.59-4.14,3.57-8,2.91-11.25l.42.3A25.14,25.14,0,0,1,58.47,56c-4.28,1.08-7.25,3.73-6.57,8.31a9.47,9.47,0,1,0,18.73-2.79Z" fill="white"/>
+                </svg>
+                <span className="text-white text-xl font-semibold">Cherrytree</span>
+              </div>
+              <p className="text-gray-400 text-sm">© {new Date().getFullYear()} Cherrytree</p>
             </div>
-            <p className="text-sm">Cofounder coaching for early-stage teams</p>
-          </div>
 
-          <div>
-            <h4 className="text-black font-semibold mb-4">Product</h4>
-            <ul className="space-y-2 text-sm">
-              <li><button onClick={() => navigate('/dashboard')} className="hover:text-black transition">Contract Creator</button></li>
-              <li><button onClick={() => navigate('/equity-calculator')} className="hover:text-black transition">Equity Calculator</button></li>
-              <li><button onClick={() => navigate('/pricing')} className="hover:text-black transition">Pricing</button></li>
-            </ul>
-          </div>
+            {/* Right side - Three columns */}
+            <div className="grid grid-cols-3 gap-12 ml-auto">
+              <div>
+                <h4 className="text-white text-sm mb-4">Product</h4>
+                <ul className="space-y-4 text-sm">
+                  <li><button onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-white transition">Contract Creator</button></li>
+                  <li><button onClick={() => navigate('/equity-calculator')} className="text-gray-400 hover:text-white transition">Equity Calculator</button></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition">Compatibility Quiz</a></li>
+                  <li><button onClick={() => navigate('/pricing')} className="text-gray-400 hover:text-white transition">Pricing</button></li>
+                </ul>
+              </div>
 
-          <div>
-            <h4 className="text-black font-semibold mb-4">Resources</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="hover:text-black transition">Newsletter</a></li>
-              <li><a href="#" className="hover:text-black transition">Coaching</a></li>
-              <li><a href="#" className="hover:text-black transition">Attorney Services</a></li>
-            </ul>
-          </div>
+              <div>
+                <h4 className="text-white text-sm mb-4">Resources</h4>
+                <ul className="space-y-4 text-sm">
+                  <li><a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">Newsletter</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition">Coaching</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition">Attorney</a></li>
+                </ul>
+              </div>
 
-          <div>
-            <h4 className="text-black font-semibold mb-4">Company</h4>
-            <ul className="space-y-2 text-sm">
-              <li><button onClick={() => navigate('/about')} className="hover:text-black transition">About</button></li>
-              <li><a href="#" className="hover:text-black transition">Contact</a></li>
-              <li><a href="#" className="hover:text-black transition">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-black transition">Terms of Service</a></li>
-            </ul>
+              <div>
+                <h4 className="text-white text-sm mb-4">Company</h4>
+                <ul className="space-y-4 text-sm">
+                  <li><a href="#" className="text-gray-400 hover:text-white transition">Privacy</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition">Terms</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition">Contact</a></li>
+                </ul>
+              </div>
+            </div>
           </div>
-        </div>
-
-        <div className="max-w-6xl mx-auto mt-12 pt-8 border-t border-gray-200 text-sm text-center">
-          © {new Date().getFullYear()} Cherrytree. All rights reserved.
         </div>
       </footer>
 
@@ -570,6 +679,208 @@ function LandingPage() {
           .logo-track {
             animation: scroll 15s linear infinite;
           }
+        }
+
+        /* Features Section Styles */
+        .features-container {
+          max-width: 1300px;
+          margin: 0 auto;
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .features-left, .feature-visual {
+          flex: 1 1 0;
+          min-width: 300px;
+          display: flex;
+          flex-direction: column;
+          position: relative;
+        }
+
+        .features-left {
+          gap: 12px;
+        }
+
+        .feature-card {
+          background: #f7f7f7;
+          border: 1px solid transparent;
+          border-radius: 8px;
+          padding: 32px;
+          cursor: pointer;
+          transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+          min-height: 160px;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          text-align: left;
+        }
+
+        .feature-card:hover {
+          transform: translateX(4px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+          border-color: #e8e8e8;
+        }
+
+        .feature-card.active {
+          border-color: #e8e8e8;
+          background: #ffffff;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        .feature-title {
+          font-family: 'Inter', sans-serif;
+          font-size: 24px;
+          font-weight: 500;
+          color: #888888;
+          margin: 0 0 16px 0;
+          text-align: left;
+          transition: color 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .feature-card.active .feature-title {
+          color: #333333;
+        }
+
+        .feature-description {
+          font-family: 'Inter', sans-serif;
+          font-size: 15px;
+          color: #666;
+          line-height: 1.3;
+          margin: 0 0 8px 0;
+          opacity: 0;
+          display: none;
+          text-align: left;
+          transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .feature-description.active {
+          display: block;
+          opacity: 1;
+        }
+
+        .feature-visual {
+          background: #ffffff;
+          border-radius: 8px;
+          box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+          overflow: hidden;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          padding: 16px 32px;
+          border: 12px solid #f7f7f7;
+          min-height: calc(160px*3 + 24px);
+          display: flex;
+        }
+
+        .visual-content {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4,0,0.2,1);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        #contract-creator {
+          left: 50%;
+          z-index: 2;
+          transition: opacity 0.5s ease, transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #contract-creator-secondary {
+          left: 50%;
+          transform: translateX(-27%) scale(0.75);
+          z-index: 1;
+          transition: opacity 0.6s ease, transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #contract-creator img,
+        #contract-creator-secondary img {
+          width: 390px;
+          height: 568px;
+          object-fit: cover;
+          border-radius: 8px;
+          border: 1px solid #ccc;
+          background: #fff;
+        }
+
+        #equity-calculator img,
+        #expert-guidance img {
+          width: 390px;
+          height: 568px;
+          object-fit: cover;
+          border-radius: 8px;
+          border: 1px solid #ccc;
+          background: #fff;
+        }
+
+        #equity-calculator img {
+          width: 85%;
+          height: auto;
+          max-height: 85%;
+          object-fit: contain;
+        }
+
+        @media (max-width: 968px) {
+          .features-container {
+            flex-direction: column;
+          }
+          .feature-visual {
+            min-height: auto;
+          }
+        }
+
+        /* Typing Headline Styles */
+        .headline-container {
+          width: 100%;
+          max-width: 90ch;
+          padding: 0 1rem;
+          margin: 0 auto;
+          display: flex;
+          justify-content: center;
+          align-items: flex-start;
+          text-align: center;
+        }
+
+        .typing-title {
+          font-size: clamp(1.6rem, 5vw, 2.8rem);
+          font-weight: 400;
+          line-height: 1.2;
+          margin: 0;
+        }
+
+        .first-line {
+          display: block;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .second-line {
+          display: block;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .typing-container {
+          display: inline-block;
+          width: 3ch;
+          vertical-align: baseline;
+        }
+
+        .typing-and {
+          display: inline-block;
+          font-style: italic;
+          font-family: inherit;
+          font-weight: inherit;
+          visibility: visible;
         }
       `}</style>
     </div>
