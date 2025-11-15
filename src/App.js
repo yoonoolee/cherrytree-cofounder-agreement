@@ -7,6 +7,9 @@ import LandingPage from './pages/LandingPage';
 import EquityCalculatorPage from './pages/EquityCalculatorPage';
 import PricingPage from './pages/PricingPage';
 import AboutPage from './pages/AboutPage';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
+import ContactPage from './pages/ContactPage';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import SurveyPage from './pages/SurveyPage';
@@ -25,6 +28,9 @@ function App() {
         <Route path="/equity-calculator" element={<EquityCalculatorPage />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={<LoginPage />} />
 
         {/* Protected Routes */}

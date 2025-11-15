@@ -16,7 +16,7 @@ export function useScrollAnimation(options = {}) {
       });
     }, observerOptions);
 
-    const sections = document.querySelectorAll('.scroll-section');
+    const sections = document.querySelectorAll('.scroll-section, .scroll-section-full');
     sections.forEach(section => observer.observe(section));
 
     return () => {

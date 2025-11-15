@@ -57,7 +57,6 @@ function Footer() {
               <ul className="space-y-4 text-sm">
                 <li><button onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-white transition">Contract Creator</button></li>
                 <li><button onClick={() => navigate('/equity-calculator')} className="text-gray-400 hover:text-white transition">Equity Calculator</button></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition">Compatibility Quiz</a></li>
                 <li><button onClick={() => navigate('/pricing')} className="text-gray-400 hover:text-white transition">Pricing</button></li>
               </ul>
             </div>
@@ -66,7 +65,7 @@ function Footer() {
               <h4 className="text-white text-sm mb-4">Resources</h4>
               <ul className="space-y-4 text-sm">
                 <li><a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">Newsletter</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition">Coaching</a></li>
+                <li><a href="https://app.hubble.social/timhe" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">Coaching</a></li>
                 <li><a href="#" className="text-gray-400 hover:text-white transition">Attorney</a></li>
               </ul>
             </div>
@@ -74,9 +73,9 @@ function Footer() {
             <div className="footer-cascade-4">
               <h4 className="text-white text-sm mb-4">Company</h4>
               <ul className="space-y-4 text-sm">
-                <li><a href="#" className="text-gray-400 hover:text-white transition">Privacy</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition">Terms</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition">Contact</a></li>
+                <li><button onClick={() => navigate('/privacy')} className="text-gray-400 hover:text-white transition">Privacy</button></li>
+                <li><button onClick={() => navigate('/terms')} className="text-gray-400 hover:text-white transition">Terms</button></li>
+                <li><button onClick={() => navigate('/contact')} className="text-gray-400 hover:text-white transition">Contact</button></li>
               </ul>
             </div>
           </div>

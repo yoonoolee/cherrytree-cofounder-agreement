@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
@@ -7,6 +7,16 @@ import Footer from '../components/Footer';
 function PricingPage() {
   const navigate = useNavigate();
   useScrollAnimation();
+
+  // Trigger hero content fade-in on mount
+  useEffect(() => {
+    const heroContent = document.querySelector('.hero-content');
+    if (heroContent) {
+      setTimeout(() => {
+        heroContent.classList.add('section-visible');
+      }, 100);
+    }
+  }, []);
 
   const pricingPlans = [
     {
@@ -53,14 +63,16 @@ function PricingPage() {
       <Header />
 
       {/* Pricing Section */}
-      <section className="scroll-section pt-32 pb-20 px-6">
+      <section className="pt-32 pb-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-medium text-center mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Simple, transparent pricing
-          </h1>
-          <p className="text-center text-gray-600 mb-16" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Choose the plan that's right for your team
-          </p>
+          <div className="hero-content text-center mb-16">
+            <h1 className="font-heading text-[56px] font-normal mb-6">
+              Simple, transparent pricing<span style={{ marginLeft: '0.05em' }}>.</span>
+            </h1>
+            <p className="text-[16px] font-normal" style={{ color: '#716B6B' }}>
+              Choose the plan that's right for your team
+            </p>
+          </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {pricingPlans.map((plan, i) => (

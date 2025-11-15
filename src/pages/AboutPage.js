@@ -21,6 +21,16 @@ function AboutPage() {
   // Scroll-triggered section animations
   useScrollAnimation();
 
+  // Trigger hero content fade-in on mount
+  useEffect(() => {
+    const heroContent = document.querySelector('.hero-content');
+    if (heroContent) {
+      setTimeout(() => {
+        heroContent.classList.add('section-visible');
+      }, 100);
+    }
+  }, []);
+
   // Typing animation for "with the right company"
   useEffect(() => {
     const typeLoop = () => {
@@ -96,17 +106,19 @@ function AboutPage() {
       </header>
 
       {/* Hero */}
-      <section className="scroll-section section-visible pt-32 pb-20 px-6">
-        <div className="headline-container-about">
-          <h1 className="typing-title-about font-heading">
-            <span className="first-line-about">Big ideas grow</span>
-            <span className="second-line-about">
-              <span className="typing-container-about">
-                <em className="typing-company">{typedCompany || '\u00A0'}</em>
+      <section className="pt-32 pb-20 px-6">
+        <div className="hero-content">
+          <div className="headline-container-about">
+            <h1 className="typing-title-about font-heading">
+              <span className="first-line-about">Big ideas grow</span>
+              <span className="second-line-about">
+                <span className="typing-container-about">
+                  <em className="typing-company">{typedCompany || '\u00A0'}</em>
+                </span>
+                <span className="typing-period">{showPeriod ? '.' : '\u00A0'}</span>
               </span>
-              <span className="typing-period">{showPeriod ? '.' : '\u00A0'}</span>
-            </span>
-          </h1>
+            </h1>
+          </div>
         </div>
       </section>
 

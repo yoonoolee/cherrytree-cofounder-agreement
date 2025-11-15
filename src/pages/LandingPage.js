@@ -144,6 +144,16 @@ function LandingPage() {
   // Scroll-triggered section animations
   useScrollAnimation();
 
+  // Trigger hero content fade-in on mount
+  useEffect(() => {
+    const heroContent = document.querySelector('.hero-content');
+    if (heroContent) {
+      setTimeout(() => {
+        heroContent.classList.add('section-visible');
+      }, 100);
+    }
+  }, []);
+
   // Special early trigger for process section
   useEffect(() => {
     const earlyObserverOptions = {
@@ -341,26 +351,28 @@ function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="scroll-section pt-32 pb-12 px-6">
+      <section className="pt-32 pb-12 px-6">
         <div className="max-w-6xl mx-auto text-center">
-          <h1 className="font-heading text-[72px] font-normal text-gray-900 mb-6 min-h-[140px]">
-            Great companies start
-            <br />
-            <em className="italic">{typedText || '\u00A0'}</em>
-          </h1>
-          <p className="text-[16px] mb-16 max-w-2xl mx-auto font-normal" style={{ color: '#716B6B' }}>
-            Create fair agreements to safeguard both your stake<br />and your relationships. You and your cofounder deserve it.
-          </p>
-          <div className="flex flex-col items-center gap-3 mb-12">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="button-shimmer bg-[#000000] text-white px-16 py-4 rounded-md text-[16px] font-normal hover:bg-[#1a1a1a] transition"
-            >
-              Create agreement
-            </button>
-            <p className="text-sm text-gray-600">
-              or <a href="#" className="text-black underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
+          <div className="hero-content">
+            <h1 className="font-heading text-[72px] font-normal text-gray-900 mb-6 min-h-[140px]">
+              Great companies start
+              <br />
+              <em className="italic">{typedText || '\u00A0'}</em>
+            </h1>
+            <p className="text-[16px] mb-16 max-w-2xl mx-auto font-normal" style={{ color: '#716B6B' }}>
+              Create fair agreements to safeguard both your stake<br />and your relationships. You and your cofounder deserve it.
             </p>
+            <div className="flex flex-col items-center gap-3 mb-12">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="button-shimmer bg-[#000000] text-white px-16 py-4 rounded-md text-[16px] font-normal hover:bg-[#1a1a1a] transition"
+              >
+                Create agreement
+              </button>
+              <p className="text-sm text-gray-600">
+                or <a href="#" className="text-black underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
+              </p>
+            </div>
           </div>
 
           {/* Logo Carousel */}
@@ -415,9 +427,9 @@ function LandingPage() {
       </section>
 
       {/* Built for Early-Stage Section */}
-      <section className="scroll-section py-20 px-6">
+      <section className="scroll-section pt-20 pb-10 px-6">
         <div className="max-w-6xl mx-auto text-center">
-          <h2 className="font-heading text-[46px] font-medium mb-4">
+          <h2 className="section-header font-heading text-[46px] font-medium mb-4">
             Built for <span className="underline-animate">early-stage
               <svg viewBox="0 0 250 12" preserveAspectRatio="none">
                 <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
@@ -431,27 +443,27 @@ function LandingPage() {
       </section>
 
       {/* Process Section */}
-      <section className="scroll-section scroll-section-early py-20 px-6">
+      <section className="scroll-section scroll-section-early pt-10 pb-20 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="relative">
-            {/* Sticky Card - overlays all panels */}
-            <div className="absolute top-0 left-0 right-0 h-[150vh] pointer-events-none">
-              <div className="sticky top-[240px] max-w-4xl mx-auto pointer-events-auto">
-                <div className="bg-white rounded-lg p-12 transition-all duration-500">
-                  <h3 className="text-[22px] font-medium mb-1">{steps[activeStep].title}</h3>
-                  <p className="text-gray-600 mb-8">{steps[activeStep].desc}</p>
-                  {/* Space for image */}
-                  <div className="bg-gray-100 rounded-lg h-[300px] flex items-center justify-center">
-                    <p className="text-gray-400">Image goes here</p>
+              {/* Sticky Card - overlays all panels */}
+              <div className="absolute top-0 left-0 right-0 h-[150vh] pointer-events-none">
+                <div className="sticky top-[280px] max-w-4xl mx-auto pointer-events-auto">
+                  <div className="bg-white rounded-lg p-12 transition-all duration-500">
+                    <h3 className="text-[22px] font-medium mb-1">{steps[activeStep].title}</h3>
+                    <p className="text-gray-600 mb-8">{steps[activeStep].desc}</p>
+                    {/* Space for image */}
+                    <div className="bg-gray-100 rounded-lg h-[300px] flex items-center justify-center">
+                      <p className="text-gray-400">Image goes here</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Invisible scroll panels - half viewport height each, stacked vertically */}
-            <div className="step-panel h-[50vh]"></div>
-            <div className="step-panel h-[50vh]"></div>
-            <div className="step-panel h-[50vh]"></div>
+              {/* Invisible scroll panels - half viewport height each, stacked vertically */}
+              <div className="step-panel h-[50vh]"></div>
+              <div className="step-panel h-[50vh]"></div>
+              <div className="step-panel h-[50vh]"></div>
           </div>
         </div>
       </section>
@@ -459,7 +471,7 @@ function LandingPage() {
       {/* Features Section */}
       <section id="features" className="scroll-section py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="font-heading text-[46px] font-medium text-center mb-16">Turn your cofoundership into a company, today<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+          <h2 className="section-header font-heading text-[46px] font-medium text-center mb-16">Turn your cofoundership into a company, today<span style={{ marginLeft: '0.05em' }}>.</span></h2>
 
           <div className="features-container">
             <div className="features-left">
@@ -532,7 +544,7 @@ function LandingPage() {
       {/* Pricing Section */}
       <section id="pricing" className="scroll-section py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="font-heading text-[46px] font-medium text-center mb-4">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+          <h2 className="section-header font-heading text-[46px] font-medium text-center mb-4">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
           <p className="text-center text-[16px] mb-16 font-normal" style={{ color: '#716B6B' }}>Choose the plan that's right for your team</p>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -580,7 +592,7 @@ function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex gap-80 items-start justify-center ml-32">
             <div className="flex-shrink-0">
-              <h2 className="font-heading text-[46px] font-medium">FAQs<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+              <h2 className="section-header font-heading text-[46px] font-medium">FAQs<span style={{ marginLeft: '0.05em' }}>.</span></h2>
             </div>
             <div className="flex-1 max-w-[700px]">
               {faqs.map((faq, i) => (
@@ -607,7 +619,7 @@ function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="scroll-section py-20 px-6 bg-white text-gray-900">
+      <section className="scroll-section-full py-20 px-6 bg-white text-gray-900">
         <div className="headline-container">
           <h1 className="typing-title font-heading">
             <span className="first-line">Protect your piece of the pie</span>
