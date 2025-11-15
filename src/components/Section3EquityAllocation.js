@@ -437,10 +437,13 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                     const hasSubmittedAssessment = !!formData.equityCalculatorSubmitted?.[assessorEmail];
                     const calculation = equityCalculations[assessorEmail];
 
-                    const colors = [
-                      '#0066FF', '#0052CC', '#3D8BFF', '#5B9FFF',
-                      '#79B3FF', '#97C7FF', '#B5DBFF', '#D3EFFF'
-                    ];
+                    // Generate greyscale colors evenly spaced from black to white
+                    const numCofounders = allCollaborators.length;
+                    const colors = Array.from({ length: numCofounders }, (_, i) => {
+                      const value = numCofounders === 1 ? 0 : Math.round((i * 255) / (numCofounders - 1));
+                      const hex = value.toString(16).padStart(2, '0');
+                      return `#${hex}${hex}${hex}`;
+                    });
 
                     return (
                       <div key={assessorEmail} className="mb-4">
@@ -455,7 +458,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                         ) : calculation ? (
                           <div>
                             {/* Stacked Progress Bar */}
-                            <div className="w-full h-7 bg-gray-200 rounded-lg flex relative" style={{ overflow: 'visible' }}>
+                            <div className="w-full h-7 bg-gray-200 rounded-lg flex relative" style={{ overflow: 'visible', border: '1px solid #000000' }}>
                               {(() => {
                                 const nonZeroEntries = allCollaborators
                                   .map((email, idx) => ({ email, idx, percentage: calculation[email] || 0 }))
@@ -484,7 +487,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                                         fontSize: percentage >= 10 ? '0.75rem' : '0.5rem',
                                         paddingLeft: percentage >= 10 ? '0.25rem' : '0.125rem',
                                         paddingRight: percentage >= 10 ? '0.25rem' : '0.125rem',
-                                        color: index < 4 ? '#FFFFFF' : '#1F2937',
+                                        color: index < Math.ceil(numCofounders / 2) ? '#FFFFFF' : '#000000',
                                         position: 'relative',
                                         zIndex: 1
                                       }}
@@ -507,7 +510,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                                   <div key={cofounderEmail} className="flex items-center gap-2">
                                     <div
                                       className="w-3 h-3 rounded-sm"
-                                      style={{ backgroundColor: color }}
+                                      style={{ backgroundColor: color, border: '1px solid #000000' }}
                                     />
                                     <span className="text-sm text-gray-700">
                                       {getCofounderName(cofounderEmail)}

@@ -325,23 +325,20 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
       );
     }
 
-    const colors = [
-      { bg: '#1E40AF', name: 'Blue 800' },
-      { bg: '#3B82F6', name: 'Blue 500' },
-      { bg: '#60A5FA', name: 'Blue 400' },
-      { bg: '#93C5FD', name: 'Blue 300' },
-      { bg: '#BFDBFE', name: 'Blue 200' },
-      { bg: '#DBEAFE', name: 'Blue 100' },
-      { bg: '#EFF6FF', name: 'Blue 50' },
-      { bg: '#F0F9FF', name: 'Blue 25' }
-    ];
-
     const entries = Object.entries(equity);
+
+    // Generate greyscale colors evenly spaced from black to white
+    const numCofounders = entries.length;
+    const colors = Array.from({ length: numCofounders }, (_, i) => {
+      const value = numCofounders === 1 ? 0 : Math.round((i * 255) / (numCofounders - 1));
+      const hex = value.toString(16).padStart(2, '0');
+      return { bg: `#${hex}${hex}${hex}` };
+    });
 
     return (
       <div className="w-full max-w-3xl mx-auto">
         {/* Stacked Progress Bar */}
-        <div className="w-full h-7 bg-gray-200 rounded-lg flex relative" style={{ overflow: 'visible' }}>
+        <div className="w-full h-7 bg-gray-200 rounded-lg flex relative" style={{ overflow: 'visible', border: '1px solid #000000' }}>
           {entries.map(([email, percentage], index) => {
             if (percentage === 0) return null;
 
@@ -366,7 +363,7 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
                     fontSize: percentage >= 10 ? '0.75rem' : '0.5rem',
                     paddingLeft: percentage >= 10 ? '0.25rem' : '0.125rem',
                     paddingRight: percentage >= 10 ? '0.25rem' : '0.125rem',
-                    color: index < 2 ? '#1F2937' : '#FFFFFF',
+                    color: index < Math.ceil(numCofounders / 2) ? '#FFFFFF' : '#000000',
                     position: 'relative',
                     zIndex: 1
                   }}
@@ -387,7 +384,7 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
               <div key={email} className="flex items-center gap-2">
                 <div
                   className="w-3 h-3 rounded-sm"
-                  style={{ backgroundColor: color.bg }}
+                  style={{ backgroundColor: color.bg, border: '1px solid #000000' }}
                 />
                 <span className="text-sm text-gray-700">
                   {getCofounderName(email)}
