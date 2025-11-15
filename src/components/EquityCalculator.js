@@ -495,88 +495,6 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
     };
   }, []);
 
-  // Reset to fresh data with all 18 categories
-  const handleReset = () => {
-    const numCofounders = cofounders.length || 2;
-
-    // Organized by groups
-    const categoryGroups = [
-      {
-        group: 'Inputs',
-        categories: [
-          'Cash Invested',
-          'Time Commitment',
-          'Existing Work & IP',
-          'Equipment & Tools'
-        ]
-      },
-      {
-        group: 'Execution',
-        categories: [
-          'Leadership & Management',
-          'Engineering',
-          'Sales',
-          'Product',
-          'Fundraising',
-          'Recruiting',
-          'Operations'
-        ]
-      },
-      {
-        group: 'Intangible',
-        categories: [
-          'Domain Expertise',
-          'Network Value',
-          'Irreplaceability',
-          'Role Scalability',
-          'Opportunity Cost',
-          'Risk Tolerance',
-          'Idea Origination'
-        ]
-      }
-    ];
-
-    // Header row with cofounder names (all read-only)
-    const headerRow = [
-      { value: 'Category', readOnly: true, className: 'header-cell' },
-      { value: 'Importance', readOnly: true, className: 'header-cell' },
-      ...cofounders.map((email) => ({
-        value: getCofounderName(email),
-        readOnly: true,
-        className: 'header-cell'
-      }))
-    ];
-
-    // Factor rows with group headers
-    const factorRows = [];
-    categoryGroups.forEach(({ group, categories }) => {
-      // Add group header row
-      factorRows.push([
-        { value: group, readOnly: true, className: 'group-header-cell' },
-        { value: null, readOnly: true, className: 'group-header-cell' },
-        ...Array.from({ length: numCofounders }, () => ({ value: null, readOnly: true, className: 'group-header-cell' }))
-      ]);
-
-      // Add category rows
-      categories.forEach((category) => {
-        factorRows.push([
-          { value: category, readOnly: true, className: 'category-cell' },
-          { value: 0 },
-          ...Array.from({ length: numCofounders }, () => ({ value: 0 }))
-        ]);
-      });
-    });
-
-    const resetData = [headerRow, ...factorRows];
-    setData(resetData);
-
-    // Convert to Firebase-compatible format before calling onDraftChange
-    if (onDraftChange) {
-      const firebaseData = convertToFirebaseFormat(resetData);
-      onDraftChange(firebaseData);
-    }
-  };
-
   // Just update data when changed (no calculations)
   const handleChange = (newData) => {
     // Preserve read-only properties and classNames, and validate values
@@ -665,23 +583,14 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
         </div>
 
         {/* Action Buttons - Below visual bar */}
-        <div className="flex items-center justify-between pt-4 flex-shrink-0">
-          <button
-            onClick={handleReset}
-            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition"
-          >
-            Reset
-          </button>
-          {submissionError && (
+        {submissionError && (
+          <div className="flex items-center justify-end pt-4 flex-shrink-0">
             <p className="text-sm text-red-950">
               {submissionError}
             </p>
-          )}
-        </div>
+          </div>
+        )}
       </div>
-
-      {/* Divider */}
-      <div className="border-t border-gray-200"></div>
     </div>
   );
 }

@@ -336,6 +336,15 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
     finalEquityRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const skipToFinalEquity = () => {
+    // First, change to results view
+    changeView('results');
+    // Then scroll to final equity section after a short delay to ensure the view has changed
+    setTimeout(() => {
+      finalEquityRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 400);
+  };
+
   return (
     <div className="equity-calculator-container">
       <h2 className="text-3xl font-bold text-gray-800 mb-6">Equity Allocation</h2>
@@ -354,7 +363,14 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
         <div className="mb-2">
           <h3 className="text-xl font-bold text-gray-800 mb-4">Equity Calculator</h3>
           <p className="text-gray-700 mb-6">
-            Using the calculator is optional. Your agreement only includes the final allocation entered below. If you already know your split, skip ahead and add it here.
+            Using the calculator is optional. Your agreement only includes the final allocation entered below. If you already know your split,{' '}
+            <button
+              onClick={skipToFinalEquity}
+              className="font-bold text-gray-900 hover:text-red-950 underline transition-colors"
+            >
+              click here
+            </button>
+            {' '}to skip ahead.
           </p>
           <div className="mb-6">
             {/* Collapsible Instructions */}
@@ -383,7 +399,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">Step 2: Score Each Cofounder</p>
-                      <p>Score every cofounder—including yourself—0–100 for each category, then click Submit. You can edit your sheet anytime, but others can't see your answers until you submit.</p>
+                      <p>Score every cofounder, including yourself, on a scale of 0–100 for each category, then click Next. You can edit your sheet anytime, but others can't see your answers until you submit.</p>
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">Step 3: Review & Finalize</p>
