@@ -4,7 +4,7 @@ import { auth } from '../firebase';
 import './Section3EquityAllocation.css';
 
 function Section3EquityAllocation({ formData, handleChange, isReadOnly, showValidation, project }) {
-  const assessmentResultsRef = useRef(null);
+  const visualBarsRef = useRef(null);
   // Calculate number of cofounders from collaborators (owner + collaborators)
   const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
   const currentUserEmail = auth.currentUser?.email;
@@ -190,10 +190,10 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
     // Navigate to results view with animation
     changeView('results');
 
-    // Scroll to top of assessment results after a short delay to allow view change
+    // Scroll to visual bars section and center it on the page
     setTimeout(() => {
-      if (assessmentResultsRef.current) {
-        assessmentResultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (visualBarsRef.current) {
+        visualBarsRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }, 100);
   };
@@ -424,12 +424,12 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                 ''
               }`} style={{ minHeight: '700px' }}>
                 {/* Scrollable content area */}
-                <div className="flex-1 overflow-y-auto" ref={assessmentResultsRef}>
+                <div className="flex-1 overflow-y-auto">
                   <div className="mb-6">
                     <h3 className="text-xl font-bold text-gray-800 mb-2">Assessment Results</h3>
                     <p className="text-gray-600 text-sm">Review how each cofounder assessed the equity split</p>
                   </div>
-                  <label className="block text-base font-medium text-gray-900 mb-3">
+                  <label className="block text-base font-medium text-gray-900 mb-3" ref={visualBarsRef}>
                     Individual Assessments
                   </label>
                   <div className="space-y-4">
@@ -528,17 +528,28 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                   </div>
 
                   {/* Toggle Button for Individual Spreadsheets */}
-                  <button
-                    onClick={() => setShowIndividualSpreadsheets(!showIndividualSpreadsheets)}
-                    className="mt-4 bg-gray-300 text-gray-800 px-9 py-3 rounded font-normal hover:bg-gray-400 transition"
-                  >
-                    {showIndividualSpreadsheets ? 'Hide Individual Spreadsheets' : 'Display Individual Spreadsheets'}
-                  </button>
+                  <div className="border border-gray-200/50 rounded-lg mt-4 bg-gray-50/50 backdrop-blur-sm">
+                    <button
+                      onClick={() => setShowIndividualSpreadsheets(!showIndividualSpreadsheets)}
+                      className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-100/50 transition-colors rounded-lg"
+                    >
+                      <span className="font-semibold text-gray-900">
+                        {showIndividualSpreadsheets ? 'Hide All Spreadsheets' : 'Display All Spreadsheets'}
+                      </span>
+                      <svg
+                        className={`w-5 h-5 text-gray-600 transition-transform ${showIndividualSpreadsheets ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  </div>
 
                   {/* Individual Spreadsheets - Only show when toggled */}
                   {showIndividualSpreadsheets && (
                     <div className="mt-6 space-y-6 mb-6">
-                      <h4 className="text-base font-medium text-gray-900">Individual Spreadsheet Submissions</h4>
                       {allCollaborators.map(assessorEmail => {
                         const submission = formData.equityCalculatorSubmitted?.[assessorEmail];
 
@@ -650,12 +661,12 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                 <div className="flex items-center justify-between pt-4 border-t border-gray-200 flex-shrink-0" style={{ minHeight: '60px' }}>
                   <button
                     onClick={() => changeView('edit')}
-                    className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition"
+                    className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition"
                   >
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
-                    Back to Assessment
+                    Back to Spreadsheet
                   </button>
                   <div className="flex flex-col items-end">
                     <div style={{ height: '28px' }}></div>
@@ -743,11 +754,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
 
           {/* Total Equity Validation */}
           <div>
-            <p className={`font-medium ${
-              Math.abs(totalEquity - 100) <= 0.01
-                ? 'text-green-900'
-                : 'text-red-500'
-            }`}>
+            <p className="font-medium text-black">
               Total Equity: {totalEquity.toFixed(2)}%
             </p>
             {Math.abs(totalEquity - 100) > 0.01 && (

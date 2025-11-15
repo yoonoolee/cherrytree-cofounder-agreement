@@ -1109,7 +1109,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 onClick={() => setCurrentSection(section.id)}
                 className={`text-left px-4 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between ${
                   currentSection === section.id
-                    ? 'text-black font-medium'
+                    ? 'text-black font-semibold'
                     : 'text-gray-600 hover:bg-gray-200'
                 }`}
                 style={{ width: '100%', fontSize: '15px' }}
