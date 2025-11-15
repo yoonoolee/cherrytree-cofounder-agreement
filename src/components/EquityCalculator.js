@@ -659,7 +659,12 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
           </div>
         </div>
 
-        {/* Action Buttons - Below spreadsheet */}
+        {/* Equity Progress Bar */}
+        <div className="flex justify-center py-6 px-4" style={{ backgroundColor: '#ffffff' }}>
+          <EquityProgressBar equity={currentEquity} />
+        </div>
+
+        {/* Action Buttons - Below visual bar */}
         <div className="flex items-center justify-between pt-4 flex-shrink-0">
           <button
             onClick={handleReset}
@@ -667,29 +672,11 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
           >
             Reset
           </button>
-
-          <div className="flex flex-col items-end">
-            <button
-              onClick={onSubmit}
-              disabled={isReadOnly}
-              className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition disabled:text-gray-400 disabled:cursor-not-allowed"
-            >
-              {hasSubmitted ? 'Update' : 'Submit'}
-              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-            {submissionError && (
-              <p className="text-sm text-red-950 mt-2">
-                {submissionError}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Equity Progress Bar */}
-        <div className="flex justify-center py-6 px-4" style={{ backgroundColor: '#ffffff' }}>
-          <EquityProgressBar equity={currentEquity} />
+          {submissionError && (
+            <p className="text-sm text-red-950">
+              {submissionError}
+            </p>
+          )}
         </div>
       </div>
 

@@ -27,6 +27,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   });
   const [project, setProject] = useState(null);
   const [currentSection, setCurrentSection] = useState(1);
+  const section3Ref = useRef(null);
   const [formData, setFormData] = useState({
     // Section 1: Formation & Purpose
     companyName: '',
@@ -1315,6 +1316,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           )}
           {currentSection === 3 && (
             <Section3EquityAllocation
+              ref={section3Ref}
               formData={formData}
               handleChange={handleChange}
               isReadOnly={isReadOnly}
@@ -1400,7 +1402,21 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
               {currentSection < 10 ? (
                 <button
-                  onClick={() => setCurrentSection(currentSection + 1)}
+                  onClick={() => {
+                    // If on section 3 (Equity Allocation), submit the calculator first
+                    if (currentSection === 3 && section3Ref.current) {
+                      const submitted = section3Ref.current.submitEquityCalculator();
+                      // Only proceed to next section if submission was successful or not needed
+                      if (submitted === false) {
+                        // Submission failed validation, stay on this section
+                        return;
+                      }
+                      // Don't move to next section - the submit will show results view
+                      return;
+                    }
+                    // For other sections, proceed normally
+                    setCurrentSection(currentSection + 1);
+                  }}
                   className="next-button bg-black text-white px-7 py-2 rounded font-normal hover:bg-[#1a1a1a] transition flex items-center gap-2"
                 >
                   Next

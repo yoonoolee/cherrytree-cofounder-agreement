@@ -1,9 +1,10 @@
-import React, { useRef } from 'react';
+import React, { useRef, useImperativeHandle, forwardRef } from 'react';
 import EquityCalculator from './EquityCalculator';
+import Spreadsheet from 'react-spreadsheet';
 import { auth } from '../firebase';
 import './Section3EquityAllocation.css';
 
-function Section3EquityAllocation({ formData, handleChange, isReadOnly, showValidation, project }) {
+const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnly, showValidation, project }, ref) => {
   const visualBarsRef = useRef(null);
   // Calculate number of cofounders from collaborators (owner + collaborators)
   const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
@@ -172,7 +173,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
     const validation = validateSpreadsheetData(userDraft);
     if (!validation.valid) {
       setSubmissionError(validation.message);
-      return;
+      return false;
     }
 
     // Clear any previous errors
@@ -190,13 +191,20 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
     // Navigate to results view with animation
     changeView('results');
 
-    // Scroll to visual bars section and center it on the page
+    // Scroll to top of results section to show assessment results first
     setTimeout(() => {
       if (visualBarsRef.current) {
-        visualBarsRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        visualBarsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-    }, 100);
+    }, 400);
+
+    return true;
   };
+
+  // Expose handleSubmit to parent via ref
+  useImperativeHandle(ref, () => ({
+    submitEquityCalculator: handleSubmit
+  }));
 
   // Effect to update viewMode when submissions change
   React.useEffect(() => {
@@ -425,13 +433,12 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
               }`} style={{ minHeight: '700px' }}>
                 {/* Scrollable content area */}
                 <div className="flex-1 overflow-y-auto">
-                  <div className="mb-6">
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Assessment Results</h3>
-                    <p className="text-gray-600 text-sm">Review how each cofounder assessed the equity split</p>
+                  <div ref={visualBarsRef} className="pt-4">
+                    <div className="mb-6">
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">Assessment Results</h3>
+                      <p className="text-gray-600 text-sm">Review how each cofounder assessed the equity split</p>
+                    </div>
                   </div>
-                  <label className="block text-base font-medium text-gray-900 mb-3" ref={visualBarsRef}>
-                    Individual Assessments
-                  </label>
                   <div className="space-y-4">
                   {allCollaborators.map(assessorEmail => {
                     const hasSubmittedAssessment = !!formData.equityCalculatorSubmitted?.[assessorEmail];
@@ -530,17 +537,26 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                   })}
                   </div>
 
-                  {/* Toggle Button for Individual Spreadsheets */}
-                  <div className="border border-gray-200/50 rounded-lg mt-4 bg-gray-50/50 backdrop-blur-sm">
+                  {/* Action bar - fixed position after visual bars */}
+                  <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-200">
+                    <button
+                      onClick={() => changeView('edit')}
+                      className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition"
+                    >
+                      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                      Back to your spreadsheet
+                    </button>
                     <button
                       onClick={() => setShowIndividualSpreadsheets(!showIndividualSpreadsheets)}
-                      className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-100/50 transition-colors rounded-lg"
+                      className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition"
                     >
-                      <span className="font-semibold text-gray-900">
-                        {showIndividualSpreadsheets ? 'Hide All Spreadsheets' : 'Display All Spreadsheets'}
+                      <span>
+                        {showIndividualSpreadsheets ? "Hide everyone's spreadsheets" : "Display everyone's spreadsheets"}
                       </span>
                       <svg
-                        className={`w-5 h-5 text-gray-600 transition-transform ${showIndividualSpreadsheets ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-transform ${showIndividualSpreadsheets ? 'rotate-180' : ''}`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -572,86 +588,152 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
 
                         // Convert Firebase format to array if needed
                         let spreadsheetData = submission.data;
+
+                        // Define complete category structure (must match EquityCalculator)
+                        const categoryGroups = [
+                          {
+                            group: 'Inputs',
+                            categories: ['Cash Invested', 'Time Commitment', 'Existing Work & IP', 'Equipment & Tools']
+                          },
+                          {
+                            group: 'Execution',
+                            categories: ['Leadership & Management', 'Engineering', 'Sales', 'Product', 'Fundraising', 'Recruiting', 'Operations']
+                          },
+                          {
+                            group: 'Intangible',
+                            categories: ['Domain Expertise', 'Network Value', 'Irreplaceability', 'Role Scalability', 'Opportunity Cost', 'Risk Tolerance', 'Idea Origination']
+                          }
+                        ];
+
                         if (typeof spreadsheetData === 'object' && !Array.isArray(spreadsheetData)) {
-                          const rowKeys = Object.keys(spreadsheetData).sort((a, b) => {
+                          const firebaseData = spreadsheetData;
+                          const rowKeys = Object.keys(firebaseData).sort((a, b) => {
                             const aNum = parseInt(a.split('_')[1]);
                             const bNum = parseInt(b.split('_')[1]);
                             return aNum - bNum;
                           });
 
-                          // Determine the total number of columns needed (2 fixed + cofounders)
                           const totalColumns = 2 + allCollaborators.length;
 
-                          spreadsheetData = rowKeys.map((rowKey, rowIndex) => {
-                            const row = spreadsheetData[rowKey];
+                          spreadsheetData = rowKeys.map((rowKey) => {
+                            const row = firebaseData[rowKey];
                             const resultRow = [];
 
-                            // Populate all columns, filling in blanks as needed
                             for (let colIndex = 0; colIndex < totalColumns; colIndex++) {
                               const colKey = `col_${colIndex}`;
-                              if (row[colKey]) {
-                                resultRow.push(row[colKey]);
-                              } else {
-                                // Create empty cell with appropriate properties
+                              const cell = row?.[colKey];
+
+                              if (cell) {
+                                // Preserve all cell properties including className
                                 resultRow.push({
-                                  value: rowIndex === 0 ? '' : 0,
-                                  readOnly: rowIndex === 0 || colIndex === 0,
-                                  className: rowIndex === 0 ? 'header-cell' : (colIndex === 0 ? 'category-cell' : '')
+                                  value: cell.value !== undefined ? cell.value : 0,
+                                  readOnly: true,
+                                  className: cell.className || ''
+                                });
+                              } else {
+                                resultRow.push({
+                                  value: 0,
+                                  readOnly: true,
+                                  className: ''
                                 });
                               }
                             }
 
                             return resultRow;
                           });
+                        } else if (Array.isArray(spreadsheetData)) {
+                          spreadsheetData = spreadsheetData.map(row =>
+                            row.map(cell => ({
+                              ...cell,
+                              readOnly: true
+                            }))
+                          );
+                        }
+
+                        // Ensure we have the complete structure with all rows
+                        // Expected: 1 header + 3 group headers + 18 categories = 22 rows
+                        const expectedRowCount = 1 + categoryGroups.reduce((sum, group) =>
+                          sum + 1 + group.categories.length, 0
+                        );
+
+                        if (spreadsheetData && spreadsheetData.length < expectedRowCount) {
+                          // Rebuild complete structure if data is incomplete
+                          const numCofounders = allCollaborators.length;
+                          const completeData = [];
+
+                          // Header row
+                          completeData.push([
+                            { value: 'Category', readOnly: true, className: 'header-cell' },
+                            { value: 'Importance', readOnly: true, className: 'header-cell' },
+                            ...allCollaborators.map(email => ({
+                              value: getCofounderName(email),
+                              readOnly: true,
+                              className: 'header-cell'
+                            }))
+                          ]);
+
+                          let dataRowIndex = 1; // Start from row 1 (skip header)
+
+                          categoryGroups.forEach(({ group, categories }) => {
+                            // Group header row
+                            completeData.push([
+                              { value: group, readOnly: true, className: 'group-header-cell' },
+                              { value: null, readOnly: true, className: 'group-header-cell' },
+                              ...Array(numCofounders).fill(null).map(() => ({
+                                value: null, readOnly: true, className: 'group-header-cell'
+                              }))
+                            ]);
+                            dataRowIndex++;
+
+                            // Category rows
+                            categories.forEach(category => {
+                              const existingRow = spreadsheetData[dataRowIndex];
+                              if (existingRow) {
+                                // Use existing data but ensure all columns exist
+                                completeData.push([
+                                  { value: category, readOnly: true, className: 'category-cell' },
+                                  existingRow[1] || { value: 0, readOnly: true },
+                                  ...allCollaborators.map((_, idx) =>
+                                    existingRow[idx + 2] || { value: 0, readOnly: true }
+                                  )
+                                ]);
+                              } else {
+                                // Create default row
+                                completeData.push([
+                                  { value: category, readOnly: true, className: 'category-cell' },
+                                  { value: 0, readOnly: true },
+                                  ...Array(numCofounders).fill(null).map(() => ({ value: 0, readOnly: true }))
+                                ]);
+                              }
+                              dataRowIndex++;
+                            });
+                          });
+
+                          spreadsheetData = completeData;
                         }
 
                         return (
-                          <div key={assessorEmail} className="mb-4">
+                          <div key={assessorEmail} className="mb-6">
                             <p className="font-medium text-gray-900 mb-3">
                               {getCofounderName(assessorEmail)}
                               {assessorEmail === currentUserEmail && <span className="ml-2 text-xs text-red-950">(You)</span>}
                             </p>
-                            <div className="bg-white rounded border border-gray-200 overflow-x-auto">
-                              <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                  <tr>
-                                    {spreadsheetData[0]?.map((cell, colIndex) => (
-                                      <th
-                                        key={colIndex}
-                                        className="px-4 py-3 text-left text-sm font-medium text-gray-900 border-r border-gray-200 last:border-r-0"
-                                      >
-                                        {cell.value}
-                                      </th>
-                                    ))}
-                                  </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                  {spreadsheetData.slice(1).map((row, rowIndex) => {
-                                    // Check if this is a group header row
-                                    const isGroupHeader = row[0]?.className === 'group-header-cell';
-
-                                    return (
-                                      <tr key={rowIndex}>
-                                        {row.map((cell, colIndex) => (
-                                          <td
-                                            key={colIndex}
-                                            className={`px-4 py-3 text-sm border-r border-gray-200 last:border-r-0 ${
-                                              isGroupHeader
-                                                ? 'font-bold text-gray-900 bg-gray-200'
-                                                : colIndex === 0
-                                                ? 'font-medium text-gray-900 bg-gray-50'
-                                                : 'text-gray-700'
-                                            }`}
-                                            style={isGroupHeader ? { padding: '0.375rem 1rem', lineHeight: '1.25' } : {}}
-                                          >
-                                            {cell.value}
-                                          </td>
-                                        ))}
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                              </table>
+                            <div className="spreadsheet-wrapper" style={{ overflow: 'visible' }}>
+                              <div
+                                className="spreadsheet-scroll-container"
+                                style={{
+                                  overflowX: 'auto',
+                                  overflowY: 'visible',
+                                  position: 'relative'
+                                }}
+                              >
+                                <Spreadsheet
+                                  data={spreadsheetData}
+                                  onChange={() => {}} // No-op since it's read-only
+                                  columnLabels={false}
+                                  rowLabels={false}
+                                />
+                              </div>
                             </div>
                           </div>
                         );
@@ -659,30 +741,15 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                     </div>
                   )}
                 </div>
-
-                {/* Back button at bottom - fixed position */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200 flex-shrink-0" style={{ minHeight: '60px' }}>
-                  <button
-                    onClick={() => changeView('edit')}
-                    className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition"
-                  >
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Back to Spreadsheet
-                  </button>
-                  <div className="flex flex-col items-end">
-                    <div style={{ height: '28px' }}></div>
-                  </div>
-                </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Final Equity Allocation */}
-        <div ref={finalEquityRef} className="pt-24">
-          <h3 className="text-xl font-bold text-gray-800 mb-6">Final Equity Allocation</h3>
+        {/* Final Equity Allocation - Only show in results view */}
+        {viewMode === 'results' && (
+          <div ref={finalEquityRef} className={showIndividualSpreadsheets ? "pt-4" : "pt-2"}>
+            <h3 className="text-xl font-bold text-gray-800 mb-6">Final Equity Allocation</h3>
 
           <div className="flex gap-4 mb-6">
             {allCollaborators.map((email, index) => (
@@ -806,10 +873,11 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
               })}
             </div>
           </div>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+});
 
 export default Section3EquityAllocation;
