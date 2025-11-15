@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import useUserSync from './hooks/useUserSync';
 import ProtectedRoute from './components/ProtectedRoute';
+import ResetPagePosition from './components/ResetPagePosition';
 import LandingPage from './pages/LandingPage';
 import EquityCalculatorPage from './pages/EquityCalculatorPage';
 import PricingPage from './pages/PricingPage';
@@ -17,6 +18,7 @@ function App() {
 
   return (
     <Router>
+      <ResetPagePosition />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
