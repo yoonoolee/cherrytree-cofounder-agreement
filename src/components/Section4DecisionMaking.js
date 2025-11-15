@@ -8,8 +8,10 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
   return (
     <div>
       <h2 className="text-3xl font-bold text-gray-800 mb-6">Decision-Making & Voting</h2>
-      <p className="text-gray-600 mb-8">How will major decisions be made?</p>
 
+      <p className="mb-16 leading-relaxed" style={{ color: '#808894' }}>
+        Without a plan for who decides what, even choosing office chairs can start a cold war. The day-to-day questions start piling up. Should we hire this engineer? Take that investor meeting? Pivot the product? Left undefined, these decisions can quietly blow up trust. This section is where you make it concrete: who signs off on what, when a decision needs a vote, and how ties get broken. Defining it now means that when disagreements inevitably come, you have a clear, agreed-upon way to move forward without derailing.
+      </p>
 
       <div className="space-y-12" style={{ overflow: 'visible' }}>
         {/* Major Decisions */}

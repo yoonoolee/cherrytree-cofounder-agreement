@@ -27,6 +27,9 @@
 functions/.env
 functions/.env.local
 
+# Firebase Hosting cache
+.firebase/hosting.*.cache
+
 # Claude Code
 .claude/settings.local.json
 
