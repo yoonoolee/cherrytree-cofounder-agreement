@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import EquityCalculator from './EquityCalculator';
 import { auth } from '../firebase';
 import './Section3EquityAllocation.css';
 
 function Section3EquityAllocation({ formData, handleChange, isReadOnly, showValidation, project }) {
+  const assessmentResultsRef = useRef(null);
   // Calculate number of cofounders from collaborators (owner + collaborators)
   const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
   const currentUserEmail = auth.currentUser?.email;
@@ -188,6 +189,13 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
 
     // Navigate to results view with animation
     changeView('results');
+
+    // Scroll to top of assessment results after a short delay to allow view change
+    setTimeout(() => {
+      if (assessmentResultsRef.current) {
+        assessmentResultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   // Effect to update viewMode when submissions change
@@ -337,6 +345,9 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
       <div className="space-y-6">
         <div className="mb-2">
           <h3 className="text-xl font-bold text-gray-800 mb-4">Equity Calculator</h3>
+          <p className="text-gray-700 mb-6">
+            Using the calculator is optional. Your agreement only includes the final allocation entered below. If you already know your split, skip ahead and add it here.
+          </p>
           <div className="mb-6">
             {/* Collapsible Instructions */}
             <div className="border border-gray-200/50 rounded-lg mb-6 bg-gray-50/50 backdrop-blur-sm">
@@ -369,9 +380,6 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                     <div>
                       <p className="font-semibold text-gray-900">Step 3: Review & Finalize</p>
                       <p>Once everyone's done, compare the results together to spot differences. After discussing, enter your agreed-upon final split below.</p>
-                    </div>
-                    <div className="pt-2 border-t border-gray-200">
-                      <p>Using the calculator is optional. Your agreement only includes the final allocation entered below. If you already know your split, skip ahead and add it here.</p>
                     </div>
                   </div>
                 </div>
@@ -416,7 +424,7 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                 ''
               }`} style={{ minHeight: '700px' }}>
                 {/* Scrollable content area */}
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto" ref={assessmentResultsRef}>
                   <div className="mb-6">
                     <h3 className="text-xl font-bold text-gray-800 mb-2">Assessment Results</h3>
                     <p className="text-gray-600 text-sm">Review how each cofounder assessed the equity split</p>
@@ -557,15 +565,29 @@ function Section3EquityAllocation({ formData, handleChange, isReadOnly, showVali
                             return aNum - bNum;
                           });
 
-                          spreadsheetData = rowKeys.map(rowKey => {
-                            const row = spreadsheetData[rowKey];
-                            const colKeys = Object.keys(row).sort((a, b) => {
-                              const aNum = parseInt(a.split('_')[1]);
-                              const bNum = parseInt(b.split('_')[1]);
-                              return aNum - bNum;
-                            });
+                          // Determine the total number of columns needed (2 fixed + cofounders)
+                          const totalColumns = 2 + allCollaborators.length;
 
-                            return colKeys.map(colKey => row[colKey]);
+                          spreadsheetData = rowKeys.map((rowKey, rowIndex) => {
+                            const row = spreadsheetData[rowKey];
+                            const resultRow = [];
+
+                            // Populate all columns, filling in blanks as needed
+                            for (let colIndex = 0; colIndex < totalColumns; colIndex++) {
+                              const colKey = `col_${colIndex}`;
+                              if (row[colKey]) {
+                                resultRow.push(row[colKey]);
+                              } else {
+                                // Create empty cell with appropriate properties
+                                resultRow.push({
+                                  value: rowIndex === 0 ? '' : 0,
+                                  readOnly: rowIndex === 0 || colIndex === 0,
+                                  className: rowIndex === 0 ? 'header-cell' : (colIndex === 0 ? 'category-cell' : '')
+                                });
+                              }
+                            }
+
+                            return resultRow;
                           });
                         }
 

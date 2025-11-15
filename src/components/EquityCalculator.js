@@ -641,9 +641,6 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
 
   return (
     <div className="flex flex-col">
-      {/* Title */}
-      <h4 className="text-base font-semibold text-gray-900 mb-3">Private Assessment</h4>
-
       {/* Spreadsheet Container - No scrolling */}
       <div className="flex flex-col">
         <div className="spreadsheet-wrapper" style={{ overflow: 'visible' }}>
@@ -665,39 +662,42 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
           </div>
         </div>
 
-        {/* Equity Progress Bar - At bottom */}
+        {/* Action Buttons - Below spreadsheet */}
+        <div className="flex items-center justify-between pt-4 flex-shrink-0">
+          <button
+            onClick={handleReset}
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition"
+          >
+            Reset
+          </button>
+
+          <div className="flex flex-col items-end">
+            <button
+              onClick={onSubmit}
+              disabled={isReadOnly}
+              className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition disabled:text-gray-400 disabled:cursor-not-allowed"
+            >
+              {hasSubmitted ? 'Update' : 'Submit'}
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+            {submissionError && (
+              <p className="text-sm text-red-950 mt-2">
+                {submissionError}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Equity Progress Bar */}
         <div className="flex justify-center py-6 px-4" style={{ backgroundColor: '#ffffff' }}>
           <EquityProgressBar equity={currentEquity} />
         </div>
       </div>
 
-      {/* Action Bar - fixed at bottom */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-200 flex-shrink-0" style={{ minHeight: '60px' }}>
-        <button
-          onClick={handleReset}
-          className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition"
-        >
-          Reset Spreadsheet
-        </button>
-
-        <div className="flex flex-col items-end">
-          <button
-            onClick={onSubmit}
-            disabled={isReadOnly}
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition disabled:text-gray-400 disabled:cursor-not-allowed"
-          >
-            {hasSubmitted ? 'Update Assessment' : 'Share My Assessment'}
-            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-          {submissionError && (
-            <p className="text-sm text-red-950 mt-2">
-              {submissionError}
-            </p>
-          )}
-        </div>
-      </div>
+      {/* Divider */}
+      <div className="border-t border-gray-200"></div>
     </div>
   );
 }

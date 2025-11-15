@@ -1008,7 +1008,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         {/* Add Collaborators Plus Button */}
         <button
           onClick={() => setShowCollaborators(true)}
-          className="bg-[#820e22] text-white w-8 h-8 rounded-lg hover:bg-[#620a1a] transition flex items-center justify-center"
+          className="bg-black text-white w-8 h-8 rounded-lg hover:bg-[#1a1a1a] transition flex items-center justify-center"
         >
           <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
@@ -1074,7 +1074,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
             </div>
             <div className="w-full bg-gray-200 rounded-full h-1.5">
               <div
-                className="bg-[#820e22] h-1.5 rounded-full transition-all duration-300"
+                className="bg-black h-1.5 rounded-full transition-all duration-300"
                 style={{ width: `${calculateProgress()}%` }}
               />
             </div>
@@ -1109,7 +1109,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 onClick={() => setCurrentSection(section.id)}
                 className={`text-left px-4 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between ${
                   currentSection === section.id
-                    ? 'text-[#820e22] font-medium'
+                    ? 'text-black font-medium'
                     : 'text-gray-600 hover:bg-gray-200'
                 }`}
                 style={{ width: '100%', fontSize: '15px' }}
@@ -1401,7 +1401,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               {currentSection < 10 ? (
                 <button
                   onClick={() => setCurrentSection(currentSection + 1)}
-                  className="next-button bg-[#820e22] text-white px-7 py-2 rounded font-normal hover:bg-[#620a1a] transition flex items-center gap-2"
+                  className="next-button bg-black text-white px-7 py-2 rounded font-normal hover:bg-[#1a1a1a] transition flex items-center gap-2"
                 >
                   Next
                   <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1412,7 +1412,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 <button
                   onClick={handlePreviewClick}
                   disabled={saveStatus === 'saving'}
-                  className="next-button bg-[#820e22] text-white px-10 py-2 rounded font-normal hover:bg-[#620a1a] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="next-button bg-black text-white px-10 py-2 rounded font-normal hover:bg-[#1a1a1a] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   Next: Preview & Approve
                   <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
