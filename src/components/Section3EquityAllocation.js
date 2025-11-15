@@ -481,7 +481,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                         ) : calculation ? (
                           <div>
                             {/* Stacked Progress Bar */}
-                            <div className="w-full h-7 bg-gray-200 rounded-lg flex relative" style={{ overflow: 'visible', border: '1px solid #000000' }}>
+                            <div className="w-full h-7 bg-gray-200 rounded-lg flex relative" style={{ overflow: 'hidden', border: '1px solid #000000' }}>
                               {(() => {
                                 const nonZeroEntries = allCollaborators
                                   .map((email, idx) => ({ email, idx, percentage: calculation[email] || 0 }))
@@ -490,18 +490,14 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                                 return nonZeroEntries.map((entry, barIndex) => {
                                   const { email: cofounderEmail, idx: index, percentage } = entry;
                                   const color = colors[index % colors.length];
-                                  const isFirst = barIndex === 0;
-                                  const isLast = barIndex === nonZeroEntries.length - 1;
-                                  const borderRadiusClass = isFirst ? 'rounded-l-lg' : isLast ? 'rounded-r-lg' : '';
 
                                   return (
                                     <div
                                       key={cofounderEmail}
-                                      className={`transition-all duration-300 flex items-center justify-center relative ${borderRadiusClass}`}
+                                      className="transition-all duration-300 flex items-center justify-center relative"
                                       style={{
                                         width: `${percentage}%`,
-                                        backgroundColor: color,
-                                        overflow: 'visible'
+                                        backgroundColor: color
                                       }}
                                     >
                                     <span
@@ -524,7 +520,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                             </div>
 
                             {/* Legend */}
-                            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 justify-center">
                               {allCollaborators.map((cofounderEmail, index) => {
                                 const percentage = calculation[cofounderEmail] || 0;
                                 const color = colors[index % colors.length];
