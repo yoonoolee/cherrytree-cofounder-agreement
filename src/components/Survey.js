@@ -976,18 +976,6 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
         {/* Right side icons */}
         <div className="flex items-center gap-4 pr-6">
-        {/* Back to Cherrytree Website Button */}
-        <button
-          onClick={() => navigate('/')}
-          className="text-gray-600 hover:text-gray-900 transition flex items-center gap-1.5"
-          title="Back to Cherrytree Website"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7"/>
-          </svg>
-          <span className="text-sm font-medium">Cherrytree website</span>
-        </button>
-
         {/* Add Collaborators Button */}
         <button
           onClick={() => setShowCollaborators(true)}

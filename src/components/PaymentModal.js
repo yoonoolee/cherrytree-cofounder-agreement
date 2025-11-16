@@ -63,12 +63,17 @@ function PaymentModal({ onClose, onSuccess }) {
       const functions = getFunctions();
       const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
 
+      // Use my.cherrytree.app for production, local origin for development
+      const baseUrl = process.env.NODE_ENV === 'production'
+        ? 'https://my.cherrytree.app'
+        : window.location.origin;
+
       const result = await createCheckoutSession({
         priceId: plan.priceId,
         plan: selectedPlan,
         projectName: projectName.trim(),
-        successUrl: `${window.location.origin}/dashboard?payment=success`,
-        cancelUrl: `${window.location.origin}/dashboard?payment=cancelled`
+        successUrl: `${baseUrl}/dashboard?payment=success`,
+        cancelUrl: `${baseUrl}/dashboard?payment=cancelled`
       });
 
       // Redirect to Stripe checkout

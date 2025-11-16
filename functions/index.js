@@ -392,8 +392,8 @@ exports.createCheckoutSession = onCall({
         },
       ],
       mode: 'payment', // one-time payment
-      success_url: `${request.data.successUrl || 'https://my.cherrytree.app/dashboard?payment=success'}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${request.data.cancelUrl || 'https://my.cherrytree.app/dashboard?payment=cancelled'}`,
+      success_url: `${request.data.successUrl || 'https://my.cherrytree.app/dashboard'}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${request.data.cancelUrl || 'https://my.cherrytree.app/dashboard'}?payment=cancelled`,
       metadata: {
         userId: userId,
         plan: plan,

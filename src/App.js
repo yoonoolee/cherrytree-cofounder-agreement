@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import useUserSync from './hooks/useUserSync';
 import ProtectedRoute from './components/ProtectedRoute';
 import ResetPagePosition from './components/ResetPagePosition';
+import DomainRedirect from './components/DomainRedirect';
 import RedirectToLatestProject from './components/RedirectToLatestProject';
 import LandingPage from './pages/LandingPage';
 import EquityCalculatorPage from './pages/EquityCalculatorPage';
@@ -23,6 +24,7 @@ function App() {
 
   return (
     <Router>
+      <DomainRedirect />
       <ResetPagePosition />
       <Routes>
         {/* Public Routes */}
