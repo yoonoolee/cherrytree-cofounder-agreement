@@ -11,7 +11,6 @@ const APP_ROUTES = [
 
 // Define which routes belong to the main site (cherrytree.app)
 const MAIN_ROUTES = [
-  '/',
   '/equity-calculator',
   '/pricing',
   '/about',
@@ -33,13 +32,22 @@ function DomainRedirect() {
     const currentPath = location.pathname;
     const fullUrl = window.location.href;
 
+    // Special case: Handle root path differently for each domain
+    if (currentPath === '/') {
+      if (currentHostname.includes('my.cherrytree.app')) {
+        // On my.cherrytree.app root, redirect to dashboard
+        window.location.href = 'https://my.cherrytree.app/dashboard';
+        return;
+      }
+      // On cherrytree.app root, stay (landing page)
+      return;
+    }
+
     // Check if we're on an app route
     const isAppRoute = APP_ROUTES.some(route => currentPath.startsWith(route));
 
     // Check if we're on a main site route
-    const isMainRoute = MAIN_ROUTES.some(route =>
-      route === '/' ? currentPath === '/' : currentPath.startsWith(route)
-    );
+    const isMainRoute = MAIN_ROUTES.some(route => currentPath.startsWith(route));
 
     // If on app route but not on my.cherrytree.app, redirect
     if (isAppRoute && !currentHostname.includes('my.cherrytree.app')) {
@@ -53,11 +61,6 @@ function DomainRedirect() {
       const newUrl = fullUrl.replace('my.cherrytree.app', 'cherrytree.app');
       window.location.href = newUrl;
       return;
-    }
-
-    // Special case: if on my.cherrytree.app root, redirect to dashboard (which will go to latest project)
-    if (currentHostname.includes('my.cherrytree.app') && currentPath === '/') {
-      window.location.href = 'https://my.cherrytree.app/dashboard';
     }
 
   }, [location]);
