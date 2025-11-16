@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useLoadScript } from '@react-google-maps/api';
 import { db, auth } from '../firebase';
 import { doc, updateDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { signOut } from 'firebase/auth';
 import { SECTIONS } from './surveyConstants';
 import Section1Formation from './Section1Formation';
 import Section2Cofounders from './Section2Cofounders';
@@ -16,6 +15,7 @@ import Section8Performance from './Section8Performance';
 import Section9NonCompete from './Section9NonCompete';
 import Section10Final from './Section10Final';
 import CollaboratorManager from './CollaboratorManager';
+import SurveyNavigation from './SurveyNavigation';
 
 const libraries = ['places'];
 
@@ -125,6 +125,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [section3InResultsView, setSection3InResultsView] = useState(false);
 
   // Helper function to calculate fullMailingAddress
   const calculateFullMailingAddress = (addressData) => {
@@ -146,7 +147,16 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   // Reset to section 1 when project changes
   useEffect(() => {
     setCurrentSection(1);
+    setSection3InResultsView(false);
   }, [projectId]);
+
+  // Reset section3InResultsView when leaving section 3
+  useEffect(() => {
+    if (currentSection !== 3) {
+      setSection3InResultsView(false);
+    }
+  }, [currentSection]);
+
 
   // Listen to project changes
   useEffect(() => {
@@ -978,93 +988,28 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           <span className="text-sm font-medium">Dashboard</span>
         </button>
 
-        {/* Help Icon */}
-        <button
-          onClick={() => {
-            // TODO: Add help functionality
-            console.log('Help clicked');
-          }}
-          className="text-gray-600 transition w-6 h-6 flex items-center justify-center"
-        >
-          <svg width="19" height="19" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.25"/>
-            <text x="10" y="14" textAnchor="middle" fontSize="12" fontWeight="500" fontFamily="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" fill="currentColor">?</text>
-          </svg>
-        </button>
-
-        {/* Settings Icon */}
-        <button
-          onClick={() => {
-            // TODO: Add settings functionality
-            console.log('Settings clicked');
-          }}
-          className="text-gray-600 transition"
-        >
-          <svg width="23" height="23" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.25} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.25} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </button>
-
-        {/* Add Collaborators Plus Button */}
+        {/* Add Collaborators Button */}
         <button
           onClick={() => setShowCollaborators(true)}
-          className="bg-black text-white w-8 h-8 rounded-lg hover:bg-[#1a1a1a] transition flex items-center justify-center"
+          className="bg-black text-white px-4 py-2 rounded hover:bg-[#1a1a1a] transition flex items-center gap-2"
         >
           <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
           </svg>
+          <span className="text-sm font-medium">Add Collaborators</span>
         </button>
         </div>
       </div>
 
       {/* Sidebar Navigation */}
-      <div className="border-r border-gray-200 flex flex-col fixed h-screen" style={{ backgroundColor: '#FFFFFF', width: '270px', top: 0, height: '100vh', zIndex: 100 }}>
-        {/* Header */}
-        <div className="px-3 flex items-center gap-3" style={{ height: '64px' }}>
-          <svg width="24" height="24" viewBox="22 22 56 56" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
-            <path d="M70.63,61.53c-.77-5.18-5.27-6.64-10.45-5.86l-.39.06C57.39,47.09,53,42.27,49.53,39.66c3.65.71,6.83.23,9.74-3.08,1.9-2.18,2.83-5.14,5.75-7.53a.46.46,0,0,0-.17-.8c-5.07-1.4-11.84-1.08-15.43,3a13.83,13.83,0,0,0-3.17,6.38,18.48,18.48,0,0,0-4.87-1.73.35.35,0,0,0-.41.3l-.23,1.62a.35.35,0,0,0,.28.4A17.86,17.86,0,0,1,45.74,40c2.49,6.14-2.9,13.55-5.88,17-4.7-1.25-9-.37-10.28,4.33a8.89,8.89,0,1,0,17.15,4.67c1.16-4.26-1.42-7.08-5.4-8.54A37.59,37.59,0,0,0,45,52.51c2.59-4.14,3.57-8,2.91-11.25l.42.3A25.14,25.14,0,0,1,58.47,56c-4.28,1.08-7.25,3.73-6.57,8.31a9.47,9.47,0,1,0,18.73-2.79Z" fill="black" shapeRendering="geometricPrecision"/>
-          </svg>
-          {isEditingProjectName ? (
-            <input
-              type="text"
-              value={editedProjectName}
-              onChange={(e) => setEditedProjectName(e.target.value)}
-              onBlur={async () => {
-                if (editedProjectName.trim() && editedProjectName !== project?.name) {
-                  try {
-                    const projectRef = doc(db, 'projects', projectId);
-                    await updateDoc(projectRef, { name: editedProjectName.trim() });
-                  } catch (error) {
-                    console.error('Error updating project name:', error);
-                  }
-                }
-                setIsEditingProjectName(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.target.blur();
-                }
-                if (e.key === 'Escape') {
-                  setIsEditingProjectName(false);
-                }
-              }}
-              autoFocus
-              className="text-lg font-semibold text-gray-900 w-full border-b border-red-950 focus:outline-none bg-transparent"
-            />
-          ) : (
-            <h2
-              className="text-lg font-semibold text-gray-900 cursor-pointer hover:text-gray-700 transition-colors"
-              onClick={() => {
-                setEditedProjectName(project?.name || '');
-                setIsEditingProjectName(true);
-              }}
-              title="Click to edit project name"
-            >
-              {project?.name || 'Loading...'}
-            </h2>
-          )}
-        </div>
+      <SurveyNavigation
+        displayTitle={project?.name || 'Loading...'}
+        currentPage="survey"
+        projectId={projectId}
+        allProjects={allProjects}
+        onProjectSwitch={onProjectSwitch}
+        onCreateProject={onCreateProject}
+      >
 
         {/* Progress Bar */}
         <div className="px-3 py-2.5 mt-6">
@@ -1096,7 +1041,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         </div>
 
         {/* Section Navigation */}
-        <div className="flex-1 overflow-y-auto py-8 px-2 flex flex-col justify-center">
+        <div className="flex-1 overflow-y-auto py-8 px-2 flex flex-col">
           <div>
           <div className="px-4 mb-2">
             <span className="text-xs font-medium text-gray-600">Sections</span>
@@ -1125,7 +1070,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                   } text-gray-500`} style={{ fontSize: '15px' }}>
                     {isCompleted ? (
                       <svg width="16" height="16" viewBox="22 22 56 56" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M70.63,61.53c-.77-5.18-5.27-6.64-10.45-5.86l-.39.06C57.39,47.09,53,42.27,49.53,39.66c3.65.71,6.83.23,9.74-3.08,1.9-2.18,2.83-5.14,5.75-7.53a.46.46,0,0,0-.17-.8c-5.07-1.4-11.84-1.08-15.43,3a13.83,13.83,0,0,0-3.17,6.38,18.48,18.48,0,0,0-4.87-1.73.35.35,0,0,0-.41.3l-.23,1.62a.35.35,0,0,0,.28.4A17.86,17.86,0,0,1,45.74,40c2.49,6.14-2.9,13.55-5.88,17-4.7-1.25-9-.37-10.28,4.33a8.89,8.89,0,1,0,17.15,4.67c1.16-4.26-1.42-7.08-5.4-8.54A37.59,37.59,0,0,0,45,52.51c2.59-4.14,3.57-8,2.91-11.25l.42.3A25.14,25.14,0,0,1,58.47,56c-4.28,1.08-7.25,3.73-6.57,8.31a9.47,9.47,0,1,0,18.73-2.79Z" fill={currentSection === section.id ? "#215aed" : "#6B7280"} shape-rendering="geometricPrecision"/>
+                        <path d="M70.63,61.53c-.77-5.18-5.27-6.64-10.45-5.86l-.39.06C57.39,47.09,53,42.27,49.53,39.66c3.65.71,6.83.23,9.74-3.08,1.9-2.18,2.83-5.14,5.75-7.53a.46.46,0,0,0-.17-.8c-5.07-1.4-11.84-1.08-15.43,3a13.83,13.83,0,0,0-3.17,6.38,18.48,18.48,0,0,0-4.87-1.73.35.35,0,0,0-.41.3l-.23,1.62a.35.35,0,0,0,.28.4A17.86,17.86,0,0,1,45.74,40c2.49,6.14-2.9,13.55-5.88,17-4.7-1.25-9-.37-10.28,4.33a8.89,8.89,0,1,0,17.15,4.67c1.16-4.26-1.42-7.08-5.4-8.54A37.59,37.59,0,0,0,45,52.51c2.59-4.14,3.57-8,2.91-11.25l.42.3A25.14,25.14,0,0,1,58.47,56c-4.28,1.08-7.25,3.73-6.57,8.31a9.47,9.47,0,1,0,18.73-2.79Z" fill="black" shape-rendering="geometricPrecision"/>
                       </svg>
                     ) : (
                       section.id
@@ -1139,120 +1084,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           </div>
         </div>
 
-        {/* Projects Button - Bottom of Sidebar */}
-        <div className="p-3 relative">
-          <div className="px-3 mb-2">
-            <span className="text-xs font-medium text-gray-600">Account</span>
-          </div>
-          {/* Project Selector Popup */}
-          {showProjectSelector && (
-            <>
-              {/* Backdrop */}
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowProjectSelector(false)}
-              />
-
-              {/* Popup Menu */}
-              <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 max-h-96 flex flex-col">
-                {/* Create New Project Button */}
-                <button
-                  onClick={() => {
-                    setShowProjectSelector(false);
-                    onCreateProject();
-                  }}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition border-b border-gray-200"
-                >
-                  <div className="w-8 h-8 bg-black rounded flex items-center justify-center flex-shrink-0">
-                    <svg width="16" height="16" fill="none" stroke="white" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                  </div>
-                  <span className="font-medium text-gray-900">Create New Project</span>
-                </button>
-
-                {/* Projects List */}
-                <div className="overflow-y-auto flex-1">
-                  {allProjects.map(proj => (
-                    <button
-                      key={proj.id}
-                      onClick={() => {
-                        setShowProjectSelector(false);
-                        onProjectSwitch(proj.id);
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition ${
-                        proj.id === projectId ? 'bg-gray-100' : ''
-                      }`}
-                    >
-                      <div className={`w-8 h-8 rounded flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                        proj.id === projectId
-                          ? 'bg-black text-white'
-                          : 'bg-gray-200 text-gray-600'
-                      }`}>
-                        {proj.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1 text-left min-w-0">
-                        <div className="font-medium text-gray-900 truncate">{proj.name}</div>
-                        {proj.lastUpdated && (
-                          <div className="text-xs text-gray-500">
-                            {proj.lastUpdated.toDate().toLocaleDateString()}
-                          </div>
-                        )}
-                      </div>
-                      {proj.id === projectId && (
-                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="text-black flex-shrink-0">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          <button
-            onClick={() => {
-              // TODO: Add upgrade functionality
-              console.log('Upgrade clicked');
-            }}
-            className="w-full bg-white text-gray-600 px-4 py-1.5 rounded-lg hover:bg-gray-200 transition flex items-center justify-start gap-2 mb-0.5"
-            style={{ fontSize: '15px' }}
-          >
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="text-gray-500">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            Upgrade
-          </button>
-
-          <button
-            onClick={() => setShowProjectSelector(!showProjectSelector)}
-            className="w-full text-gray-700 px-4 py-1.5 rounded-lg hover:bg-gray-200 transition flex items-center justify-start gap-2 mb-0.5"
-            style={{ fontSize: '15px' }}
-          >
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="text-gray-500">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-            </svg>
-            Switch Project
-          </button>
-
-          <button
-            onClick={async () => {
-              if (window.confirm('Are you sure you want to log out?')) {
-                await signOut(auth);
-              }
-            }}
-            className="w-full text-gray-700 px-4 py-1.5 rounded-lg hover:bg-gray-200 transition flex items-center justify-start gap-2"
-            style={{ fontSize: '15px' }}
-          >
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="text-gray-500">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Log Out
-          </button>
-        </div>
-
-      </div>
+      </SurveyNavigation>
 
       {/* Collaborators Modal */}
       {showCollaborators && (
@@ -1322,6 +1154,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               isReadOnly={isReadOnly}
               project={project}
               showValidation={showValidation}
+              onViewModeChange={setSection3InResultsView}
             />
           )}
           {currentSection === 4 && (
@@ -1390,8 +1223,15 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           {!isReadOnly && (
             <div className="mt-8 flex justify-between">
               <button
-                onClick={() => setCurrentSection(Math.max(1, currentSection - 1))}
-                disabled={currentSection === 1}
+                onClick={() => {
+                  // If on section 3 in results view, go back to edit view (spreadsheet)
+                  if (currentSection === 3 && section3InResultsView && section3Ref.current) {
+                    section3Ref.current.backToEdit();
+                  } else {
+                    setCurrentSection(Math.max(1, currentSection - 1));
+                  }
+                }}
+                disabled={currentSection === 1 && !section3InResultsView}
                 className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1403,16 +1243,24 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               {currentSection < 10 ? (
                 <button
                   onClick={() => {
-                    // If on section 3 (Equity Allocation), submit the calculator first
-                    if (currentSection === 3 && section3Ref.current) {
-                      const submitted = section3Ref.current.submitEquityCalculator();
-                      // Only proceed to next section if submission was successful or not needed
-                      if (submitted === false) {
-                        // Submission failed validation, stay on this section
+                    // If on section 3 (Equity Allocation)
+                    if (currentSection === 3) {
+                      // If in results view, proceed to next section
+                      if (section3InResultsView) {
+                        setCurrentSection(4);
                         return;
                       }
-                      // Don't move to next section - the submit will show results view
-                      return;
+                      // If in edit view, submit the calculator first
+                      if (section3Ref.current) {
+                        const submitted = section3Ref.current.submitEquityCalculator();
+                        // Only proceed if submission was successful
+                        if (submitted === false) {
+                          // Submission failed validation, stay on this section
+                          return;
+                        }
+                        // Don't move to next section - the submit will show results view
+                        return;
+                      }
                     }
                     // For other sections, proceed normally
                     setCurrentSection(currentSection + 1);

@@ -18,15 +18,26 @@ service cloud.firestore {
       // Helper function to check if user is owner or collaborator
       function isOwnerOrCollaborator() {
         return resource.data.ownerEmail == request.auth.token.email ||
-               request.auth.token.email in resource.data.get('collaborators', []);
+               request.auth.token.email in resource.data.get('collaborators', []) ||
+               resource.data.ownerId == request.auth.uid ||
+               request.auth.uid in resource.data.get('collaboratorIds', []);
       }
 
       // Projects are created via Stripe webhook (server-side), not client-side
       // So we don't allow direct client creation
       allow create: if false;
 
-      // Allow reading own projects or projects where user is a collaborator
-      allow read: if isSignedIn() && isOwnerOrCollaborator();
+      // Allow reading documents only if user is owner or collaborator
+      // This filters individual gets AND documents returned in list queries
+      allow read: if isSignedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        request.auth.uid in resource.data.get('collaboratorIds', [])
+      );
+
+      // Allow list queries only for authenticated users with reasonable limits
+      // Individual documents in results are still filtered by the read rule above
+      allow list: if isSignedIn() &&
+                     request.query.limit <= 100;
 
       // Owner and collaborators can update, but cannot change ownership
       allow update: if isSignedIn() &&

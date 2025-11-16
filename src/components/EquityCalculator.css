@@ -26,7 +26,6 @@
   overflow-y: auto !important;
   overflow-x: auto !important;
   position: relative !important;
-  /* Enable sticky positioning for child elements */
   -webkit-overflow-scrolling: touch !important;
 }
 
@@ -41,7 +40,6 @@
   padding: 0 !important;
   background: transparent !important;
   line-height: 0 !important;
-  /* Don't use position: relative as it can interfere with sticky children */
 }
 
 .Spreadsheet__table {
@@ -53,7 +51,6 @@
   table-layout: auto !important;
   margin: 0 !important;
   padding: 0 !important;
-  /* border-collapse: separate is required for sticky positioning to work */
 }
 
 /* Header row matching: bg-gray-50 */
@@ -88,6 +85,7 @@
 .single-click-edit .Spreadsheet__table tbody tr:first-child .Spreadsheet__cell {
   background-color: #ffffff !important;
   font-weight: 600 !important;
+  color: #6B7280 !important;
   position: -webkit-sticky !important;
   position: sticky !important;
   top: 0 !important;
@@ -98,9 +96,7 @@
 .Spreadsheet tbody {
   margin: 0 !important;
   padding: 0 !important;
-  /* Don't set position to allow sticky children to work */
 }
-
 
 /* Header cells matching: px-4 py-3 text-left text-sm font-medium text-gray-900 border-r border-gray-200 */
 .Spreadsheet th,
@@ -109,7 +105,7 @@
   text-align: left !important;
   font-size: 1rem !important;
   font-weight: 600 !important;
-  color: #111827 !important;
+  color: #6B7280 !important;
   background-color: #ffffff !important;
   border-right: none !important;
   border-bottom: 1px solid #e5e7eb !important;
@@ -122,8 +118,6 @@
   top: 0 !important;
   z-index: 20 !important;
 }
-
-/* No border between Category and Importance columns */
 
 .Spreadsheet th:last-child,
 .Spreadsheet thead .Spreadsheet__cell:last-child {
@@ -144,8 +138,6 @@
   text-align: left !important;
   line-height: 1.5 !important;
 }
-
-/* No border between Category and Importance columns */
 
 .Spreadsheet tbody .Spreadsheet__cell:last-child,
 .Spreadsheet td:last-child,
@@ -182,7 +174,6 @@
   content: none !important;
   display: none !important;
 }
-
 
 .Spreadsheet__cell input {
   width: 100% !important;
@@ -224,9 +215,10 @@
 }
 
 /* First column (category names) */
-.Spreadsheet tbody .Spreadsheet__cell:first-child:not(.group-header-cell),
-.Spreadsheet tbody td:first-child:not(.group-header-cell),
-.Spreadsheet tbody tr td:first-child:not(.group-header-cell) {
+.Spreadsheet tbody .Spreadsheet__cell:first-child:not(.header-cell),
+.Spreadsheet tbody td:first-child:not(.header-cell),
+.Spreadsheet tbody tr td:first-child:not(.header-cell),
+.Spreadsheet tbody tr:not(:first-child) td:first-child:not(.header-cell) {
   font-weight: 500 !important;
   color: #111827 !important;
   background-color: #ffffff !important;
@@ -248,79 +240,13 @@
   z-index: 30 !important;
 }
 
-/* Group header cells - bold styling with smaller height */
-.Spreadsheet .group-header-cell,
-.Spreadsheet td.group-header-cell,
-.Spreadsheet__cell.group-header-cell,
-.Spreadsheet tbody .Spreadsheet__cell.group-header-cell,
-.Spreadsheet tbody td.group-header-cell,
-.spreadsheet-scroll-container .Spreadsheet .group-header-cell,
-.spreadsheet-scroll-container .Spreadsheet td.group-header-cell,
-.spreadsheet-scroll-container .Spreadsheet__cell.group-header-cell,
-.single-click-edit .Spreadsheet .group-header-cell,
-.single-click-edit .Spreadsheet td.group-header-cell,
-.single-click-edit .Spreadsheet tbody td.group-header-cell {
-  font-weight: 700 !important;
-  color: #111827 !important;
-  background-color: #ffffff !important;
-  pointer-events: none !important;
-  cursor: default !important;
-  padding: 0.375rem 1rem !important;
-  line-height: 1.25 !important;
-  border-right: none !important;
-}
-
-/* Remove border between Category and Importance for group headers to make it look merged */
-.Spreadsheet tbody .Spreadsheet__cell:first-child.group-header-cell,
-.Spreadsheet tbody td:first-child.group-header-cell {
-  border-right: none !important;
-}
-
-/* Hide the content (0's) in non-first-column group header cells */
-.Spreadsheet .group-header-cell:not(:first-child),
-.Spreadsheet td.group-header-cell:not(:first-child),
-.Spreadsheet tbody td.group-header-cell:not(:first-child),
-.Spreadsheet tbody .Spreadsheet__cell.group-header-cell:not(:first-child),
-.spreadsheet-scroll-container .Spreadsheet .group-header-cell:not(:first-child),
-.spreadsheet-scroll-container .Spreadsheet td.group-header-cell:not(:first-child),
-.single-click-edit .Spreadsheet .group-header-cell:not(:first-child),
-.single-click-edit .Spreadsheet td.group-header-cell:not(:first-child) {
-  color: transparent !important;
-  font-size: 0 !important;
-}
-
-/* Hide input elements in group header cells */
-.Spreadsheet .group-header-cell:not(:first-child) input,
-.Spreadsheet td.group-header-cell:not(:first-child) input,
-.Spreadsheet tbody td.group-header-cell:not(:first-child) input,
-.Spreadsheet__cell.group-header-cell:not(:first-child) input {
-  display: none !important;
-  visibility: hidden !important;
-}
-
-/* No border between Category and Importance columns for group headers */
-
-/* First column group header cells - need sticky left positioning */
-.Spreadsheet tbody tr td:first-child.group-header-cell,
-.Spreadsheet tbody .Spreadsheet__cell:first-child.group-header-cell,
-.single-click-edit .Spreadsheet tbody tr td:first-child.group-header-cell,
-.single-click-edit .Spreadsheet tbody .Spreadsheet__cell:first-child.group-header-cell,
-.spreadsheet-scroll-container .Spreadsheet tbody tr td:first-child.group-header-cell,
-.spreadsheet-scroll-container .Spreadsheet tbody .Spreadsheet__cell:first-child.group-header-cell {
-  position: sticky !important;
-  left: 0 !important;
-  z-index: 10 !important;
-  background-color: #ffffff !important;
-  font-weight: 700 !important;
-}
-
 /* Header cell styling using className */
 .spreadsheet-scroll-container .Spreadsheet .header-cell,
 .spreadsheet-scroll-container .Spreadsheet td.header-cell,
 .spreadsheet-scroll-container td.header-cell {
   font-size: 1rem !important;
   font-weight: 600 !important;
-  color: #111827 !important;
+  color: #6B7280 !important;
   background-color: #ffffff !important;
   pointer-events: none !important;
   cursor: default !important;
@@ -331,7 +257,13 @@
   border-right: none !important;
 }
 
-/* No border between Category and Importance columns for header cells */
+/* Ensure header cell text is always visible */
+.spreadsheet-scroll-container .Spreadsheet .header-cell *,
+.spreadsheet-scroll-container .Spreadsheet td.header-cell *,
+.spreadsheet-scroll-container td.header-cell * {
+  color: #6B7280 !important;
+  opacity: 1 !important;
+}
 
 /* First header cell with header-cell class needs higher z-index */
 .spreadsheet-scroll-container .Spreadsheet tbody tr:first-child td:first-child.header-cell,
@@ -343,15 +275,30 @@
   top: 0 !important;
 }
 
-/* Category cell styling - but not if it's a group header */
-.Spreadsheet .category-cell:not(.group-header-cell),
-.Spreadsheet td.category-cell:not(.group-header-cell),
-td.category-cell:not(.group-header-cell) {
+/* Category cell styling */
+.Spreadsheet .category-cell,
+.Spreadsheet td.category-cell,
+.Spreadsheet tbody td.category-cell,
+.Spreadsheet tbody .Spreadsheet__cell.category-cell,
+td.category-cell {
   font-weight: 500 !important;
   color: #111827 !important;
   background-color: #ffffff !important;
   pointer-events: none !important;
   cursor: default !important;
+}
+
+/* Separator cell styling - completely non-interactive */
+.Spreadsheet .separator-cell,
+.Spreadsheet td.separator-cell,
+.Spreadsheet tbody td.separator-cell,
+.Spreadsheet tbody .Spreadsheet__cell.separator-cell,
+td.separator-cell {
+  pointer-events: none !important;
+  cursor: default !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  background-color: #f3f4f6 !important;
 }
 
 /* Second column (importance) styling - center aligned */
@@ -396,24 +343,3 @@ td.category-cell:not(.group-header-cell) {
 .single-click-edit .Spreadsheet__cell:not(.Spreadsheet__cell--readonly):active {
   pointer-events: none !important;
 }
-
-/* Make group header rows (Inputs, Execution, Intangible) appear as merged cells with grey background */
-.Spreadsheet tbody tr:nth-child(3) td,
-.Spreadsheet tbody tr:nth-child(3) .Spreadsheet__cell,
-.Spreadsheet__table tbody tr:nth-child(3) td,
-.Spreadsheet__table tbody tr:nth-child(3) .Spreadsheet__cell,
-.Spreadsheet tbody tr:nth-child(8) td,
-.Spreadsheet tbody tr:nth-child(8) .Spreadsheet__cell,
-.Spreadsheet__table tbody tr:nth-child(8) td,
-.Spreadsheet__table tbody tr:nth-child(8) .Spreadsheet__cell,
-.Spreadsheet tbody tr:nth-child(16) td,
-.Spreadsheet tbody tr:nth-child(16) .Spreadsheet__cell,
-.Spreadsheet__table tbody tr:nth-child(16) td,
-.Spreadsheet__table tbody tr:nth-child(16) .Spreadsheet__cell {
-  background-color: #f3f4f6 !important;
-  border-right: none !important;
-  border-left: none !important;
-  padding: 0.375rem 1rem !important;
-  line-height: 1.25 !important;
-}
-

@@ -241,11 +241,12 @@ function Auth({ onLogin }) {
       // Send email verification
       await sendEmailVerification(userCredential.user);
 
-      // Save user profile to Firestore
+      // Save user profile to Firestore (SINGLE SOURCE OF TRUTH)
       await setDoc(doc(db, 'users', userCredential.user.uid), {
-        name: name,
+        name: name.trim(),
         email: email,
         createdAt: new Date(),
+        updatedAt: new Date(),
         purchases: []
       });
 

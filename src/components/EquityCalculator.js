@@ -30,12 +30,8 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
       firebaseData[`row_${rowIndex}`] = {};
       row.forEach((cell, colIndex) => {
         const cellValue = cell.value;
-        // For group header cells, preserve null/empty values instead of converting to 0
-        const isGroupHeader = cell.className === 'group-header-cell';
         firebaseData[`row_${rowIndex}`][`col_${colIndex}`] = {
-          value: isGroupHeader
-            ? (cellValue || null)
-            : ((cellValue !== undefined && cellValue !== null && cellValue !== '') ? cellValue : 0),
+          value: (cellValue !== undefined && cellValue !== null && cellValue !== '') ? cellValue : 0,
           readOnly: cell.readOnly || false,
           className: cell.className || ''
         };
@@ -69,12 +65,8 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
         return colKeys.map(colKey => {
           const cell = row[colKey];
           const cellValue = cell?.value;
-          // For group header cells, preserve null/empty values instead of converting to 0
-          const isGroupHeader = cell?.className === 'group-header-cell';
           return {
-            value: isGroupHeader
-              ? (cellValue || null)
-              : ((cellValue !== undefined && cellValue !== null && cellValue !== '') ? cellValue : 0),
+            value: (cellValue !== undefined && cellValue !== null && cellValue !== '') ? cellValue : 0,
             readOnly: cell?.readOnly || false,
             className: cell?.className || ''
           };
@@ -86,165 +78,101 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
     }
   };
 
-  // Initialize spreadsheet data with columns as cofounders
+  // Initialize spreadsheet data - 22 rows (header + 21 categories, no group headers)
   const initializeData = () => {
-    const currentNumCofounders = cofounders.length || 2;
+    const numCofounders = cofounders.length || 2;
 
-    // If user has draft data, convert it from Firebase format
+    // All 22 rows with their exact labels (no group headers)
+    const rows = [
+      'Category',      // Row 1 - header
+      'Input',
+      'Cash Invested',
+      'Time Commitment',
+      'Existing Work & IP',
+      'Equipment & Tools',
+      'Execution',
+      'Leadership & Management',
+      'Engineering',
+      'Sales',
+      'Product',
+      'Fundraising',
+      'Recruiting',
+      'Operations',
+      'Intangibles',
+      'Domain Expertise',
+      'Network Value',
+      'Irreplaceability',
+      'Role Scalability',
+      'Opportunity Cost',
+      'Risk Tolerance',
+      'Idea Origination'
+    ];
+
+    const data = rows.map((rowLabel, index) => {
+      // Row 1 - Header row
+      if (index === 0) {
+        return [
+          { value: 'Category', readOnly: true, className: 'header-cell' },
+          { value: 'Importance', readOnly: true, className: 'header-cell' },
+          ...cofounders.map((email) => ({
+            value: getCofounderName(email),
+            readOnly: true,
+            className: 'header-cell'
+          }))
+        ];
+      }
+
+      // Special read-only rows with no values
+      if (rowLabel === 'Input' || rowLabel === 'Execution' || rowLabel === 'Intangibles') {
+        return [
+          { value: rowLabel, readOnly: true, className: 'category-cell separator-cell' },
+          { value: '', readOnly: true, className: 'separator-cell' },
+          ...Array.from({ length: numCofounders }, () => ({ value: '', readOnly: true, className: 'separator-cell' }))
+        ];
+      }
+
+      // All other rows - regular category rows
+      return [
+        { value: rowLabel, readOnly: true, className: 'category-cell' },
+        { value: 0 },
+        ...Array.from({ length: numCofounders }, () => ({ value: 0 }))
+      ];
+    });
+
+    // Merge in saved data if it exists
     if (userDraftData) {
       let loadedData = null;
-
-      // Check if it's in Firebase object format (has row_ keys)
       if (typeof userDraftData === 'object' && !Array.isArray(userDraftData) && Object.keys(userDraftData).some(key => key.startsWith('row_'))) {
-        const converted = convertFromFirebaseFormat(userDraftData);
-        if (converted && converted.length > 0) {
-          loadedData = converted;
-        }
-      }
-      // Legacy support: if it's already an array, use it directly but clean it
-      else if (Array.isArray(userDraftData) && userDraftData.length > 0) {
+        loadedData = convertFromFirebaseFormat(userDraftData);
+      } else if (Array.isArray(userDraftData)) {
         loadedData = userDraftData;
       }
 
-      // If we have loaded data, adjust columns to match current number of cofounders
       if (loadedData) {
-        const savedNumCofounders = loadedData[0] ? loadedData[0].length - 2 : 0; // Subtract Category and Importance columns
+        // Match by category name and merge values
+        for (let i = 1; i < data.length; i++) {
+          const categoryName = data[i][0]?.value;
+          if (!categoryName) continue;
 
-        // If the number of cofounders has changed, adjust the data
-        if (savedNumCofounders !== currentNumCofounders) {
-          return loadedData.map((row, rowIndex) => {
-            const fixedColumns = row.slice(0, 2); // Category and Importance columns
-            const dataColumns = row.slice(2, 2 + savedNumCofounders); // Existing cofounder columns
+          // Skip merging data for special read-only rows
+          if (categoryName === 'Input' || categoryName === 'Execution' || categoryName === 'Intangibles') {
+            continue;
+          }
 
-            // If header row, use current cofounder names
-            if (rowIndex === 0) {
-              return [
-                ...fixedColumns,
-                ...cofounders.map((email) => ({
-                  value: getCofounderName(email),
-                  readOnly: true,
-                  className: 'header-cell'
-                }))
-              ];
-            }
-
-            // For data rows, preserve existing data and add/remove columns as needed
-            let adjustedDataColumns = [...dataColumns];
-
-            // If we need more columns, add them
-            if (currentNumCofounders > savedNumCofounders) {
-              const isGroupHeader = row[0]?.className === 'group-header-cell';
-              for (let i = savedNumCofounders; i < currentNumCofounders; i++) {
-                adjustedDataColumns.push(
-                  isGroupHeader
-                    ? { value: null, readOnly: true, className: 'group-header-cell' }
-                    : { value: 0, readOnly: false }
-                );
+          const savedRow = loadedData.find(row => row[0]?.value === categoryName);
+          if (savedRow) {
+            for (let j = 1; j < data[i].length && j < savedRow.length; j++) {
+              const savedValue = savedRow[j]?.value;
+              if (savedValue !== undefined && savedValue !== null && savedValue !== '') {
+                data[i][j] = { ...data[i][j], value: savedValue };
               }
             }
-            // If we need fewer columns, remove them
-            else if (currentNumCofounders < savedNumCofounders) {
-              adjustedDataColumns = adjustedDataColumns.slice(0, currentNumCofounders);
-            }
-
-            return [...fixedColumns, ...adjustedDataColumns];
-          });
+          }
         }
-
-        // Number of cofounders hasn't changed, just clean the data
-        return loadedData.map((row, rowIndex) =>
-          row.map((cell, colIndex) => {
-            // Header row (rowIndex 0) - all cells read-only
-            if (rowIndex === 0) {
-              return { ...cell, readOnly: true, className: 'header-cell' };
-            }
-            // Category column (colIndex 0) - read-only
-            if (colIndex === 0) {
-              return { ...cell, readOnly: true, className: 'category-cell' };
-            }
-            // All other cells should be editable
-            return {
-              value: (cell?.value !== undefined && cell?.value !== null && cell?.value !== '') ? cell.value : 0,
-              readOnly: false,
-              className: cell?.className || ''
-            };
-          })
-        );
       }
     }
 
-    // Otherwise create fresh data
-    const numCofounders = cofounders.length || 2;
-
-    // Organized by groups
-    const categoryGroups = [
-      {
-        group: 'Inputs',
-        categories: [
-          'Cash Invested',
-          'Time Commitment',
-          'Existing Work & IP',
-          'Equipment & Tools'
-        ]
-      },
-      {
-        group: 'Execution',
-        categories: [
-          'Leadership & Management',
-          'Engineering',
-          'Sales',
-          'Product',
-          'Fundraising',
-          'Recruiting',
-          'Operations'
-        ]
-      },
-      {
-        group: 'Intangible',
-        categories: [
-          'Domain Expertise',
-          'Network Value',
-          'Irreplaceability',
-          'Role Scalability',
-          'Opportunity Cost',
-          'Risk Tolerance',
-          'Idea Origination'
-        ]
-      }
-    ];
-
-    // Header row with cofounder names (all read-only)
-    const headerRow = [
-      { value: 'Category', readOnly: true, className: 'header-cell' },
-      { value: 'Importance', readOnly: true, className: 'header-cell' },
-      ...cofounders.map((email) => ({
-        value: getCofounderName(email),
-        readOnly: true,
-        className: 'header-cell'
-      }))
-    ];
-
-    // Factor rows with group headers
-    const factorRows = [];
-    categoryGroups.forEach(({ group, categories }) => {
-      // Add group header row
-      factorRows.push([
-        { value: group, readOnly: true, className: 'group-header-cell' },
-        { value: null, readOnly: true, className: 'group-header-cell' },
-        ...Array.from({ length: numCofounders }, () => ({ value: null, readOnly: true, className: 'group-header-cell' }))
-      ]);
-
-      // Add category rows
-      categories.forEach((category) => {
-        factorRows.push([
-          { value: category, readOnly: true, className: 'category-cell' },
-          { value: 0 },
-          ...Array.from({ length: numCofounders }, () => ({ value: 0 }))
-        ]);
-      });
-    });
-
-    return [headerRow, ...factorRows];
+    return data;
   };
 
   const [data, setData] = useState(initializeData());
@@ -254,17 +182,14 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
   // Calculate equity percentages from current data
   const calculateCurrentEquity = () => {
     try {
-      // Skip header row (index 0) and group header rows
-      // Column 0 = Category name (or group name for header rows)
+      // Skip header row (index 0)
+      // Column 0 = Category name
       // Column 1 = Importance/Weight
       // Columns 2+ = Cofounder scores
 
-      // Calculate total importance (sum of column 1, excluding header and group headers)
+      // Calculate total importance (sum of column 1, excluding header)
       let totalImportance = 0;
       for (let i = 1; i < data.length; i++) {
-        // Skip group header rows (they have className 'group-header-cell')
-        if (data[i][0]?.className === 'group-header-cell') continue;
-
         const importance = parseFloat(data[i][1]?.value) || 0;
         totalImportance += importance;
       }
@@ -280,9 +205,6 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
         let weightedScore = 0;
 
         for (let rowIndex = 1; rowIndex < data.length; rowIndex++) {
-          // Skip group header rows
-          if (data[rowIndex][0]?.className === 'group-header-cell') continue;
-
           const importance = parseFloat(data[rowIndex][1]?.value) || 0;
           const score = parseFloat(data[rowIndex][colIndex]?.value) || 0;
           const weight = importance / totalImportance;
@@ -505,15 +427,22 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
           return { ...cell, readOnly: true, className: 'header-cell' };
         }
 
-        // Category column (colIndex 0) - all cells read-only (preserve group-header-cell or category-cell)
+        // Get category name for special row checks
+        const categoryName = row[0]?.value;
+        const isSeparatorRow = categoryName === 'Input' || categoryName === 'Execution' || categoryName === 'Intangibles';
+
+        // Category column (colIndex 0) - all cells read-only with category-cell class
         if (colIndex === 0) {
-          const cellClass = data[rowIndex]?.[colIndex]?.className || 'category-cell';
-          return { ...cell, readOnly: true, className: cellClass };
+          return {
+            ...cell,
+            readOnly: true,
+            className: isSeparatorRow ? 'category-cell separator-cell' : 'category-cell'
+          };
         }
 
-        // Group header rows - all cells read-only
-        if (data[rowIndex]?.[0]?.className === 'group-header-cell') {
-          return { ...cell, readOnly: true, className: 'group-header-cell' };
+        // Special read-only rows (Input, Execution, Intangibles) - keep empty and read-only
+        if (isSeparatorRow) {
+          return { ...cell, value: '', readOnly: true, className: 'separator-cell' };
         }
 
         // All other cells are editable - validate to integers 0-100

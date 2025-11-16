@@ -4,7 +4,7 @@ import Spreadsheet from 'react-spreadsheet';
 import { auth } from '../firebase';
 import './Section3EquityAllocation.css';
 
-const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnly, showValidation, project }, ref) => {
+const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnly, showValidation, project, onViewModeChange }, ref) => {
   const visualBarsRef = useRef(null);
   // Calculate number of cofounders from collaborators (owner + collaborators)
   const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
@@ -201,9 +201,10 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
     return true;
   };
 
-  // Expose handleSubmit to parent via ref
+  // Expose handleSubmit and backToEdit to parent via ref
   useImperativeHandle(ref, () => ({
-    submitEquityCalculator: handleSubmit
+    submitEquityCalculator: handleSubmit,
+    backToEdit: () => changeView('edit')
   }));
 
   // Effect to update viewMode when submissions change
@@ -212,6 +213,13 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
       changeView('results');
     }
   }, [formData.equityCalculatorSubmitted]);
+
+  // Notify parent when viewMode changes
+  React.useEffect(() => {
+    if (onViewModeChange) {
+      onViewModeChange(viewMode === 'results');
+    }
+  }, [viewMode, onViewModeChange]);
 
   // Check if current user has submitted
   const hasSubmitted = !!formData.equityCalculatorSubmitted?.[currentUserEmail];
@@ -254,17 +262,14 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
         });
       }
 
-      // Skip header row (index 0) and group header rows
-      // Column 0 = Category name (or group name for header rows)
+      // Skip header row (index 0)
+      // Column 0 = Category name
       // Column 1 = Importance/Weight
       // Columns 2+ = Cofounder scores
 
-      // Calculate total importance (sum of column 1, excluding header and group headers)
+      // Calculate total importance (sum of column 1, excluding header)
       let totalImportance = 0;
       for (let i = 1; i < data.length; i++) {
-        // Skip group header rows (they have className 'group-header-cell')
-        if (data[i][0]?.className === 'group-header-cell') continue;
-
         const importance = parseFloat(data[i][1]?.value) || 0;
         totalImportance += importance;
       }
@@ -280,9 +285,6 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
         let weightedScore = 0;
 
         for (let rowIndex = 1; rowIndex < data.length; rowIndex++) {
-          // Skip group header rows
-          if (data[rowIndex][0]?.className === 'group-header-cell') continue;
-
           const importance = parseFloat(data[rowIndex][1]?.value) || 0;
           const score = parseFloat(data[rowIndex][colIndex]?.value) || 0;
           const weight = importance / totalImportance;
@@ -414,7 +416,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
 
         {/* Single container that stays intact - only content inside animates */}
         <div className="mb-8">
-          <div style={{ minHeight: '700px', overflow: 'visible' }}>
+          <div style={{ minHeight: '700px', overflow: 'visible' }} className="bg-gray-50 rounded-lg p-6">
             {/* Edit View - Show calculator */}
             {viewMode === 'edit' && (
               <div className={`flex flex-col ${
@@ -550,16 +552,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                   </div>
 
                   {/* Action bar - fixed position after visual bars */}
-                  <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-200">
-                    <button
-                      onClick={() => changeView('edit')}
-                      className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition"
-                    >
-                      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                      Back to your spreadsheet
-                    </button>
+                  <div className="flex items-center justify-end pt-3 mt-3 border-t border-gray-200">
                     <button
                       onClick={() => setShowIndividualSpreadsheets(!showIndividualSpreadsheets)}
                       className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition"
@@ -601,20 +594,11 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                         // Convert Firebase format to array if needed
                         let spreadsheetData = submission.data;
 
-                        // Define complete category structure (must match EquityCalculator)
-                        const categoryGroups = [
-                          {
-                            group: 'Inputs',
-                            categories: ['Cash Invested', 'Time Commitment', 'Existing Work & IP', 'Equipment & Tools']
-                          },
-                          {
-                            group: 'Execution',
-                            categories: ['Leadership & Management', 'Engineering', 'Sales', 'Product', 'Fundraising', 'Recruiting', 'Operations']
-                          },
-                          {
-                            group: 'Intangible',
-                            categories: ['Domain Expertise', 'Network Value', 'Irreplaceability', 'Role Scalability', 'Opportunity Cost', 'Risk Tolerance', 'Idea Origination']
-                          }
+                        // Define complete category list (must match EquityCalculator)
+                        const categories = [
+                          'Input', 'Cash Invested', 'Time Commitment', 'Existing Work & IP', 'Equipment & Tools',
+                          'Execution', 'Leadership & Management', 'Engineering', 'Sales', 'Product', 'Fundraising', 'Recruiting', 'Operations',
+                          'Intangibles', 'Domain Expertise', 'Network Value', 'Irreplaceability', 'Role Scalability', 'Opportunity Cost', 'Risk Tolerance', 'Idea Origination'
                         ];
 
                         if (typeof spreadsheetData === 'object' && !Array.isArray(spreadsheetData)) {
@@ -663,10 +647,8 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                         }
 
                         // Ensure we have the complete structure with all rows
-                        // Expected: 1 header + 3 group headers + 18 categories = 22 rows
-                        const expectedRowCount = 1 + categoryGroups.reduce((sum, group) =>
-                          sum + 1 + group.categories.length, 0
-                        );
+                        // Expected: 1 header + 21 categories = 22 rows
+                        const expectedRowCount = 1 + categories.length;
 
                         if (spreadsheetData && spreadsheetData.length < expectedRowCount) {
                           // Rebuild complete structure if data is incomplete
@@ -684,41 +666,27 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                             }))
                           ]);
 
-                          let dataRowIndex = 1; // Start from row 1 (skip header)
-
-                          categoryGroups.forEach(({ group, categories }) => {
-                            // Group header row
-                            completeData.push([
-                              { value: group, readOnly: true, className: 'group-header-cell' },
-                              { value: null, readOnly: true, className: 'group-header-cell' },
-                              ...Array(numCofounders).fill(null).map(() => ({
-                                value: null, readOnly: true, className: 'group-header-cell'
-                              }))
-                            ]);
-                            dataRowIndex++;
-
-                            // Category rows
-                            categories.forEach(category => {
-                              const existingRow = spreadsheetData[dataRowIndex];
-                              if (existingRow) {
-                                // Use existing data but ensure all columns exist
-                                completeData.push([
-                                  { value: category, readOnly: true, className: 'category-cell' },
-                                  existingRow[1] || { value: 0, readOnly: true },
-                                  ...allCollaborators.map((_, idx) =>
-                                    existingRow[idx + 2] || { value: 0, readOnly: true }
-                                  )
-                                ]);
-                              } else {
-                                // Create default row
-                                completeData.push([
-                                  { value: category, readOnly: true, className: 'category-cell' },
-                                  { value: 0, readOnly: true },
-                                  ...Array(numCofounders).fill(null).map(() => ({ value: 0, readOnly: true }))
-                                ]);
-                              }
-                              dataRowIndex++;
-                            });
+                          // Category rows
+                          categories.forEach((category, index) => {
+                            const dataRowIndex = index + 1;
+                            const existingRow = spreadsheetData[dataRowIndex];
+                            if (existingRow) {
+                              // Use existing data but ensure all columns exist
+                              completeData.push([
+                                { value: category, readOnly: true, className: 'category-cell' },
+                                existingRow[1] || { value: 0, readOnly: true },
+                                ...allCollaborators.map((_, idx) =>
+                                  existingRow[idx + 2] || { value: 0, readOnly: true }
+                                )
+                              ]);
+                            } else {
+                              // Create default row
+                              completeData.push([
+                                { value: category, readOnly: true, className: 'category-cell' },
+                                { value: 0, readOnly: true },
+                                ...Array(numCofounders).fill(null).map(() => ({ value: 0, readOnly: true }))
+                              ]);
+                            }
                           });
 
                           spreadsheetData = completeData;

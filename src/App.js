@@ -15,6 +15,7 @@ import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import SurveyPage from './pages/SurveyPage';
 import PreviewPage from './pages/PreviewPage';
+import SettingsPage from './pages/SettingsPage';
 
 function App() {
   // Sync Firebase Auth user to Firestore when they log in
@@ -59,6 +60,15 @@ function App() {
           element={
             <ProtectedRoute>
               <PreviewPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <SettingsPage />
             </ProtectedRoute>
           }
         />
