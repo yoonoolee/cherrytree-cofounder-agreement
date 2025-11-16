@@ -24,13 +24,9 @@ function PricingPage() {
       price: '$200',
       description: 'For individuals to get started',
       features: [
-        'Equity & vesting schedules',
-        'Roles & responsibilities',
-        'Contingencies & scenarios',
-        'Decision-making & voting',
-        'Intellectual property',
-        'Buyout and exit terms',
-        'And more…'
+        'Real-time collaboration',
+        'Instant agreement from survey',
+        'Unlimited collaborators'
       ]
     },
     {
@@ -38,9 +34,8 @@ function PricingPage() {
       price: '$800',
       description: 'Everything in Starter, plus',
       features: [
-        'Reviewed by an attorney',
         'Advanced legal clauses',
-        'Priority customer support',
+        'Attorney review',
         'Cofounder coaching'
       ],
       featured: true
@@ -51,9 +46,8 @@ function PricingPage() {
       description: 'For investors and schools',
       features: [
         'Bulk licensing',
-        'White-label options',
-        'Custom integrations',
-        'Dedicated account manager'
+        'White label option',
+        'Priority support'
       ]
     }
   ];
@@ -74,40 +68,37 @@ function PricingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 items-stretch">
             {pricingPlans.map((plan, i) => (
               <div
                 key={i}
-                className={`bg-white p-8 rounded-lg ${
+                className={`bg-white p-8 rounded-lg flex flex-col ${
                   plan.featured
-                    ? 'ring-2 ring-[#000000] shadow-lg scale-105'
-                    : 'shadow-sm border border-gray-200'
+                    ? 'ring-2 ring-gray-700'
+                    : 'border border-gray-400'
                 }`}
               >
-                {plan.featured && (
-                  <div className="text-[#000000] text-sm font-semibold mb-2">MOST POPULAR</div>
-                )}
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                <h3 className="text-xl font-normal mb-2 text-[#716B6B]">{plan.name}</h3>
                 <div className="text-4xl font-bold mb-2">{plan.price}</div>
                 <p className="text-gray-600 mb-6">{plan.description}</p>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature, j) => (
-                    <li key={j} className="flex items-start gap-2">
-                      <span className="text-[#000000] mt-1">✓</span>
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
                 <button
                   onClick={() => navigate('/dashboard')}
-                  className={`w-full py-3 rounded-lg font-semibold transition ${
+                  className={`w-full py-3 rounded-lg font-semibold transition mb-6 ${
                     plan.featured
-                      ? 'bg-[#000000] text-white hover:bg-[#1a1a1a]'
+                      ? 'button-shimmer bg-[#000000] text-white hover:bg-[#1a1a1a]'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
                   Get started
                 </button>
+                <ul className="space-y-3 flex-grow">
+                  {plan.features.map((feature, j) => (
+                    <li key={j} className="flex items-start gap-2">
+                      <span className="text-[#716B6B] mt-1">✓</span>
+                      <span className="text-gray-700">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>

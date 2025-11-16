@@ -274,13 +274,9 @@ function LandingPage() {
       price: '$200',
       description: 'For individuals to get started',
       features: [
-        'Equity & vesting schedules',
-        'Roles & responsibilities',
-        'Contingencies & scenarios',
-        'Decision-making & voting',
-        'Intellectual property',
-        'Buyout and exit terms',
-        'And more…'
+        'Real-time collaboration',
+        'Instant agreement from survey',
+        'Unlimited collaborators'
       ]
     },
     {
@@ -288,9 +284,8 @@ function LandingPage() {
       price: '$800',
       description: 'Everything in Starter, plus',
       features: [
-        'Reviewed by an attorney',
         'Advanced legal clauses',
-        'Priority customer support',
+        'Attorney review',
         'Cofounder coaching'
       ],
       featured: true
@@ -301,9 +296,8 @@ function LandingPage() {
       description: 'For investors and schools',
       features: [
         'Bulk licensing',
-        'White-label options',
-        'Custom integrations',
-        'Dedicated account manager'
+        'White label option',
+        'Priority support'
       ]
     }
   ];
@@ -388,7 +382,7 @@ function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-12 px-6">
+      <section className="px-6" style={{ paddingTop: '154px', paddingBottom: '58px' }}>
         <div className="max-w-6xl mx-auto text-center">
           <div className="hero-content">
             <h1 className="font-heading text-[72px] font-normal text-gray-900 mb-6 min-h-[140px]">
@@ -464,9 +458,9 @@ function LandingPage() {
       </section>
 
       {/* Process Section - Combined heading + cards */}
-      <section className="scroll-section scroll-section-early process-section px-6" style={{ paddingTop: '120px', paddingBottom: '200px' }}>
+      <section className="scroll-section scroll-section-early process-section px-6" style={{ paddingTop: '144px', paddingBottom: '240px' }}>
         <div className="max-w-7xl mx-auto" style={{ minHeight: '180vh' }}>
-          <div className="sticky top-[120px] mx-auto" style={{ maxWidth: '1200px' }}>
+          <div className="sticky top-[120px] mx-auto" style={{ maxWidth: '720px' }}>
             {/* Heading - now sticky with cards */}
             <div className="max-w-6xl mx-auto text-center mb-10">
               <h2 className="section-header font-heading text-[46px] font-medium mb-4">
@@ -497,13 +491,13 @@ function LandingPage() {
                       backgroundColor: bgColors[index]
                     }}
                   >
-                  <div className="flex items-start gap-8">
-                    <div className="flex-shrink-0 w-16 h-16 rounded-full bg-black text-white flex items-center justify-center font-semibold text-[22px]">
+                  <div className="text-center">
+                    <div className="font-medium text-[20px] mb-4" style={{ color: '#999' }}>
                       {step.step}
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-[40px] font-medium mb-4">{step.title}</h3>
-                      <p className="text-gray-600 text-[24px] leading-relaxed">{step.desc}</p>
+                    <div>
+                      <h3 className="text-[24px] font-medium mb-4 text-center" style={{ color: '#333333' }}>{step.title}</h3>
+                      <p className="text-[15px] text-center" style={{ color: '#666', lineHeight: '1.3' }}>{step.desc}</p>
                     </div>
                   </div>
                 </div>
@@ -515,7 +509,7 @@ function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="scroll-section py-20 px-6">
+      <section id="features" className="scroll-section py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <h2 className="section-header font-heading text-[46px] font-medium text-center mb-16">Turn your cofoundership into a company, today<span style={{ marginLeft: '0.05em' }}>.</span></h2>
 
@@ -588,45 +582,42 @@ function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="scroll-section py-20 px-6">
+      <section id="pricing" className="scroll-section py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <h2 className="section-header font-heading text-[46px] font-medium text-center mb-4">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
           <p className="text-center text-[16px] mb-16 font-normal" style={{ color: '#716B6B' }}>Choose the plan that's right for your team</p>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 items-stretch">
             {pricingPlans.map((plan, i) => (
               <div
                 key={i}
-                className={`bg-white p-8 rounded-lg ${
+                className={`bg-white p-8 rounded-lg flex flex-col ${
                   plan.featured
-                    ? 'ring-2 ring-[#000000] shadow-lg scale-105'
-                    : 'shadow-sm'
+                    ? 'ring-2 ring-gray-700'
+                    : 'border border-gray-400'
                 }`}
               >
-                {plan.featured && (
-                  <div className="text-[#000000] text-sm font-semibold mb-2">MOST POPULAR</div>
-                )}
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                <h3 className="text-xl font-normal mb-2 text-[#716B6B]">{plan.name}</h3>
                 <div className="text-4xl font-bold mb-2">{plan.price}</div>
                 <p className="text-gray-600 mb-6">{plan.description}</p>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature, j) => (
-                    <li key={j} className="flex items-start gap-2">
-                      <span className="text-[#000000] mt-1">✓</span>
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
                 <button
                   onClick={() => navigate('/dashboard')}
-                  className={`w-full py-3 rounded-lg font-semibold transition ${
+                  className={`w-full py-3 rounded-lg font-semibold transition mb-6 ${
                     plan.featured
-                      ? 'bg-[#000000] text-white hover:bg-[#1a1a1a]'
+                      ? 'button-shimmer bg-[#000000] text-white hover:bg-[#1a1a1a]'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
                   Get started
                 </button>
+                <ul className="space-y-3 flex-grow">
+                  {plan.features.map((feature, j) => (
+                    <li key={j} className="flex items-start gap-2">
+                      <span className="text-[#716B6B] mt-1">✓</span>
+                      <span className="text-gray-700">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
@@ -634,7 +625,7 @@ function LandingPage() {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="scroll-section py-20 px-6">
+      <section id="faq" className="scroll-section py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex gap-80 items-start justify-center ml-32">
             <div className="flex-shrink-0">
@@ -665,7 +656,7 @@ function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="scroll-section-full py-20 px-6 bg-white text-gray-900">
+      <section className="scroll-section-full py-24 px-6 bg-white text-gray-900">
         <div className="headline-container">
           <h1 className="typing-title font-heading">
             <span className="first-line">Protect your piece of the pie</span>
