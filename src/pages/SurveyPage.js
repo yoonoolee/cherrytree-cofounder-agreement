@@ -3,13 +3,31 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Survey from '../components/Survey';
 import PaymentModal from '../components/PaymentModal';
 import { db, auth } from '../firebase';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, doc, updateDoc } from 'firebase/firestore';
 
 function SurveyPage() {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [allProjects, setAllProjects] = useState([]);
+
+  // Update lastOpened timestamp when project is accessed
+  useEffect(() => {
+    const updateLastOpened = async () => {
+      if (!projectId) return;
+
+      try {
+        const projectRef = doc(db, 'projects', projectId);
+        await updateDoc(projectRef, {
+          lastOpened: new Date()
+        });
+      } catch (error) {
+        console.error('Error updating lastOpened:', error);
+      }
+    };
+
+    updateLastOpened();
+  }, [projectId]);
 
   // Fetch all projects for the current user (both owned and collaborated)
   useEffect(() => {

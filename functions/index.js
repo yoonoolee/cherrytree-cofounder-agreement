@@ -472,7 +472,8 @@ exports.stripeWebhook = onRequest({
             pdfGeneratedAt: null,
             plan: plan,
             createdAt: FieldValue.serverTimestamp(),
-            lastUpdated: FieldValue.serverTimestamp()
+            lastUpdated: FieldValue.serverTimestamp(),
+            lastOpened: FieldValue.serverTimestamp()
           });
 
           console.log(`User ${userId} paid for ${plan}, project created: ${projectRef.id} - ${projectName}`);

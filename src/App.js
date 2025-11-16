@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import useUserSync from './hooks/useUserSync';
 import ProtectedRoute from './components/ProtectedRoute';
 import ResetPagePosition from './components/ResetPagePosition';
+import RedirectToLatestProject from './components/RedirectToLatestProject';
 import LandingPage from './pages/LandingPage';
 import EquityCalculatorPage from './pages/EquityCalculatorPage';
 import AttorneyPage from './pages/AttorneyPage';
@@ -12,7 +13,6 @@ import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import ContactPage from './pages/ContactPage';
 import LoginPage from './pages/LoginPage';
-import Dashboard from './pages/Dashboard';
 import SurveyPage from './pages/SurveyPage';
 import PreviewPage from './pages/PreviewPage';
 import SettingsPage from './pages/SettingsPage';
@@ -41,7 +41,7 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <RedirectToLatestProject />
             </ProtectedRoute>
           }
         />

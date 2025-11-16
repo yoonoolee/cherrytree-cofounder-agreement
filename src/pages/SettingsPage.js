@@ -176,18 +176,6 @@ function SettingsPage() {
         <div className="flex-1 flex items-center px-6">
           <h1 className="text-xl font-semibold text-gray-900">Settings</h1>
         </div>
-        <div className="flex items-center gap-4 pr-6">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="text-gray-600 hover:text-gray-900 transition flex items-center gap-1.5"
-            title="Back to Dashboard"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7"/>
-            </svg>
-            <span className="text-sm font-medium">Dashboard</span>
-          </button>
-        </div>
       </div>
 
       {/* Sidebar Navigation */}

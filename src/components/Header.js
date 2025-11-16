@@ -39,7 +39,7 @@ function Header() {
                 onClick={() => navigate('/dashboard')}
                 className="text-[#808080] hover:text-black transition"
               >
-                Dashboard
+                My Projects
               </button>
             ) : (
               <button

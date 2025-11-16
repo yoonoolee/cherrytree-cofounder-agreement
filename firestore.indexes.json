@@ -13,6 +13,20 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "projects",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "collaboratorIds",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "lastOpened",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []
