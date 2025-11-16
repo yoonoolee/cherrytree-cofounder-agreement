@@ -611,7 +611,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
 
                           const totalColumns = 2 + allCollaborators.length;
 
-                          spreadsheetData = rowKeys.map((rowKey) => {
+                          spreadsheetData = rowKeys.map((rowKey, rowIndex) => {
                             const row = firebaseData[rowKey];
                             const resultRow = [];
 
@@ -619,12 +619,18 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                               const colKey = `col_${colIndex}`;
                               const cell = row?.[colKey];
 
+                              // Build the row first to check the first cell value
+                              const cellValue = cell?.value !== undefined ? cell.value : 0;
+
+                              // Determine className based on position and content
+                              let className = cell?.className || '';
+
+                              // After we have all cells in the row, we'll update classNames
                               if (cell) {
-                                // Preserve all cell properties including className
                                 resultRow.push({
-                                  value: cell.value !== undefined ? cell.value : 0,
+                                  value: cellValue,
                                   readOnly: true,
-                                  className: cell.className || ''
+                                  className: className
                                 });
                               } else {
                                 resultRow.push({
@@ -635,14 +641,67 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                               }
                             }
 
+                            // Now update classNames based on row content
+                            const firstCellValue = resultRow[0]?.value;
+                            const isSeparatorRow = firstCellValue === 'Input' || firstCellValue === 'Execution' || firstCellValue === 'Intangibles';
+                            const isHeaderRow = rowIndex === 0;
+
+                            resultRow.forEach((cell, colIndex) => {
+                              const isFirstColumn = colIndex === 0;
+
+                              // Force separator rows to have empty values and proper styling
+                              if (isSeparatorRow && !isFirstColumn) {
+                                cell.value = '';
+                                cell.readOnly = true;
+                                cell.className = 'separator-cell';
+                              } else if (!cell.className) {
+                                if (isHeaderRow) {
+                                  cell.className = 'header-cell';
+                                } else if (isSeparatorRow && isFirstColumn) {
+                                  cell.className = 'category-cell separator-cell';
+                                } else if (isFirstColumn) {
+                                  cell.className = 'category-cell';
+                                }
+                              }
+                            });
+
                             return resultRow;
                           });
                         } else if (Array.isArray(spreadsheetData)) {
-                          spreadsheetData = spreadsheetData.map(row =>
-                            row.map(cell => ({
-                              ...cell,
-                              readOnly: true
-                            }))
+                          spreadsheetData = spreadsheetData.map((row, rowIndex) =>
+                            row.map((cell, colIndex) => {
+                              // Check if this row is a separator row based on the first cell value
+                              const firstCellValue = row[0]?.value;
+                              const isSeparatorRow = firstCellValue === 'Input' || firstCellValue === 'Execution' || firstCellValue === 'Intangibles';
+                              const isHeaderRow = rowIndex === 0;
+                              const isFirstColumn = colIndex === 0;
+
+                              // Force separator rows to have empty values
+                              if (isSeparatorRow && !isFirstColumn) {
+                                return {
+                                  value: '',
+                                  readOnly: true,
+                                  className: 'separator-cell'
+                                };
+                              }
+
+                              // Determine the appropriate className
+                              let className = cell.className || '';
+
+                              if (isHeaderRow) {
+                                className = className || 'header-cell';
+                              } else if (isSeparatorRow && isFirstColumn) {
+                                className = className || 'category-cell separator-cell';
+                              } else if (isFirstColumn) {
+                                className = className || 'category-cell';
+                              }
+
+                              return {
+                                ...cell,
+                                readOnly: true,
+                                className: className
+                              };
+                            })
                           );
                         }
 
@@ -670,10 +729,27 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                           categories.forEach((category, index) => {
                             const dataRowIndex = index + 1;
                             const existingRow = spreadsheetData[dataRowIndex];
-                            if (existingRow) {
+                            const isSeparatorRow = category === 'Input' || category === 'Execution' || category === 'Intangibles';
+
+                            if (isSeparatorRow) {
+                              // Separator rows: always empty values with grey styling
+                              completeData.push([
+                                {
+                                  value: category,
+                                  readOnly: true,
+                                  className: 'category-cell separator-cell'
+                                },
+                                { value: '', readOnly: true, className: 'separator-cell' },
+                                ...allCollaborators.map(() => ({ value: '', readOnly: true, className: 'separator-cell' }))
+                              ]);
+                            } else if (existingRow) {
                               // Use existing data but ensure all columns exist
                               completeData.push([
-                                { value: category, readOnly: true, className: 'category-cell' },
+                                {
+                                  value: category,
+                                  readOnly: true,
+                                  className: 'category-cell'
+                                },
                                 existingRow[1] || { value: 0, readOnly: true },
                                 ...allCollaborators.map((_, idx) =>
                                   existingRow[idx + 2] || { value: 0, readOnly: true }
@@ -682,7 +758,11 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                             } else {
                               // Create default row
                               completeData.push([
-                                { value: category, readOnly: true, className: 'category-cell' },
+                                {
+                                  value: category,
+                                  readOnly: true,
+                                  className: 'category-cell'
+                                },
                                 { value: 0, readOnly: true },
                                 ...Array(numCofounders).fill(null).map(() => ({ value: 0, readOnly: true }))
                               ]);

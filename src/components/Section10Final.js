@@ -7,8 +7,10 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
   return (
     <div>
       <h2 className="text-3xl font-bold text-gray-800 mb-6">Final Details</h2>
-      <p className="text-gray-600 mb-8">Dispute resolution and governing law</p>
 
+      <p className="mb-16 leading-relaxed" style={{ color: '#808894' }}>
+        Last stretch! Knock out these last few questions, then review and green-light your agreement.
+      </p>
 
       <div className="space-y-12">
         {/* Dispute Resolution */}
