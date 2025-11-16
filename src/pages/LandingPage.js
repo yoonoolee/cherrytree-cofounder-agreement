@@ -16,8 +16,10 @@ function LandingPage() {
   const [showSecondImage, setShowSecondImage] = useState(false);
   const [shrinkFirst, setShrinkFirst] = useState(false);
   const [typedAnd, setTypedAnd] = useState('');
+  const [typedToday, setTypedToday] = useState('');
   const fullText = 'with great company.';
   const andText = 'and';
+  const todayText = 'today.';
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -95,6 +97,22 @@ function LandingPage() {
     return () => clearTimeout(initialTimeout);
   }, []);
 
+  // Typewriter effect for "today" with loop
+  useEffect(() => {
+    if (typedToday.length < todayText.length) {
+      const timeout = setTimeout(() => {
+        setTypedToday(todayText.slice(0, typedToday.length + 1));
+      }, 80);
+      return () => clearTimeout(timeout);
+    } else {
+      // Reset after completion and pause
+      const resetTimeout = setTimeout(() => {
+        setTypedToday('');
+      }, 2000);
+      return () => clearTimeout(resetTimeout);
+    }
+  }, [typedToday]);
+
   // Scroll-based step detection with stacking card animation
   const [cardOffsets, setCardOffsets] = useState([0, 0, 0]);
 
@@ -124,7 +142,7 @@ function LandingPage() {
 
       // Card height + spacing (approximate)
       const cardHeight = 280; // Approximate height of each card
-      const spacing = 20; // Gap between cards when stacked
+      const spacing = 10; // Gap between cards when spread out
 
       // Calculate offsets for each card based on scroll progress
       // Card 1: Always at top (offset 0)
@@ -236,17 +254,17 @@ function LandingPage() {
     {
       step: '1',
       title: 'Answer a few questions',
-      desc: 'Who does what, who owns what, and what you each bring to the table.'
+      desc: <>Who does what, who owns what,<br />and what you each bring to the table.</>
     },
     {
       step: '2',
       title: 'Smooth things out',
-      desc: 'We show you where you\'re not aligned before it turns into "we need to talk."'
+      desc: <>We show you where you're not aligned<br />before it turns into "we need to talk."</>
     },
     {
       step: '3',
       title: 'Seal the deal',
-      desc: 'Get a legit cofounder agreement. No $600/hr lawyers, no 2 a.m. screaming.'
+      desc: <>Get a legit cofounder agreement.<br />No $600/hr lawyers, no 2 a.m. screaming.</>
     }
   ];
 
@@ -309,7 +327,7 @@ function LandingPage() {
     },
     {
       q: 'When\'s the right time to create a cofounder agreement?',
-      a: 'As early as possible. Day one is ideal, but day 100 is still better than never. The earlier you do it, the easier (and less awkward) it is.'
+      a: 'As early as possible. Day 1 is ideal, but day 100 is still better than never. The earlier you do it, the easier (and less awkward) it is.'
     },
     {
       q: 'How long does it take to complete with Cherrytree?',
@@ -478,21 +496,22 @@ function LandingPage() {
             {/* Stacked Cards Container */}
             <div style={{ height: '900px', position: 'relative' }}>
               {steps.map((step, index) => {
-                const bgColors = ['#f5f5f5', '#e5e5e5', '#d4d4d4'];
+                const bgColors = ['#fafafa', '#f0f0f0', '#e8e8e8'];
                 return (
                   <div
                     key={index}
                     className="absolute left-0 right-0 rounded-2xl border-2 border-gray-300 p-20 transition-all duration-700 ease-out"
                     style={{
-                      top: `${40 * index}px`,
+                      top: `${15 * index}px`,
                       transform: `translateY(${cardOffsets[index]}px)`,
                       zIndex: 3 - index,
                       opacity: 1,
-                      backgroundColor: bgColors[index]
+                      backgroundColor: bgColors[index],
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)'
                     }}
                   >
                   <div className="text-center">
-                    <div className="font-medium text-[20px] mb-4" style={{ color: '#999' }}>
+                    <div className="font-medium text-[20px] mb-4" style={{ color: '#666' }}>
                       {step.step}
                     </div>
                     <div>
@@ -511,7 +530,7 @@ function LandingPage() {
       {/* Features Section */}
       <section id="features" className="scroll-section py-24 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="section-header font-heading text-[46px] font-medium text-center mb-16">Turn your cofoundership into a company, today<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+          <h2 className="section-header font-heading text-[46px] font-medium text-center mb-16">Turn your cofoundership<br />into a company, <em className="italic" style={{ display: 'inline-block', minWidth: '6ch', textAlign: 'left', letterSpacing: '-0.02em' }}>{typedToday || '\u00A0'}</em></h2>
 
           <div className="features-container">
             <div className="features-left">
@@ -585,7 +604,7 @@ function LandingPage() {
       <section id="pricing" className="scroll-section py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <h2 className="section-header font-heading text-[46px] font-medium text-center mb-4">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
-          <p className="text-center text-[16px] mb-16 font-normal" style={{ color: '#716B6B' }}>Choose the plan that's right for your team</p>
+          <p className="text-center text-[16px] mb-16 font-normal" style={{ color: '#716B6B' }}>Choose the plan that's right for your team.</p>
 
           <div className="grid md:grid-cols-3 gap-8 items-stretch">
             {pricingPlans.map((plan, i) => (

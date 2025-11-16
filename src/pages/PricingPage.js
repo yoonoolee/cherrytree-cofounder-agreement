@@ -64,7 +64,7 @@ function PricingPage() {
               Simple, transparent pricing<span style={{ marginLeft: '0.05em' }}>.</span>
             </h1>
             <p className="text-[16px] font-normal" style={{ color: '#716B6B' }}>
-              Choose the plan that's right for your team
+              Choose the plan that's right for your team.
             </p>
           </div>
 
@@ -105,9 +105,12 @@ function PricingPage() {
 
           {/* Feature Comparison Table */}
           <div className="mt-60">
-            <h2 className="font-heading text-[46px] font-normal text-center mb-12">
+            <h2 className="font-heading text-[46px] font-normal text-center mb-4">
               Compare plans<span style={{ marginLeft: '0.05em' }}>.</span>
             </h2>
+            <p className="text-center text-[16px] mb-12 font-normal" style={{ color: '#716B6B' }}>
+              Each pricing plan covers one cofounder agreement. Fill out the survey<br />and equity calculator to get a ready-to-use cofounder agreement.
+            </p>
 
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
