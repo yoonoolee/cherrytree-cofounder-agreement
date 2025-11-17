@@ -17,8 +17,7 @@ const MAIN_ROUTES = [
   '/attorney',
   '/privacy',
   '/terms',
-  '/contact',
-  '/login'
+  '/contact'
 ];
 
 function DomainRedirect() {
@@ -32,14 +31,8 @@ function DomainRedirect() {
     const currentPath = location.pathname;
     const fullUrl = window.location.href;
 
-    // Special case: Handle root path differently for each domain
-    if (currentPath === '/') {
-      if (currentHostname.includes('my.cherrytree.app')) {
-        // On my.cherrytree.app root, redirect to dashboard
-        window.location.href = 'https://my.cherrytree.app/dashboard';
-        return;
-      }
-      // On cherrytree.app root, stay (landing page)
+    // Don't redirect /login or / (root is handled by App.js)
+    if (currentPath === '/login' || currentPath === '/') {
       return;
     }
 
