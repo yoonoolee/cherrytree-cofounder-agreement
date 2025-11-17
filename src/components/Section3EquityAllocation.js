@@ -351,13 +351,13 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
     <div className="equity-calculator-container">
       <h2 className="text-3xl font-medium text-gray-800 mb-6">Equity Allocation</h2>
 
-      <p className="mb-4 leading-relaxed" style={{ color: '#808894' }}>
+      <p className="mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
         A few years ago, two friends from Stanford launched a startup that took off fast. Within six months, they were in YC, had a long waiting list, and investors were calling.
       </p>
-      <p className="mb-4 leading-relaxed" style={{ color: '#808894' }}>
+      <p className="mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
         But one cofounder started feeling like they were doing more. "I'm the CEO, I'm fundraising, I'm working longer hours." They tried to renegotiate the equity split from 50/50 to 70/30. The other cofounder felt blindsided, trust collapsed, and by Demo Day they'd split, both emotionally and legally.
       </p>
-      <p className="mb-16 leading-relaxed" style={{ color: '#808894' }}>
+      <p className="mb-16 leading-relaxed" style={{ color: '#6B7280' }}>
         Be very reluctant to change equity allocation once you've agreed. The #1 reason for cofounder breakups in the most recent YC batch was cofounders trying to revisit a settled split.
       </p>
 

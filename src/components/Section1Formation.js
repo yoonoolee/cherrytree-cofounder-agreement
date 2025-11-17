@@ -283,7 +283,7 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
     <div>
       <h2 className="text-3xl font-medium text-gray-800 mb-6">Formation & Purpose</h2>
 
-      <p className="mb-16 leading-relaxed" style={{ color: '#808894' }}>
+      <p className="mb-16 leading-relaxed" style={{ color: '#6B7280' }}>
         You've been talking about this idea for weeks, maybe months. Now you're sitting with your cofounder, naming the company, buying the domain, imagining what it could become. Coffee in hand, takeout on the table. Creating a cofounder agreement is what makes it real. Let's get started.
       </p>
 

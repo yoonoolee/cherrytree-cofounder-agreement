@@ -281,24 +281,24 @@ select:disabled {
 }
 
 /* Animate intro story paragraphs */
-.leading-relaxed[style*="color: #808894"],
-.leading-relaxed[style*="color: rgb(128, 136, 148)"] {
+.leading-relaxed[style*="color: #6B7280"],
+.leading-relaxed[style*="color: rgb(107, 114, 128)"] {
   animation: fadeInDown 0.6s ease-out forwards;
   opacity: 0;
 }
 
-.leading-relaxed[style*="color: #808894"]:nth-of-type(1),
-.leading-relaxed[style*="color: rgb(128, 136, 148)"]:nth-of-type(1) {
+.leading-relaxed[style*="color: #6B7280"]:nth-of-type(1),
+.leading-relaxed[style*="color: rgb(107, 114, 128)"]:nth-of-type(1) {
   animation-delay: 0.1s;
 }
 
-.leading-relaxed[style*="color: #808894"]:nth-of-type(2),
-.leading-relaxed[style*="color: rgb(128, 136, 148)"]:nth-of-type(2) {
+.leading-relaxed[style*="color: #6B7280"]:nth-of-type(2),
+.leading-relaxed[style*="color: rgb(107, 114, 128)"]:nth-of-type(2) {
   animation-delay: 0.2s;
 }
 
-.leading-relaxed[style*="color: #808894"]:nth-of-type(3),
-.leading-relaxed[style*="color: rgb(128, 136, 148)"]:nth-of-type(3) {
+.leading-relaxed[style*="color: #6B7280"]:nth-of-type(3),
+.leading-relaxed[style*="color: rgb(107, 114, 128)"]:nth-of-type(3) {
   animation-delay: 0.3s;
 }
 

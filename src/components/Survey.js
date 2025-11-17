@@ -1014,7 +1014,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               />
             </div>
           </div>
-          <div className="mt-2 px-3" style={{ width: '90%' }}>
+          <div className="mt-2 px-3" style={{ width: '90%', height: '24px', display: 'flex', alignItems: 'center' }}>
             {saveStatus === 'saving' && (
               <span className="text-xs text-gray-500">Saving...</span>
             )}
@@ -1122,6 +1122,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               handleChange={handleChange}
               isReadOnly={isReadOnly}
               showValidation={showValidation}
+              onGetStarted={() => setCurrentSection(1)}
             />
           )}
           {currentSection === 1 && (
@@ -1221,8 +1222,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           )}
 
           {/* Next Button */}
-          {!isReadOnly && (
-            <div className={`mt-16 flex ${currentSection === 0 ? 'justify-end' : 'justify-between'}`}>
+          {!isReadOnly && currentSection !== 0 && (
+            <div className={`mt-16 flex justify-between`}>
               {currentSection > 0 && (
                 <button
                   onClick={() => {

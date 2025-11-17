@@ -7,7 +7,7 @@ function Section9NonCompete({ formData, handleChange, isReadOnly, project, showV
     <div>
       <h2 className="text-3xl font-medium text-gray-800 mb-6">Confidentiality, Non-Competition & Non-Solicitation</h2>
 
-      <p className="mb-16 leading-relaxed" style={{ color: '#808894' }}>
+      <p className="mb-16 leading-relaxed" style={{ color: '#6B7280' }}>
         You know how when you go to a bar with your friend, you have an unspoken agreement to not hit on the same person? Confidentiality, Non-Competition and Non-Solicitation kind of work the same way. They take the unspoken worries off the table so nothing turns awkward later. Make sure everyone knows what's off limits.
       </p>
 
