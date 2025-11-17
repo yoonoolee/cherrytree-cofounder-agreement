@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { auth } from './firebase';
 import useUserSync from './hooks/useUserSync';
 import ProtectedRoute from './components/ProtectedRoute';
 import ResetPagePosition from './components/ResetPagePosition';
 import DomainRedirect from './components/DomainRedirect';
 import RedirectToLatestProject from './components/RedirectToLatestProject';
+import AppRedirect from './components/AppRedirect';
 import LandingPage from './pages/LandingPage';
 import EquityCalculatorPage from './pages/EquityCalculatorPage';
 import AttorneyPage from './pages/AttorneyPage';
@@ -19,29 +19,17 @@ import SurveyPage from './pages/SurveyPage';
 import PreviewPage from './pages/PreviewPage';
 import SettingsPage from './pages/SettingsPage';
 
+// Component to render different content for root path based on domain
+function RootRoute() {
+  const hostname = window.location.hostname;
+  const isAppDomain = hostname.includes('my.cherrytree.app');
+
+  // On my.cherrytree.app, show AppRedirect which handles auth-based redirect
+  // On cherrytree.app, show the marketing landing page
+  return isAppDomain ? <AppRedirect /> : <LandingPage />;
+}
+
 function App() {
-  // Immediate domain redirect before anything else renders
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'production') {
-      const hostname = window.location.hostname;
-      const path = window.location.pathname;
-
-      // If on my.cherrytree.app root, check auth and redirect accordingly
-      if (hostname.includes('my.cherrytree.app') && path === '/') {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-          if (user) {
-            // Logged in: go to dashboard (which redirects to latest project)
-            window.location.replace('https://my.cherrytree.app/dashboard');
-          } else {
-            // Not logged in: go to login page
-            window.location.replace('https://my.cherrytree.app/login');
-          }
-        });
-        return () => unsubscribe();
-      }
-    }
-  }, []);
-
   // Sync Firebase Auth user to Firestore when they log in
   useUserSync();
 
@@ -51,7 +39,7 @@ function App() {
       <ResetPagePosition />
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<RootRoute />} />
         <Route path="/equity-calculator" element={<EquityCalculatorPage />} />
         <Route path="/attorney" element={<AttorneyPage />} />
         <Route path="/pricing" element={<PricingPage />} />
