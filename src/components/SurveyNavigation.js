@@ -121,7 +121,9 @@ function SurveyNavigation({
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      navigate('/login');
+      // Use window.location instead of navigate to force a full page reload
+      // This ensures all auth state is cleared from memory
+      window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
     }
