@@ -43,7 +43,7 @@ function Section2Cofounders({ formData, handleChange, isReadOnly, showValidation
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">Cofounder Info</h2>
+      <h2 className="text-3xl font-medium text-gray-800 mb-6">Cofounder Info</h2>
 
       <p className="mb-16 leading-relaxed" style={{ color: '#808894' }}>
         Great company starts with great company. Whether it's just the two of you or if there's a dozen of you, this is the crew that decided to go for it. Names, roles, contact info, sure. But it's also a snapshot of the team before the world knows your name. Someday, this will be the "garage team" story you tell in interviews.
@@ -58,7 +58,7 @@ function Section2Cofounders({ formData, handleChange, isReadOnly, showValidation
             </p>
             {cofounders.map((cofounder, index) => (
               <div key={index} className="py-4">
-                <h3 className="text-xl font-bold text-gray-800 mb-6">
+                <h3 className="text-xl font-medium text-gray-800 mb-6">
                   Cofounder {String.fromCharCode(65 + index)}
                 </h3>
 

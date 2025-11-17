@@ -507,7 +507,7 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
         </div>
 
         {/* Equity Progress Bar */}
-        <div className="flex justify-center py-6 px-4" style={{ backgroundColor: '#ffffff' }}>
+        <div className="flex justify-center py-6 px-4 bg-gray-50">
           <EquityProgressBar equity={currentEquity} />
         </div>
 

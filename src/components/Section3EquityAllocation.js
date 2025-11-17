@@ -349,7 +349,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
 
   return (
     <div className="equity-calculator-container">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">Equity Allocation</h2>
+      <h2 className="text-3xl font-medium text-gray-800 mb-6">Equity Allocation</h2>
 
       <p className="mb-4 leading-relaxed" style={{ color: '#808894' }}>
         A few years ago, two friends from Stanford launched a startup that took off fast. Within six months, they were in YC, had a long waiting list, and investors were calling.
@@ -363,7 +363,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
 
       <div className="space-y-6">
         <div className="mb-2">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">Equity Calculator</h3>
+          <h3 className="text-xl font-medium text-gray-800 mb-4">Equity Calculator</h3>
           <p className="text-gray-700 mb-6">
             Using the calculator is optional. Your agreement only includes the final allocation entered below. If you already know your split,{' '}
             <button
@@ -453,7 +453,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                 <div className="flex-1 overflow-y-auto">
                   <div ref={visualBarsRef} className="pt-4">
                     <div className="mb-6">
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">Assessment Results</h3>
+                      <h3 className="text-xl font-medium text-gray-800 mb-2">Assessment Results</h3>
                       <p className="text-gray-600 text-sm">Review how each cofounder assessed the equity split</p>
                     </div>
                   </div>
@@ -809,7 +809,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
         {/* Final Equity Allocation - Only show in results view */}
         {viewMode === 'results' && (
           <div ref={finalEquityRef} className={showIndividualSpreadsheets ? "pt-4" : "pt-2"}>
-            <h3 className="text-xl font-bold text-gray-800 mb-6">Final Equity Allocation</h3>
+            <h3 className="text-xl font-medium text-gray-800 mb-6">Final Equity Allocation</h3>
 
           <div className="flex gap-4 mb-6">
             {allCollaborators.map((email, index) => (

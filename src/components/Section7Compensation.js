@@ -25,7 +25,7 @@ function Section7Compensation({ formData, handleChange, isReadOnly, showValidati
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">Compensation & Expenses</h2>
+      <h2 className="text-3xl font-medium text-gray-800 mb-6">Compensation & Expenses</h2>
 
       <p className="mb-16 leading-relaxed" style={{ color: '#808894' }}>
         Money issues cause more divorce than infidelity and incompatibility. It'd be naive to think cofounderships are immune. Don't wait until someone is frustrated over uneven pay or unclear expenses. Agree on how money flows now and keep communication transparent to avoid costly fallout.

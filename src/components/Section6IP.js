@@ -5,7 +5,7 @@ import Tooltip from './Tooltip';
 function Section6IP({ formData, handleChange, isReadOnly, project, showValidation }) {
   return (
     <div>
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">IP & Ownership of Work</h2>
+      <h2 className="text-3xl font-medium text-gray-800 mb-6">IP & Ownership of Work</h2>
 
       <p className="mb-4 leading-relaxed" style={{ color: '#808894' }}>
         In 2013, Reggie Brown sued his Snapchat cofounders, Evan Spiegel and Bobby Murphy. He claimed they stole his idea: an app where messages vanish after being sent. Brown said he not only conceived the concept but also shook hands with Spiegel to serve as CMO. He claimed credit for the original name "Picaboo," the ghost logo, and even a draft patent for the disappearing-message technology.

@@ -1222,24 +1222,25 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
           {/* Next Button */}
           {!isReadOnly && (
-            <div className="mt-8 flex justify-between">
-              <button
-                onClick={() => {
-                  // If on section 3 in results view, go back to edit view (spreadsheet)
-                  if (currentSection === 3 && section3InResultsView && section3Ref.current) {
-                    section3Ref.current.backToEdit();
-                  } else {
-                    setCurrentSection(Math.max(0, currentSection - 1));
-                  }
-                }}
-                disabled={currentSection === 0 && !section3InResultsView}
-                className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M20 8L2 8M2 8L8 2M2 8L8 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Previous
-              </button>
+            <div className={`mt-16 flex ${currentSection === 0 ? 'justify-end' : 'justify-between'}`}>
+              {currentSection > 0 && (
+                <button
+                  onClick={() => {
+                    // If on section 3 in results view, go back to edit view (spreadsheet)
+                    if (currentSection === 3 && section3InResultsView && section3Ref.current) {
+                      section3Ref.current.backToEdit();
+                    } else {
+                      setCurrentSection(Math.max(0, currentSection - 1));
+                    }
+                  }}
+                  className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium flex items-center gap-2"
+                >
+                  <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 8L2 8M2 8L8 2M2 8L8 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Previous
+                </button>
+              )}
 
               {currentSection < 10 ? (
                 <button
@@ -1268,7 +1269,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                   }}
                   className="next-button bg-black text-white px-7 py-2 rounded font-normal hover:bg-[#1a1a1a] transition flex items-center gap-2"
                 >
-                  Next
+                  {currentSection === 0 ? 'Get Started' : 'Next'}
                   <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>

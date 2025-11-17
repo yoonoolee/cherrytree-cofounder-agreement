@@ -20,12 +20,12 @@ function Section0Onboarding({ formData, handleChange, isReadOnly, showValidation
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-black mb-6">Welcome to Cherrytree</h2>
+      <h2 className="text-3xl font-medium text-black mb-6">Welcome to Cherrytree</h2>
 
-      <p className="mb-4 leading-relaxed text-black">
+      <p className="mb-4 leading-relaxed" style={{ color: '#808894' }}>
         Starting a company is exciting… and messy. Different ideas about equity, responsibilities, and who's on first can quickly turn a great partnership into awkward tension. That's where this tool comes in.
       </p>
-      <p className="mb-8 leading-relaxed text-black">
+      <p className="mb-8 leading-relaxed" style={{ color: '#808894' }}>
         Answer the survey questions honestly, collaborate in real time, and it'll generate a ready-to-use cofounder agreement tailored to your team. No legal jargon overload, no guessing who said what.
       </p>
 
@@ -34,7 +34,7 @@ function Section0Onboarding({ formData, handleChange, isReadOnly, showValidation
           {displayedText}
         </p>
         <p className="text-black mt-2 text-sm">
-          — Paul Graham, founder of YC
+          — Paul Graham, cofounder of YC
         </p>
       </div>
 
@@ -43,7 +43,7 @@ function Section0Onboarding({ formData, handleChange, isReadOnly, showValidation
       <div className="space-y-12">
         {/* How Collaboration Works */}
         <div>
-          <h3 className="text-xl font-bold text-black mb-4">How Collaboration Works</h3>
+          <h3 className="text-xl font-medium text-black mb-4">How Collaboration Works</h3>
           <ul className="space-y-3 text-black leading-relaxed" style={{ listStyleType: 'disc', paddingLeft: '1.5rem' }}>
             <li>
               Click the <strong>Add Collaborators</strong> button in the top right corner to invite your cofounders. They must be collaborators to be included in the agreement.
@@ -61,7 +61,7 @@ function Section0Onboarding({ formData, handleChange, isReadOnly, showValidation
 
         {/* Tips */}
         <div>
-          <h3 className="text-xl font-bold text-black mb-4">Tips</h3>
+          <h3 className="text-xl font-medium text-black mb-4">Tips</h3>
           <ul className="space-y-3 text-black leading-relaxed" style={{ listStyleType: 'disc', paddingLeft: '1.5rem' }}>
             <li>
               Use the survey as a conversation starter, not just a form. The act of answering differently is often more revealing than the answers themselves.
@@ -70,17 +70,11 @@ function Section0Onboarding({ formData, handleChange, isReadOnly, showValidation
               Don't ignore the small stuff. How you handle these might not seem big but documenting it early saves major friction later.
             </li>
             <li>
-              If you ever have questions or feedback, reach out to hello@cherrytree.app
+              If you ever have questions or feedback, reach out to <a href="mailto:hello@cherrytree.app" className="font-bold text-black hover:underline">hello@cherrytree.app</a>
             </li>
           </ul>
         </div>
 
-        <hr className="my-12 border-gray-300 transition-opacity duration-700 animate-fade-in" style={{ animationDelay: '600ms' }} />
-
-        {/* Ready */}
-        <div className="pt-4">
-          <h3 className="text-xl font-bold text-black">Ready?</h3>
-        </div>
       </div>
     </div>
   );
