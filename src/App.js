@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import useUserSync from './hooks/useUserSync';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -19,6 +19,19 @@ import PreviewPage from './pages/PreviewPage';
 import SettingsPage from './pages/SettingsPage';
 
 function App() {
+  // Immediate domain redirect before anything else renders
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') {
+      const hostname = window.location.hostname;
+      const path = window.location.pathname;
+
+      // If on my.cherrytree.app root, redirect to dashboard immediately
+      if (hostname.includes('my.cherrytree.app') && path === '/') {
+        window.location.replace('https://my.cherrytree.app/dashboard');
+      }
+    }
+  }, []);
+
   // Sync Firebase Auth user to Firestore when they log in
   useUserSync();
 
