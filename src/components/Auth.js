@@ -403,6 +403,7 @@ function Auth({ onLogin }) {
               type="button"
               onClick={handleGoogleSignIn}
               disabled={loading}
+              tabIndex="-1"
               className="w-full flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded font-semibold bg-white text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed animate-fade-up-delay-5"
             >
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
@@ -556,6 +557,7 @@ function Auth({ onLogin }) {
               type="button"
               onClick={handleGoogleSignIn}
               disabled={loading}
+              tabIndex="-1"
               className="w-full flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded font-semibold bg-white text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
