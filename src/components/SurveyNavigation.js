@@ -121,9 +121,10 @@ function SurveyNavigation({
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      // Use window.location instead of navigate to force a full page reload
-      // This ensures all auth state is cleared from memory
-      window.location.href = '/';
+      // Redirect to my.cherrytree.app root which will check auth and redirect to login
+      // Force full page reload to clear all auth state from memory
+      const isProduction = window.location.hostname.includes('cherrytree.app');
+      window.location.href = isProduction ? 'https://my.cherrytree.app' : '/';
     } catch (error) {
       console.error('Error signing out:', error);
     }
