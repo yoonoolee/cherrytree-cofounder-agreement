@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { auth } from './firebase';
 import useUserSync from './hooks/useUserSync';
 import ProtectedRoute from './components/ProtectedRoute';
 import ResetPagePosition from './components/ResetPagePosition';
@@ -25,9 +26,18 @@ function App() {
       const hostname = window.location.hostname;
       const path = window.location.pathname;
 
-      // If on my.cherrytree.app root, redirect to dashboard immediately
+      // If on my.cherrytree.app root, check auth and redirect accordingly
       if (hostname.includes('my.cherrytree.app') && path === '/') {
-        window.location.replace('https://my.cherrytree.app/dashboard');
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+          if (user) {
+            // Logged in: go to dashboard (which redirects to latest project)
+            window.location.replace('https://my.cherrytree.app/dashboard');
+          } else {
+            // Not logged in: go to login page
+            window.location.replace('https://my.cherrytree.app/login');
+          }
+        });
+        return () => unsubscribe();
       }
     }
   }, []);
