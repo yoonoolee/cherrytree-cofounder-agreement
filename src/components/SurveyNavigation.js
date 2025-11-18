@@ -121,10 +121,10 @@ function SurveyNavigation({
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      // Redirect to my.cherrytree.app root which will check auth and redirect to login
+      // Redirect to marketing homepage after logout (best practice for SaaS apps)
       // Force full page reload to clear all auth state from memory
       const isProduction = window.location.hostname.includes('cherrytree.app');
-      window.location.href = isProduction ? 'https://my.cherrytree.app' : '/';
+      window.location.href = isProduction ? 'https://cherrytree.app' : '/';
     } catch (error) {
       console.error('Error signing out:', error);
     }
