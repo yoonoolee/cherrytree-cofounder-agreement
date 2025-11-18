@@ -141,7 +141,8 @@ function Auth({ onLogin }) {
     try {
       // Try to sign in first
       await signInWithEmailAndPassword(auth, email, password);
-      onLogin();
+      // Let LoginPage's auth listener handle redirect to avoid race condition
+      // Keep loading state active until redirect happens
     } catch (err) {
       console.error('Auth error:', err);
 
@@ -252,8 +253,8 @@ function Auth({ onLogin }) {
 
       setSuccess('Account created! Please check your email to verify your account.');
 
-      // Still allow login even if email not verified
-      setTimeout(() => onLogin(), 2000);
+      // Let LoginPage's auth listener handle redirect after user sees success message
+      // Keep loading state active until redirect happens
     } catch (err) {
       console.error('Signup error:', err);
 
@@ -277,7 +278,8 @@ function Auth({ onLogin }) {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       // The useUserSync hook will handle Firestore syncing
-      onLogin();
+      // Let LoginPage's auth listener handle redirect to avoid race condition
+      // Keep loading state active until redirect happens
     } catch (err) {
       console.error('Error signing in with Google:', err);
       if (err.code === 'auth/popup-closed-by-user') {
