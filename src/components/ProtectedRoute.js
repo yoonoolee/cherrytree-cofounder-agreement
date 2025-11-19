@@ -16,6 +16,11 @@ function ProtectedRoute({ children }) {
   }
 
   if (!currentUser) {
+    // Check if we're in the middle of logging out
+    const isLoggingOut = sessionStorage.getItem('isLoggingOut');
+    if (isLoggingOut) {
+      return null; // Don't redirect, just show nothing
+    }
     return <Navigate to="/login" replace />;
   }
 

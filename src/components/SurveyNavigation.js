@@ -118,21 +118,18 @@ function SurveyNavigation({
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      // Redirect immediately without waiting for signOut to complete
-      // This prevents ProtectedRoute from flashing the login page
-      const isProduction = window.location.hostname.includes('cherrytree.app');
-      const targetUrl = isProduction ? 'https://cherrytree.app' : '/';
+  const handleLogout = () => {
+    // Set flag to prevent ProtectedRoute from intercepting
+    sessionStorage.setItem('isLoggingOut', 'true');
 
-      // Sign out without awaiting (fire and forget)
-      signOut(auth).catch(err => console.error('Error signing out:', err));
+    const isProduction = window.location.hostname.includes('cherrytree.app');
+    const targetUrl = isProduction ? 'https://cherrytree.app' : 'http://localhost:3000';
 
-      // Immediate redirect
-      window.location.replace(targetUrl);
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+    // Sign out (will trigger React re-renders but flag prevents redirect)
+    signOut(auth).catch(err => console.error('Error signing out:', err));
+
+    // Then redirect (page will unload and clear sessionStorage)
+    window.location.replace(targetUrl);
   };
 
   return (

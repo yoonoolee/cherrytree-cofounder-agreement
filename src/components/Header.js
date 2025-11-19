@@ -36,7 +36,15 @@ function Header() {
               </button>
             ) : (
               <button
-                onClick={() => navigate('/login')}
+                onClick={() => {
+                  // Navigate directly to my.cherrytree.app/login to avoid double load
+                  const isProduction = window.location.hostname.includes('cherrytree.app');
+                  if (isProduction) {
+                    window.location.href = 'https://my.cherrytree.app/login';
+                  } else {
+                    navigate('/login');
+                  }
+                }}
                 className="text-[#808080] hover:text-black transition"
               >
                 Login

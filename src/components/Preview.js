@@ -458,17 +458,18 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
           </button>
 
           <button
-            onClick={async () => {
+            onClick={() => {
               if (window.confirm('Are you sure you want to log out?')) {
-                // Redirect immediately without waiting for signOut to complete
-                // This prevents ProtectedRoute from flashing the login page
-                const isProduction = window.location.hostname.includes('cherrytree.app');
-                const targetUrl = isProduction ? 'https://cherrytree.app' : '/';
+                // Set flag to prevent ProtectedRoute from intercepting
+                sessionStorage.setItem('isLoggingOut', 'true');
 
-                // Sign out without awaiting (fire and forget)
+                const isProduction = window.location.hostname.includes('cherrytree.app');
+                const targetUrl = isProduction ? 'https://cherrytree.app' : 'http://localhost:3000';
+
+                // Sign out (will trigger React re-renders but flag prevents redirect)
                 signOut(auth).catch(err => console.error('Error signing out:', err));
 
-                // Immediate redirect
+                // Then redirect (page will unload and clear sessionStorage)
                 window.location.replace(targetUrl);
               }
             }}
