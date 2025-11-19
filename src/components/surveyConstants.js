@@ -117,7 +117,7 @@ export const TERMINATION_CONSEQUENCES = [
 ];
 
 export const SECTIONS = [
-  { id: 0, name: 'Onboarding' },
+  { id: 0, name: 'Welcome' },
   { id: 1, name: 'Formation & Purpose' },
   { id: 2, name: 'Cofounder Info' },
   { id: 3, name: 'Equity Allocation' },

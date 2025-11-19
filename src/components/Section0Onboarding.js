@@ -56,7 +56,7 @@ function Section0Onboarding({ formData, handleChange, isReadOnly, showValidation
 
         <button
           onClick={onGetStarted}
-          className="w-full bg-black text-white px-7 py-3 rounded font-normal hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2 animate-fade-in"
+          className="button-shimmer w-full bg-black text-white px-7 py-3 rounded font-normal hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2 animate-fade-in"
           style={{ animationDelay: '300ms' }}
         >
           Get Started
@@ -98,7 +98,6 @@ function Section0Onboarding({ formData, handleChange, isReadOnly, showValidation
         </div>
       </div>
       </div>
-      <p className="text-xs text-center mt-24" style={{ color: '#9CA3AF' }}>Cherrytree does not provide legal advice.</p>
     </div>
   );
 }

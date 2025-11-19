@@ -1291,6 +1291,11 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           )}
           </div>
           {/* End White Card Container */}
+
+          {/* Legal Disclaimer - Only show on Welcome section */}
+          {currentSection === 0 && (
+            <p className="text-xs text-center mt-12 pb-6" style={{ color: '#9CA3AF' }}>Cherrytree does not provide legal advice.</p>
+          )}
         </div>
       </div>
     </div>
