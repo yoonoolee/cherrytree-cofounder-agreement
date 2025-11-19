@@ -361,7 +361,15 @@ function LandingPage() {
             </p>
             <div className="flex flex-col items-center gap-3 mb-12">
               <button
-                onClick={() => navigate('/dashboard')}
+                onClick={() => {
+                  // Navigate directly to my.cherrytree.app to avoid double redirect
+                  const isProduction = window.location.hostname.includes('cherrytree.app');
+                  if (isProduction) {
+                    window.location.href = 'https://my.cherrytree.app/dashboard';
+                  } else {
+                    navigate('/dashboard', { replace: true });
+                  }
+                }}
                 className="button-shimmer bg-[#000000] text-white px-16 py-4 rounded-md text-[16px] font-normal hover:bg-[#1a1a1a] transition"
               >
                 Create agreement
@@ -559,7 +567,7 @@ function LandingPage() {
             </a>
           </p>
 
-          <div className="grid md:grid-cols-3 gap-8 items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 items-stretch max-w-7xl mx-auto">
             {pricingPlans.map((plan, i) => (
               <div
                 key={i}
@@ -573,10 +581,19 @@ function LandingPage() {
                 <div className="text-4xl font-bold mb-2">{plan.price}</div>
                 <p className="text-gray-600 mb-6">{plan.description}</p>
                 <button
-                  onClick={() => plan.name === 'Enterprise'
-                    ? window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })
-                    : navigate('/dashboard')
-                  }
+                  onClick={() => {
+                    if (plan.name === 'Enterprise') {
+                      window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 });
+                    } else {
+                      // Navigate directly to my.cherrytree.app to avoid double redirect
+                      const isProduction = window.location.hostname.includes('cherrytree.app');
+                      if (isProduction) {
+                        window.location.href = 'https://my.cherrytree.app/dashboard';
+                      } else {
+                        navigate('/dashboard', { replace: true });
+                      }
+                    }
+                  }}
                   className={`w-full py-3 rounded-lg font-semibold transition mb-6 ${
                     plan.featured
                       ? 'button-shimmer bg-[#000000] text-white hover:bg-[#1a1a1a]'
@@ -645,7 +662,15 @@ function LandingPage() {
         <div className="max-w-4xl mx-auto text-center mt-16">
           <div className="flex flex-col items-center gap-3">
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => {
+                // Navigate directly to my.cherrytree.app to avoid double redirect
+                const isProduction = window.location.hostname.includes('cherrytree.app');
+                if (isProduction) {
+                  window.location.href = 'https://my.cherrytree.app/dashboard';
+                } else {
+                  navigate('/dashboard', { replace: true });
+                }
+              }}
               className="button-shimmer bg-[#000000] text-white px-16 py-4 rounded-md text-[16px] font-normal hover:bg-[#1a1a1a] transition"
             >
               Create agreement

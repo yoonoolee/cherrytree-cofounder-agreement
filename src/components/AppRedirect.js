@@ -10,7 +10,7 @@ function AppRedirect() {
     if (!loading) {
       if (currentUser) {
         // Logged in: go to dashboard (which redirects to latest project)
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       } else {
         // Not logged in: go to login page
         navigate('/login');
