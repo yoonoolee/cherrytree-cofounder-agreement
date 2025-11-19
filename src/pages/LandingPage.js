@@ -357,7 +357,7 @@ function LandingPage() {
               <em className="italic">{typedText || '\u00A0'}</em>
             </h1>
             <p className="text-[16px] mb-16 max-w-2xl mx-auto font-normal" style={{ color: '#716B6B' }}>
-              Create fair agreements to safeguard both your stake<br />and your relationships. You and your cofounder deserve it.
+              Answer guided questions with your cofounders and get a complete<br />Cofounder Agreement. No sketchy templates, no overpriced lawyers.
             </p>
             <div className="flex flex-col items-center gap-3 mb-12">
               <button
@@ -552,7 +552,12 @@ function LandingPage() {
       <section id="pricing" className="scroll-section py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <h2 className="section-header font-heading text-[46px] font-medium text-center mb-4">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
-          <p className="text-center text-[16px] mb-16 font-normal" style={{ color: '#716B6B' }}>Choose the plan that's right for your team.</p>
+          <p className="text-center text-[16px] mb-16 font-normal" style={{ color: '#716B6B' }}>
+            Choose the plan that's right for your team.{' '}
+            <a href="/pricing" className="underline hover:text-black transition-colors" style={{ color: '#9CA3AF' }}>
+              Compare plans.
+            </a>
+          </p>
 
           <div className="grid md:grid-cols-3 gap-8 items-stretch">
             {pricingPlans.map((plan, i) => (
