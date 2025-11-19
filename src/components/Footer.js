@@ -56,7 +56,7 @@ function Footer() {
             <div className="footer-cascade-2">
               <h4 className="text-white text-sm mb-4">Product</h4>
               <ul className="space-y-4 text-sm">
-                <li><button onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-white transition">Contract Creator</button></li>
+                <li><button onClick={() => navigate('/dashboard', { replace: true })} className="text-gray-400 hover:text-white transition">Contract Creator</button></li>
                 <li><button onClick={() => navigate('/equity-calculator')} className="text-gray-400 hover:text-white transition">Equity Calculator</button></li>
                 <li><button onClick={() => navigate('/pricing')} className="text-gray-400 hover:text-white transition">Pricing</button></li>
               </ul>

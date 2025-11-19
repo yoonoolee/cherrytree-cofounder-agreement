@@ -112,7 +112,7 @@ function PricingPage() {
                     if (isProduction) {
                       window.location.href = 'https://my.cherrytree.app/dashboard';
                     } else {
-                      navigate('/dashboard');
+                      navigate('/dashboard', { replace: true });
                     }
                   }}
                   className={`w-full py-3 rounded-lg font-semibold transition mb-6 ${

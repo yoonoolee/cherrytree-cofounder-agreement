@@ -367,7 +367,7 @@ function LandingPage() {
                   if (isProduction) {
                     window.location.href = 'https://my.cherrytree.app/dashboard';
                   } else {
-                    navigate('/dashboard');
+                    navigate('/dashboard', { replace: true });
                   }
                 }}
                 className="button-shimmer bg-[#000000] text-white px-16 py-4 rounded-md text-[16px] font-normal hover:bg-[#1a1a1a] transition"
@@ -587,7 +587,7 @@ function LandingPage() {
                     if (isProduction) {
                       window.location.href = 'https://my.cherrytree.app/dashboard';
                     } else {
-                      navigate('/dashboard');
+                      navigate('/dashboard', { replace: true });
                     }
                   }}
                   className={`w-full py-3 rounded-lg font-semibold transition mb-6 ${
@@ -664,7 +664,7 @@ function LandingPage() {
                 if (isProduction) {
                   window.location.href = 'https://my.cherrytree.app/dashboard';
                 } else {
-                  navigate('/dashboard');
+                  navigate('/dashboard', { replace: true });
                 }
               }}
               className="button-shimmer bg-[#000000] text-white px-16 py-4 rounded-md text-[16px] font-normal hover:bg-[#1a1a1a] transition"

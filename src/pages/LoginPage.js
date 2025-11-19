@@ -10,12 +10,12 @@ function LoginPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (currentUser) {
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     }
   }, [currentUser, navigate]);
 
   const handleLogin = () => {
-    navigate('/dashboard');
+    navigate('/dashboard', { replace: true });
   };
 
   return <Auth onLogin={handleLogin} />;

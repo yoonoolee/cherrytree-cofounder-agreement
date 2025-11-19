@@ -29,7 +29,15 @@ function Header() {
           <div className="hidden md:flex items-center gap-4 text-sm">
             {user ? (
               <button
-                onClick={() => navigate('/dashboard')}
+                onClick={() => {
+                  // Navigate directly to my.cherrytree.app to avoid any redirect issues
+                  const isProduction = window.location.hostname.includes('cherrytree.app');
+                  if (isProduction) {
+                    window.location.href = 'https://my.cherrytree.app/dashboard';
+                  } else {
+                    navigate('/dashboard', { replace: true });
+                  }
+                }}
                 className="text-[#808080] hover:text-black transition"
               >
                 My Projects
@@ -57,7 +65,7 @@ function Header() {
                 if (isProduction) {
                   window.location.href = 'https://my.cherrytree.app/dashboard';
                 } else {
-                  navigate('/dashboard');
+                  navigate('/dashboard', { replace: true });
                 }
               }}
               className="button-shimmer bg-[#000000] text-white px-5 py-2.5 rounded hover:bg-[#1a1a1a] transition"
