@@ -91,19 +91,35 @@ function Auth({ onLogin }) {
   const getPasswordStrengthColor = () => {
     if (passwordStrength <= 2) return 'bg-red-500';
     if (passwordStrength <= 3) return 'bg-yellow-500';
-    if (passwordStrength <= 4) return 'bg-red-500';
+    if (passwordStrength <= 4) return 'bg-green-500';
     return 'bg-green-500';
+  };
+
+  // Sanitize name input to prevent XSS attacks
+  const sanitizeName = (input) => {
+    return input
+      .replace(/[<>]/g, '')           // Remove angle brackets
+      .replace(/javascript:/gi, '')   // Remove javascript: protocol
+      .replace(/on\w+=/gi, '')        // Remove event handlers like onclick=
+      .trim()
+      .substring(0, 100);             // Limit length
   };
 
   const validatePassword = (pwd) => {
     if (pwd.length < 8) {
       return 'Password must be at least 8 characters';
     }
+    if (pwd.length > 128) {
+      return 'Password must be less than 128 characters';
+    }
     if (!/(?=.*[a-z])(?=.*[A-Z])/.test(pwd)) {
       return 'Password must contain uppercase and lowercase letters';
     }
     if (!/\d/.test(pwd)) {
       return 'Password must contain at least one number';
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd)) {
+      return 'Password must contain at least one special character';
     }
     return null;
   };
@@ -141,10 +157,9 @@ function Auth({ onLogin }) {
     try {
       // Try to sign in first
       await signInWithEmailAndPassword(auth, email, password);
-      // Let LoginPage's auth listener handle redirect to avoid race condition
-      // Keep loading state active until redirect happens
+      // Don't call onLogin - let LoginPage's auth listener handle redirect
+      // Keep loading state active until auth listener triggers navigation
     } catch (err) {
-      console.error('Auth error:', err);
 
       // Firebase returns 'auth/invalid-credential' for both wrong password AND user not found
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
@@ -185,9 +200,10 @@ function Auth({ onLogin }) {
 
     try {
       await sendPasswordResetEmail(auth, email);
-      setSuccess('Password reset email sent! Check your inbox.');
+      setSuccess('If an account exists with this email, a password reset link has been sent.');
     } catch (err) {
-      setError(err.message);
+      // Use same message to prevent enumeration
+      setSuccess('If an account exists with this email, a password reset link has been sent.');
     } finally {
       setLoading(false);
     }
@@ -253,13 +269,13 @@ function Auth({ onLogin }) {
 
       setSuccess('Account created! Please check your email to verify your account.');
 
-      // Let LoginPage's auth listener handle redirect after user sees success message
-      // Keep loading state active until redirect happens
+      // Don't call onLogin - let LoginPage's auth listener handle redirect
+      // Keep loading state active until auth listener triggers navigation
     } catch (err) {
       console.error('Signup error:', err);
 
       if (err.code === 'auth/email-already-in-use') {
-        setError('This email is already registered. Please sign in instead.');
+        setError('Unable to create account. If you already have an account, please sign in.');
       } else if (err.code === 'auth/weak-password') {
         setError('Password is too weak. Please use a stronger password.');
       } else {
@@ -278,8 +294,8 @@ function Auth({ onLogin }) {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       // The useUserSync hook will handle Firestore syncing
-      // Let LoginPage's auth listener handle redirect to avoid race condition
-      // Keep loading state active until redirect happens
+      // Don't call onLogin - let LoginPage's auth listener handle redirect
+      // Keep loading state active until auth listener triggers navigation
     } catch (err) {
       console.error('Error signing in with Google:', err);
       if (err.code === 'auth/popup-closed-by-user') {
@@ -475,7 +491,7 @@ function Auth({ onLogin }) {
               <input
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setName(sanitizeName(e.target.value))}
                 className={`w-full px-0 py-2 border-0 border-b-2 border-gray-300 focus:border-black focus:ring-0 bg-transparent text-gray-900 ${wiggleField === 'name' ? 'animate-wiggle' : ''}`}
                 placeholder="Tim He"
               />

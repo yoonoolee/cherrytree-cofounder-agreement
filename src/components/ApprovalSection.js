@@ -1,10 +1,17 @@
 import React from 'react';
-import { db, auth } from '../firebase';
+import { db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
+import { useUser } from '../contexts/UserContext';
 
 function ApprovalSection({ project, projectId }) {
-  const currentUserEmail = auth.currentUser?.email;
+  const { currentUser, loading } = useUser();
+  const currentUserEmail = currentUser?.email;
   const isOwner = project.ownerEmail === currentUserEmail;
+
+  // Don't render until auth state is loaded
+  if (loading) {
+    return null;
+  }
   
   // Get all collaborators (including owner for display purposes)
   const allCollaborators = project.collaborators || [];

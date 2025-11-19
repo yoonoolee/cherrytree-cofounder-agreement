@@ -1,18 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { auth } from '../firebase';
+import { useUser } from '../contexts/UserContext';
 
 function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
+  const { currentUser: user } = useUser();
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white z-50">

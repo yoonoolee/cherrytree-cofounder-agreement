@@ -1,15 +1,16 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db } from '../firebase';
+import { useUser } from '../contexts/UserContext';
+import { db } from '../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
 function RedirectToLatestProject() {
   const navigate = useNavigate();
+  const { currentUser, loading } = useUser();
 
   useEffect(() => {
     const redirectToLatest = async () => {
-      const user = auth.currentUser;
-      if (!user) {
+      if (!currentUser) {
         navigate('/login');
         return;
       }
@@ -21,12 +22,12 @@ function RedirectToLatestProject() {
         // Don't use orderBy here to handle projects without lastOpened field
         const ownedQuery = query(
           projectsRef,
-          where('ownerId', '==', user.uid)
+          where('ownerId', '==', currentUser.uid)
         );
 
         const collaboratorQuery = query(
           projectsRef,
-          where('collaboratorIds', 'array-contains', user.uid)
+          where('collaboratorIds', 'array-contains', currentUser.uid)
         );
 
         // Execute both queries
@@ -70,8 +71,11 @@ function RedirectToLatestProject() {
       }
     };
 
-    redirectToLatest();
-  }, [navigate]);
+    // Only run when loading is complete and we have auth state
+    if (!loading) {
+      redirectToLatest();
+    }
+  }, [currentUser, loading, navigate]);
 
   // Show loading state while redirecting
   return (

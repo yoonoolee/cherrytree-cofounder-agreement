@@ -19,14 +19,22 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let unsubscribeFirestore = null;
+
     // Listen to Firebase Auth state
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      // Clean up previous Firestore listener if exists
+      if (unsubscribeFirestore) {
+        unsubscribeFirestore();
+        unsubscribeFirestore = null;
+      }
+
       setCurrentUser(user);
 
       if (user) {
         // Listen to Firestore user document in real-time
         const userRef = doc(db, 'users', user.uid);
-        const unsubscribeFirestore = onSnapshot(userRef, (docSnap) => {
+        unsubscribeFirestore = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
             setUserProfile(docSnap.data());
           } else {
@@ -38,16 +46,18 @@ export const UserProvider = ({ children }) => {
           setUserProfile(null);
           setLoading(false);
         });
-
-        // Return cleanup for Firestore listener
-        return () => unsubscribeFirestore();
       } else {
         setUserProfile(null);
         setLoading(false);
       }
     });
 
-    return () => unsubscribeAuth();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeFirestore) {
+        unsubscribeFirestore();
+      }
+    };
   }, []);
 
   const value = {

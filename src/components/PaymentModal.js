@@ -42,9 +42,31 @@ function PaymentModal({ onClose, onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!projectName.trim()) {
+    const trimmedName = projectName.trim();
+
+    // Validate project name
+    if (!trimmedName) {
+      setError('Company name is required');
       setIsWiggling(true);
       setTimeout(() => setIsWiggling(false), 500);
+      return;
+    }
+
+    if (trimmedName.length < 2) {
+      setError('Company name must be at least 2 characters');
+      setIsWiggling(true);
+      setTimeout(() => setIsWiggling(false), 500);
+      return;
+    }
+
+    if (trimmedName.length > 100) {
+      setError('Company name must be less than 100 characters');
+      return;
+    }
+
+    // Prevent script injection attempts
+    if (/<|>|javascript:|on\w+=/i.test(trimmedName)) {
+      setError('Company name contains invalid characters');
       return;
     }
 
@@ -71,7 +93,7 @@ function PaymentModal({ onClose, onSuccess }) {
       const result = await createCheckoutSession({
         priceId: plan.priceId,
         plan: selectedPlan,
-        projectName: projectName.trim(),
+        projectName: trimmedName,
         successUrl: `${baseUrl}/dashboard?payment=success`,
         cancelUrl: `${baseUrl}/dashboard?payment=cancelled`
       });
@@ -84,7 +106,10 @@ function PaymentModal({ onClose, onSuccess }) {
       }
 
     } catch (err) {
-      console.error('Error creating checkout session:', err);
+      // Don't log detailed errors in production for security
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error creating checkout session:', err);
+      }
       setError(err.message || 'Failed to start payment. Please try again.');
       setLoading(false);
     }

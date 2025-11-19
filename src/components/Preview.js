@@ -460,7 +460,16 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
           <button
             onClick={async () => {
               if (window.confirm('Are you sure you want to log out?')) {
-                await signOut(auth);
+                // Redirect immediately without waiting for signOut to complete
+                // This prevents ProtectedRoute from flashing the login page
+                const isProduction = window.location.hostname.includes('cherrytree.app');
+                const targetUrl = isProduction ? 'https://cherrytree.app' : '/';
+
+                // Sign out without awaiting (fire and forget)
+                signOut(auth).catch(err => console.error('Error signing out:', err));
+
+                // Immediate redirect
+                window.location.replace(targetUrl);
               }
             }}
             className="w-full text-gray-700 px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-200 transition flex items-center justify-start gap-2"

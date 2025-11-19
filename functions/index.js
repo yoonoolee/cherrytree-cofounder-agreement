@@ -27,6 +27,7 @@ const { defineSecret } = require('firebase-functions/params');
 const MAKE_WEBHOOK_URL = defineSecret('MAKE_WEBHOOK_URL');
 const RESEND_API_KEY = defineSecret('RESEND_API_KEY');
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
+const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');
 const SENDER_EMAIL = 'onboarding@resend.dev';  // Use Resend's test email
 
 // Lazy-load Resend instance
@@ -39,12 +40,47 @@ const getResend = () => {
 };
 
 // ============================================================================
+// INPUT VALIDATION & SANITIZATION HELPERS
+// ============================================================================
+
+/**
+ * Sanitize user input to prevent XSS and injection attacks
+ * @param {string} input - The input to sanitize
+ * @param {number} maxLength - Maximum allowed length
+ * @returns {string} - Sanitized input
+ */
+function sanitizeInput(input, maxLength = 100) {
+  if (typeof input !== 'string') {
+    return '';
+  }
+
+  return input
+    .replace(/[<>]/g, '') // Remove HTML tags
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/on\w+=/gi, '') // Remove event handlers
+    .trim()
+    .substring(0, maxLength);
+}
+
+/**
+ * Validate email format
+ * @param {string} email - Email to validate
+ * @returns {boolean} - Whether email is valid
+ */
+function isValidEmail(email) {
+  if (typeof email !== 'string') return false;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 254;
+}
+
+// ============================================================================
 // SURVEY & PDF OPERATIONS
 // ============================================================================
 
 exports.submitSurvey = onCall({
   secrets: [MAKE_WEBHOOK_URL],
-  invoker: 'public'
+  invoker: 'public',
+  consumeAppCheckToken: true  // Enforce App Check to prevent bots
 }, async (request) => {
   // Check if user is authenticated
   if (!request.auth) {
@@ -90,10 +126,10 @@ exports.submitSurvey = onCall({
     });
 
     // Prepare data for Make.com
+    // Note: User email removed for privacy - Make.com only needs survey data for PDF generation
     const webhookData = {
       projectId: projectId,
       projectName: projectData.name,
-      submittedBy: request.auth.token.email,
       submittedAt: new Date().toISOString(),
       data: {
         companyName: projectData.surveyData?.companyName || '',
@@ -114,12 +150,37 @@ exports.submitSurvey = onCall({
       timeout: 30000 // 30 second timeout
     });
 
-    // Update project with PDF URL
+    // Update project with PDF URL (with validation)
     if (response.data && response.data.pdfUrl) {
-      await projectRef.update({
-        pdfUrl: response.data.pdfUrl,
-        pdfGeneratedAt: FieldValue.serverTimestamp()
-      });
+      // Validate PDF URL to prevent malicious URLs
+      try {
+        const pdfUrl = new URL(response.data.pdfUrl);
+        // Only allow HTTPS URLs from trusted domains
+        if (pdfUrl.protocol !== 'https:') {
+          throw new Error('PDF URL must use HTTPS');
+        }
+        // Allowlist common cloud storage providers
+        const allowedDomains = [
+          'drive.google.com',
+          'storage.googleapis.com',
+          'firebasestorage.googleapis.com',
+          's3.amazonaws.com',
+          'dropbox.com',
+          'onedrive.live.com'
+        ];
+        const isAllowed = allowedDomains.some(domain => pdfUrl.hostname.includes(domain));
+        if (!isAllowed) {
+          throw new Error('PDF URL from untrusted domain');
+        }
+
+        await projectRef.update({
+          pdfUrl: response.data.pdfUrl,
+          pdfGeneratedAt: FieldValue.serverTimestamp()
+        });
+      } catch (urlError) {
+        console.error('Invalid PDF URL from Make.com:', urlError);
+        throw new HttpsError('internal', 'Invalid PDF URL received');
+      }
     }
 
     return {
@@ -133,14 +194,16 @@ exports.submitSurvey = onCall({
     if (error instanceof HttpsError) {
       throw error; // Re-throw HttpsError
     }
-    throw new HttpsError('internal', error.message || 'Internal error');
+    // Don't expose internal error details to client
+    throw new HttpsError('internal', 'An error occurred while submitting the survey');
   }
 });
 
 // Generate preview PDF without submitting
 exports.generatePreviewPDF = onCall({
   secrets: [MAKE_WEBHOOK_URL],
-  invoker: 'public'
+  invoker: 'public',
+  consumeAppCheckToken: true  // Enforce App Check to prevent bots
 }, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be logged in');
@@ -211,12 +274,37 @@ exports.generatePreviewPDF = onCall({
       timeout: 30000
     });
 
-    // Save preview PDF URL
+    // Save preview PDF URL (with validation)
     if (response.data && response.data.pdfUrl) {
-      await projectRef.update({
-        previewPdfUrl: response.data.pdfUrl,
-        previewPdfGeneratedAt: FieldValue.serverTimestamp()
-      });
+      // Validate PDF URL to prevent malicious URLs
+      try {
+        const pdfUrl = new URL(response.data.pdfUrl);
+        // Only allow HTTPS URLs from trusted domains
+        if (pdfUrl.protocol !== 'https:') {
+          throw new Error('PDF URL must use HTTPS');
+        }
+        // Allowlist common cloud storage providers
+        const allowedDomains = [
+          'drive.google.com',
+          'storage.googleapis.com',
+          'firebasestorage.googleapis.com',
+          's3.amazonaws.com',
+          'dropbox.com',
+          'onedrive.live.com'
+        ];
+        const isAllowed = allowedDomains.some(domain => pdfUrl.hostname.includes(domain));
+        if (!isAllowed) {
+          throw new Error('PDF URL from untrusted domain');
+        }
+
+        await projectRef.update({
+          previewPdfUrl: response.data.pdfUrl,
+          previewPdfGeneratedAt: FieldValue.serverTimestamp()
+        });
+      } catch (urlError) {
+        console.error('Invalid PDF URL from Make.com:', urlError);
+        throw new HttpsError('internal', 'Invalid PDF URL received');
+      }
     }
 
     return {
@@ -229,7 +317,8 @@ exports.generatePreviewPDF = onCall({
     if (error instanceof HttpsError) {
       throw error;
     }
-    throw new HttpsError('internal', error.message || 'Failed to generate preview');
+    // Don't expose internal error details to client
+    throw new HttpsError('internal', 'An error occurred while generating the preview');
   }
 });
 
@@ -240,7 +329,8 @@ exports.generatePreviewPDF = onCall({
 // Send collaborator invitation email
 exports.sendCollaboratorInvite = onCall({
   secrets: [RESEND_API_KEY],
-  invoker: 'public'
+  invoker: 'public',
+  consumeAppCheckToken: true  // Enforce App Check to prevent spam
 }, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be logged in');
@@ -250,6 +340,16 @@ exports.sendCollaboratorInvite = onCall({
 
   if (!projectId || !collaboratorEmail || !projectName) {
     throw new HttpsError('invalid-argument', 'Missing required fields');
+  }
+
+  // Validate and sanitize inputs
+  if (!isValidEmail(collaboratorEmail)) {
+    throw new HttpsError('invalid-argument', 'Invalid email address');
+  }
+
+  const sanitizedProjectName = sanitizeInput(projectName, 100);
+  if (!sanitizedProjectName || sanitizedProjectName.length < 2) {
+    throw new HttpsError('invalid-argument', 'Invalid project name');
   }
 
   try {
@@ -268,7 +368,10 @@ exports.sendCollaboratorInvite = onCall({
     }
 
     // Create invitation link
-    const appUrl = 'https://cherry-tree-surveys.web.app'; // Change this after deployment
+    // Use production URL in production, otherwise localhost for testing
+    const appUrl = process.env.NODE_ENV === 'production'
+      ? 'https://my.cherrytree.app'
+      : 'http://localhost:3000';
     const inviteLink = `${appUrl}?project=${projectId}&email=${encodeURIComponent(collaboratorEmail)}`;
 
     // Send email
@@ -276,7 +379,7 @@ exports.sendCollaboratorInvite = onCall({
     const { data, error } = await resend.emails.send({
       from: 'Cherrytree <onboarding@resend.dev>',
       to: collaboratorEmail,
-      subject: `${request.auth.token.email} invited you to collaborate on "${projectName}"`,
+      subject: `${request.auth.token.email} invited you to collaborate on "${sanitizedProjectName}"`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #1f2937;">You've been invited to collaborate!</h2>
@@ -284,7 +387,7 @@ exports.sendCollaboratorInvite = onCall({
             <strong>${request.auth.token.email}</strong> has invited you to collaborate on the project:
           </p>
           <div style="background-color: #eff6ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #2563eb; margin: 0;">${projectName}</h3>
+            <h3 style="color: #2563eb; margin: 0;">${sanitizedProjectName}</h3>
           </div>
           
           <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -324,7 +427,11 @@ exports.sendCollaboratorInvite = onCall({
 
   } catch (error) {
     console.error('Error sending invitation:', error);
-    throw new HttpsError('internal', error.message || 'Failed to send invitation');
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    // Don't expose internal error details to client
+    throw new HttpsError('internal', 'An error occurred while sending the invitation');
   }
 });
 
@@ -335,7 +442,8 @@ exports.sendCollaboratorInvite = onCall({
 // Create Stripe checkout session
 exports.createCheckoutSession = onCall({
   secrets: [STRIPE_SECRET_KEY],
-  invoker: 'public'
+  invoker: 'public',
+  consumeAppCheckToken: true  // Enforce App Check to prevent payment fraud
 }, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be logged in');
@@ -352,6 +460,17 @@ exports.createCheckoutSession = onCall({
 
   if (!projectName) {
     throw new HttpsError('invalid-argument', 'Project name is required');
+  }
+
+  // Validate and sanitize project name
+  const sanitizedProjectName = sanitizeInput(projectName, 100);
+  if (!sanitizedProjectName || sanitizedProjectName.length < 2) {
+    throw new HttpsError('invalid-argument', 'Invalid project name');
+  }
+
+  // Validate plan is one of the allowed values
+  if (!['starter', 'pro'].includes(plan)) {
+    throw new HttpsError('invalid-argument', 'Invalid plan type');
   }
 
   try {
@@ -397,7 +516,7 @@ exports.createCheckoutSession = onCall({
       metadata: {
         userId: userId,
         plan: plan,
-        projectName: projectName,
+        projectName: sanitizedProjectName,
         userEmail: userEmail,
       },
       client_reference_id: userId,
@@ -410,14 +529,18 @@ exports.createCheckoutSession = onCall({
 
   } catch (error) {
     console.error('Error creating checkout session:', error);
-    throw new HttpsError('internal', error.message || 'Failed to create checkout session');
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    // Don't expose internal error details to client
+    throw new HttpsError('internal', 'An error occurred while creating the checkout session');
   }
 });
 
 // Handle Stripe webhooks
 exports.stripeWebhook = onRequest({
-  cors: true,
-  secrets: [STRIPE_SECRET_KEY]
+  cors: false,  // Disable CORS - webhooks are server-to-server only
+  secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET]
 }, async (req, res) => {
   // Initialize Stripe
   const stripe = Stripe(STRIPE_SECRET_KEY.value());
@@ -426,9 +549,23 @@ exports.stripeWebhook = onRequest({
   let event;
 
   try {
-    // For now, we'll just parse the body without signature verification
-    // In production, you should verify the signature with your webhook secret
-    event = req.body;
+    // Verify webhook signature for security
+    // This ensures the request actually came from Stripe
+    if (!sig) {
+      console.error('Missing stripe-signature header');
+      return res.status(400).send('Missing signature');
+    }
+
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.rawBody,
+        sig,
+        STRIPE_WEBHOOK_SECRET.value()
+      );
+    } catch (err) {
+      console.error('Webhook signature verification failed:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
 
     console.log('Webhook event received:', event.type);
 
@@ -440,7 +577,10 @@ exports.stripeWebhook = onRequest({
         const projectName = session.metadata?.projectName;
         const userEmail = session.metadata?.userEmail || session.customer_email || session.customer_details?.email;
 
-        if (userId && plan && projectName && userEmail) {
+        // Sanitize project name from metadata (defense in depth)
+        const sanitizedProjectName = sanitizeInput(projectName || 'New Project', 100);
+
+        if (userId && plan && sanitizedProjectName && userEmail) {
           // Update user's subscription status
           await db.collection('users').doc(userId).set({
             plan: plan,
@@ -452,7 +592,7 @@ exports.stripeWebhook = onRequest({
           // Create a project for the user with proper structure
           const projectRef = db.collection('projects').doc();
           await projectRef.set({
-            name: projectName,
+            name: sanitizedProjectName,
             ownerId: userId,
             ownerEmail: userEmail,
             collaborators: [userEmail],
@@ -462,7 +602,7 @@ exports.stripeWebhook = onRequest({
             },
             requiresApprovals: true,
             surveyData: {
-              companyName: projectName
+              companyName: sanitizedProjectName
             },
             activeUsers: [],
             submitted: false,
@@ -476,9 +616,9 @@ exports.stripeWebhook = onRequest({
             lastOpened: FieldValue.serverTimestamp()
           });
 
-          console.log(`User ${userId} paid for ${plan}, project created: ${projectRef.id} - ${projectName}`);
+          console.log(`User ${userId} paid for ${plan}, project created: ${projectRef.id} - ${sanitizedProjectName}`);
         } else {
-          console.error('Missing required metadata in checkout session:', { userId, plan, projectName, userEmail });
+          console.error('Missing required metadata in checkout session:', { userId, plan, projectName: sanitizedProjectName, userEmail });
         }
         break;
       }

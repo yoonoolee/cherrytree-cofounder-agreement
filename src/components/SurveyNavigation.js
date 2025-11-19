@@ -120,11 +120,16 @@ function SurveyNavigation({
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      // Redirect to marketing homepage after logout (best practice for SaaS apps)
-      // Force full page reload to clear all auth state from memory
+      // Redirect immediately without waiting for signOut to complete
+      // This prevents ProtectedRoute from flashing the login page
       const isProduction = window.location.hostname.includes('cherrytree.app');
-      window.location.href = isProduction ? 'https://cherrytree.app' : '/';
+      const targetUrl = isProduction ? 'https://cherrytree.app' : '/';
+
+      // Sign out without awaiting (fire and forget)
+      signOut(auth).catch(err => console.error('Error signing out:', err));
+
+      // Immediate redirect
+      window.location.replace(targetUrl);
     } catch (error) {
       console.error('Error signing out:', error);
     }

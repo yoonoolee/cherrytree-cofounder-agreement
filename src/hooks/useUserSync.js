@@ -37,7 +37,6 @@ function useUserSync() {
             plan: null, // starter, pro
             stripeCustomerId: null,
           });
-          console.log('New user created in Firestore:', userId);
         } else {
           // Existing user - update last login
           await setDoc(userRef, {
@@ -47,7 +46,6 @@ function useUserSync() {
             name: user.displayName || user.email?.split('@')[0],
             picture: user.photoURL || null,
           }, { merge: true });
-          console.log('User login updated in Firestore:', userId);
         }
       } catch (error) {
         console.error('Error syncing user to Firestore:', error);

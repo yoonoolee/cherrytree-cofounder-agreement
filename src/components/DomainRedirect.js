@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 // Define which routes belong to the app (my.cherrytree.app)
 const APP_ROUTES = [
+  '/login',     // Login must be on my.cherrytree.app for auth to work
   '/survey',
   '/preview',
   '/settings',
@@ -25,14 +26,16 @@ function DomainRedirect() {
 
   useEffect(() => {
     // Only run in production
-    if (process.env.NODE_ENV !== 'production') return;
+    if (process.env.NODE_ENV !== 'production') {
+      return;
+    }
 
     const currentHostname = window.location.hostname;
     const currentPath = location.pathname;
     const fullUrl = window.location.href;
 
-    // Don't redirect /login or / (root is handled by App.js)
-    if (currentPath === '/login' || currentPath === '/') {
+    // Don't redirect / (root is handled by App.js)
+    if (currentPath === '/') {
       return;
     }
 
