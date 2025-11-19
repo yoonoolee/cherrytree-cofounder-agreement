@@ -51,7 +51,15 @@ function Header() {
               </button>
             )}
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => {
+                // Navigate directly to my.cherrytree.app to avoid double redirect
+                const isProduction = window.location.hostname.includes('cherrytree.app');
+                if (isProduction) {
+                  window.location.href = 'https://my.cherrytree.app/dashboard';
+                } else {
+                  navigate('/dashboard');
+                }
+              }}
               className="button-shimmer bg-[#000000] text-white px-5 py-2.5 rounded hover:bg-[#1a1a1a] transition"
             >
               Create agreement
