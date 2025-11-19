@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Survey from '../components/Survey';
 import PaymentModal from '../components/PaymentModal';
 import { db, auth } from '../firebase';
-import { collection, query, where, getDocs, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, doc, updateDoc, limit } from 'firebase/firestore';
 
 function SurveyPage() {
   const { projectId } = useParams();
@@ -41,14 +41,16 @@ function SurveyPage() {
         // Query 1: Projects where user is the owner
         const ownedQuery = query(
           projectsRef,
-          where('ownerId', '==', user.uid)
+          where('ownerId', '==', user.uid),
+          limit(100)
         );
         const ownedSnapshot = await getDocs(ownedQuery);
 
         // Query 2: Projects where user is a collaborator
         const collaboratorQuery = query(
           projectsRef,
-          where('collaboratorIds', 'array-contains', user.uid)
+          where('collaboratorIds', 'array-contains', user.uid),
+          limit(100)
         );
         const collaboratorSnapshot = await getDocs(collaboratorQuery);
 

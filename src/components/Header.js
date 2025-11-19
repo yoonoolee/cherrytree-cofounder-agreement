@@ -20,17 +20,17 @@ function Header() {
           </div>
 
           <nav className="hidden md:flex items-center gap-6 absolute left-1/2 transform -translate-x-1/2 text-sm">
-            <button onClick={() => navigate('/equity-calculator')} className={`${location.pathname === '/equity-calculator' ? 'text-black' : 'text-[#808080]'} hover:text-black transition`}>Equity Calculator</button>
-            <a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="text-[#808080] hover:text-black transition">Newsletter</a>
-            <button onClick={() => navigate('/pricing')} className={`${location.pathname === '/pricing' ? 'text-black' : 'text-[#808080]'} hover:text-black transition`}>Pricing</button>
-            <button onClick={() => navigate('/about')} className={`${location.pathname === '/about' ? 'text-black' : 'text-[#808080]'} hover:text-black transition`}>About</button>
+            <button onClick={() => navigate('/equity-calculator')} className={`${location.pathname === '/equity-calculator' ? 'text-black' : 'text-[#808080]'} hover:text-black transition nav-link-underline`}>Equity Calculator</button>
+            <a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="text-[#808080] hover:text-black transition nav-link-underline">Newsletter</a>
+            <button onClick={() => navigate('/pricing')} className={`${location.pathname === '/pricing' ? 'text-black' : 'text-[#808080]'} hover:text-black transition nav-link-underline`}>Pricing</button>
+            <button onClick={() => navigate('/about')} className={`${location.pathname === '/about' ? 'text-black' : 'text-[#808080]'} hover:text-black transition nav-link-underline`}>About</button>
           </nav>
 
           <div className="hidden md:flex items-center gap-4 text-sm">
             {user ? (
               <button
                 onClick={() => navigate('/dashboard')}
-                className="text-[#808080] hover:text-black transition"
+                className="text-[#808080] hover:text-black transition nav-link-underline"
               >
                 My Projects
               </button>
@@ -45,7 +45,7 @@ function Header() {
                     navigate('/login');
                   }
                 }}
-                className="text-[#808080] hover:text-black transition"
+                className="text-[#808080] hover:text-black transition nav-link-underline"
               >
                 Login
               </button>

@@ -145,11 +145,21 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
     return fullAddress;
   };
 
-  // Reset to section 1 when project changes
+  // Set initial section when project changes
   useEffect(() => {
-    setCurrentSection(1);
+    // Check if this is a newly created project (created within the last 10 seconds)
+    if (project?.createdAt) {
+      const createdAtTime = project.createdAt.toMillis?.() || project.createdAt;
+      const now = Date.now();
+      const isNewProject = (now - createdAtTime) < 10000; // 10 seconds
+
+      // New projects start at welcome (section 0), existing projects start at section 1
+      setCurrentSection(isNewProject ? 0 : 1);
+    } else {
+      setCurrentSection(1);
+    }
     setSection3InResultsView(false);
-  }, [projectId]);
+  }, [projectId, project?.createdAt]);
 
   // Reset section3InResultsView when leaving section 3
   useEffect(() => {
@@ -1001,7 +1011,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       >
 
         {/* Progress Bar */}
-        <div className="px-3 py-2.5 mt-6">
+        <div className="px-3 py-2.5 mt-2">
           <div className="px-3" style={{ width: '90%' }}>
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-medium text-gray-600">Progress</span>
@@ -1030,7 +1040,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         </div>
 
         {/* Section Navigation */}
-        <div className="flex-1 overflow-y-auto py-8 px-2 flex flex-col">
+        <div className="flex-1 overflow-y-auto py-3 px-2 flex flex-col">
           <div>
           <div className="px-4 mb-2">
             <span className="text-xs font-medium text-gray-600">Sections</span>
@@ -1045,7 +1055,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 className={`text-left px-4 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between ${
                   currentSection === section.id
                     ? 'text-black font-semibold'
-                    : 'text-gray-600 hover:bg-gray-200'
+                    : 'text-gray-600'
                 }`}
                 style={{ width: '100%', fontSize: '15px' }}
               >
@@ -1069,7 +1079,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                       section.id
                     )}
                   </span>
-                  {section.name}
+                  <span className="nav-link-underline">{section.name}</span>
                 </div>
               </button>
             );

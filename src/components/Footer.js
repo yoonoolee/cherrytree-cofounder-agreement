@@ -56,27 +56,27 @@ function Footer() {
             <div className="footer-cascade-2">
               <h4 className="text-white text-sm mb-4">Product</h4>
               <ul className="space-y-4 text-sm">
-                <li><button onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-white transition">Contract Creator</button></li>
-                <li><button onClick={() => navigate('/equity-calculator')} className="text-gray-400 hover:text-white transition">Equity Calculator</button></li>
-                <li><button onClick={() => navigate('/pricing')} className="text-gray-400 hover:text-white transition">Pricing</button></li>
+                <li><button onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-white transition nav-link-underline">Contract Creator</button></li>
+                <li><button onClick={() => navigate('/equity-calculator')} className="text-gray-400 hover:text-white transition nav-link-underline">Equity Calculator</button></li>
+                <li><button onClick={() => navigate('/pricing')} className="text-gray-400 hover:text-white transition nav-link-underline">Pricing</button></li>
               </ul>
             </div>
 
             <div className="footer-cascade-3">
               <h4 className="text-white text-sm mb-4">Resources</h4>
               <ul className="space-y-4 text-sm">
-                <li><a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">Newsletter</a></li>
-                <li><a href="https://app.hubble.social/timhe" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">Coaching</a></li>
-                <li><button onClick={() => navigate('/attorney')} className="text-gray-400 hover:text-white transition">Attorney</button></li>
+                <li><a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition nav-link-underline">Newsletter</a></li>
+                <li><a href="https://app.hubble.social/timhe" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition nav-link-underline">Coaching</a></li>
+                <li><button onClick={() => navigate('/attorney')} className="text-gray-400 hover:text-white transition nav-link-underline">Attorney</button></li>
               </ul>
             </div>
 
             <div className="footer-cascade-4">
               <h4 className="text-white text-sm mb-4">Company</h4>
               <ul className="space-y-4 text-sm">
-                <li><button onClick={() => navigate('/privacy')} className="text-gray-400 hover:text-white transition">Privacy</button></li>
-                <li><button onClick={() => navigate('/terms')} className="text-gray-400 hover:text-white transition">Terms</button></li>
-                <li><button onClick={() => navigate('/contact')} className="text-gray-400 hover:text-white transition">Contact</button></li>
+                <li><button onClick={() => navigate('/privacy')} className="text-gray-400 hover:text-white transition nav-link-underline">Privacy</button></li>
+                <li><button onClick={() => navigate('/terms')} className="text-gray-400 hover:text-white transition nav-link-underline">Terms</button></li>
+                <li><button onClick={() => window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })} className="text-gray-400 hover:text-white transition nav-link-underline">Contact</button></li>
               </ul>
             </div>
           </div>

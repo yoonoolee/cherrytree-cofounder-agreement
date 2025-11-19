@@ -106,14 +106,17 @@ function PricingPage() {
                 <div className="text-4xl font-bold mb-2">{plan.price}</div>
                 <p className="text-gray-600 mb-6">{plan.description}</p>
                 <button
-                  onClick={() => navigate('/dashboard')}
+                  onClick={() => plan.name === 'Enterprise'
+                    ? window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })
+                    : navigate('/dashboard')
+                  }
                   className={`w-full py-3 rounded-lg font-semibold transition mb-6 ${
                     plan.featured
                       ? 'button-shimmer bg-[#000000] text-white hover:bg-[#1a1a1a]'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  Get started
+                  {plan.name === 'Enterprise' ? 'Contact sales' : 'Get started'}
                 </button>
                 <ul className="space-y-3 flex-grow">
                   {plan.features.map((feature, j) => (

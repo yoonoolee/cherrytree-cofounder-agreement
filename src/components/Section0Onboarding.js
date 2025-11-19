@@ -56,8 +56,7 @@ function Section0Onboarding({ formData, handleChange, isReadOnly, showValidation
 
         <button
           onClick={onGetStarted}
-          className="button-shimmer w-full bg-black text-white px-7 py-3 rounded font-normal hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2 animate-fade-in"
-          style={{ animationDelay: '300ms' }}
+          className="button-shimmer w-full bg-black text-white px-7 py-3 rounded font-normal hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2"
         >
           Get Started
           <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">

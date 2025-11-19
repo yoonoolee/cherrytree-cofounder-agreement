@@ -13,7 +13,6 @@ import PricingPage from './pages/PricingPage';
 import AboutPage from './pages/AboutPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
-import ContactPage from './pages/ContactPage';
 import LoginPage from './pages/LoginPage';
 import SurveyPage from './pages/SurveyPage';
 import PreviewPage from './pages/PreviewPage';
@@ -46,7 +45,6 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
-        <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={<LoginPage />} />
 
         {/* Protected Routes */}

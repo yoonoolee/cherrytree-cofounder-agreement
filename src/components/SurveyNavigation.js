@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import PaymentModal from './PaymentModal';
 
 function SurveyNavigation({
@@ -38,14 +38,16 @@ function SurveyNavigation({
         // Query 1: Projects where user is the owner
         const ownedQuery = query(
           projectsRef,
-          where('ownerId', '==', user.uid)
+          where('ownerId', '==', user.uid),
+          limit(100)
         );
         const ownedSnapshot = await getDocs(ownedQuery);
 
         // Query 2: Projects where user is a collaborator
         const collaboratorQuery = query(
           projectsRef,
-          where('collaboratorIds', 'array-contains', user.uid)
+          where('collaboratorIds', 'array-contains', user.uid),
+          limit(100)
         );
         const collaboratorSnapshot = await getDocs(collaboratorQuery);
 
@@ -234,16 +236,18 @@ function SurveyNavigation({
                 <div className="border-t border-gray-200 my-2"></div>
 
                 {/* Contact Us */}
-                <a
-                  href="mailto:hello@cherrytree.so"
+                <button
                   className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
-                  onClick={() => setShowProjectDropdown(false)}
+                  onClick={() => {
+                    setShowProjectDropdown(false);
+                    window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 });
+                  }}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                   Contact us
-                </a>
+                </button>
 
                 {/* Sign Out */}
                 <button
