@@ -4,8 +4,8 @@ import useUserSync from './hooks/useUserSync';
 import ProtectedRoute from './components/ProtectedRoute';
 import ResetPagePosition from './components/ResetPagePosition';
 import DomainRedirect from './components/DomainRedirect';
-import RedirectToLatestProject from './components/RedirectToLatestProject';
 import AppRedirect from './components/AppRedirect';
+import DashboardPage from './pages/DashboardPage';
 import LandingPage from './pages/LandingPage';
 import EquityCalculatorPage from './pages/EquityCalculatorPage';
 import AttorneyPage from './pages/AttorneyPage';
@@ -62,7 +62,7 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <RedirectToLatestProject />
+              <DashboardPage />
             </ProtectedRoute>
           }
         />
