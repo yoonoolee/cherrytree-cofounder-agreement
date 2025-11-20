@@ -1,8 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 
 function OnboardingPage() {
   const navigate = useNavigate();
@@ -25,9 +26,15 @@ function OnboardingPage() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#ffffff' }}>
-      {/* Logo */}
-      <div className="absolute top-6 left-6">
+      {/* Header */}
+      <div className="absolute top-0 left-0 right-0 px-6 py-4 flex items-center justify-between">
         <img src="/images/cherrytree-logo.png" alt="Cherrytree" className="h-8" />
+        <button
+          onClick={() => signOut(auth).then(() => navigate('/'))}
+          className="text-sm text-gray-500 hover:text-gray-700 transition"
+        >
+          Sign out
+        </button>
       </div>
 
       {/* Main content area */}

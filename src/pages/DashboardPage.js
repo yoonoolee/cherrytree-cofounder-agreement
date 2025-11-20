@@ -137,16 +137,16 @@ function DashboardPage() {
           <div className="flex-1">
             <button
               onClick={() => setShowPaymentModal(true)}
-              className="w-full h-full p-8 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 min-h-[450px] flex items-center justify-center"
+              className="group w-full h-full p-8 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 min-h-[450px] flex items-center justify-center"
             >
               <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center mb-4 transition-colors">
                   <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
                     <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
                   </svg>
                 </div>
                 <h3 className="font-medium text-gray-900 mb-1">Create a new Cofounder Agreement</h3>
-                <p className="text-sm text-gray-500">Action description goes here</p>
+                <p className="text-sm text-gray-500">One agreement per company.</p>
               </div>
             </button>
           </div>

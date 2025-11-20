@@ -9,13 +9,9 @@ const PLANS = {
     priceId: process.env.REACT_APP_STRIPE_STARTER_PRICE_ID,
     description: 'For individuals to get started',
     features: [
-      'Equity & vesting schedules',
-      'Roles & responsibilities',
-      'Contingencies & scenarios',
-      'Decision-making & voting',
-      'Intellectual property',
-      'Buyout and exit terms',
-      'And more…'
+      'Real-time collaboration',
+      'Instant agreement from survey',
+      'Unlimited collaborators'
     ]
   },
   pro: {
@@ -24,9 +20,8 @@ const PLANS = {
     priceId: process.env.REACT_APP_STRIPE_PRO_PRICE_ID,
     description: 'Everything in Starter, plus',
     features: [
-      'Reviewed by an attorney',
       'Advanced legal clauses',
-      'Priority customer support',
+      'Attorney review',
       'Cofounder coaching'
     ]
   }

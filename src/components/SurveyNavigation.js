@@ -240,7 +240,7 @@ function SurveyNavigation({
                   className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
                   onClick={() => {
                     setShowProjectDropdown(false);
-                    window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 });
+                    window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700, height: 600 });
                   }}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1117,13 +1117,15 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           <div className="px-20 pt-8 pb-8">
           {/* Section Content */}
           {currentSection === 0 && (
-            <Section0Onboarding
-              formData={formData}
-              handleChange={handleChange}
-              isReadOnly={isReadOnly}
-              showValidation={showValidation}
-              onGetStarted={() => setCurrentSection(1)}
-            />
+            <div style={{ opacity: 1 }}>
+              <Section0Onboarding
+                formData={formData}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                showValidation={showValidation}
+                onGetStarted={() => setCurrentSection(1)}
+              />
+            </div>
           )}
           {currentSection === 1 && (
             <div className="animate-fade-down">
