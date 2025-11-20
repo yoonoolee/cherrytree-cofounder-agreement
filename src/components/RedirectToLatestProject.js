@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit, doc, getDoc } from 'firebase/firestore';
 
 function RedirectToLatestProject() {
   const navigate = useNavigate();
@@ -16,6 +16,16 @@ function RedirectToLatestProject() {
       }
 
       try {
+        // First check if user has completed onboarding
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          if (userData.hasCompletedOnboarding === false) {
+            navigate('/onboarding', { replace: true });
+            return;
+          }
+        }
+
         const projectsRef = collection(db, 'projects');
 
         // Query for user's projects (owned or collaborated)

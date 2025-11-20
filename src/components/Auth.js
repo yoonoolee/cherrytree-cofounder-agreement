@@ -264,7 +264,8 @@ function Auth({ onLogin }) {
         email: email,
         createdAt: new Date(),
         updatedAt: new Date(),
-        purchases: []
+        purchases: [],
+        hasCompletedOnboarding: false
       });
 
       setSuccess('Account created! Please check your email to verify your account.');

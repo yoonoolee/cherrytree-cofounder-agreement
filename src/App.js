@@ -14,6 +14,7 @@ import AboutPage from './pages/AboutPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import LoginPage from './pages/LoginPage';
+import OnboardingPage from './pages/OnboardingPage';
 import SurveyPage from './pages/SurveyPage';
 import PreviewPage from './pages/PreviewPage';
 import SettingsPage from './pages/SettingsPage';
@@ -48,6 +49,15 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
 
         {/* Protected Routes */}
+        <Route
+          path="/onboarding"
+          element={
+            <ProtectedRoute>
+              <OnboardingPage />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/dashboard"
           element={
