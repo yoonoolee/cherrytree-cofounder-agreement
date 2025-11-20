@@ -1011,7 +1011,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       >
 
         {/* Progress Bar */}
-        <div className="px-3 py-2.5 mt-2">
+        <div className="px-3 pb-2">
           <div className="px-3" style={{ width: '90%' }}>
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-medium text-gray-600">Progress</span>
@@ -1040,7 +1040,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         </div>
 
         {/* Section Navigation */}
-        <div className="flex-1 overflow-y-auto py-3 px-2 flex flex-col">
+        <div className="flex-1 overflow-y-auto pb-3 px-2 flex flex-col">
           <div>
           <div className="px-4 mb-2">
             <span className="text-xs font-medium text-gray-600">Sections</span>

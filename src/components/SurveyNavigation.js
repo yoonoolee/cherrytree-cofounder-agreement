@@ -265,7 +265,7 @@ function SurveyNavigation({
         </div>
 
         {/* Main Navigation Content */}
-        <div className="flex-1 overflow-y-auto px-3 py-4 flex flex-col">
+        <div className="flex-1 overflow-y-auto px-3 pt-2 pb-4 flex flex-col">
           {children}
         </div>
 
