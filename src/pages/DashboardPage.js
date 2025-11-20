@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
-import { db } from '../firebase';
+import { auth, db } from '../firebase';
+import { signOut } from 'firebase/auth';
 import { collection, query, where, getDocs, limit, doc, getDoc } from 'firebase/firestore';
 import PaymentModal from '../components/PaymentModal';
 
@@ -103,9 +104,23 @@ function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-4">
+      <div className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
         <img src="/images/cherrytree-logo.png" alt="Cherrytree" className="h-6" />
+        <button
+          onClick={() => signOut(auth).then(() => navigate('/'))}
+          className="text-sm text-gray-500 hover:text-gray-700 transition"
+        >
+          Sign out
+        </button>
       </div>
+
+      {/* Floating Help Button */}
+      <button
+        onClick={() => window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })}
+        className="fixed bottom-6 right-6 w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-500 hover:border-gray-300 hover:shadow-md transition-all"
+      >
+        <span className="text-sm font-medium">?</span>
+      </button>
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-8 py-12">
@@ -117,110 +132,40 @@ function DashboardPage() {
         </div>
 
         {/* Two Column Layout */}
-        <div className="flex gap-12">
-          {/* Left Column - Get Started */}
-          <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-medium text-gray-600 mb-4">Get started</h2>
-
-            {/* Action Card 1 */}
+        <div className="flex gap-8 flex-1">
+          {/* Left - Create New */}
+          <div className="flex-1">
             <button
               onClick={() => setShowPaymentModal(true)}
-              className="w-full text-left p-6 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition mb-4"
+              className="w-full h-full p-8 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 min-h-[450px] flex items-center justify-center"
             >
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  {/* Placeholder icon */}
-                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
-                      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
-                    </svg>
-                  </div>
+              <div className="flex flex-col items-center text-center">
+                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                  <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
+                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
+                  </svg>
                 </div>
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-1">Create a new Cofounder Agreement</h3>
-                  <p className="text-sm text-gray-500">Action description goes here</p>
-                </div>
-              </div>
-            </button>
-
-            {/* Action Card 2 */}
-            <button
-              className="w-full text-left p-6 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition mb-4"
-            >
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
-                      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
-                    </svg>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-1">Action title</h3>
-                  <p className="text-sm text-gray-500">Action description goes here</p>
-                </div>
-              </div>
-            </button>
-
-            {/* Section 2 */}
-            <h2 className="text-sm font-medium text-gray-600 mb-4 mt-8">Section title</h2>
-
-            {/* Action Card 3 */}
-            <button
-              className="w-full text-left p-6 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition mb-4"
-            >
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
-                      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
-                    </svg>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-1">Action title</h3>
-                  <p className="text-sm text-gray-500">Action description goes here</p>
-                </div>
-              </div>
-            </button>
-
-            {/* Action Card 4 */}
-            <button
-              className="w-full text-left p-6 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition"
-            >
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
-                      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
-                    </svg>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-1">Action title</h3>
-                  <p className="text-sm text-gray-500">Action description goes here</p>
-                </div>
+                <h3 className="font-medium text-gray-900 mb-1">Create a new Cofounder Agreement</h3>
+                <p className="text-sm text-gray-500">Action description goes here</p>
               </div>
             </button>
           </div>
 
-          {/* Right Column - Projects */}
-          <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-medium text-gray-600 mb-4">Your projects</h2>
-
+          {/* Right - Projects */}
+          <div className="flex-1">
             {/* Projects List */}
-            <div className="bg-white rounded-lg border border-gray-200">
+            <div className="bg-white rounded-lg border border-gray-200 min-h-[450px] flex flex-col hover:border-gray-300 hover:shadow-lg transition-all duration-200">
               <div className="px-4 py-3 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Projects</span>
+                <span className="text-sm font-medium text-gray-700">Existing projects</span>
               </div>
 
               {projects.length > 0 ? (
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-gray-100 flex-1">
                   {projects.map((project) => (
                     <button
                       key={project.id}
                       onClick={() => navigate(`/survey/${project.id}`)}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-50 transition flex items-center justify-between"
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 transition flex items-center"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center">
@@ -229,7 +174,7 @@ function DashboardPage() {
                           </svg>
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-blue-600 hover:underline truncate max-w-48">
+                          <p className="text-sm font-medium text-gray-900 truncate max-w-48">
                             {project.name || 'Untitled Project'}
                           </p>
                           <p className="text-xs text-gray-500">
@@ -237,36 +182,15 @@ function DashboardPage() {
                           </p>
                         </div>
                       </div>
-                      <button className="text-gray-300 hover:text-gray-400">
-                        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                        </svg>
-                      </button>
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="px-4 py-8 text-center text-sm text-gray-500">
+                <div className="px-4 py-8 text-center text-sm text-gray-500 flex-1 flex items-center justify-center">
                   No projects found
                 </div>
               )}
 
-              {/* Pagination */}
-              {projects.length > 0 && (
-                <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-end gap-2 text-sm text-gray-500">
-                  <span>1 – {projects.length} of {projects.length}</span>
-                  <button className="p-1 hover:bg-gray-100 rounded" disabled>
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd"/>
-                    </svg>
-                  </button>
-                  <button className="p-1 hover:bg-gray-100 rounded" disabled>
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
-                    </svg>
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>

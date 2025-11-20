@@ -145,21 +145,11 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
     return fullAddress;
   };
 
-  // Set initial section when project changes
+  // Set initial section when project changes - always start at welcome section
   useEffect(() => {
-    // Check if this is a newly created project (created within the last 10 seconds)
-    if (project?.createdAt) {
-      const createdAtTime = project.createdAt.toMillis?.() || project.createdAt;
-      const now = Date.now();
-      const isNewProject = (now - createdAtTime) < 10000; // 10 seconds
-
-      // New projects start at welcome (section 0), existing projects start at section 1
-      setCurrentSection(isNewProject ? 0 : 1);
-    } else {
-      setCurrentSection(1);
-    }
+    setCurrentSection(0);
     setSection3InResultsView(false);
-  }, [projectId, project?.createdAt]);
+  }, [projectId]);
 
   // Reset section3InResultsView when leaving section 3
   useEffect(() => {
