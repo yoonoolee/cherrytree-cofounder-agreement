@@ -21,10 +21,15 @@ function DashboardPage() {
         const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
+          // Redirect if hasCompletedOnboarding is explicitly false
           if (userData.hasCompletedOnboarding === false) {
             navigate('/onboarding', { replace: true });
             return;
           }
+        } else {
+          // User doc doesn't exist yet (race condition) - redirect to onboarding
+          navigate('/onboarding', { replace: true });
+          return;
         }
 
         const projectsRef = collection(db, 'projects');

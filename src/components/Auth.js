@@ -101,7 +101,6 @@ function Auth({ onLogin }) {
       .replace(/[<>]/g, '')           // Remove angle brackets
       .replace(/javascript:/gi, '')   // Remove javascript: protocol
       .replace(/on\w+=/gi, '')        // Remove event handlers like onclick=
-      .trim()
       .substring(0, 100);             // Limit length
   };
 

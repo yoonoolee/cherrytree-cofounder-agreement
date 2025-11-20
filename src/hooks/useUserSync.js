@@ -36,6 +36,7 @@ function useUserSync() {
             subscriptionStatus: 'none', // none, active, cancelled
             plan: null, // starter, pro
             stripeCustomerId: null,
+            hasCompletedOnboarding: false,
           });
         } else {
           // Existing user - update last login
