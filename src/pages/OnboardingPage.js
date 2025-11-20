@@ -10,9 +10,9 @@ function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
 
   const handleNext = async () => {
-    if (currentStep === 1) {
-      setCurrentStep(2);
-    } else if (currentStep === 2) {
+    if (currentStep < 5) {
+      setCurrentStep(currentStep + 1);
+    } else {
       // Mark onboarding as complete
       if (currentUser) {
         try {
@@ -37,23 +37,45 @@ function OnboardingPage() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#ffffff' }}>
       {/* Main content area */}
-      <div className="flex-1 flex items-center justify-center px-6">
-        <div className="max-w-2xl w-full">
+      <div className="flex-1 flex items-start justify-center px-6 pt-24">
+        <div className="max-w-3xl w-full">
           {currentStep === 1 && (
-            <div className="text-center animate-fade-up">
-              <h1 className="text-4xl font-bold text-gray-900 mb-6">
-                Welcome to Cherrytree
+            <div className="text-left animate-fade-up">
+              <h1 className="text-4xl font-medium text-gray-900 mb-6">
+                Welcome to Cherrytree!
               </h1>
-              <p className="text-lg text-gray-600 mb-4">
-                We're excited to help you create your cofounder agreement. This document will help you and your cofounders align on important decisions before they become problems.
-              </p>
-              <p className="text-lg text-gray-600">
-                In just a few minutes, you'll answer questions about equity, vesting, decision-making, and more. We'll turn your answers into a professional legal document.
-              </p>
             </div>
           )}
 
           {currentStep === 2 && (
+            <div className="text-left animate-fade-up">
+              <p className="text-lg text-gray-600">
+                You and your cofounders will answer a <strong>series of guided questions</strong>. It'll start with the easy stuff like your company's name and industry.
+              </p>
+            </div>
+          )}
+
+          {currentStep === 3 && (
+            <div className="text-left animate-fade-up">
+              <p className="text-lg text-gray-600">
+                Then it gets real: how decisions get made, how you handle disagreements, and what you're actually signing up for.
+              </p>
+            </div>
+          )}
+
+          {currentStep === 4 && (
+            <div className="text-left animate-fade-up">
+              <p className="text-lg text-gray-600 mb-8">
+                There's no rush. If a topic needs a deeper conversation, you can pause, talk it out, and return when you're aligned. Once you're done, we'll turn your responses into a fully complete, ready-to-use <strong>Cofounder Agreement</strong>.
+              </p>
+              {/* Screen recording demo placeholder */}
+              <div className="w-full aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                <span className="text-gray-400">Screen recording demo</span>
+              </div>
+            </div>
+          )}
+
+          {currentStep === 5 && (
             <div className="text-center animate-fade-up">
               <h1 className="text-4xl font-bold text-gray-900 mb-6">
                 How it works
@@ -113,7 +135,7 @@ function OnboardingPage() {
             onClick={handleNext}
             className="next-button bg-black text-white px-7 py-2 rounded font-normal hover:bg-[#1a1a1a] transition flex items-center gap-2"
           >
-            {currentStep === 2 ? 'Get Started' : 'Next'}
+            {currentStep === 5 ? 'Get Started' : 'Next'}
             <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -123,7 +145,7 @@ function OnboardingPage() {
 
       {/* Step indicator */}
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2">
-        {[1, 2].map((step) => (
+        {[1, 2, 3, 4, 5].map((step) => (
           <div
             key={step}
             className={`w-2 h-2 rounded-full transition-colors ${
