@@ -1136,99 +1136,119 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
             />
           )}
           {currentSection === 1 && (
-            isLoaded ? (
-              <Section1Formation
+            <div className="animate-fade-down">
+              {isLoaded ? (
+                <Section1Formation
+                  formData={formData}
+                  handleChange={handleChange}
+                  isReadOnly={isReadOnly}
+                  showValidation={showValidation}
+                />
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-600">Loading...</p>
+                </div>
+              )}
+            </div>
+          )}
+          {currentSection === 2 && (
+            <div className="animate-fade-down">
+              <Section2Cofounders
+                formData={formData}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                showValidation={showValidation}
+                project={project}
+              />
+            </div>
+          )}
+          {currentSection === 3 && (
+            <div className="animate-fade-down">
+              <Section3EquityAllocation
+                ref={section3Ref}
+                formData={formData}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                project={project}
+                showValidation={showValidation}
+                onViewModeChange={setSection3InResultsView}
+              />
+            </div>
+          )}
+          {currentSection === 4 && (
+            <div className="animate-fade-down">
+              <Section5EquityVesting
+                formData={formData}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                project={project}
+                showValidation={showValidation}
+              />
+            </div>
+          )}
+          {currentSection === 5 && (
+            <div className="animate-fade-down">
+              <Section4DecisionMaking
+                formData={formData}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                project={project}
+                showValidation={showValidation}
+              />
+            </div>
+          )}
+          {currentSection === 6 && (
+            <div className="animate-fade-down">
+              <Section6IP
+                formData={formData}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                project={project}
+                showValidation={showValidation}
+              />
+            </div>
+          )}
+          {currentSection === 7 && (
+            <div className="animate-fade-down">
+              <Section7Compensation
                 formData={formData}
                 handleChange={handleChange}
                 isReadOnly={isReadOnly}
                 showValidation={showValidation}
               />
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-600">Loading...</p>
-              </div>
-            )
-          )}
-          {currentSection === 2 && (
-            <Section2Cofounders
-              formData={formData}
-              handleChange={handleChange}
-              isReadOnly={isReadOnly}
-              showValidation={showValidation}
-              project={project}
-            />
-          )}
-          {currentSection === 3 && (
-            <Section3EquityAllocation
-              ref={section3Ref}
-              formData={formData}
-              handleChange={handleChange}
-              isReadOnly={isReadOnly}
-              project={project}
-              showValidation={showValidation}
-              onViewModeChange={setSection3InResultsView}
-            />
-          )}
-          {currentSection === 4 && (
-            <Section5EquityVesting
-              formData={formData}
-              handleChange={handleChange}
-              isReadOnly={isReadOnly}
-              project={project}
-              showValidation={showValidation}
-            />
-          )}
-          {currentSection === 5 && (
-            <Section4DecisionMaking
-              formData={formData}
-              handleChange={handleChange}
-              isReadOnly={isReadOnly}
-              project={project}
-              showValidation={showValidation}
-            />
-          )}
-          {currentSection === 6 && (
-            <Section6IP
-              formData={formData}
-              handleChange={handleChange}
-              isReadOnly={isReadOnly}
-              project={project}
-              showValidation={showValidation}
-            />
-          )}
-          {currentSection === 7 && (
-            <Section7Compensation
-              formData={formData}
-              handleChange={handleChange}
-              isReadOnly={isReadOnly}
-              showValidation={showValidation}
-            />
+            </div>
           )}
           {currentSection === 8 && (
-            <Section8Performance
-              formData={formData}
-              handleChange={handleChange}
-              isReadOnly={isReadOnly}
-              showValidation={showValidation}
-            />
+            <div className="animate-fade-down">
+              <Section8Performance
+                formData={formData}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                showValidation={showValidation}
+              />
+            </div>
           )}
           {currentSection === 9 && (
-            <Section9NonCompete
-              formData={formData}
-              handleChange={handleChange}
-              isReadOnly={isReadOnly}
-              project={project}
-              showValidation={showValidation}
-            />
+            <div className="animate-fade-down">
+              <Section9NonCompete
+                formData={formData}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                project={project}
+                showValidation={showValidation}
+              />
+            </div>
           )}
           {currentSection === 10 && (
-            <Section10Final
-              formData={formData}
-              handleChange={handleChange}
-              isReadOnly={isReadOnly}
-              project={project}
-              showValidation={showValidation}
-            />
+            <div className="animate-fade-down">
+              <Section10Final
+                formData={formData}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                project={project}
+                showValidation={showValidation}
+              />
+            </div>
           )}
 
           {/* Next Button */}
