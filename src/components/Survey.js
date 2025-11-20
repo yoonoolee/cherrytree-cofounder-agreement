@@ -4,7 +4,6 @@ import { useLoadScript } from '@react-google-maps/api';
 import { db, auth } from '../firebase';
 import { doc, updateDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { SECTIONS } from './surveyConstants';
-import Section0Onboarding from './Section0Onboarding';
 import Section1Formation from './Section1Formation';
 import Section2Cofounders from './Section2Cofounders';
 import Section3EquityAllocation from './Section3EquityAllocation';
@@ -127,6 +126,24 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [section3InResultsView, setSection3InResultsView] = useState(false);
+  const [showTutorialTooltip, setShowTutorialTooltip] = useState(false);
+  const [tutorialTriggered, setTutorialTriggered] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
+
+  const tutorialMessages = [
+    {
+      title: 'Invite your cofounders',
+      content: 'Click here to add collaborators. They must be added as collaborators to be included in the agreement.'
+    },
+    {
+      title: 'Work together',
+      content: 'Everyone can edit the survey and changes are auto-saved. Review the agreement before submitting so there are no surprises.'
+    },
+    {
+      title: 'Final review',
+      content: 'You can fill out the survey asynchronously, but we highly recommend reviewing the final agreement together before signing.'
+    }
+  ];
 
   // Helper function to calculate fullMailingAddress
   const calculateFullMailingAddress = (addressData) => {
@@ -145,11 +162,38 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
     return fullAddress;
   };
 
-  // Set initial section when project changes - always start at welcome section
+  // Set initial section when project changes - always start at Formation & Purpose
   useEffect(() => {
-    setCurrentSection(0);
+    setCurrentSection(1);
     setSection3InResultsView(false);
   }, [projectId]);
+
+  // Tutorial tooltip on first interaction
+  useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem(`tutorial_seen_${projectId}`);
+    const hasCollaborators = project?.collaborators && project.collaborators.length > 0;
+    if (hasSeenTutorial || hasCollaborators) return;
+
+    const handleFirstInteraction = () => {
+      if (!tutorialTriggered) {
+        setTutorialTriggered(true);
+        setShowTutorialTooltip(true);
+      }
+    };
+
+    window.addEventListener('click', handleFirstInteraction, { once: true });
+    window.addEventListener('scroll', handleFirstInteraction, { once: true, capture: true });
+
+    return () => {
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('scroll', handleFirstInteraction);
+    };
+  }, [projectId, tutorialTriggered, project?.collaborators]);
+
+  const dismissTutorial = () => {
+    setShowTutorialTooltip(false);
+    localStorage.setItem(`tutorial_seen_${projectId}`, 'true');
+  };
 
   // Reset section3InResultsView when leaving section 3
   useEffect(() => {
@@ -909,6 +953,79 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: '#ffffff' }}>
+      {/* Tutorial Overlay */}
+      {showTutorialTooltip && (
+        <div className="fixed inset-0 bg-black/30 z-[9998]" />
+      )}
+
+      {/* Tutorial Button & Tooltip - rendered outside header when tutorial is active */}
+      {showTutorialTooltip && (
+        <div className="fixed top-4 right-6 z-[9999]">
+          <button
+            onClick={() => setShowCollaborators(true)}
+            className="bg-black text-white px-4 py-2 rounded hover:bg-[#1a1a1a] transition flex items-center gap-2"
+          >
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
+            </svg>
+            <span className="text-sm font-medium">Add Collaborators</span>
+          </button>
+
+          {/* Tutorial Tooltip */}
+          <div className="absolute top-full right-0 mt-3 w-72 bg-white rounded-lg shadow-xl border border-gray-200 p-4" style={{ transform: 'translateX(-50px)' }}>
+            {/* Arrow pointing up */}
+            <div className="absolute -top-2 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45" style={{ right: '70px' }}></div>
+
+            <div className="relative">
+              <h3 className="font-semibold text-gray-900 mb-2">{tutorialMessages[tutorialStep].title}</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                {tutorialMessages[tutorialStep].content}
+              </p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  {tutorialMessages.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`w-1.5 h-1.5 rounded-full ${index === tutorialStep ? 'bg-black' : 'bg-gray-300'}`}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  {tutorialStep > 0 && (
+                    <button
+                      onClick={() => setTutorialStep(tutorialStep - 1)}
+                      className="text-sm text-gray-500 hover:text-gray-700 transition"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                    </button>
+                  )}
+                  {tutorialStep < tutorialMessages.length - 1 ? (
+                    <button
+                      onClick={() => setTutorialStep(tutorialStep + 1)}
+                      className="text-sm font-medium text-black hover:text-gray-700 transition flex items-center gap-1"
+                    >
+                      Next
+                      <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
+                      </svg>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={dismissTutorial}
+                      className="text-sm font-medium text-black hover:text-gray-700 transition"
+                    >
+                      Got it
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Header */}
       <div className="fixed top-0 left-0 right-0 h-16 bg-white flex items-center gap-4" style={{ zIndex: 50, paddingLeft: '270px' }}>
         {/* Search Bar */}
@@ -976,18 +1093,20 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         </div>
 
         {/* Right side icons */}
-        <div className="flex items-center gap-4 pr-6">
-        {/* Add Collaborators Button */}
-        <button
-          onClick={() => setShowCollaborators(true)}
-          className="bg-black text-white px-4 py-2 rounded hover:bg-[#1a1a1a] transition flex items-center gap-2"
-        >
-          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
-          </svg>
-          <span className="text-sm font-medium">Add Collaborators</span>
-        </button>
-        </div>
+        {!showTutorialTooltip && (
+          <div className="flex items-center gap-4 pr-6 relative">
+          {/* Add Collaborators Button */}
+          <button
+            onClick={() => setShowCollaborators(true)}
+            className="bg-black text-white px-4 py-2 rounded hover:bg-[#1a1a1a] transition flex items-center gap-2"
+          >
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
+            </svg>
+            <span className="text-sm font-medium">Add Collaborators</span>
+          </button>
+          </div>
+        )}
       </div>
 
       {/* Sidebar Navigation */}
@@ -1035,7 +1154,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           <div className="px-4 mb-2">
             <span className="text-xs font-medium text-gray-600">Sections</span>
           </div>
-          {SECTIONS.map((section) => {
+          {SECTIONS.filter(section => section.id !== 0).map((section) => {
             const isCompleted = isSectionCompleted(section.id);
             return (
               <button
@@ -1116,17 +1235,6 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           {/* Content Container */}
           <div className="px-20 pt-8 pb-8">
           {/* Section Content */}
-          {currentSection === 0 && (
-            <div style={{ opacity: 1 }}>
-              <Section0Onboarding
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={isReadOnly}
-                showValidation={showValidation}
-                onGetStarted={() => setCurrentSection(1)}
-              />
-            </div>
-          )}
           {currentSection === 1 && (
             <div className="animate-fade-down">
               {isLoaded ? (
@@ -1244,16 +1352,16 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           )}
 
           {/* Next Button */}
-          {!isReadOnly && currentSection !== 0 && (
+          {!isReadOnly && (
             <div className={`mt-16 flex justify-between`}>
-              {currentSection > 0 && (
+              {currentSection > 1 && (
                 <button
                   onClick={() => {
                     // If on section 3 in results view, go back to edit view (spreadsheet)
                     if (currentSection === 3 && section3InResultsView && section3Ref.current) {
                       section3Ref.current.backToEdit();
                     } else {
-                      setCurrentSection(Math.max(0, currentSection - 1));
+                      setCurrentSection(Math.max(1, currentSection - 1));
                     }
                   }}
                   className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium flex items-center gap-2"
@@ -1264,6 +1372,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                   Previous
                 </button>
               )}
+              {currentSection === 1 && <div />}
 
               {currentSection < 10 ? (
                 <button
@@ -1292,7 +1401,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                   }}
                   className="next-button bg-black text-white px-7 py-2 rounded font-normal hover:bg-[#1a1a1a] transition flex items-center gap-2"
                 >
-                  {currentSection === 0 ? 'Get Started' : 'Next'}
+                  Next
                   <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
@@ -1313,11 +1422,6 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           )}
           </div>
           {/* End White Card Container */}
-
-          {/* Legal Disclaimer - Only show on Welcome section */}
-          {currentSection === 0 && (
-            <p className="text-xs text-center mt-12 pb-6" style={{ color: '#9CA3AF' }}>Cherrytree does not provide legal advice.</p>
-          )}
         </div>
       </div>
     </div>

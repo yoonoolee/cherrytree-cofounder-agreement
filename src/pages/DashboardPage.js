@@ -12,6 +12,22 @@ function DashboardPage() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [displayedTagline, setDisplayedTagline] = useState('');
+  const fullTagline = 'Great companies start with great company.';
+
+  useEffect(() => {
+    let currentIndex = 0;
+    const intervalId = setInterval(() => {
+      if (currentIndex <= fullTagline.length) {
+        setDisplayedTagline(fullTagline.slice(0, currentIndex));
+        currentIndex++;
+      } else {
+        clearInterval(intervalId);
+      }
+    }, 38);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -129,6 +145,7 @@ function DashboardPage() {
           <h1 className="text-4xl font-light text-gray-900">
             Your Dashboard
           </h1>
+          <p className="text-lg mt-2" style={{ color: '#6B7280' }}>{displayedTagline}</p>
         </div>
 
         {/* Two Column Layout */}

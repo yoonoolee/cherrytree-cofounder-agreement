@@ -1,30 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 function Section0Onboarding({ formData, handleChange, isReadOnly, showValidation, onGetStarted }) {
-  const [displayedTagline, setDisplayedTagline] = useState('');
-  const fullTagline = 'Great companies start with great company.';
-
-  useEffect(() => {
-    let currentIndex = 0;
-    const intervalId = setInterval(() => {
-      if (currentIndex <= fullTagline.length) {
-        setDisplayedTagline(fullTagline.slice(0, currentIndex));
-        currentIndex++;
-      } else {
-        clearInterval(intervalId);
-      }
-    }, 38);
-
-    return () => clearInterval(intervalId);
-  }, []);
-
   return (
     <div className="-mx-20 px-8">
       <div className="flex gap-20">
         {/* Left Column - Intro */}
         <div className="flex-1 flex flex-col">
-        <h2 className="text-3xl font-medium text-black mb-2">Welcome to Cherrytree</h2>
-        <p className="text-lg mb-6" style={{ color: '#6B7280' }}>{displayedTagline}</p>
+        <h2 className="text-3xl font-medium text-black mb-6">Welcome to Cherrytree</h2>
 
         <div className="mt-auto">
         <div className="space-y-3 mb-8">
@@ -67,7 +49,7 @@ function Section0Onboarding({ formData, handleChange, isReadOnly, showValidation
         </div>
 
       {/* Right Column - How It Works */}
-      <div className="flex-1 space-y-6">
+      <div className="flex-1 flex flex-col gap-6">
         <div className="flex gap-4">
           <span className="font-bold flex-shrink-0" style={{ color: '#6B7280' }}>1</span>
           <div>

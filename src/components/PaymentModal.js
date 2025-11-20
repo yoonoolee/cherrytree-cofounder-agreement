@@ -41,7 +41,6 @@ function PaymentModal({ onClose, onSuccess }) {
 
     // Validate project name
     if (!trimmedName) {
-      setError('Company name is required');
       setIsWiggling(true);
       setTimeout(() => setIsWiggling(false), 500);
       return;
