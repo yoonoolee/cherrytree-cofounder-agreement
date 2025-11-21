@@ -46,16 +46,19 @@ function Section2Cofounders({ formData, handleChange, isReadOnly, showValidation
       <h2 className="text-3xl font-medium text-gray-800 mb-6">Cofounder Info</h2>
 
       <p className="mb-16 leading-relaxed" style={{ color: '#6B7280' }}>
-        Great company starts with great company. Whether it's just the two of you or if there's a dozen of you, this is the crew that decided to go for it. Names, roles, contact info, sure. But it's also a snapshot of the team before the world knows your name. Someday, this will be the "garage team" story you tell in interviews.
+        Whether it's just the two of you or if there's a dozen of you, this is the crew that decided to go for it. Names, roles, contact info, sure. But it's also a snapshot of the team before the world knows your name. Someday, this will be the "garage team" story you tell in interviews.
       </p>
 
       <div className="space-y-8">
         {/* Cofounder Forms */}
         {calculatedCofounderCount > 0 && (
           <div className="space-y-12">
-            <p className="text-sm text-gray-700 font-medium -mb-6 bg-gray-100 p-4 rounded-lg">
-              All cofounders must be added as collaborators to be included. Click the + button in the top right to add them.
-            </p>
+            <div className="text-sm text-gray-700 font-medium -mb-6 bg-gray-100 p-4 rounded-lg flex items-start gap-3">
+              <svg className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+              <span>All cofounders must be added as collaborators to be included. Click the + button in the top right to add them.</span>
+            </div>
             {cofounders.map((cofounder, index) => (
               <div key={index} className="py-4">
                 <h3 className="text-xl font-medium text-gray-800 mb-6">

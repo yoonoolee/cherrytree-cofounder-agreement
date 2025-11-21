@@ -964,9 +964,9 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                     3
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900 mb-1">You can fill out the survey asynchronously</h3>
+                    <h3 className="font-medium text-gray-900 mb-1">Do a final review</h3>
                     <p className="text-sm text-gray-600">
-                      But we highly recommend reviewing the final agreement together before signing.
+                      You can fill out the survey asynchronously, but we highly recommend reviewing the final agreement together before signing.
                     </p>
                   </div>
                 </div>
@@ -975,7 +975,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               <div className="flex justify-end">
                 <button
                   onClick={dismissWelcomePopup}
-                  className="bg-black text-white px-6 py-2 rounded font-medium hover:bg-gray-800 transition"
+                  className="next-button bg-black text-white px-6 py-2 rounded font-medium hover:bg-gray-800 transition"
                 >
                   Got it
                 </button>

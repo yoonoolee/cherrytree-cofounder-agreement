@@ -245,18 +245,18 @@ function LandingPage() {
   const steps = [
     {
       step: '1',
-      title: 'Answer a few questions',
-      desc: <>Who does what, who owns what,<br />and what you each bring to the table.</>
+      title: 'Invite your cofounders',
+      desc: <>Add your cofounders as collaborators. They must be<br />added to be included in the Cofounder Agreement.</>
     },
     {
       step: '2',
-      title: 'Smooth things out',
-      desc: <>We show you where you're not aligned<br />before it turns into "we need to talk."</>
+      title: 'This is a collaborative project',
+      desc: <>Everyone can edit the survey and changes are auto-saved.<br />Nobody has to play "project manager" or relay answers.</>
     },
     {
       step: '3',
-      title: 'Seal the deal',
-      desc: <>Get a legit cofounder agreement.<br />No $600/hr lawyers, no 2 a.m. screaming.</>
+      title: 'Do a final review',
+      desc: <>You can fill out the survey asynchronously, but we highly<br />recommend reviewing the final agreement together before signing.</>
     }
   ];
 
@@ -268,7 +268,7 @@ function LandingPage() {
     },
     {
       title: 'Equity Calculator',
-      description: 'Use our AI to calculate equity without the guesswork. Get precise, fair equity splits instantly, so everyone knows where they stand.',
+      description: 'Use our proprietary equity calculator to determine ownership without the guesswork. Get precise, fair equity splits instantly, so everyone knows where they stand.',
       id: 'equity-calculator'
     },
     {
