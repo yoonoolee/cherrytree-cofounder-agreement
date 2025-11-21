@@ -1326,7 +1326,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                       setCurrentSection(Math.max(1, currentSection - 1));
                     }
                   }}
-                  className="pr-6 py-3 text-gray-400 hover:text-gray-600 font-medium flex items-center gap-2"
+                  className="pr-6 py-2 text-gray-400 hover:text-gray-600 font-normal flex items-center gap-2"
                 >
                   <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M20 8L2 8M2 8L8 2M2 8L8 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

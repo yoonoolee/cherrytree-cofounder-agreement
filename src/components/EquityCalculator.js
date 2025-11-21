@@ -260,23 +260,19 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
     return (
       <div className="w-full max-w-3xl mx-auto">
         {/* Stacked Progress Bar */}
-        <div className="w-full h-7 bg-gray-200 rounded-lg flex relative" style={{ overflow: 'visible', border: '1px solid #000000' }}>
+        <div className="w-full h-7 bg-gray-200 rounded-lg flex relative overflow-hidden" style={{ border: '1px solid #000000' }}>
           {entries.map(([email, percentage], index) => {
             if (percentage === 0) return null;
 
             const color = colors[index % colors.length];
-            const isFirst = index === 0;
-            const isLast = index === entries.length - 1;
-            const borderRadiusClass = isFirst ? 'rounded-l-lg' : isLast ? 'rounded-r-lg' : '';
 
             return (
               <div
                 key={email}
-                className={`transition-all duration-300 flex items-center justify-center relative ${borderRadiusClass}`}
+                className="transition-all duration-300 flex items-center justify-center relative"
                 style={{
                   width: `${percentage}%`,
-                  backgroundColor: color.bg,
-                  overflow: 'visible'
+                  backgroundColor: color.bg
                 }}
               >
                 <span
@@ -290,7 +286,7 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
                     zIndex: 1
                   }}
                 >
-                  {percentage.toFixed(1)}%
+                  {percentage.toFixed(2)}%
                 </span>
               </div>
             );

@@ -200,7 +200,7 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
                   </p>
                   <ul className="space-y-1">
                     {plan.features.map((feature, idx) => (
-                      <li key={idx} className="text-xs text-gray-600 flex items-start">
+                      <li key={idx} className="text-xs text-gray-600 flex items-center">
                         <span className="mr-1">✓</span>
                         <span>{feature}</span>
                       </li>

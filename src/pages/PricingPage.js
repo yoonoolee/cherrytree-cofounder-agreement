@@ -129,8 +129,8 @@ function PricingPage() {
                 </button>
                 <ul className="space-y-3 flex-grow">
                   {plan.features.map((feature, j) => (
-                    <li key={j} className="flex items-start gap-2">
-                      <span className="text-[#716B6B] mt-1">✓</span>
+                    <li key={j} className="flex items-center gap-2">
+                      <span className="text-[#716B6B]">✓</span>
                       <span className="text-gray-700">{feature}</span>
                     </li>
                   ))}
