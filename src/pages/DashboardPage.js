@@ -181,16 +181,16 @@ function DashboardPage() {
             </button>
           </div>
 
-          {/* Right - Projects */}
-          <div className="flex-1">
+          {/* Right - Projects + Resources */}
+          <div className="flex-1 flex flex-col gap-4">
             {/* Projects List */}
-            <div className="bg-white rounded-lg border border-gray-200 min-h-[450px] flex flex-col hover:border-gray-300 hover:shadow-lg transition-all duration-200">
+            <div className="bg-white rounded-lg border border-gray-200 max-h-[320px] flex flex-col hover:border-gray-300 hover:shadow-lg transition-all duration-200">
               <div className="px-4 py-3 border-b border-gray-200">
                 <span className="text-sm font-medium text-gray-700">Existing projects</span>
               </div>
 
               {projects.length > 0 ? (
-                <div className="divide-y divide-gray-100 flex-1">
+                <div className="divide-y divide-gray-100 flex-1 overflow-y-auto">
                   {projects.map((project) => (
                     <button
                       key={project.id}
@@ -221,6 +221,82 @@ function DashboardPage() {
                 </div>
               )}
 
+            </div>
+
+            {/* Resources Section */}
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => navigate('/settings')}
+                className="group p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900">Profile</h4>
+                    <p className="text-xs text-gray-500">Your account</p>
+                  </div>
+                </div>
+              </button>
+
+              <a
+                href="https://www.cherrytree.app/faq"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900">FAQ</h4>
+                    <p className="text-xs text-gray-500">Common questions</p>
+                  </div>
+                </div>
+              </a>
+
+              <button
+                onClick={() => window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })}
+                className="group p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
+                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900">Contact</h4>
+                    <p className="text-xs text-gray-500">Get in touch</p>
+                  </div>
+                </div>
+              </button>
+
+              <a
+                href="https://www.cherrytree.app/pricing"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
+                      <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900">Pricing</h4>
+                    <p className="text-xs text-gray-500">View plans</p>
+                  </div>
+                </div>
+              </a>
             </div>
           </div>
         </div>
