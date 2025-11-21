@@ -143,14 +143,6 @@ function DashboardPage() {
         </button>
       </div>
 
-      {/* Floating Help Button */}
-      <button
-        onClick={() => window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })}
-        className="fixed bottom-6 right-6 w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-500 hover:border-gray-300 hover:shadow-md transition-all"
-      >
-        <span className="text-sm font-medium">?</span>
-      </button>
-
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-8 py-12">
         {/* Greeting */}
