@@ -126,24 +126,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [section3InResultsView, setSection3InResultsView] = useState(false);
-  const [showTutorialTooltip, setShowTutorialTooltip] = useState(false);
-  const [tutorialTriggered, setTutorialTriggered] = useState(false);
-  const [tutorialStep, setTutorialStep] = useState(0);
-
-  const tutorialMessages = [
-    {
-      title: 'Invite your cofounders',
-      content: 'Click here to add collaborators. They must be added as collaborators to be included in the agreement.'
-    },
-    {
-      title: 'Work together',
-      content: 'Everyone can edit the survey and changes are auto-saved. Review the agreement before submitting so there are no surprises.'
-    },
-    {
-      title: 'Final review',
-      content: 'You can fill out the survey asynchronously, but we highly recommend reviewing the final agreement together before signing.'
-    }
-  ];
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
 
   // Helper function to calculate fullMailingAddress
   const calculateFullMailingAddress = (addressData) => {
@@ -168,32 +151,6 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
     setSection3InResultsView(false);
   }, [projectId]);
 
-  // Tutorial tooltip on first interaction
-  useEffect(() => {
-    const hasSeenTutorial = localStorage.getItem(`tutorial_seen_${projectId}`);
-    const hasCollaborators = project?.collaborators && project.collaborators.length > 0;
-    if (hasSeenTutorial || hasCollaborators) return;
-
-    const handleFirstInteraction = () => {
-      if (!tutorialTriggered) {
-        setTutorialTriggered(true);
-        setShowTutorialTooltip(true);
-      }
-    };
-
-    window.addEventListener('click', handleFirstInteraction, { once: true });
-    window.addEventListener('scroll', handleFirstInteraction, { once: true, capture: true });
-
-    return () => {
-      window.removeEventListener('click', handleFirstInteraction);
-      window.removeEventListener('scroll', handleFirstInteraction);
-    };
-  }, [projectId, tutorialTriggered, project?.collaborators]);
-
-  const dismissTutorial = () => {
-    setShowTutorialTooltip(false);
-    localStorage.setItem(`tutorial_seen_${projectId}`, 'true');
-  };
 
   // Reset section3InResultsView when leaving section 3
   useEffect(() => {
@@ -201,6 +158,19 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       setSection3InResultsView(false);
     }
   }, [currentSection]);
+
+  // Show welcome popup on first visit
+  useEffect(() => {
+    const hasSeenWelcome = localStorage.getItem(`welcome_seen_${projectId}`);
+    if (!hasSeenWelcome) {
+      setShowWelcomePopup(true);
+    }
+  }, [projectId]);
+
+  const dismissWelcomePopup = () => {
+    setShowWelcomePopup(false);
+    localStorage.setItem(`welcome_seen_${projectId}`, 'true');
+  };
 
 
   // Listen to project changes
@@ -953,77 +923,66 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: '#ffffff' }}>
-      {/* Tutorial Overlay */}
-      {showTutorialTooltip && (
-        <div className="fixed inset-0 bg-black/30 z-[9998]" />
-      )}
 
-      {/* Tutorial Button & Tooltip - rendered outside header when tutorial is active */}
-      {showTutorialTooltip && (
-        <div className="fixed top-4 right-6 z-[9999]">
-          <button
-            onClick={() => setShowCollaborators(true)}
-            className="bg-black text-white px-4 py-2 rounded hover:bg-[#1a1a1a] transition flex items-center gap-2"
-          >
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
-            </svg>
-            <span className="text-sm font-medium">Add Collaborators</span>
-          </button>
+      {/* Welcome Popup */}
+      {showWelcomePopup && (
+        <>
+          <div className="fixed inset-0 bg-black/50 z-[9998]" onClick={dismissWelcomePopup} />
+          <div className="fixed inset-0 flex items-center justify-center z-[9999] pointer-events-none">
+            <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 p-8 pointer-events-auto">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                Welcome to Your Cofounder Agreement
+              </h2>
 
-          {/* Tutorial Tooltip */}
-          <div className="absolute top-full right-0 mt-3 w-72 bg-white rounded-lg shadow-xl border border-gray-200 p-4" style={{ transform: 'translateX(-50px)' }}>
-            {/* Arrow pointing up */}
-            <div className="absolute -top-2 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45" style={{ right: '70px' }}></div>
-
-            <div className="relative">
-              <h3 className="font-semibold text-gray-900 mb-2">{tutorialMessages[tutorialStep].title}</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                {tutorialMessages[tutorialStep].content}
-              </p>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1">
-                  {tutorialMessages.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-1.5 h-1.5 rounded-full ${index === tutorialStep ? 'bg-black' : 'bg-gray-300'}`}
-                    />
-                  ))}
+              <div className="space-y-5 mb-8">
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-600">
+                    1
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-1">Invite your cofounders</h3>
+                    <p className="text-sm text-gray-600">
+                      Click the Add Collaborators button to invite your cofounders. They must be collaborators to be included in the agreement.
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {tutorialStep > 0 && (
-                    <button
-                      onClick={() => setTutorialStep(tutorialStep - 1)}
-                      className="text-sm text-gray-500 hover:text-gray-700 transition"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd"/>
-                      </svg>
-                    </button>
-                  )}
-                  {tutorialStep < tutorialMessages.length - 1 ? (
-                    <button
-                      onClick={() => setTutorialStep(tutorialStep + 1)}
-                      className="text-sm font-medium text-black hover:text-gray-700 transition flex items-center gap-1"
-                    >
-                      Next
-                      <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
-                      </svg>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={dismissTutorial}
-                      className="text-sm font-medium text-black hover:text-gray-700 transition"
-                    >
-                      Got it
-                    </button>
-                  )}
+
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-600">
+                    2
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-1">This is a collaborative project</h3>
+                    <p className="text-sm text-gray-600">
+                      Everyone can edit the survey and changes are auto-saved. Review the agreement before submitting so there are no surprises.
+                    </p>
+                  </div>
                 </div>
+
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-600">
+                    3
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-1">You can fill out the survey asynchronously</h3>
+                    <p className="text-sm text-gray-600">
+                      But we highly recommend reviewing the final agreement together before signing.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={dismissWelcomePopup}
+                  className="bg-black text-white px-6 py-2 rounded font-medium hover:bg-gray-800 transition"
+                >
+                  Got it
+                </button>
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Top Header */}
@@ -1093,8 +1052,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         </div>
 
         {/* Right side icons */}
-        {!showTutorialTooltip && (
-          <div className="flex items-center gap-4 pr-6 relative">
+        <div className="flex items-center gap-4 pr-6 relative">
           {/* Add Collaborators Button */}
           <button
             onClick={() => setShowCollaborators(true)}
@@ -1105,8 +1063,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
             </svg>
             <span className="text-sm font-medium">Add Collaborators</span>
           </button>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* Sidebar Navigation */}
@@ -1364,7 +1321,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                       setCurrentSection(Math.max(1, currentSection - 1));
                     }
                   }}
-                  className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium flex items-center gap-2"
+                  className="pr-6 py-3 text-gray-400 hover:text-gray-600 font-medium flex items-center gap-2"
                 >
                   <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M20 8L2 8M2 8L8 2M2 8L8 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
