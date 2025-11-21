@@ -291,15 +291,38 @@ function SurveyNavigation({
         </div>
 
         {/* Upgrade Button */}
-        <div className="px-3 pb-4">
+        <div className="px-3 pb-1">
           <button
             onClick={() => setShowPaymentModal(true)}
-            className="w-full px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center justify-center gap-2"
+            className="text-left px-2 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center text-gray-600"
+            style={{ width: '100%', fontSize: '15px' }}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            Upgrade your plan
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-6 h-6 text-gray-500" style={{ fontSize: '15px' }}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </span>
+              <span className="nav-link-underline">Upgrade your plan</span>
+            </div>
+          </button>
+        </div>
+
+        {/* Dashboard Button */}
+        <div className="px-3 pb-4">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="text-left px-2 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center text-gray-600"
+            style={{ width: '100%', fontSize: '15px' }}
+          >
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-6 h-6 text-gray-500" style={{ fontSize: '15px' }}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              </span>
+              <span className="nav-link-underline">Back to dashboard</span>
+            </div>
           </button>
         </div>
 

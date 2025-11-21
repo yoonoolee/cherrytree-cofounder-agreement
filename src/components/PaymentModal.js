@@ -224,7 +224,7 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-black text-white py-3 rounded font-semibold hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-black text-white py-3 rounded font-medium hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Processing...' : isUpgrade
                 ? 'Upgrade your plan'

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
@@ -8,6 +8,7 @@ import PaymentModal from '../components/PaymentModal';
 
 function DashboardPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { currentUser, loading: authLoading } = useUser();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -89,6 +90,18 @@ function DashboardPage() {
         });
 
         setProjects(allProjects);
+
+        // If payment was successful, redirect to the most recent project's survey
+        if (searchParams.get('payment') === 'success' && allProjects.length > 0) {
+          // Find the most recently created project
+          const sortedByCreated = [...allProjects].sort((a, b) => {
+            const aTime = a.createdAt?.toMillis?.() || 0;
+            const bTime = b.createdAt?.toMillis?.() || 0;
+            return bTime - aTime;
+          });
+          navigate(`/survey/${sortedByCreated[0].id}`, { replace: true });
+          return;
+        }
       } catch (error) {
         console.error('Error fetching projects:', error);
       } finally {
@@ -99,7 +112,7 @@ function DashboardPage() {
     if (!authLoading) {
       fetchProjects();
     }
-  }, [currentUser, authLoading, navigate]);
+  }, [currentUser, authLoading, navigate, searchParams]);
 
   const handlePaymentSuccess = (newProjectId) => {
     setShowPaymentModal(false);

@@ -421,11 +421,6 @@ function LandingPage() {
                 padding: '48px'
               }}
             >
-              <h3 className="text-3xl font-bold mb-4 text-center">Your Agreement, Your Way</h3>
-              <p className="text-gray-600 text-center max-w-2xl mx-auto">
-                Every startup is unique. Our platform adapts to your specific situation,
-                ensuring your cofounder agreement reflects your team's values and goals.
-              </p>
             </div>
           </div>
         </div>
