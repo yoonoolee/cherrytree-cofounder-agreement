@@ -235,7 +235,7 @@ function DashboardPage() {
               </button>
 
               <a
-                href="https://www.cherrytree.app/faq"
+                href="https://cherrytree.beehiiv.com/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200"
@@ -243,12 +243,13 @@ function DashboardPage() {
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors">
                     <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"/>
+                      <path fillRule="evenodd" d="M2 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 002 2H4a2 2 0 01-2-2V5zm3 1h6v4H5V6zm6 6H5v2h6v-2z" clipRule="evenodd"/>
+                      <path d="M15 7h1a2 2 0 012 2v5.5a1.5 1.5 0 01-3 0V7z"/>
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900">FAQ</h4>
-                    <p className="text-xs text-gray-500">Common questions</p>
+                    <h4 className="text-sm font-medium text-gray-900">Newsletter</h4>
+                    <p className="text-xs text-gray-500">Cofounder tips</p>
                   </div>
                 </div>
               </a>
