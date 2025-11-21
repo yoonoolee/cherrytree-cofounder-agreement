@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLoadScript } from '@react-google-maps/api';
 import { db, auth } from '../firebase';
 import { doc, updateDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { SECTIONS } from './surveyConstants';
+import { SECTIONS, INDUSTRIES, MAJOR_DECISIONS, TERMINATION_CONSEQUENCES, US_STATES } from './surveyConstants';
 import Section1Formation from './Section1Formation';
 import Section2Cofounders from './Section2Cofounders';
 import Section3EquityAllocation from './Section3EquityAllocation';
@@ -773,6 +773,11 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         "What's your company mailing address?",
         "Can you describe your company in 1 line?",
         "What industry is it in?"
+      ],
+      answers: [
+        "C-Corp", "S-Corp", "LLC",
+        ...INDUSTRIES,
+        ...US_STATES.map(s => s.label)
       ]
     },
     {
@@ -783,7 +788,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         "Title",
         "Email",
         "Roles & Responsibilities"
-      ]
+      ],
+      answers: []
     },
     {
       id: 3,
@@ -793,7 +799,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         "equity ownership",
         "equity split",
         "ownership percentage"
-      ]
+      ],
+      answers: []
     },
     {
       id: 4,
@@ -807,6 +814,11 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         "If a cofounder resigns, how many days does the company have to buy back the shares?",
         "You acknowledge that if a cofounder dies, becomes permanently disabled, or is otherwise incapacitated, their unvested shares are automatically forfeited and returned to the company",
         "If a cofounder dies, becomes permanently disabled, or is otherwise incapacitated"
+      ],
+      answers: [
+        "4-year with 1-year cliff", "3-year with 1-year cliff", "2-year with 6-month cliff",
+        "Single trigger", "Double trigger", "No acceleration",
+        "Company has the right to repurchase", "Cofounder can sell to any buyer", "Cofounder can only sell to existing shareholders"
       ]
     },
     {
@@ -817,6 +829,10 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         "Who has final say, regardless of their field of expertise?",
         "If cofounders are deadlocked, how should the tie be resolved?",
         "Do you want to include a shotgun clause if you and your cofounder(s) cannot resolve deadlocks?"
+      ],
+      answers: [
+        ...MAJOR_DECISIONS,
+        "Mediation", "Arbitration", "Coin flip", "Third-party advisor", "Majority vote"
       ]
     },
     {
@@ -826,7 +842,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         "Has any cofounder created code, designs, or other assets before the company was formed that will now be used in the business?",
         "intellectual property assignment",
         "IP ownership"
-      ]
+      ],
+      answers: ["Yes", "No"]
     },
     {
       id: 7,
@@ -836,7 +853,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         "Compensation Details",
         "Compensation (USD/year)",
         "What's the spending limit, in USD, before a cofounder needs to check with other cofounders?"
-      ]
+      ],
+      answers: ["Yes", "No"]
     },
     {
       id: 8,
@@ -846,6 +864,10 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         "How many days does a cofounder have to fix the issue after receiving written notice before termination can occur?",
         "Which of the following constitutes termination with cause?",
         "How many days is the notice period if a Cofounder wishes to voluntarily leave?"
+      ],
+      answers: [
+        ...TERMINATION_CONSEQUENCES,
+        "Breach of fiduciary duty", "Criminal conviction", "Fraud or dishonesty", "Material breach of agreement", "Gross negligence", "Willful misconduct"
       ]
     },
     {
@@ -856,6 +878,9 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         "How long should the non-solicitation obligation last after a cofounder leaves?",
         "non-compete agreement",
         "confidentiality"
+      ],
+      answers: [
+        "6 months", "1 year", "2 years", "3 years", "None"
       ]
     },
     {
@@ -866,6 +891,10 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         "Which state's laws will govern this agreement?",
         "How can this agreement be amended or modified?",
         "How often (in months) should this agreement be reviewed by the cofounders?"
+      ],
+      answers: [
+        "Mediation first, then arbitration", "Arbitration only", "Litigation in court",
+        "Unanimous consent", "Majority vote", "Board approval"
       ]
     }
   ];
@@ -886,9 +915,12 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       const matchingQuestions = section.questions.filter(q =>
         q.toLowerCase().includes(lowerQuery)
       );
+      const matchingAnswers = (section.answers || []).filter(a =>
+        a.toLowerCase().includes(lowerQuery)
+      );
 
-      // If section name matches, add the section itself
-      if (sectionNameMatches && matchingQuestions.length === 0) {
+      // If section name matches, add the section itself (highest priority)
+      if (sectionNameMatches && matchingQuestions.length === 0 && matchingAnswers.length === 0) {
         results.push({
           id: section.id,
           name: section.name,
@@ -903,6 +935,16 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           name: section.name,
           question: question,
           type: 'question'
+        });
+      });
+
+      // Add each matching answer as a separate result (lower priority)
+      matchingAnswers.forEach(answer => {
+        results.push({
+          id: section.id,
+          name: section.name,
+          answer: answer,
+          type: 'answer'
         });
       });
     });
@@ -1037,9 +1079,14 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 >
                   {result.type === 'section' ? (
                     <span className="font-medium text-gray-900">{result.name}</span>
-                  ) : (
+                  ) : result.type === 'question' ? (
                     <div className="flex flex-col gap-1">
                       <span className="text-gray-900">{result.question}</span>
+                      <span className="text-xs text-gray-500">{result.name}</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-gray-900">{result.answer}</span>
                       <span className="text-xs text-gray-500">{result.name}</span>
                     </div>
                   )}
