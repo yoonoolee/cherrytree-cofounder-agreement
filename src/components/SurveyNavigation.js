@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit, doc, getDoc } from 'firebase/firestore';
 import PaymentModal from './PaymentModal';
 
 function SurveyNavigation({
@@ -19,6 +19,7 @@ function SurveyNavigation({
   const [fetchedProjects, setFetchedProjects] = useState([]);
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [userPlan, setUserPlan] = useState(null);
   const dropdownRef = useRef(null);
 
   // Use provided projects or fetch them
@@ -79,6 +80,26 @@ function SurveyNavigation({
 
     fetchProjects();
   }, [projectId, providedProjects]);
+
+  // Fetch user's current plan
+  useEffect(() => {
+    const fetchUserPlan = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          setUserPlan(userSnap.data().plan || null);
+        }
+      } catch (error) {
+        console.error('Error fetching user plan:', error);
+      }
+    };
+
+    fetchUserPlan();
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -269,6 +290,19 @@ function SurveyNavigation({
           {children}
         </div>
 
+        {/* Upgrade Button */}
+        <div className="px-3 pb-4">
+          <button
+            onClick={() => setShowPaymentModal(true)}
+            className="w-full px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Upgrade your plan
+          </button>
+        </div>
+
         {/* Bottom Section */}
         {bottomSection && (
           <div className="p-3 space-y-2 border-t border-gray-200">
@@ -282,6 +316,8 @@ function SurveyNavigation({
         <PaymentModal
           onClose={() => setShowPaymentModal(false)}
           onSuccess={handlePaymentSuccess}
+          currentPlan={userPlan}
+          projectName={displayTitle}
         />
       )}
     </>

@@ -366,6 +366,11 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         lastEditedBy: auth.currentUser.email
       };
 
+      // Sync project name with company name
+      if (cleanedData.companyName && cleanedData.companyName !== project.name) {
+        updateData.name = cleanedData.companyName;
+      }
+
       // Reset approvals only if there are actual changes
       if (changedFields.length > 0 && project.requiresApprovals) {
         updateData.approvals = {};
@@ -942,7 +947,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                   <div>
                     <h3 className="font-medium text-gray-900 mb-1">Invite your cofounders</h3>
                     <p className="text-sm text-gray-600">
-                      Click the Add Collaborators button to invite your cofounders. They must be collaborators to be included in the agreement.
+                      Add your cofounders as collaborators. They must be added to be included in the Cofounder Agreement.
                     </p>
                   </div>
                 </div>
@@ -952,9 +957,9 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                     2
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900 mb-1">This is a collaborative project</h3>
+                    <h3 className="font-medium text-gray-900 mb-1">Collab on the agreement</h3>
                     <p className="text-sm text-gray-600">
-                      Everyone can edit the survey and changes are auto-saved. Review the agreement before submitting so there are no surprises.
+                      You and your cofounders answer a set of guided questions together. Nobody has to play "project manager" or relay answers.
                     </p>
                   </div>
                 </div>
@@ -966,7 +971,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                   <div>
                     <h3 className="font-medium text-gray-900 mb-1">Do a final review</h3>
                     <p className="text-sm text-gray-600">
-                      You can fill out the survey asynchronously, but we highly recommend reviewing the final agreement together before signing.
+                      We take your responses and turn them into a Cofounder Agreement, ready for your final review and signature.
                     </p>
                   </div>
                 </div>
@@ -1106,9 +1111,9 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         </div>
 
         {/* Section Navigation */}
-        <div className="flex-1 overflow-y-auto pb-3 px-2 flex flex-col">
+        <div className="flex-1 overflow-y-auto pb-3 px-1 pt-4 flex flex-col">
           <div>
-          <div className="px-4 mb-2">
+          <div className="px-2 mb-2">
             <span className="text-xs font-medium text-gray-600">Sections</span>
           </div>
           {SECTIONS.filter(section => section.id !== 0).map((section) => {
@@ -1118,7 +1123,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 key={section.id}
                 data-section-id={section.id}
                 onClick={() => setCurrentSection(section.id)}
-                className={`text-left px-4 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between ${
+                className={`text-left px-2 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between ${
                   currentSection === section.id
                     ? 'text-black font-semibold'
                     : 'text-gray-600'

@@ -250,13 +250,13 @@ function LandingPage() {
     },
     {
       step: '2',
-      title: 'This is a collaborative project',
-      desc: <>Everyone can edit the survey and changes are auto-saved.<br />Nobody has to play "project manager" or relay answers.</>
+      title: 'Collab on the agreement',
+      desc: <>You and your cofounders answer a set of guided questions together.<br />Nobody has to play "project manager" or relay answers.</>
     },
     {
       step: '3',
       title: 'Do a final review',
-      desc: <>You can fill out the survey asynchronously, but we highly<br />recommend reviewing the final agreement together before signing.</>
+      desc: <>We take your responses and turn them into a Cofounder<br />Agreement, ready for your final review and signature.</>
     }
   ];
 
