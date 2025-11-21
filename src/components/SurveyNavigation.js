@@ -13,7 +13,8 @@ function SurveyNavigation({
   projectId = null, // Current project ID if on survey page
   allProjects: providedProjects = null, // Optional: pre-fetched projects
   onProjectSwitch: providedOnProjectSwitch = null, // Optional: custom project switch handler
-  onCreateProject: providedOnCreateProject = null // Optional: custom create project handler
+  onCreateProject: providedOnCreateProject = null, // Optional: custom create project handler
+  hideUpgrade = false // Optional: hide the upgrade button
 }) {
   const navigate = useNavigate();
   const [fetchedProjects, setFetchedProjects] = useState([]);
@@ -176,22 +177,24 @@ function SurveyNavigation({
         </div>
 
         {/* Upgrade Button */}
-        <div className="px-3 pb-1">
-          <button
-            onClick={() => setShowPaymentModal(true)}
-            className="text-left px-2 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center text-gray-600"
-            style={{ width: '100%', fontSize: '15px' }}
-          >
-            <div className="flex items-center gap-2">
-              <span className="flex items-center justify-center w-6 h-6 text-gray-500" style={{ fontSize: '15px' }}>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </span>
-              <span className="nav-link-underline">Upgrade your plan</span>
-            </div>
-          </button>
-        </div>
+        {!hideUpgrade && (
+          <div className="px-3 pb-1">
+            <button
+              onClick={() => setShowPaymentModal(true)}
+              className="text-left px-2 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center text-gray-600"
+              style={{ width: '100%', fontSize: '15px' }}
+            >
+              <div className="flex items-center gap-2">
+                <span className="flex items-center justify-center w-6 h-6 text-gray-500" style={{ fontSize: '15px' }}>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </span>
+                <span className="nav-link-underline">Upgrade your plan</span>
+              </div>
+            </button>
+          </div>
+        )}
 
         {/* Dashboard Button */}
         <div className="px-3 pb-4">
