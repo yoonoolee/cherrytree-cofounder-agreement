@@ -83,7 +83,12 @@ function Section9NonCompete({ formData, handleChange, isReadOnly, project, showV
                   name="nonCompeteDuration"
                   value={option}
                   checked={formData.nonCompeteDuration === option}
-                  onChange={(e) => handleChange('nonCompeteDuration', e.target.value)}
+                  onClick={() => {
+                    if (!isReadOnly) {
+                      handleChange('nonCompeteDuration', formData.nonCompeteDuration === option ? '' : option);
+                    }
+                  }}
+                  onChange={() => {}}
                   disabled={isReadOnly}
                   className="mr-3"
                 />
@@ -124,7 +129,12 @@ function Section9NonCompete({ formData, handleChange, isReadOnly, project, showV
                   name="nonSolicitDuration"
                   value={option}
                   checked={formData.nonSolicitDuration === option}
-                  onChange={(e) => handleChange('nonSolicitDuration', e.target.value)}
+                  onClick={() => {
+                    if (!isReadOnly) {
+                      handleChange('nonSolicitDuration', formData.nonSolicitDuration === option ? '' : option);
+                    }
+                  }}
+                  onChange={() => {}}
                   disabled={isReadOnly}
                   className="mr-3"
                 />

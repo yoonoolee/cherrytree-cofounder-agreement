@@ -32,7 +32,12 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
                   name="disputeResolution"
                   value={option}
                   checked={formData.disputeResolution === option}
-                  onChange={(e) => handleChange('disputeResolution', e.target.value)}
+                  onClick={() => {
+                    if (!isReadOnly) {
+                      handleChange('disputeResolution', formData.disputeResolution === option ? '' : option);
+                    }
+                  }}
+                  onChange={() => {}}
                   disabled={isReadOnly}
                   className="mr-3"
                 />
@@ -89,7 +94,12 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
                   name="amendmentProcess"
                   value={option}
                   checked={formData.amendmentProcess === option}
-                  onChange={(e) => handleChange('amendmentProcess', e.target.value)}
+                  onClick={() => {
+                    if (!isReadOnly) {
+                      handleChange('amendmentProcess', formData.amendmentProcess === option ? '' : option);
+                    }
+                  }}
+                  onChange={() => {}}
                   disabled={isReadOnly}
                   className="mr-3"
                 />

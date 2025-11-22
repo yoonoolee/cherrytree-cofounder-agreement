@@ -60,35 +60,56 @@ function CustomSelect({ value, onChange, options, placeholder, disabled, classNa
     setHighlightedIndex(0);
   }, [searchTerm]);
 
+  const handleClear = (e) => {
+    e.stopPropagation();
+    onChange('');
+    setSearchTerm('');
+    setIsOpen(false);
+  };
+
   return (
     <div ref={dropdownRef} className={`relative ${className || ''}`}>
-      <input
-        ref={inputRef}
-        type="text"
-        value={isOpen ? searchTerm : (displayValue !== undefined ? displayValue : (selectedOption?.label || ''))}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-          if (!isOpen) setIsOpen(true);
-        }}
-        onFocus={() => {
-          setIsOpen(true);
-          setSearchTerm('');
-        }}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        disabled={disabled}
-        autoComplete="chrome-off"
-        className={useBoxStyle
-          ? "w-full text-left px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-          : "w-full text-left bg-transparent border-none border-b-2 border-gray-300 text-gray-700 focus:outline-none focus:border-black disabled:opacity-60"
-        }
-        style={useBoxStyle ? {} : {
-          paddingLeft: 0,
-          paddingTop: '12px',
-          paddingBottom: '6px',
-          borderBottom: '2px solid #D1D5DB',
-        }}
-      />
+      <div className="relative">
+        <input
+          ref={inputRef}
+          type="text"
+          value={isOpen ? searchTerm : (displayValue !== undefined ? displayValue : (selectedOption?.label || ''))}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            if (!isOpen) setIsOpen(true);
+          }}
+          onFocus={() => {
+            setIsOpen(true);
+            setSearchTerm('');
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          autoComplete="chrome-off"
+          className={useBoxStyle
+            ? "w-full text-left px-4 py-3 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
+            : "w-full text-left bg-transparent border-none border-b-2 border-gray-300 text-gray-700 focus:outline-none focus:border-black disabled:opacity-60 pr-6"
+          }
+          style={useBoxStyle ? {} : {
+            paddingLeft: 0,
+            paddingTop: '12px',
+            paddingBottom: '6px',
+            borderBottom: '2px solid #D1D5DB',
+          }}
+        />
+        {value && !disabled && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+            aria-label="Clear selection"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
 
       {isOpen && !disabled && (
         <div className="absolute w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto" style={{ maxHeight: '180px', zIndex: 9999 }}>

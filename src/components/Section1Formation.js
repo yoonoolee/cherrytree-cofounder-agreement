@@ -321,7 +321,12 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
                   name="entityType"
                   value={type}
                   checked={formData.entityType === type}
-                  onChange={(e) => handleChange('entityType', e.target.value)}
+                  onClick={() => {
+                    if (!isReadOnly) {
+                      handleChange('entityType', formData.entityType === type ? '' : type);
+                    }
+                  }}
+                  onChange={() => {}}
                   disabled={isReadOnly}
                   className="mr-3"
                 />

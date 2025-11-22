@@ -68,7 +68,12 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
                 name="equityVotingPower"
                 value="yes"
                 checked={formData.equityVotingPower === 'yes'}
-                onChange={(e) => handleChange('equityVotingPower', e.target.value)}
+                onClick={() => {
+                  if (!isReadOnly) {
+                    handleChange('equityVotingPower', formData.equityVotingPower === 'yes' ? '' : 'yes');
+                  }
+                }}
+                onChange={() => {}}
                 disabled={isReadOnly}
                 className="mr-3 mt-1"
               />
@@ -83,7 +88,12 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
                 name="equityVotingPower"
                 value="no"
                 checked={formData.equityVotingPower === 'no'}
-                onChange={(e) => handleChange('equityVotingPower', e.target.value)}
+                onClick={() => {
+                  if (!isReadOnly) {
+                    handleChange('equityVotingPower', formData.equityVotingPower === 'no' ? '' : 'no');
+                  }
+                }}
+                onChange={() => {}}
                 disabled={isReadOnly}
                 className="mr-3 mt-1"
               />
@@ -134,7 +144,12 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
                   name="tieResolution"
                   value={option}
                   checked={formData.tieResolution === option}
-                  onChange={(e) => handleChange('tieResolution', e.target.value)}
+                  onClick={() => {
+                    if (!isReadOnly) {
+                      handleChange('tieResolution', formData.tieResolution === option ? '' : option);
+                    }
+                  }}
+                  onChange={() => {}}
                   disabled={isReadOnly}
                   className="mr-3"
                 />
@@ -219,7 +234,12 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
                   name="includeShotgunClause"
                   value={option}
                   checked={formData.includeShotgunClause === option}
-                  onChange={(e) => handleChange('includeShotgunClause', e.target.value)}
+                  onClick={() => {
+                    if (!isReadOnly) {
+                      handleChange('includeShotgunClause', formData.includeShotgunClause === option ? '' : option);
+                    }
+                  }}
+                  onChange={() => {}}
                   disabled={isReadOnly}
                   className="mr-3"
                 />

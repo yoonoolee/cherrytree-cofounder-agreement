@@ -33,7 +33,12 @@ function Section6IP({ formData, handleChange, isReadOnly, project, showValidatio
                   name="hasPreExistingIP"
                   value={option}
                   checked={formData.hasPreExistingIP === option}
-                  onChange={(e) => handleChange('hasPreExistingIP', e.target.value)}
+                  onClick={() => {
+                    if (!isReadOnly) {
+                      handleChange('hasPreExistingIP', formData.hasPreExistingIP === option ? '' : option);
+                    }
+                  }}
+                  onChange={() => {}}
                   disabled={isReadOnly}
                   className="mr-3"
                 />

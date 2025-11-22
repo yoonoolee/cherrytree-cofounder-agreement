@@ -46,7 +46,12 @@ function Section7Compensation({ formData, handleChange, isReadOnly, showValidati
                   name="takingCompensation"
                   value={option}
                   checked={formData.takingCompensation === option}
-                  onChange={(e) => handleChange('takingCompensation', e.target.value)}
+                  onClick={() => {
+                    if (!isReadOnly) {
+                      handleChange('takingCompensation', formData.takingCompensation === option ? '' : option);
+                    }
+                  }}
+                  onChange={() => {}}
                   disabled={isReadOnly}
                   className="mr-3"
                 />

@@ -55,7 +55,12 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
                   name="vestingSchedule"
                   value={option}
                   checked={formData.vestingSchedule === option}
-                  onChange={(e) => handleChange('vestingSchedule', e.target.value)}
+                  onClick={() => {
+                    if (!isReadOnly) {
+                      handleChange('vestingSchedule', formData.vestingSchedule === option ? '' : option);
+                    }
+                  }}
+                  onChange={() => {}}
                   disabled={isReadOnly}
                   className="mr-3"
                 />
@@ -162,7 +167,12 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
                   name="accelerationTrigger"
                   value={option}
                   checked={formData.accelerationTrigger === option}
-                  onChange={(e) => handleChange('accelerationTrigger', e.target.value)}
+                  onClick={() => {
+                    if (!isReadOnly) {
+                      handleChange('accelerationTrigger', formData.accelerationTrigger === option ? '' : option);
+                    }
+                  }}
+                  onChange={() => {}}
                   disabled={isReadOnly}
                   className="mr-3"
                 />
@@ -301,7 +311,12 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
                   name="vestedSharesDisposal"
                   value={option}
                   checked={formData.vestedSharesDisposal === option}
-                  onChange={(e) => handleChange('vestedSharesDisposal', e.target.value)}
+                  onClick={() => {
+                    if (!isReadOnly) {
+                      handleChange('vestedSharesDisposal', formData.vestedSharesDisposal === option ? '' : option);
+                    }
+                  }}
+                  onChange={() => {}}
                   disabled={isReadOnly}
                   className="mr-3 mt-1"
                 />

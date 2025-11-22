@@ -408,7 +408,7 @@ function LandingPage() {
               className="tilty-card mx-auto"
               style={{
                 width: '1100px',
-                height: '619px',
+                height: '595px',
                 maxWidth: '90vw',
                 background: '#ffffff',
                 border: '1px solid #E5E7EB',
@@ -417,10 +417,31 @@ function LandingPage() {
                 transform: `rotateX(${cardTilt}deg)`,
                 transformStyle: 'preserve-3d',
                 transition: 'transform 0.8s ease-out',
-                display: 'block',
-                padding: '48px'
+                padding: '0',
+                overflow: 'hidden'
               }}
             >
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="tilty-video"
+                ref={(video) => {
+                  if (video) video.playbackRate = 1.2;
+                }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  objectPosition: 'center top',
+                  borderRadius: '12px',
+                  background: '#ffffff',
+                  display: 'block'
+                }}
+              >
+                <source src="/images/Cherrytree - Cofounder Agreements for Early-Stage Teams 11-21-2025 20-27-31.mp4" type="video/mp4" />
+              </video>
             </div>
           </div>
         </div>
@@ -940,6 +961,17 @@ function LandingPage() {
           font-family: inherit;
           font-weight: inherit;
           visibility: visible;
+        }
+
+        .tilty-video {
+          animation: videoFade 8s ease-in-out infinite;
+        }
+
+        @keyframes videoFade {
+          0% { opacity: 0; }
+          5% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { opacity: 0; }
         }
       `}</style>
     </div>
