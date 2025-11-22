@@ -533,35 +533,94 @@ function LandingPage() {
             </div>
 
             <div className="feature-visual">
-              {/* Contract Creator - 4 Cards */}
+              {/* Contract Creator - 4 Cards + Document */}
               <div
                 className={`visual-content ${activeFeature === 0 ? 'active' : ''}`}
                 id="contract-creator"
                 style={{
                   opacity: activeFeature === 0 ? 1 : 0,
                   pointerEvents: activeFeature === 0 ? 'auto' : 'none',
-                  flexDirection: 'column',
-                  gap: '12px',
+                  flexDirection: 'row',
+                  gap: '20px',
                   justifyContent: 'center',
-                  alignItems: 'flex-start',
-                  paddingLeft: '40px'
+                  alignItems: 'center',
+                  padding: '0 40px'
                 }}
               >
-                {[0, 1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className={contractCardsVisible ? 'card-visible' : 'card-hidden'}
-                    style={{
-                      width: '200px',
-                      height: '100px',
-                      backgroundColor: '#ffffff',
-                      borderRadius: '8px',
-                      border: '1px solid #e5e7eb',
-                      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                      '--delay': `${0.5 + i * 0.3}s`
-                    }}
+                {/* Left column - 4 cards */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {[
+                    { title: 'Cofounders', content: 'Steve Jobs\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Steve Woz\nRon Wayne' },
+                    { title: 'Equity', content: '40% - 40% - 10%' },
+                    { title: 'Vesting', content: '4 years with a 1 year cliff' },
+                    { title: 'And more', content: '' }
+                  ].map((card, i) => (
+                    <div
+                      key={i}
+                      className={contractCardsVisible ? 'card-visible' : 'card-hidden'}
+                      style={{
+                        width: '200px',
+                        height: '100px',
+                        backgroundColor: '#ffffff',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                        '--delay': `${0.5 + i * 0.3}s`,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        justifyContent: 'flex-start',
+                        padding: '16px'
+                      }}
+                    >
+                      <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590' }}>{card.title}</span>
+                      {card.content && (
+                        <span style={{ fontSize: '13px', color: '#9ca3af', marginTop: '8px', whiteSpace: 'pre-line' }}>{card.content}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Curly brace connecting cards to document */}
+                <svg
+                  className={contractCardsVisible ? 'card-visible' : 'card-hidden'}
+                  style={{
+                    width: '40px',
+                    height: '436px',
+                    '--delay': '1.7s',
+                    transformOrigin: 'center'
+                  }}
+                  viewBox="0 0 40 436"
+                  fill="none"
+                >
+                  <path
+                    d="M 0 0 Q 20 0, 20 109 Q 20 218, 40 218 Q 20 218, 20 327 Q 20 436, 0 436"
+                    stroke="#e5e7eb"
+                    strokeWidth="2"
+                    fill="none"
                   />
-                ))}
+                </svg>
+
+                {/* Right column - Document card */}
+                <div
+                  className={contractCardsVisible ? 'card-visible' : 'card-hidden'}
+                  style={{
+                    width: '360px',
+                    height: '436px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                    '--delay': '2.0s',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    justifyContent: 'flex-start',
+                    padding: '16px'
+                  }}
+                >
+                  <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590' }}>Cofounder Agreement</span>
+                </div>
               </div>
 
               {/* Equity Calculator */}
@@ -898,6 +957,17 @@ function LandingPage() {
           opacity: 1;
           transform: scale(1);
           transition: opacity 0.25s ease-out var(--delay), transform 0.25s ease-out var(--delay);
+        }
+
+        .arrow-hidden {
+          stroke-dasharray: 300;
+          stroke-dashoffset: 300;
+        }
+
+        .arrow-draw {
+          stroke-dasharray: 300;
+          stroke-dashoffset: 0;
+          transition: stroke-dashoffset 0.5s ease-out var(--arrow-delay);
         }
 
         #equity-calculator img,
