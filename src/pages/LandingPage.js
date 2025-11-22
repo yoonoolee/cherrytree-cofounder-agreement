@@ -12,10 +12,11 @@ function LandingPage() {
   const [activeStep, setActiveStep] = useState(0);
   const [cardTilt, setCardTilt] = useState(15);
   const [activeFeature, setActiveFeature] = useState(0);
-  const [showSecondImage, setShowSecondImage] = useState(false);
-  const [shrinkFirst, setShrinkFirst] = useState(false);
+  const [contractAnimPhase, setContractAnimPhase] = useState(0);
+  // Phase 0: fading in center, 1: visible center, 2: side by side, 3: fading out
   const [typedAnd, setTypedAnd] = useState('');
   const [typedToday, setTypedToday] = useState('');
+  const [videoOpacity, setVideoOpacity] = useState(0);
   const fullText = 'with great company.';
   const andText = 'and';
   const todayText = 'today.';
@@ -41,20 +42,15 @@ function LandingPage() {
     if (activeFeature !== 0) return;
 
     const runAnimation = () => {
-      setShrinkFirst(false);
-      setShowSecondImage(false);
-
-      setTimeout(() => setShrinkFirst(false), 500);
-      setTimeout(() => setShrinkFirst(true), 2000);
-      setTimeout(() => setShowSecondImage(true), 2300);
-      setTimeout(() => {
-        setShrinkFirst(false);
-        setShowSecondImage(false);
-      }, 4500);
+      setContractAnimPhase(1); // Fade in at center
+      setTimeout(() => setContractAnimPhase(2), 800); // Visible at center
+      setTimeout(() => setContractAnimPhase(3), 2400); // Move to side by side
+      setTimeout(() => setContractAnimPhase(4), 4700); // Fade out together
+      setTimeout(() => setContractAnimPhase(0), 5400); // Hidden reset
     };
 
     runAnimation();
-    const interval = setInterval(runAnimation, 5700);
+    const interval = setInterval(runAnimation, 5400);
     return () => clearInterval(interval);
   }, [activeFeature]);
 
@@ -62,7 +58,7 @@ function LandingPage() {
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveFeature((prev) => (prev + 1) % 3);
-    }, 11400);
+    }, 10800); // Two animation loops (5400ms * 2)
     return () => clearInterval(interval);
   }, []);
 
@@ -384,20 +380,20 @@ function LandingPage() {
           <div className="logo-scroller">
             <div className="logo-track">
               <div className="logo-box"><img src="/images/yc-logo.png" alt="Y Combinator" /></div>
-              <div className="logo-box"><img src="/images/hubble-logo.png" alt="Hubble" /></div>
-              <div className="logo-box"><img src="/images/a16z-logo.jpg" alt="a16z" /></div>
-              <div className="logo-box"><img src="/images/berkeley-logo.png" alt="Berkeley" /></div>
+              <div className="logo-box"><img src="/images/hubble-logo.png" alt="Hubble" style={{ transform: 'scale(1.1)' }} /></div>
+              <div className="logo-box"><img src="/images/a16z-logo.jpg" alt="a16z" style={{ transform: 'scale(1.1)' }} /></div>
+              <div className="logo-box"><img src="/images/berkeley-logo.png" alt="Berkeley" style={{ transform: 'scale(1.43)' }} /></div>
               <div className="logo-box"><img src="/images/stanford-logo.png" alt="Stanford" /></div>
-              <div className="logo-box"><img src="/images/sequoia-logo.png" alt="Sequoia" /></div>
+              <div className="logo-box"><img src="/images/sequoia-logo.png" alt="Sequoia" style={{ transform: 'scale(0.9)' }} /></div>
               <div className="logo-box"><img src="/images/startupgrind-logo.png" alt="Startup Grind" /></div>
 
               {/* duplicate logos for seamless scroll */}
               <div className="logo-box"><img src="/images/yc-logo.png" alt="Y Combinator" /></div>
-              <div className="logo-box"><img src="/images/hubble-logo.png" alt="Hubble" /></div>
-              <div className="logo-box"><img src="/images/a16z-logo.jpg" alt="a16z" /></div>
-              <div className="logo-box"><img src="/images/berkeley-logo.png" alt="Berkeley" /></div>
+              <div className="logo-box"><img src="/images/hubble-logo.png" alt="Hubble" style={{ transform: 'scale(1.1)' }} /></div>
+              <div className="logo-box"><img src="/images/a16z-logo.jpg" alt="a16z" style={{ transform: 'scale(1.1)' }} /></div>
+              <div className="logo-box"><img src="/images/berkeley-logo.png" alt="Berkeley" style={{ transform: 'scale(1.43)' }} /></div>
               <div className="logo-box"><img src="/images/stanford-logo.png" alt="Stanford" /></div>
-              <div className="logo-box"><img src="/images/sequoia-logo.png" alt="Sequoia" /></div>
+              <div className="logo-box"><img src="/images/sequoia-logo.png" alt="Sequoia" style={{ transform: 'scale(0.9)' }} /></div>
               <div className="logo-box"><img src="/images/startupgrind-logo.png" alt="Startup Grind" /></div>
             </div>
           </div>
@@ -430,6 +426,25 @@ function LandingPage() {
                 ref={(video) => {
                   if (video) video.playbackRate = 1.2;
                 }}
+                onTimeUpdate={(e) => {
+                  const video = e.target;
+                  const duration = video.duration;
+                  const currentTime = video.currentTime;
+                  const fadeTime = 0.8; // seconds for fade
+
+                  if (currentTime < fadeTime) {
+                    // Fade in at start - use ease-in curve
+                    const progress = currentTime / fadeTime;
+                    setVideoOpacity(progress * progress);
+                  } else if (currentTime > duration - fadeTime) {
+                    // Fade out at end - use ease-out curve
+                    const progress = (duration - currentTime) / fadeTime;
+                    setVideoOpacity(progress * progress);
+                  } else {
+                    setVideoOpacity(1);
+                  }
+                }}
+                onLoadedData={() => setVideoOpacity(0)}
                 style={{
                   width: '100%',
                   height: '100%',
@@ -437,7 +452,9 @@ function LandingPage() {
                   objectPosition: 'center top',
                   borderRadius: '12px',
                   background: '#ffffff',
-                  display: 'block'
+                  display: 'block',
+                  opacity: videoOpacity,
+                  transition: 'opacity 0.15s ease-out'
                 }}
               >
                 <source src="/images/Cherrytree - Cofounder Agreements for Early-Stage Teams 11-21-2025 20-27-31.mp4" type="video/mp4" />
@@ -523,22 +540,25 @@ function LandingPage() {
             <div className="feature-visual">
               {/* Contract Creator - Dual Image */}
               <div
-                className={`visual-content ${activeFeature === 0 ? 'active' : ''}`}
+                className="visual-content"
                 id="contract-creator"
                 style={{
-                  opacity: activeFeature === 0 && !showSecondImage ? 1 : 0,
-                  transform: shrinkFirst ? 'translateX(-73%) scale(0.75)' : 'translateX(-50%) scale(1)',
-                  display: activeFeature === 0 ? 'flex' : 'none'
+                  opacity: activeFeature === 0 && contractAnimPhase >= 1 && contractAnimPhase <= 3 ? 1 : 0,
+                  transform: contractAnimPhase >= 3 ? 'translateX(-75%) scale(0.85)' : 'translateX(-50%) scale(1)',
+                  display: activeFeature === 0 ? 'flex' : 'none',
+                  transition: 'opacity 0.6s ease, transform 0.6s ease'
                 }}
               >
                 <img src="https://i.imgur.com/UkaZJir.png" alt="Contract Creator" />
               </div>
               <div
-                className={`visual-content ${showSecondImage ? 'visible' : ''}`}
+                className="visual-content"
                 id="contract-creator-secondary"
                 style={{
-                  opacity: showSecondImage ? 1 : 0,
-                  display: activeFeature === 0 ? 'flex' : 'none'
+                  opacity: activeFeature === 0 && contractAnimPhase === 3 ? 1 : 0,
+                  transform: contractAnimPhase >= 3 ? 'translateX(-25%) scale(0.85)' : 'translateX(-25%) scale(0.5)',
+                  display: activeFeature === 0 ? 'flex' : 'none',
+                  transition: 'opacity 0.5s ease, transform 0.5s ease'
                 }}
               >
                 <img src="https://i.imgur.com/UkaZJir.png" alt="Contract Creator Secondary" />
@@ -963,16 +983,6 @@ function LandingPage() {
           visibility: visible;
         }
 
-        .tilty-video {
-          animation: videoFade 8s ease-in-out infinite;
-        }
-
-        @keyframes videoFade {
-          0% { opacity: 0; }
-          5% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { opacity: 0; }
-        }
       `}</style>
     </div>
   );
