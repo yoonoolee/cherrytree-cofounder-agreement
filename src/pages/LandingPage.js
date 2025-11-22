@@ -12,6 +12,7 @@ function LandingPage() {
   const [activeStep, setActiveStep] = useState(0);
   const [cardTilt, setCardTilt] = useState(15);
   const [activeFeature, setActiveFeature] = useState(0);
+  const [contractCardsVisible, setContractCardsVisible] = useState(false);
   const [typedAnd, setTypedAnd] = useState('');
   const [typedToday, setTypedToday] = useState('');
   const [videoOpacity, setVideoOpacity] = useState(0);
@@ -41,6 +42,19 @@ function LandingPage() {
       setActiveFeature((prev) => (prev + 1) % 3);
     }, 8000);
     return () => clearInterval(interval);
+  }, [activeFeature]);
+
+  // Reset Contract Creator animation when tab is selected
+  useEffect(() => {
+    if (activeFeature === 0) {
+      setContractCardsVisible(false);
+      const timer = setTimeout(() => {
+        setContractCardsVisible(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    } else {
+      setContractCardsVisible(false);
+    }
   }, [activeFeature]);
 
   // Typing animation for "and"
@@ -519,17 +533,35 @@ function LandingPage() {
             </div>
 
             <div className="feature-visual">
-              {/* Contract Creator */}
+              {/* Contract Creator - 4 Cards */}
               <div
                 className={`visual-content ${activeFeature === 0 ? 'active' : ''}`}
                 id="contract-creator"
                 style={{
                   opacity: activeFeature === 0 ? 1 : 0,
-                  transform: activeFeature === 0 ? 'scale(1)' : 'scale(0.95)',
-                  pointerEvents: activeFeature === 0 ? 'auto' : 'none'
+                  pointerEvents: activeFeature === 0 ? 'auto' : 'none',
+                  flexDirection: 'column',
+                  gap: '12px',
+                  justifyContent: 'center',
+                  alignItems: 'flex-start',
+                  paddingLeft: '40px'
                 }}
               >
-                <img src="https://i.imgur.com/UkaZJir.png" alt="Contract Creator" />
+                {[0, 1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className={contractCardsVisible ? 'card-visible' : 'card-hidden'}
+                    style={{
+                      width: '200px',
+                      height: '100px',
+                      backgroundColor: '#ffffff',
+                      borderRadius: '8px',
+                      border: '1px solid #e5e7eb',
+                      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                      '--delay': `${0.5 + i * 0.3}s`
+                    }}
+                  />
+                ))}
               </div>
 
               {/* Equity Calculator */}
@@ -857,13 +889,15 @@ function LandingPage() {
           align-items: center;
         }
 
-        #contract-creator img {
-          width: 390px;
-          height: 568px;
-          object-fit: cover;
-          border-radius: 8px;
-          border: 1px solid #ccc;
-          background: #fff;
+        .card-hidden {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+
+        .card-visible {
+          opacity: 1;
+          transform: scale(1);
+          transition: opacity 0.25s ease-out var(--delay), transform 0.25s ease-out var(--delay);
         }
 
         #equity-calculator img,
