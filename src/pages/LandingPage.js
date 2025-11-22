@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import Header from '../components/Header';
@@ -13,6 +13,10 @@ function LandingPage() {
   const [cardTilt, setCardTilt] = useState(15);
   const [activeFeature, setActiveFeature] = useState(0);
   const [contractCardsVisible, setContractCardsVisible] = useState(false);
+  const [contractCardsFading, setContractCardsFading] = useState(false);
+  const [animationCycle, setAnimationCycle] = useState(0);
+  const [featuresInView, setFeaturesInView] = useState(false);
+  const featuresRef = useRef(null);
   const [typedAnd, setTypedAnd] = useState('');
   const [typedToday, setTypedToday] = useState('');
   const [videoOpacity, setVideoOpacity] = useState(0);
@@ -36,26 +40,79 @@ function LandingPage() {
     }
   }, [typedText]);
 
-  // Auto-rotate features - reset timer when activeFeature changes (user click or auto)
+  // Intersection Observer for features section
   useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setFeaturesInView(true);
+            setActiveFeature(0); // Reset to first tab when section comes into view
+          } else {
+            setFeaturesInView(false);
+            setContractCardsVisible(false);
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    if (featuresRef.current) {
+      observer.observe(featuresRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Contract Creator animation with 2 cycles then auto-advance
+  useEffect(() => {
+    if (activeFeature !== 0 || !featuresInView) {
+      setContractCardsVisible(false);
+      setContractCardsFading(false);
+      setAnimationCycle(0);
+      return;
+    }
+
+    // Start animation
+    setContractCardsFading(false);
+    setContractCardsVisible(false);
+    const startTimer = setTimeout(() => {
+      setContractCardsVisible(true);
+    }, 50);
+
+    // After animation completes (5.4s), start fade out
+    const fadeTimer = setTimeout(() => {
+      setContractCardsFading(true);
+    }, 5500);
+
+    // After slide out (0.8s), either restart or advance
+    const cycleTimer = setTimeout(() => {
+      if (animationCycle < 1) {
+        // Restart for second cycle
+        setAnimationCycle(prev => prev + 1);
+      } else {
+        // After 2 cycles, move to next tab
+        setActiveFeature(1);
+        setAnimationCycle(0);
+      }
+    }, 6300);
+
+    return () => {
+      clearTimeout(startTimer);
+      clearTimeout(fadeTimer);
+      clearTimeout(cycleTimer);
+    };
+  }, [activeFeature, featuresInView, animationCycle]);
+
+  // Auto-rotate for non-Contract Creator tabs
+  useEffect(() => {
+    if (!featuresInView || activeFeature === 0) return;
+
     const interval = setInterval(() => {
       setActiveFeature((prev) => (prev + 1) % 3);
     }, 8000);
     return () => clearInterval(interval);
-  }, [activeFeature]);
-
-  // Reset Contract Creator animation when tab is selected
-  useEffect(() => {
-    if (activeFeature === 0) {
-      setContractCardsVisible(false);
-      const timer = setTimeout(() => {
-        setContractCardsVisible(true);
-      }, 50);
-      return () => clearTimeout(timer);
-    } else {
-      setContractCardsVisible(false);
-    }
-  }, [activeFeature]);
+  }, [activeFeature, featuresInView]);
 
   // Typing animation for "and"
   useEffect(() => {
@@ -512,7 +569,7 @@ function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="scroll-section py-24 px-6">
+      <section id="features" ref={featuresRef} className="scroll-section py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <h2 className="section-header font-heading text-[46px] font-medium text-center mb-16">Turn your cofoundership<br />into a company, <em className="italic" style={{ display: 'inline-block', minWidth: '6ch', textAlign: 'left', letterSpacing: '-0.02em' }}>{typedToday || '\u00A0'}</em></h2>
 
@@ -522,7 +579,7 @@ function LandingPage() {
                 <div
                   key={i}
                   className={`feature-card ${activeFeature === i ? 'active' : ''}`}
-                  onClick={() => setActiveFeature(i)}
+                  onClick={() => { setActiveFeature(i); setAnimationCycle(0); }}
                 >
                   <h3 className="feature-title">{feature.title}</h3>
                   <p className={`feature-description ${activeFeature === i ? 'active' : ''}`}>
@@ -535,7 +592,7 @@ function LandingPage() {
             <div className="feature-visual">
               {/* Contract Creator - 4 Cards + Document */}
               <div
-                className={`visual-content ${activeFeature === 0 ? 'active' : ''}`}
+                className={`visual-content contract-animation-container ${activeFeature === 0 ? 'active' : ''} ${contractCardsFading ? 'contract-animation-fading' : ''}`}
                 id="contract-creator"
                 style={{
                   opacity: activeFeature === 0 ? 1 : 0,
@@ -548,7 +605,7 @@ function LandingPage() {
                 }}
               >
                 {/* Left column - 4 cards */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div className={contractCardsFading ? 'slide-out-left' : ''} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {[
                     { title: 'Cofounders', content: 'Steve Jobs\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Steve Woz\nRon Wayne' },
                     { title: 'Equity', content: '40% - 40% - 10%' },
@@ -583,7 +640,7 @@ function LandingPage() {
 
                 {/* Curly brace connecting cards to document */}
                 <svg
-                  className={contractCardsVisible ? 'card-visible' : 'card-hidden'}
+                  className={`${contractCardsVisible ? 'card-visible' : 'card-hidden'} ${contractCardsFading ? 'slide-out-left' : ''}`}
                   style={{
                     width: '40px',
                     height: '436px',
@@ -603,7 +660,7 @@ function LandingPage() {
 
                 {/* Right column - Document card */}
                 <div
-                  className={contractCardsVisible ? 'card-visible' : 'card-hidden'}
+                  className={`${contractCardsVisible ? 'card-visible' : 'card-hidden'} ${contractCardsFading ? 'slide-out-right' : ''}`}
                   style={{
                     width: '360px',
                     height: '436px',
@@ -616,10 +673,62 @@ function LandingPage() {
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'flex-start',
-                    padding: '16px'
+                    padding: '24px'
                   }}
                 >
-                  <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590' }}>Cofounder Agreement</span>
+                  <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590', marginBottom: '20px' }}>Cofounder Agreement</span>
+
+                  {/* Animated text lines */}
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 8px' }}>
+                    {[
+                      { width: '100%', delay: 2.3, paragraphStart: false },
+                      { width: '100%', delay: 2.45, paragraphStart: false },
+                      { width: '100%', delay: 2.6, paragraphStart: false },
+                      { width: '50%', delay: 2.75, paragraphStart: false },
+                      { width: '100%', delay: 2.9, paragraphStart: true },
+                      { width: '100%', delay: 3.05, paragraphStart: false },
+                      { width: '100%', delay: 3.2, paragraphStart: false },
+                      { width: '65%', delay: 3.35, paragraphStart: false },
+                      { width: '100%', delay: 3.5, paragraphStart: true },
+                      { width: '100%', delay: 3.65, paragraphStart: false },
+                      { width: '100%', delay: 3.8, paragraphStart: false },
+                      { width: '40%', delay: 3.95, paragraphStart: false },
+                    ].map((line, i) => (
+                      <div
+                        key={i}
+                        className={`text-line ${contractCardsVisible ? 'text-line-visible' : ''}`}
+                        style={{
+                          width: line.width,
+                          '--line-delay': `${line.delay}s`,
+                          marginTop: line.paragraphStart ? '12px' : '0'
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Signature */}
+                  <div style={{ width: '100%', marginTop: 'auto', padding: '0 8px' }}>
+                    <svg
+                      style={{
+                        width: '140px',
+                        height: '50px',
+                        '--sig-delay': '4.2s'
+                      }}
+                      viewBox="0 0 140 50"
+                      fill="none"
+                    >
+                      <path
+                        className={`signature-path ${contractCardsVisible ? 'signature-draw' : ''}`}
+                        d="M 5 35 C 10 20, 15 15, 20 25 C 25 35, 30 40, 35 30 C 40 20, 42 15, 48 20 C 54 25, 56 35, 62 28 C 68 21, 70 18, 78 22 C 86 26, 88 32, 95 25 C 102 18, 105 15, 112 20 C 119 25, 122 30, 130 22 L 135 18"
+                        stroke="#9ca3af"
+                        strokeWidth="2"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    <div style={{ width: '140px', height: '1px', backgroundColor: '#e5e7eb', marginTop: '2px' }} />
+                  </div>
                 </div>
               </div>
 
@@ -957,6 +1066,59 @@ function LandingPage() {
           opacity: 1;
           transform: scale(1);
           transition: opacity 0.25s ease-out var(--delay), transform 0.25s ease-out var(--delay);
+        }
+
+        .slide-out-left {
+          transform: translateX(-400px) !important;
+          transition: transform 0.8s ease-in-out !important;
+        }
+
+        .slide-out-right {
+          transform: translateX(500px) !important;
+          transition: transform 0.8s ease-in-out !important;
+        }
+
+        .slide-out-up {
+          transform: translateY(-500px) !important;
+          transition: transform 0.8s ease-in-out !important;
+        }
+
+        .text-line {
+          height: 6px;
+          background-color: #e5e7eb;
+          border-radius: 3px;
+          transform-origin: left;
+          transform: scaleX(0);
+        }
+
+        .text-line-visible {
+          animation: drawLine 0.4s ease-out forwards;
+          animation-delay: var(--line-delay);
+        }
+
+        @keyframes drawLine {
+          from {
+            transform: scaleX(0);
+          }
+          to {
+            transform: scaleX(1);
+          }
+        }
+
+        .signature-path {
+          stroke-dasharray: 400;
+          stroke-dashoffset: 400;
+        }
+
+        .signature-draw {
+          animation: drawSignature 1.2s ease-out forwards;
+          animation-delay: var(--sig-delay);
+        }
+
+        @keyframes drawSignature {
+          to {
+            stroke-dashoffset: 0;
+          }
         }
 
         .arrow-hidden {
