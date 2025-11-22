@@ -614,7 +614,7 @@ function LandingPage() {
                     '--delay': '2.0s',
                     display: 'flex',
                     flexDirection: 'column',
-                    alignItems: 'flex-start',
+                    alignItems: 'center',
                     justifyContent: 'flex-start',
                     padding: '16px'
                   }}
