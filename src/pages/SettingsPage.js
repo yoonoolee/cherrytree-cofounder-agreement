@@ -537,60 +537,61 @@ function SettingsPage() {
             </div>
           </div>
 
-          {/* Delete Account Modal */}
-          {showDeleteConfirm && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded p-6 max-w-md w-full mx-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Delete Account</h3>
-
-                <div className="bg-red-50 border border-red-200 rounded p-4 mb-4">
-                  <p className="text-sm text-red-800">
-                    <strong>Warning:</strong> This will permanently delete your account and all associated projects. This action cannot be undone.
-                  </p>
-                </div>
-
-                <label className="flex items-start gap-3 mb-6 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={deleteConfirmChecked}
-                    onChange={(e) => setDeleteConfirmChecked(e.target.checked)}
-                    className="mt-0.5 w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
-                  />
-                  <span className="text-sm text-gray-700">
-                    I understand that this action is permanent and all my data will be deleted.
-                  </span>
-                </label>
-
-                <div className="flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowDeleteConfirm(false);
-                      setDeleteConfirmChecked(false);
-                    }}
-                    className="px-4 py-2 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!deleteConfirmChecked}
-                    onClick={() => {
-                      // TODO: Implement account deletion
-                      showMessage('error', 'Account deletion is not yet implemented. Please contact support.');
-                      setShowDeleteConfirm(false);
-                      setDeleteConfirmChecked(false);
-                    }}
-                    className="px-4 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Delete my account
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Delete Account Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" style={{ zIndex: 100 }}>
+          <div className="bg-white rounded p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Delete Account</h3>
+
+            <div className="bg-red-50 border border-red-200 rounded p-4 mb-4">
+              <p className="text-sm text-red-800">
+                <strong>Warning:</strong> This will permanently delete your account and all associated projects. This action cannot be undone.
+              </p>
+            </div>
+
+            <label className="flex items-start gap-3 mb-6 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={deleteConfirmChecked}
+                onChange={(e) => setDeleteConfirmChecked(e.target.checked)}
+                className="mt-0.5 w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+              />
+              <span className="text-sm text-gray-700">
+                I understand that this action is permanent and all my data will be deleted.
+              </span>
+            </label>
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setDeleteConfirmChecked(false);
+                }}
+                className="px-4 py-2 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!deleteConfirmChecked}
+                onClick={() => {
+                  // TODO: Implement account deletion
+                  showMessage('error', 'Account deletion is not yet implemented. Please contact support.');
+                  setShowDeleteConfirm(false);
+                  setDeleteConfirmChecked(false);
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Delete my account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
