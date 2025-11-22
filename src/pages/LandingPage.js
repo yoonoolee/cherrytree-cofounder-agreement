@@ -12,8 +12,6 @@ function LandingPage() {
   const [activeStep, setActiveStep] = useState(0);
   const [cardTilt, setCardTilt] = useState(15);
   const [activeFeature, setActiveFeature] = useState(0);
-  const [contractAnimPhase, setContractAnimPhase] = useState(0);
-  // Phase 0: fading in center, 1: visible center, 2: side by side, 3: fading out
   const [typedAnd, setTypedAnd] = useState('');
   const [typedToday, setTypedToday] = useState('');
   const [videoOpacity, setVideoOpacity] = useState(0);
@@ -37,30 +35,13 @@ function LandingPage() {
     }
   }, [typedText]);
 
-  // Feature animation for Contract Creator
-  useEffect(() => {
-    if (activeFeature !== 0) return;
-
-    const runAnimation = () => {
-      setContractAnimPhase(1); // Fade in at center
-      setTimeout(() => setContractAnimPhase(2), 800); // Visible at center
-      setTimeout(() => setContractAnimPhase(3), 2400); // Move to side by side
-      setTimeout(() => setContractAnimPhase(4), 4700); // Fade out together
-      setTimeout(() => setContractAnimPhase(0), 5400); // Hidden reset
-    };
-
-    runAnimation();
-    const interval = setInterval(runAnimation, 5400);
-    return () => clearInterval(interval);
-  }, [activeFeature]);
-
-  // Auto-rotate features
+  // Auto-rotate features - reset timer when activeFeature changes (user click or auto)
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveFeature((prev) => (prev + 1) % 3);
-    }, 10800); // Two animation loops (5400ms * 2)
+    }, 8000);
     return () => clearInterval(interval);
-  }, []);
+  }, [activeFeature]);
 
   // Typing animation for "and"
   useEffect(() => {
@@ -264,7 +245,7 @@ function LandingPage() {
     },
     {
       title: 'Equity Calculator',
-      description: 'Use our proprietary equity calculator to determine ownership without the guesswork. Get precise, fair equity splits instantly, so everyone knows where they stand.',
+      description: 'Use our proprietary equity calculator to determine ownership. Instant, precise splits so everyone knows their stake.',
       id: 'equity-calculator'
     },
     {
@@ -538,30 +519,17 @@ function LandingPage() {
             </div>
 
             <div className="feature-visual">
-              {/* Contract Creator - Dual Image */}
+              {/* Contract Creator */}
               <div
-                className="visual-content"
+                className={`visual-content ${activeFeature === 0 ? 'active' : ''}`}
                 id="contract-creator"
                 style={{
-                  opacity: activeFeature === 0 && contractAnimPhase >= 1 && contractAnimPhase <= 3 ? 1 : 0,
-                  transform: contractAnimPhase >= 3 ? 'translateX(-75%) scale(0.85)' : 'translateX(-50%) scale(1)',
-                  display: activeFeature === 0 ? 'flex' : 'none',
-                  transition: 'opacity 0.6s ease, transform 0.6s ease'
+                  opacity: activeFeature === 0 ? 1 : 0,
+                  transform: activeFeature === 0 ? 'scale(1)' : 'scale(0.95)',
+                  pointerEvents: activeFeature === 0 ? 'auto' : 'none'
                 }}
               >
                 <img src="https://i.imgur.com/UkaZJir.png" alt="Contract Creator" />
-              </div>
-              <div
-                className="visual-content"
-                id="contract-creator-secondary"
-                style={{
-                  opacity: activeFeature === 0 && contractAnimPhase === 3 ? 1 : 0,
-                  transform: contractAnimPhase >= 3 ? 'translateX(-25%) scale(0.85)' : 'translateX(-25%) scale(0.5)',
-                  display: activeFeature === 0 ? 'flex' : 'none',
-                  transition: 'opacity 0.5s ease, transform 0.5s ease'
-                }}
-              >
-                <img src="https://i.imgur.com/UkaZJir.png" alt="Contract Creator Secondary" />
               </div>
 
               {/* Equity Calculator */}
@@ -570,7 +538,8 @@ function LandingPage() {
                 id="equity-calculator"
                 style={{
                   opacity: activeFeature === 1 ? 1 : 0,
-                  display: activeFeature === 1 ? 'flex' : 'none'
+                  transform: activeFeature === 1 ? 'scale(1)' : 'scale(0.95)',
+                  pointerEvents: activeFeature === 1 ? 'auto' : 'none'
                 }}
               >
                 <img src="https://i.imgur.com/MkNDfYx.gif" alt="Equity Calculator" />
@@ -582,7 +551,8 @@ function LandingPage() {
                 id="expert-guidance"
                 style={{
                   opacity: activeFeature === 2 ? 1 : 0,
-                  display: activeFeature === 2 ? 'flex' : 'none'
+                  transform: activeFeature === 2 ? 'scale(1)' : 'scale(0.95)',
+                  pointerEvents: activeFeature === 2 ? 'auto' : 'none'
                 }}
               >
                 <img src="https://i.imgur.com/UkaZJir.png" alt="Expert Guidance" />
@@ -869,7 +839,7 @@ function LandingPage() {
           position: relative;
           padding: 16px 32px;
           border: 12px solid #f7f7f7;
-          min-height: calc(160px*3 + 24px);
+          height: calc(160px*3 + 24px);
           display: flex;
         }
 
@@ -887,21 +857,7 @@ function LandingPage() {
           align-items: center;
         }
 
-        #contract-creator {
-          left: 50%;
-          z-index: 2;
-          transition: opacity 0.5s ease, transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        #contract-creator-secondary {
-          left: 50%;
-          transform: translateX(-27%) scale(0.75);
-          z-index: 1;
-          transition: opacity 0.6s ease, transform 1s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        #contract-creator img,
-        #contract-creator-secondary img {
+        #contract-creator img {
           width: 390px;
           height: 568px;
           object-fit: cover;
@@ -918,13 +874,6 @@ function LandingPage() {
           border-radius: 8px;
           border: 1px solid #ccc;
           background: #fff;
-        }
-
-        #equity-calculator img {
-          width: 85%;
-          height: auto;
-          max-height: 85%;
-          object-fit: contain;
         }
 
         @media (max-width: 968px) {
