@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLoadScript } from '@react-google-maps/api';
 import { db, auth } from '../firebase';
-import { doc, updateDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, onSnapshot, serverTimestamp, arrayUnion } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../firebase';
 import { SECTIONS, INDUSTRIES, MAJOR_DECISIONS, TERMINATION_CONSEQUENCES, US_STATES } from './surveyConstants';
 import Section1Formation from './Section1Formation';
 import Section2Cofounders from './Section2Cofounders';
@@ -127,6 +129,24 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [section3InResultsView, setSection3InResultsView] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
+  const [welcomeStep, setWelcomeStep] = useState(1);
+  const [welcomeCollabEmail, setWelcomeCollabEmail] = useState('');
+  const [welcomeCollabLoading, setWelcomeCollabLoading] = useState(false);
+  const [welcomeCollabError, setWelcomeCollabError] = useState('');
+  const [welcomeCollabSuccess, setWelcomeCollabSuccess] = useState('');
+  const [welcomeWiggle, setWelcomeWiggle] = useState(false);
+
+  const handleWelcomeRemoveCollaborator = async (email) => {
+    try {
+      const projectRef = doc(db, 'projects', projectId);
+      const updatedCollaborators = project?.collaborators?.filter(c => c !== email) || [];
+      await updateDoc(projectRef, {
+        collaborators: updatedCollaborators
+      });
+    } catch (err) {
+      console.error('Error removing collaborator:', err);
+    }
+  };
 
   // Helper function to calculate fullMailingAddress
   const calculateFullMailingAddress = (addressData) => {
@@ -170,6 +190,66 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   const dismissWelcomePopup = () => {
     setShowWelcomePopup(false);
     localStorage.setItem(`welcome_seen_${projectId}`, 'true');
+  };
+
+  const handleWelcomeAddCollaborator = async (e) => {
+    e.preventDefault();
+    setWelcomeCollabError('');
+    setWelcomeCollabSuccess('');
+
+    const email = welcomeCollabEmail.trim().toLowerCase();
+
+    if (!email) {
+      setWelcomeCollabError('Please enter an email address');
+      return;
+    }
+
+    if (!email.includes('@')) {
+      setWelcomeCollabError('Please enter a valid email address');
+      return;
+    }
+
+    if (email === project?.ownerEmail) {
+      setWelcomeCollabError("You're already the owner of this project");
+      return;
+    }
+
+    if (project?.collaborators?.includes(email)) {
+      setWelcomeCollabError('This person is already a collaborator');
+      return;
+    }
+
+    setWelcomeCollabLoading(true);
+
+    try {
+      const projectRef = doc(db, 'projects', projectId);
+
+      await updateDoc(projectRef, {
+        collaborators: arrayUnion(email),
+        [`approvals.${email}`]: false
+      });
+
+      // Send invitation email
+      try {
+        const sendInvite = httpsCallable(functions, 'sendCollaboratorInvite');
+        await sendInvite({
+          projectId: projectId,
+          collaboratorEmail: email,
+          projectName: project?.name
+        });
+        setWelcomeCollabSuccess(`✓ Invitation sent to ${email}`);
+      } catch (emailError) {
+        setWelcomeCollabSuccess(`✓ ${email} added`);
+      }
+
+      setWelcomeCollabEmail('');
+
+    } catch (err) {
+      console.error('Error adding collaborator:', err);
+      setWelcomeCollabError('Failed to add collaborator. Please try again.');
+    } finally {
+      setWelcomeCollabLoading(false);
+    }
   };
 
 
@@ -974,59 +1054,359 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       {/* Welcome Popup */}
       {showWelcomePopup && (
         <>
-          <div className="fixed inset-0 bg-black/50 z-[9998]" onClick={dismissWelcomePopup} />
+          <div
+            className="fixed inset-0 bg-black/50 z-[9998] cursor-pointer"
+            onClick={() => {
+              setWelcomeWiggle(true);
+              setTimeout(() => setWelcomeWiggle(false), 500);
+            }}
+          />
           <div className="fixed inset-0 flex items-center justify-center z-[9999] pointer-events-none">
-            <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 p-8 pointer-events-auto">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                Welcome to Your Cofounder Agreement
-              </h2>
-
-              <div className="space-y-5 mb-8">
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-600">
-                    1
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-1">Invite your cofounders</h3>
-                    <p className="text-sm text-gray-600">
-                      Add your cofounders as collaborators. They must be added to be included in the Cofounder Agreement.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-600">
-                    2
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-1">Collab on the agreement</h3>
-                    <p className="text-sm text-gray-600">
-                      You and your cofounders answer a set of guided questions together. Nobody has to play "project manager" or relay answers.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-600">
-                    3
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-1">Do a final review</h3>
-                    <p className="text-sm text-gray-600">
-                      We take your responses and turn them into a Cofounder Agreement, ready for your final review and signature.
-                    </p>
-                  </div>
-                </div>
+            <div className={`bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 pt-8 px-8 pb-3 pointer-events-auto ${welcomeWiggle ? 'animate-wiggle' : ''}`} style={{ minHeight: '510px' }}>
+              {/* Step indicators */}
+              <div className="flex items-center justify-center gap-2 mb-6">
+                {[1, 2, 3].map((step) => (
+                  <div
+                    key={step}
+                    className={`w-2 h-2 rounded-full ${welcomeStep === step ? 'bg-black' : 'bg-gray-300'}`}
+                  />
+                ))}
               </div>
 
-              <div className="flex justify-end">
-                <button
-                  onClick={dismissWelcomePopup}
-                  className="next-button bg-black text-white px-6 py-2 rounded font-medium hover:bg-gray-800 transition"
-                >
-                  Got it
-                </button>
-              </div>
+              {/* Step 1: Add Collaborators */}
+              {welcomeStep === 1 && (
+                <div className="flex flex-col h-full" style={{ minHeight: '400px' }}>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    Invite Your Cofounders
+                  </h2>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Add your cofounders as collaborators. They must be added to be included in the agreement.
+                  </p>
+
+                  {/* Add Collaborator Area */}
+                  <div className="bg-gray-50 rounded-lg pt-5 px-5 pb-4 mb-6 flex-grow" style={{ minHeight: '160px' }}>
+                    {/* Add Collaborator Form */}
+                    <form onSubmit={handleWelcomeAddCollaborator} className="mb-3">
+                      <div className="flex gap-2">
+                        <input
+                          type="email"
+                          value={welcomeCollabEmail}
+                          onChange={(e) => setWelcomeCollabEmail(e.target.value)}
+                          placeholder="cofounder@example.com"
+                          className="flex-1 px-3 py-2 border border-gray-200 bg-white rounded focus:ring-2 focus:ring-black focus:border-transparent text-sm"
+                        />
+                        <button
+                          type="submit"
+                          disabled={welcomeCollabLoading}
+                          className="bg-black text-white px-4 py-2 rounded text-sm font-medium hover:bg-[#1a1a1a] transition disabled:opacity-50"
+                        >
+                          {welcomeCollabLoading ? 'Adding...' : 'Add'}
+                        </button>
+                      </div>
+                    </form>
+
+                    {/* Error/Success Messages */}
+                    <div className="h-5 mb-3">
+                      {welcomeCollabError && (
+                        <p className="text-xs text-red-600">{welcomeCollabError}</p>
+                      )}
+                      {welcomeCollabSuccess && (
+                        <p className="text-xs text-gray-500">{welcomeCollabSuccess}</p>
+                      )}
+                    </div>
+
+                    {/* Collaborators List */}
+                    <div>
+                      <p className="text-xs text-gray-500 mb-2">Collaborators:</p>
+                      <div className="space-y-1">
+                        {/* Show owner first */}
+                        <div className="text-sm text-gray-700 py-0.5">
+                          {project?.ownerEmail} <span className="text-gray-400">(you)</span>
+                        </div>
+                        {/* Show other collaborators (excluding owner) */}
+                        {project?.collaborators?.filter(collab => collab !== project?.ownerEmail).map((collab, index) => (
+                          <div key={index} className="text-sm text-gray-700 py-0.5 flex items-center justify-between">
+                            <span>{collab}</span>
+                            <button
+                              onClick={() => handleWelcomeRemoveCollaborator(collab)}
+                              className="text-gray-400 hover:text-gray-600 ml-2"
+                            >
+                              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between mt-auto">
+                    <button
+                      onClick={() => setWelcomeStep(2)}
+                      className="text-sm text-gray-500 hover:text-gray-700"
+                    >
+                      Skip for now
+                    </button>
+                    <button
+                      onClick={() => setWelcomeStep(2)}
+                      className="button-shimmer bg-[#000000] text-white px-6 py-2 rounded font-medium hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2"
+                      style={{ width: '190px' }}
+                    >
+                      Continue
+                      <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
+                        <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Collab on the agreement */}
+              {welcomeStep === 2 && (
+                <div className="flex flex-col h-full" style={{ minHeight: '400px' }}>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    Collab on the Agreement
+                  </h2>
+                  <p className="text-sm text-gray-600 mb-4">
+                    You and your cofounders answer a set of guided questions together. Nobody has to play "project manager" or relay answers.
+                  </p>
+
+                  {/* Animation area */}
+                  <div className="relative bg-gray-50 rounded-lg p-5 mb-6" style={{ height: '210px' }}>
+                    {/* Black cursor */}
+                    <div className="cursor-black absolute w-4 h-4 z-20">
+                      <svg viewBox="0 0 24 24" fill="black" className="w-4 h-4">
+                        <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
+                      </svg>
+                    </div>
+
+                    {/* White cursor */}
+                    <div className="cursor-white absolute w-4 h-4 z-20">
+                      <svg viewBox="0 0 24 24" fill="white" stroke="black" strokeWidth="1" className="w-4 h-4">
+                        <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
+                      </svg>
+                    </div>
+
+                    {/* Question 1: Company Name */}
+                    <div className="mb-4">
+                      <p className="text-xs text-gray-500 mb-1">Company Name</p>
+                      <div className="relative bg-white border border-gray-200 rounded px-3 py-2 text-sm h-9">
+                        <span className="typing-text text-gray-700"></span>
+                        <span className="text-caret"></span>
+                      </div>
+                    </div>
+
+                    {/* Question 2: Industry dropdown */}
+                    <div className="relative">
+                      <p className="text-xs text-gray-500 mb-1">Industry</p>
+                      <div className="relative bg-white border border-gray-200 rounded px-3 py-2 text-sm h-9 flex items-center justify-between">
+                        <span className="selected-industry"></span>
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                      {/* Dropdown menu */}
+                      <div className="dropdown-menu absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded shadow-lg overflow-hidden">
+                        <div className="dropdown-option-1 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Artificial Intelligence</div>
+                        <div className="dropdown-option-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Food and Beverage</div>
+                        <div className="dropdown-option-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Healthtech</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between mt-auto">
+                    <button
+                      onClick={() => setWelcomeStep(1)}
+                      className="text-sm text-gray-500 hover:text-gray-700"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={() => setWelcomeStep(3)}
+                      className="button-shimmer bg-[#000000] text-white px-6 py-2 rounded font-medium hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2"
+                      style={{ width: '190px' }}
+                    >
+                      Continue
+                      <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
+                        <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <style>{`
+                    /* Black cursor - clicks and types in company name */
+                    .cursor-black {
+                      top: 20px;
+                      left: 20px;
+                      animation: blackCursorMove 6s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+                    }
+
+                    /* White cursor - selects from dropdown */
+                    .cursor-white {
+                      top: 140px;
+                      left: 320px;
+                      animation: whiteCursorMove 6s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+                    }
+
+                    /* Typing text animation */
+                    .typing-text::after {
+                      content: '';
+                      animation: typeText 6s steps(1) infinite;
+                    }
+
+                    /* Text caret blink */
+                    .text-caret {
+                      display: inline-block;
+                      width: 1px;
+                      height: 14px;
+                      background: black;
+                      margin-left: 1px;
+                      animation: caretBlink 6s step-end infinite;
+                    }
+
+                    /* Dropdown visibility */
+                    .dropdown-menu {
+                      opacity: 0;
+                      transform: scaleY(0);
+                      transform-origin: top;
+                      animation: dropdownShow 6s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+                    }
+
+                    /* Selected industry text */
+                    .selected-industry::after {
+                      content: 'Select industry';
+                      color: #9CA3AF;
+                      animation: industrySelect 6s steps(1) infinite;
+                    }
+
+                    /* Highlight selected option */
+                    .dropdown-option-1 {
+                      animation: optionHighlight 6s steps(1) infinite;
+                    }
+
+                    @keyframes blackCursorMove {
+                      0% { top: 20px; left: 20px; }
+                      8% { top: 52px; left: 120px; }
+                      12%, 45% { top: 52px; left: 120px; }
+                      55%, 100% { top: 52px; left: 120px; }
+                    }
+
+                    @keyframes whiteCursorMove {
+                      0%, 15% { top: 140px; left: 320px; }
+                      25% { top: 132px; left: 350px; }
+                      30%, 34% { top: 132px; left: 350px; }
+                      40%, 59% { top: 158px; left: 120px; }
+                      65%, 100% { top: 158px; left: 120px; }
+                    }
+
+                    @keyframes typeText {
+                      0%, 12% { content: ''; }
+                      14% { content: 'C'; }
+                      16% { content: 'Ch'; }
+                      18% { content: 'Che'; }
+                      20% { content: 'Cher'; }
+                      22% { content: 'Cherr'; }
+                      24% { content: 'Cherry'; }
+                      26% { content: 'Cherryt'; }
+                      28% { content: 'Cherrytr'; }
+                      30% { content: 'Cherrytree'; }
+                      32%, 100% { content: 'Cherrytree'; }
+                    }
+
+                    @keyframes caretBlink {
+                      0%, 12% { opacity: 1; }
+                      13%, 14% { opacity: 0; }
+                      15%, 100% { opacity: 1; }
+                    }
+
+                    @keyframes dropdownShow {
+                      0%, 29% { opacity: 0; transform: scaleY(0); }
+                      30%, 52% { opacity: 1; transform: scaleY(1); }
+                      53%, 100% { opacity: 0; transform: scaleY(0); }
+                    }
+
+                    @keyframes industrySelect {
+                      0%, 49% { content: 'Select industry'; color: #9CA3AF; }
+                      50%, 100% { content: 'Artificial Intelligence'; color: #374151; }
+                    }
+
+                    @keyframes optionHighlight {
+                      0%, 39% { background: white; }
+                      40%, 49% { background: #F3F4F6; }
+                      50%, 52% { background: #E5E7EB; }
+                      53%, 100% { background: white; }
+                    }
+                  `}</style>
+                </div>
+              )}
+
+              {/* Step 3: Final Review */}
+              {welcomeStep === 3 && (
+                <div className="flex flex-col h-full" style={{ minHeight: '400px' }}>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    Do a Final Review
+                  </h2>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Once everyone has answered all the questions, review the generated agreement together and approve it.
+                  </p>
+
+                  {/* Document preview */}
+                  <div className="bg-gray-50 rounded-lg p-5 mb-6 flex justify-center relative" style={{ height: '210px' }}>
+                    <div className="bg-white rounded border border-gray-200 p-4 h-full relative" style={{ width: '85%' }}>
+                      <h3 className="text-xs text-gray-500 mb-3">Cofounder Agreement</h3>
+                      <div className="space-y-2">
+                        <div className="h-1 bg-gray-200 rounded w-full"></div>
+                        <div className="h-1 bg-gray-200 rounded w-11/12"></div>
+                        <div className="h-1 bg-gray-200 rounded w-full"></div>
+                        <div className="h-1 bg-gray-200 rounded w-4/5"></div>
+                        <div className="h-1 bg-gray-200 rounded w-full"></div>
+                        <div className="h-1 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-1 bg-gray-200 rounded w-full"></div>
+                        <div className="h-1 bg-gray-200 rounded w-5/6"></div>
+                      </div>
+                    </div>
+                    {/* Scanner line */}
+                    <div className="scanner-line absolute h-0.5 bg-gray-300" style={{ left: '5%', right: '5%', boxShadow: '0 0 6px 1px rgba(209, 213, 219, 0.5)' }}></div>
+                  </div>
+
+                  <style>{`
+                    .scanner-line {
+                      top: 20px;
+                      animation: scanDocument 4s ease-in-out infinite;
+                    }
+                    @keyframes scanDocument {
+                      0% { top: 20px; opacity: 1; }
+                      25% { top: calc(100% - 24px); opacity: 1; }
+                      50% { top: 20px; opacity: 1; }
+                      51% { top: 20px; opacity: 0; }
+                      60% { top: 20px; opacity: 0; }
+                      61% { top: 20px; opacity: 1; }
+                      85% { top: calc(100% - 24px); opacity: 1; }
+                      100% { top: 20px; opacity: 1; }
+                    }
+                  `}</style>
+
+                  <div className="flex justify-between mt-auto">
+                    <button
+                      onClick={() => setWelcomeStep(2)}
+                      className="text-sm text-gray-500 hover:text-gray-700"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={dismissWelcomePopup}
+                      className="button-shimmer bg-[#000000] text-white px-6 py-2 rounded font-medium hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2"
+                      style={{ width: '190px' }}
+                    >
+                      Get Started
+                      <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
+                        <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </>
@@ -1108,7 +1488,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           {/* Add Collaborators Button */}
           <button
             onClick={() => setShowCollaborators(true)}
-            className="bg-black text-white px-4 py-2 rounded hover:bg-[#1a1a1a] transition flex items-center gap-2"
+            className="button-shimmer bg-[#000000] text-white px-4 py-2 rounded hover:bg-[#1a1a1a] transition flex items-center gap-2"
           >
             <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>

@@ -263,7 +263,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
             // TODO: Add collaborators functionality
             console.log('Add Collaborators clicked');
           }}
-          className="bg-[#820e22] text-white p-1.5 rounded-full hover:bg-[#620a1a] transition"
+          className="button-shimmer bg-[#820e22] text-white p-1.5 rounded-full hover:bg-[#620a1a] transition"
         >
           <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

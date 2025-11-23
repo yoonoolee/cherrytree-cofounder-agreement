@@ -91,44 +91,53 @@ function DashboardPage() {
 
         setProjects(allProjects);
 
-        // If payment was successful, redirect to the most recent project's survey
+        // If payment was successful, redirect to the newly created project's survey
         if (searchParams.get('payment') === 'success') {
-          if (allProjects.length > 0) {
-            // Find the most recently created project
-            const sortedByCreated = [...allProjects].sort((a, b) => {
-              const aTime = a.createdAt?.toMillis?.() || 0;
-              const bTime = b.createdAt?.toMillis?.() || 0;
-              return bTime - aTime;
-            });
-            navigate(`/survey/${sortedByCreated[0].id}`, { replace: true });
-            return;
-          } else {
-            // Project not created yet (webhook delay), poll for it
-            const pollForProject = async (attempts = 0) => {
-              if (attempts >= 10) {
-                // Give up after 10 attempts (5 seconds)
-                setLoading(false);
-                return;
-              }
+          const paymentStartTime = parseInt(sessionStorage.getItem('paymentStartTime') || '0', 10);
+          sessionStorage.removeItem('paymentStartTime');
 
-              await new Promise(resolve => setTimeout(resolve, 500));
+          // Find project created after payment started
+          const newProject = allProjects.find(p => {
+            const createdTime = p.createdAt?.toMillis?.() || 0;
+            return createdTime > paymentStartTime;
+          });
 
-              const [ownedSnap, collabSnap] = await Promise.all([
-                getDocs(query(collection(db, 'projects'), where('ownerId', '==', currentUser.uid), limit(1))),
-                getDocs(query(collection(db, 'projects'), where('collaboratorIds', 'array-contains', currentUser.uid), limit(1)))
-              ]);
-
-              const newProject = ownedSnap.docs[0] || collabSnap.docs[0];
-              if (newProject) {
-                navigate(`/survey/${newProject.id}`, { replace: true });
-              } else {
-                pollForProject(attempts + 1);
-              }
-            };
-
-            pollForProject();
+          if (newProject) {
+            navigate(`/survey/${newProject.id}`, { replace: true });
             return;
           }
+
+          // Project not created yet (webhook delay), poll for it
+          const pollForProject = async (attempts = 0) => {
+            if (attempts >= 20) {
+              // Give up after 20 attempts (10 seconds)
+              setLoading(false);
+              return;
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const [ownedSnap, collabSnap] = await Promise.all([
+              getDocs(query(collection(db, 'projects'), where('ownerId', '==', currentUser.uid), limit(100))),
+              getDocs(query(collection(db, 'projects'), where('collaboratorIds', 'array-contains', currentUser.uid), limit(100)))
+            ]);
+
+            // Find project created after payment started
+            const allDocs = [...ownedSnap.docs, ...collabSnap.docs];
+            const newProj = allDocs.find(doc => {
+              const createdTime = doc.data().createdAt?.toMillis?.() || 0;
+              return createdTime > paymentStartTime;
+            });
+
+            if (newProj) {
+              navigate(`/survey/${newProj.id}`, { replace: true });
+            } else {
+              pollForProject(attempts + 1);
+            }
+          };
+
+          pollForProject();
+          return;
         }
       } catch (error) {
         console.error('Error fetching projects:', error);

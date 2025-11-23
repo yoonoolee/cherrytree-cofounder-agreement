@@ -96,6 +96,8 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
 
       // Redirect to Stripe checkout
       if (result.data.url) {
+        // Save timestamp to detect new project after payment
+        sessionStorage.setItem('paymentStartTime', Date.now().toString());
         window.location.href = result.data.url;
       } else {
         throw new Error('Failed to create checkout session');
