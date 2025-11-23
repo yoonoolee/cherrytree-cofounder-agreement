@@ -16,6 +16,7 @@ function LandingPage() {
   const [contractCardsFading, setContractCardsFading] = useState(false);
   const [animationCycle, setAnimationCycle] = useState(0);
   const [equityChartVisible, setEquityChartVisible] = useState(false);
+  const [equityChartFading, setEquityChartFading] = useState(false);
   const [equityAnimationCycle, setEquityAnimationCycle] = useState(0);
   const [featuresInView, setFeaturesInView] = useState(false);
   const featuresRef = useRef(null);
@@ -110,17 +111,24 @@ function LandingPage() {
   useEffect(() => {
     if (activeFeature !== 1 || !featuresInView) {
       setEquityChartVisible(false);
+      setEquityChartFading(false);
       setEquityAnimationCycle(0);
       return;
     }
 
     // Start animation
+    setEquityChartFading(false);
     setEquityChartVisible(false);
     const startTimer = setTimeout(() => {
       setEquityChartVisible(true);
     }, 50);
 
-    // After animation completes, either restart or advance
+    // After animation completes (4s), start fade out
+    const fadeTimer = setTimeout(() => {
+      setEquityChartFading(true);
+    }, 4000);
+
+    // After fade out (0.8s), either restart or advance
     const cycleTimer = setTimeout(() => {
       if (equityAnimationCycle < 1) {
         // Restart for second cycle
@@ -130,10 +138,11 @@ function LandingPage() {
         setActiveFeature(2);
         setEquityAnimationCycle(0);
       }
-    }, 4500);
+    }, 4800);
 
     return () => {
       clearTimeout(startTimer);
+      clearTimeout(fadeTimer);
       clearTimeout(cycleTimer);
     };
   }, [activeFeature, featuresInView, equityAnimationCycle]);
@@ -779,8 +788,9 @@ function LandingPage() {
                   padding: '24px'
                 }}
               >
+                <div className={equityChartFading ? 'fade-out' : ''} style={{ display: 'flex', flexDirection: 'row', gap: '32px' }}>
                 {/* Score Table */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                <div className={`equity-table ${equityChartVisible ? 'equity-table-visible' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                   {/* Header row */}
                   <div
                     style={{
@@ -831,7 +841,7 @@ function LandingPage() {
                             fontWeight: 500,
                             color: '#999',
                             textAlign: 'center',
-                            '--fade-delay': `${row.delays[j]}s`
+                            '--fade-delay': `${row.delays[j] + 0.3}s`
                           }}
                         >
                           {score}
@@ -855,11 +865,11 @@ function LandingPage() {
                         cy="50"
                         r="35"
                         fill="none"
-                        stroke="#999999"
+                        stroke="#cccccc"
                         strokeWidth="13"
                         strokeDasharray="87.96 131.95"
                         strokeDashoffset="0"
-                        style={{ '--segment-delay': '1.8s', '--segment-length': '87.96' }}
+                        style={{ '--segment-delay': '1.62s', '--segment-length': '87.96' }}
                       />
                       <circle
                         className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
@@ -867,11 +877,11 @@ function LandingPage() {
                         cy="50"
                         r="35"
                         fill="none"
-                        stroke="#999999"
+                        stroke="#cccccc"
                         strokeWidth="13"
                         strokeDasharray="87.96 131.95"
                         strokeDashoffset="-87.96"
-                        style={{ '--segment-delay': '2.1s', '--segment-length': '87.96' }}
+                        style={{ '--segment-delay': '1.89s', '--segment-length': '87.96' }}
                       />
                       <circle
                         className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
@@ -879,11 +889,11 @@ function LandingPage() {
                         cy="50"
                         r="35"
                         fill="none"
-                        stroke="#999999"
+                        stroke="#cccccc"
                         strokeWidth="13"
                         strokeDasharray="43.98 175.93"
                         strokeDashoffset="-175.92"
-                        style={{ '--segment-delay': '2.4s', '--segment-length': '43.98' }}
+                        style={{ '--segment-delay': '2.16s', '--segment-length': '43.98' }}
                       />
                       {/* Segment 1 - 40% (Steve) */}
                       <circle
@@ -896,7 +906,7 @@ function LandingPage() {
                         strokeWidth="12"
                         strokeDasharray="87.96 131.95"
                         strokeDashoffset="0"
-                        style={{ '--segment-delay': '1.8s', '--segment-length': '87.96' }}
+                        style={{ '--segment-delay': '1.62s', '--segment-length': '87.96' }}
                       />
                       {/* Segment 2 - 40% (Woz) */}
                       <circle
@@ -909,7 +919,7 @@ function LandingPage() {
                         strokeWidth="12"
                         strokeDasharray="87.96 131.95"
                         strokeDashoffset="-87.96"
-                        style={{ '--segment-delay': '2.1s', '--segment-length': '87.96' }}
+                        style={{ '--segment-delay': '1.89s', '--segment-length': '87.96' }}
                       />
                       {/* Segment 3 - 20% (Ron) */}
                       <circle
@@ -922,7 +932,7 @@ function LandingPage() {
                         strokeWidth="12"
                         strokeDasharray="43.98 175.93"
                         strokeDashoffset="-175.92"
-                        style={{ '--segment-delay': '2.4s', '--segment-length': '43.98' }}
+                        style={{ '--segment-delay': '2.16s', '--segment-length': '43.98' }}
                       />
                     </svg>
                   </div>
@@ -930,9 +940,9 @@ function LandingPage() {
                   {/* Legend */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {[
-                      { name: 'Steve J.', percent: '40%', color: '#d0d0d0', border: false, delay: '2.7s' },
-                      { name: 'Steve W.', percent: '40%', color: '#f0f0f0', border: false, delay: '2.8s' },
-                      { name: 'Ron W.', percent: '20%', color: '#ffffff', border: true, delay: '2.9s' }
+                      { name: 'Steve J.', percent: '40%', color: '#d0d0d0', border: false, delay: '2.43s' },
+                      { name: 'Steve W.', percent: '40%', color: '#f0f0f0', border: false, delay: '2.52s' },
+                      { name: 'Ron W.', percent: '20%', color: '#ffffff', border: true, delay: '2.61s' }
                     ].map((item, i) => (
                       <div
                         key={i}
@@ -946,10 +956,11 @@ function LandingPage() {
                       >
                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: item.color, border: item.border ? '1px solid #ccc' : 'none' }} />
                         <span style={{ fontSize: '11px', color: '#666' }}>{item.name}</span>
-                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#333' }}>{item.percent}</span>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#888' }}>{item.percent}</span>
                       </div>
                     ))}
                   </div>
+                </div>
                 </div>
               </div>
 
@@ -1291,6 +1302,11 @@ function LandingPage() {
           transition: transform 0.8s ease-in-out !important;
         }
 
+        .fade-out {
+          opacity: 0 !important;
+          transition: opacity 0.8s ease-in-out !important;
+        }
+
         .text-line {
           height: 6px;
           background-color: #e5e7eb;
@@ -1382,6 +1398,23 @@ function LandingPage() {
         .equity-legend-item,
         .equity-number {
           opacity: 0;
+        }
+
+        .equity-table {
+          opacity: 0;
+        }
+
+        .equity-table-visible {
+          animation: equityTableFadeIn 1.2s ease-in-out forwards;
+        }
+
+        @keyframes equityTableFadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
         }
 
         .equity-fade-in {
