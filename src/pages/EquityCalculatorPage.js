@@ -12,6 +12,8 @@ function EquityCalculatorPage() {
   const [cofounderNames, setCofounderNames] = useState(['', '']);
   const [showCalculator, setShowCalculator] = useState(false);
   const [wiggleIndex, setWiggleIndex] = useState(null);
+  const [showSharePopup, setShowSharePopup] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const spreadsheetRef = useRef(null);
 
   // Handle start calculator with validation
@@ -268,11 +270,7 @@ function EquityCalculatorPage() {
   // Equity Progress Bar component
   const EquityProgressBar = ({ equity }) => {
     if (!equity) {
-      return (
-        <div className="flex items-center justify-center h-24 text-gray-500 text-sm">
-          Enter importance values and scores to see equity distribution.
-        </div>
-      );
+      return null;
     }
 
     const numCof = equity.length;
@@ -457,6 +455,65 @@ function EquityCalculatorPage() {
               <div className="py-6">
                 <EquityProgressBar equity={currentEquity} />
               </div>
+
+              {/* Share button */}
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowSharePopup(true)}
+                  className="button-shimmer px-6 py-3 bg-[#000000] text-white rounded-lg hover:bg-[#1a1a1a] transition-colors font-medium"
+                >
+                  Share with cofounder
+                </button>
+              </div>
+
+              {/* Share popup */}
+              {showSharePopup && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-medium">Share with cofounder</h3>
+                      <button
+                        onClick={() => {
+                          setShowSharePopup(false);
+                          setLinkCopied(false);
+                        }}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Share this link with your cofounder and see if your answers match. Only 2% get the exact same results.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value={window.location.href}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50"
+                      />
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(window.location.href);
+                          setLinkCopied(true);
+                        }}
+                        className="px-4 py-2 bg-[#000000] text-white rounded-lg hover:bg-[#1a1a1a] transition-colors text-sm font-medium"
+                      >
+                        {linkCopied ? (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          'Copy'
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
