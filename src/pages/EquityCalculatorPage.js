@@ -58,7 +58,7 @@ function EquityCalculatorPage() {
     if (name) {
       return name.split(' ')[0]; // First name only
     }
-    return `Cofounder ${String.fromCharCode(65 + index)}`;
+    return `Cofounder ${index + 1}`;
   };
 
   // Initialize spreadsheet data
@@ -270,7 +270,7 @@ function EquityCalculatorPage() {
     if (!equity) {
       return (
         <div className="flex items-center justify-center h-24 text-gray-500 text-sm">
-          Enter importance values and scores to see equity distribution
+          Enter importance values and scores to see equity distribution.
         </div>
       );
     }
@@ -335,19 +335,25 @@ function EquityCalculatorPage() {
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
 
-      <section className="pt-32 pb-20 px-6">
+      <section className="pt-32 pb-48 px-6">
         <div className="max-w-4xl mx-auto">
-          <div className="hero-content text-center mb-12">
+          <div className="hero-content section-visible text-center mb-16">
             <h1 className="font-heading text-[56px] font-normal mb-6">
               Equity Calculator<span style={{ marginLeft: '0.05em' }}>.</span>
             </h1>
             <p className="text-[16px] font-normal" style={{ color: '#716B6B' }}>
-              Determine a fair equity split based on each cofounder's contributions
+              Determine a fair split based on each cofounder's contributions.
             </p>
           </div>
 
           {!showCalculator ? (
-            <div className="max-w-md mx-auto">
+            <form
+              className="max-w-md mx-auto"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleStartCalculator();
+              }}
+            >
               {/* Cofounder names */}
               <div className="mb-6">
                 <label className="block text-base font-medium text-gray-900 mb-3">
@@ -355,21 +361,22 @@ function EquityCalculatorPage() {
                 </label>
                 <div className="space-y-3">
                   {Array.from({ length: numCofounders }, (_, i) => (
-                    <div key={i} className="flex gap-2">
+                    <div key={i} className="relative">
                       <input
                         type="text"
                         value={cofounderNames[i] || ''}
                         onChange={(e) => handleNameChange(i, e.target.value)}
-                        placeholder={`Cofounder ${i + 1}`}
-                        className={`flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent ${wiggleIndex === i ? 'animate-wiggle' : ''}`}
+                        placeholder={i === 0 ? 'Cofounder 1 (you)' : `Cofounder ${i + 1}`}
+                        className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent ${wiggleIndex === i ? 'animate-wiggle' : ''}`}
                       />
                       {i >= 2 && (
                         <button
+                          type="button"
                           onClick={() => {
                             setNumCofounders(prev => prev - 1);
                             setCofounderNames(prev => prev.filter((_, idx) => idx !== i));
                           }}
-                          className="px-3 text-gray-400 hover:text-gray-600 transition-colors"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -383,6 +390,7 @@ function EquityCalculatorPage() {
                 {/* Add cofounder button */}
                 {numCofounders < 5 && (
                   <button
+                    type="button"
                     onClick={() => {
                       setNumCofounders(prev => prev + 1);
                       setCofounderNames(prev => [...prev, '']);
@@ -399,12 +407,12 @@ function EquityCalculatorPage() {
 
               {/* Start button */}
               <button
-                onClick={handleStartCalculator}
-                className="w-full py-3 px-6 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+                type="submit"
+                className="button-shimmer w-full py-3 px-6 bg-[#000000] text-white rounded-lg hover:bg-[#1a1a1a] transition-colors font-medium"
               >
                 Start Calculator
               </button>
-            </div>
+            </form>
           ) : (
             <div>
               {/* Back button */}

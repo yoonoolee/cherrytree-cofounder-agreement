@@ -14,7 +14,7 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
       const firstName = cofounder.fullName.trim().split(' ')[0];
       return firstName;
     }
-    return `Cofounder ${String.fromCharCode(65 + index)}`;
+    return `Cofounder ${index + 1}`;
   };
 
   // Memoize cofounder names to detect actual changes
