@@ -15,6 +15,8 @@ function LandingPage() {
   const [contractCardsVisible, setContractCardsVisible] = useState(false);
   const [contractCardsFading, setContractCardsFading] = useState(false);
   const [animationCycle, setAnimationCycle] = useState(0);
+  const [equityChartVisible, setEquityChartVisible] = useState(false);
+  const [equityAnimationCycle, setEquityAnimationCycle] = useState(0);
   const [featuresInView, setFeaturesInView] = useState(false);
   const featuresRef = useRef(null);
   const [typedAnd, setTypedAnd] = useState('');
@@ -104,9 +106,41 @@ function LandingPage() {
     };
   }, [activeFeature, featuresInView, animationCycle]);
 
-  // Auto-rotate for non-Contract Creator tabs
+  // Equity Calculator animation with 2 cycles then auto-advance
   useEffect(() => {
-    if (!featuresInView || activeFeature === 0) return;
+    if (activeFeature !== 1 || !featuresInView) {
+      setEquityChartVisible(false);
+      setEquityAnimationCycle(0);
+      return;
+    }
+
+    // Start animation
+    setEquityChartVisible(false);
+    const startTimer = setTimeout(() => {
+      setEquityChartVisible(true);
+    }, 50);
+
+    // After animation completes, either restart or advance
+    const cycleTimer = setTimeout(() => {
+      if (equityAnimationCycle < 1) {
+        // Restart for second cycle
+        setEquityAnimationCycle(prev => prev + 1);
+      } else {
+        // After 2 cycles, move to next tab
+        setActiveFeature(2);
+        setEquityAnimationCycle(0);
+      }
+    }, 4500);
+
+    return () => {
+      clearTimeout(startTimer);
+      clearTimeout(cycleTimer);
+    };
+  }, [activeFeature, featuresInView, equityAnimationCycle]);
+
+  // Auto-rotate for Expert Guidance tab only (tabs 0 and 1 have their own cycles)
+  useEffect(() => {
+    if (!featuresInView || activeFeature === 0 || activeFeature === 1) return;
 
     const interval = setInterval(() => {
       setActiveFeature((prev) => (prev + 1) % 3);
@@ -608,7 +642,7 @@ function LandingPage() {
                 <div className={contractCardsFading ? 'slide-out-left' : ''} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {[
                     { title: 'Cofounders', content: 'Steve Jobs\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Steve Woz\nRon Wayne' },
-                    { title: 'Equity', content: '40% - 40% - 10%' },
+                    { title: 'Equity', content: '40% - 40% - 20%' },
                     { title: 'Vesting', content: '4 years with a 1 year cliff' },
                     { title: 'And more', content: '' }
                   ].map((card, i) => (
@@ -739,10 +773,184 @@ function LandingPage() {
                 style={{
                   opacity: activeFeature === 1 ? 1 : 0,
                   transform: activeFeature === 1 ? 'scale(1)' : 'scale(0.95)',
-                  pointerEvents: activeFeature === 1 ? 'auto' : 'none'
+                  pointerEvents: activeFeature === 1 ? 'auto' : 'none',
+                  flexDirection: 'row',
+                  gap: '32px',
+                  padding: '24px'
                 }}
               >
-                <img src="https://i.imgur.com/MkNDfYx.gif" alt="Equity Calculator" />
+                {/* Score Table */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                  {/* Header row */}
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '100px 50px 50px 50px',
+                      gap: '8px',
+                      padding: '8px 12px',
+                      backgroundColor: '#f7f7f7',
+                      borderRadius: '6px 6px 0 0'
+                    }}
+                  >
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#666' }}>Category</span>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SJ</span>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SW</span>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>RW</span>
+                  </div>
+                  {/* Data rows */}
+                  {[
+                    { category: 'Cash Invested', scores: [6, 6, 4], delays: [0.2, 0.35, 0.1] },
+                    { category: 'Time Commit', scores: [10, 8, 4], delays: [0.4, 0.25, 0.5] },
+                    { category: 'Leadership', scores: [8, 10, 2], delays: [0.55, 0.7, 0.45] },
+                    { category: 'Engineering', scores: [4, 8, 4], delays: [0.65, 0.8, 0.6] },
+                    { category: 'Sales', scores: [8, 4, 2], delays: [0.75, 0.9, 0.85] },
+                    { category: 'Domain', scores: [6, 8, 6], delays: [1.0, 0.95, 1.1] },
+                    { category: 'Network', scores: [8, 6, 4], delays: [1.15, 1.25, 1.05] },
+                    { category: 'Idea Origin', scores: [10, 10, 4], delays: [1.3, 1.2, 1.35] }
+                  ].map((row, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '100px 50px 50px 50px',
+                        gap: '8px',
+                        padding: '8px 12px',
+                        backgroundColor: i % 2 === 0 ? '#fff' : '#fafafa',
+                        borderLeft: '1px solid #e5e7eb',
+                        borderRight: '1px solid #e5e7eb',
+                        borderBottom: '1px solid #e5e7eb'
+                      }}
+                    >
+                      <span style={{ fontSize: '11px', color: '#666' }}>{row.category}</span>
+                      {row.scores.map((score, j) => (
+                        <span
+                          key={j}
+                          className={`equity-number ${equityChartVisible ? 'equity-fade-in' : ''}`}
+                          style={{
+                            fontSize: '11px',
+                            fontWeight: 500,
+                            color: '#999',
+                            textAlign: 'center',
+                            '--fade-delay': `${row.delays[j]}s`
+                          }}
+                        >
+                          {score}
+                        </span>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pie Chart */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ position: 'relative', width: '180px', height: '180px' }}>
+                    <svg
+                      viewBox="0 0 100 100"
+                      style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}
+                    >
+                      {/* Border circles for each segment */}
+                      <circle
+                        className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
+                        cx="50"
+                        cy="50"
+                        r="35"
+                        fill="none"
+                        stroke="#999999"
+                        strokeWidth="13"
+                        strokeDasharray="87.96 131.95"
+                        strokeDashoffset="0"
+                        style={{ '--segment-delay': '1.8s', '--segment-length': '87.96' }}
+                      />
+                      <circle
+                        className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
+                        cx="50"
+                        cy="50"
+                        r="35"
+                        fill="none"
+                        stroke="#999999"
+                        strokeWidth="13"
+                        strokeDasharray="87.96 131.95"
+                        strokeDashoffset="-87.96"
+                        style={{ '--segment-delay': '2.1s', '--segment-length': '87.96' }}
+                      />
+                      <circle
+                        className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
+                        cx="50"
+                        cy="50"
+                        r="35"
+                        fill="none"
+                        stroke="#999999"
+                        strokeWidth="13"
+                        strokeDasharray="43.98 175.93"
+                        strokeDashoffset="-175.92"
+                        style={{ '--segment-delay': '2.4s', '--segment-length': '43.98' }}
+                      />
+                      {/* Segment 1 - 40% (Steve) */}
+                      <circle
+                        className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
+                        cx="50"
+                        cy="50"
+                        r="35"
+                        fill="none"
+                        stroke="#d0d0d0"
+                        strokeWidth="12"
+                        strokeDasharray="87.96 131.95"
+                        strokeDashoffset="0"
+                        style={{ '--segment-delay': '1.8s', '--segment-length': '87.96' }}
+                      />
+                      {/* Segment 2 - 40% (Woz) */}
+                      <circle
+                        className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
+                        cx="50"
+                        cy="50"
+                        r="35"
+                        fill="none"
+                        stroke="#f0f0f0"
+                        strokeWidth="12"
+                        strokeDasharray="87.96 131.95"
+                        strokeDashoffset="-87.96"
+                        style={{ '--segment-delay': '2.1s', '--segment-length': '87.96' }}
+                      />
+                      {/* Segment 3 - 20% (Ron) */}
+                      <circle
+                        className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
+                        cx="50"
+                        cy="50"
+                        r="35"
+                        fill="none"
+                        stroke="#ffffff"
+                        strokeWidth="12"
+                        strokeDasharray="43.98 175.93"
+                        strokeDashoffset="-175.92"
+                        style={{ '--segment-delay': '2.4s', '--segment-length': '43.98' }}
+                      />
+                    </svg>
+                  </div>
+
+                  {/* Legend */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {[
+                      { name: 'Steve J.', percent: '40%', color: '#d0d0d0', border: false, delay: '2.7s' },
+                      { name: 'Steve W.', percent: '40%', color: '#f0f0f0', border: false, delay: '2.8s' },
+                      { name: 'Ron W.', percent: '20%', color: '#ffffff', border: true, delay: '2.9s' }
+                    ].map((item, i) => (
+                      <div
+                        key={i}
+                        className={`equity-legend-item ${equityChartVisible ? 'equity-fade-in' : ''}`}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          '--fade-delay': item.delay
+                        }}
+                      >
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: item.color, border: item.border ? '1px solid #ccc' : 'none' }} />
+                        <span style={{ fontSize: '11px', color: '#666' }}>{item.name}</span>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#333' }}>{item.percent}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Expert Guidance */}
@@ -1132,7 +1340,6 @@ function LandingPage() {
           transition: stroke-dashoffset 0.5s ease-out var(--arrow-delay);
         }
 
-        #equity-calculator img,
         #expert-guidance img {
           width: 390px;
           height: 568px;
@@ -1140,6 +1347,55 @@ function LandingPage() {
           border-radius: 8px;
           border: 1px solid #ccc;
           background: #fff;
+        }
+
+        /* Equity Calculator Pie Chart Animations */
+        .pie-border {
+          opacity: 0;
+        }
+
+        .pie-border-animate {
+          animation: equityFadeIn 0.3s ease-out forwards;
+          animation-delay: 1.7s;
+        }
+
+        .pie-segment {
+          stroke-dasharray: 0 219.91;
+          transition: stroke-dasharray 0.8s ease-out;
+        }
+
+        .pie-segment-animate {
+          animation: drawSegment 0.8s ease-out forwards;
+          animation-delay: var(--segment-delay);
+        }
+
+        @keyframes drawSegment {
+          from {
+            stroke-dasharray: 0 219.91;
+          }
+          to {
+            stroke-dasharray: var(--segment-length) 219.91;
+          }
+        }
+
+        .equity-center-text,
+        .equity-legend-item,
+        .equity-number {
+          opacity: 0;
+        }
+
+        .equity-fade-in {
+          animation: equityFadeIn 0.15s ease-out forwards;
+          animation-delay: var(--fade-delay);
+        }
+
+        @keyframes equityFadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
         }
 
         @media (max-width: 968px) {
