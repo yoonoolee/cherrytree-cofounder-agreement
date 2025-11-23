@@ -60,7 +60,7 @@ function Auth({ onLogin }) {
 
   const handleEmailChange = (value) => {
     setEmail(value);
-    setEmailError(validateEmail(value));
+    setEmailError(''); // Clear error when typing
     setCredentialError(''); // Clear credential error when typing
   };
 
@@ -362,9 +362,11 @@ function Auth({ onLogin }) {
                 placeholder="tim@cherrytree.app"
                 autoFocus
               />
-              {emailError && (
-                <p className="text-xs text-red-950 mt-1">{emailError}</p>
-              )}
+              <div className="h-4 mt-1">
+                {emailError && (
+                  <p className="text-xs text-red-950">{emailError}</p>
+                )}
+              </div>
             </div>
 
             <div className="animate-fade-up-delay-2">
@@ -396,9 +398,11 @@ function Auth({ onLogin }) {
                   )}
                 </button>
               </div>
-              {credentialError && (
-                <p className="text-xs text-red-950 mt-1">{credentialError}</p>
-              )}
+              <div className="h-4 mt-1">
+                {credentialError && (
+                  <p className="text-xs text-red-950">{credentialError}</p>
+                )}
+              </div>
             </div>
 
             <button
@@ -482,9 +486,11 @@ function Auth({ onLogin }) {
                 placeholder="tim@cherrytree.app"
                 autoFocus
               />
-              {emailError && (
-                <p className="text-xs text-red-950 mt-1">{emailError}</p>
-              )}
+              <div className="h-4 mt-1">
+                {emailError && (
+                  <p className="text-xs text-red-950">{emailError}</p>
+                )}
+              </div>
             </div>
 
             <div className="animate-fade-up-delay-2">
@@ -629,9 +635,11 @@ function Auth({ onLogin }) {
                 placeholder="tim@cherrytree.app"
                 autoFocus
               />
-              {emailError && (
-                <p className="text-xs text-red-950 mt-1">{emailError}</p>
-              )}
+              <div className="h-4 mt-1">
+                {emailError && (
+                  <p className="text-xs text-red-950">{emailError}</p>
+                )}
+              </div>
             </div>
 
             <button
