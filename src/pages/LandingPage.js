@@ -651,7 +651,7 @@ function LandingPage() {
                 <div className={contractCardsFading ? 'slide-out-left' : ''} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {[
                     { title: 'Cofounders', content: 'Steve Jobs\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Steve Woz\nRon Wayne' },
-                    { title: 'Equity', content: '40% - 40% - 20%' },
+                    { title: 'Equity', content: '45% - 45% - 10%' },
                     { title: 'Vesting', content: '4 years with a 1 year cliff' },
                     { title: 'And more', content: '' }
                   ].map((card, i) => (
@@ -867,9 +867,9 @@ function LandingPage() {
                         fill="none"
                         stroke="#cccccc"
                         strokeWidth="13"
-                        strokeDasharray="87.96 131.95"
+                        strokeDasharray="98.96 120.95"
                         strokeDashoffset="0"
-                        style={{ '--segment-delay': '1.62s', '--segment-length': '87.96' }}
+                        style={{ '--segment-delay': '1.62s', '--segment-length': '98.96' }}
                       />
                       <circle
                         className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
@@ -879,9 +879,9 @@ function LandingPage() {
                         fill="none"
                         stroke="#cccccc"
                         strokeWidth="13"
-                        strokeDasharray="87.96 131.95"
-                        strokeDashoffset="-87.96"
-                        style={{ '--segment-delay': '1.89s', '--segment-length': '87.96' }}
+                        strokeDasharray="98.96 120.95"
+                        strokeDashoffset="-98.96"
+                        style={{ '--segment-delay': '1.89s', '--segment-length': '98.96' }}
                       />
                       <circle
                         className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
@@ -891,11 +891,11 @@ function LandingPage() {
                         fill="none"
                         stroke="#cccccc"
                         strokeWidth="13"
-                        strokeDasharray="43.98 175.93"
-                        strokeDashoffset="-175.92"
-                        style={{ '--segment-delay': '2.16s', '--segment-length': '43.98' }}
+                        strokeDasharray="21.99 197.92"
+                        strokeDashoffset="-197.92"
+                        style={{ '--segment-delay': '2.16s', '--segment-length': '21.99' }}
                       />
-                      {/* Segment 1 - 40% (Steve) */}
+                      {/* Segment 1 - 45% (Steve) */}
                       <circle
                         className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
                         cx="50"
@@ -904,11 +904,11 @@ function LandingPage() {
                         fill="none"
                         stroke="#d0d0d0"
                         strokeWidth="12"
-                        strokeDasharray="87.96 131.95"
+                        strokeDasharray="98.96 120.95"
                         strokeDashoffset="0"
-                        style={{ '--segment-delay': '1.62s', '--segment-length': '87.96' }}
+                        style={{ '--segment-delay': '1.62s', '--segment-length': '98.96' }}
                       />
-                      {/* Segment 2 - 40% (Woz) */}
+                      {/* Segment 2 - 45% (Woz) */}
                       <circle
                         className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
                         cx="50"
@@ -917,11 +917,11 @@ function LandingPage() {
                         fill="none"
                         stroke="#f0f0f0"
                         strokeWidth="12"
-                        strokeDasharray="87.96 131.95"
-                        strokeDashoffset="-87.96"
-                        style={{ '--segment-delay': '1.89s', '--segment-length': '87.96' }}
+                        strokeDasharray="98.96 120.95"
+                        strokeDashoffset="-98.96"
+                        style={{ '--segment-delay': '1.89s', '--segment-length': '98.96' }}
                       />
-                      {/* Segment 3 - 20% (Ron) */}
+                      {/* Segment 3 - 10% (Ron) */}
                       <circle
                         className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
                         cx="50"
@@ -930,9 +930,9 @@ function LandingPage() {
                         fill="none"
                         stroke="#ffffff"
                         strokeWidth="12"
-                        strokeDasharray="43.98 175.93"
-                        strokeDashoffset="-175.92"
-                        style={{ '--segment-delay': '2.16s', '--segment-length': '43.98' }}
+                        strokeDasharray="21.99 197.92"
+                        strokeDashoffset="-197.92"
+                        style={{ '--segment-delay': '2.16s', '--segment-length': '21.99' }}
                       />
                     </svg>
                   </div>
@@ -940,9 +940,9 @@ function LandingPage() {
                   {/* Legend */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {[
-                      { name: 'Steve J.', percent: '40%', color: '#d0d0d0', border: false, delay: '2.43s' },
-                      { name: 'Steve W.', percent: '40%', color: '#f0f0f0', border: false, delay: '2.52s' },
-                      { name: 'Ron W.', percent: '20%', color: '#ffffff', border: true, delay: '2.61s' }
+                      { name: 'Steve J.', percent: '45%', color: '#d0d0d0', border: false, delay: '2.43s' },
+                      { name: 'Steve W.', percent: '45%', color: '#f0f0f0', border: false, delay: '2.52s' },
+                      { name: 'Ron W.', percent: '10%', color: '#ffffff', border: true, delay: '2.61s' }
                     ].map((item, i) => (
                       <div
                         key={i}
@@ -1249,7 +1249,7 @@ function LandingPage() {
         }
 
         .feature-visual {
-          background: #ffffff;
+          background: #fefefe;
           border-radius: 8px;
           box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
           overflow: hidden;
