@@ -18,6 +18,9 @@ function LandingPage() {
   const [equityChartVisible, setEquityChartVisible] = useState(false);
   const [equityChartFading, setEquityChartFading] = useState(false);
   const [equityAnimationCycle, setEquityAnimationCycle] = useState(0);
+  const [expertGuidanceVisible, setExpertGuidanceVisible] = useState(false);
+  const [expertGuidanceFading, setExpertGuidanceFading] = useState(false);
+  const [expertGuidanceAnimationCycle, setExpertGuidanceAnimationCycle] = useState(0);
   const [featuresInView, setFeaturesInView] = useState(false);
   const featuresRef = useRef(null);
   const [typedAnd, setTypedAnd] = useState('');
@@ -147,15 +150,45 @@ function LandingPage() {
     };
   }, [activeFeature, featuresInView, equityAnimationCycle]);
 
-  // Auto-rotate for Expert Guidance tab only (tabs 0 and 1 have their own cycles)
+  // Expert Guidance animation with 2 cycles then auto-advance
   useEffect(() => {
-    if (!featuresInView || activeFeature === 0 || activeFeature === 1) return;
+    if (activeFeature !== 2 || !featuresInView) {
+      setExpertGuidanceVisible(false);
+      setExpertGuidanceFading(false);
+      setExpertGuidanceAnimationCycle(0);
+      return;
+    }
 
-    const interval = setInterval(() => {
-      setActiveFeature((prev) => (prev + 1) % 3);
-    }, 8000);
-    return () => clearInterval(interval);
-  }, [activeFeature, featuresInView]);
+    // Start animation
+    setExpertGuidanceFading(false);
+    setExpertGuidanceVisible(false);
+    const startTimer = setTimeout(() => {
+      setExpertGuidanceVisible(true);
+    }, 50);
+
+    // After animation completes (4s), start fade out
+    const fadeTimer = setTimeout(() => {
+      setExpertGuidanceFading(true);
+    }, 4000);
+
+    // After fade out (0.8s), either restart or advance
+    const cycleTimer = setTimeout(() => {
+      if (expertGuidanceAnimationCycle < 1) {
+        // Restart for second cycle
+        setExpertGuidanceAnimationCycle(prev => prev + 1);
+      } else {
+        // After 2 cycles, move to first tab
+        setActiveFeature(0);
+        setExpertGuidanceAnimationCycle(0);
+      }
+    }, 4800);
+
+    return () => {
+      clearTimeout(startTimer);
+      clearTimeout(fadeTimer);
+      clearTimeout(cycleTimer);
+    };
+  }, [activeFeature, featuresInView, expertGuidanceAnimationCycle]);
 
   // Typing animation for "and"
   useEffect(() => {
@@ -966,15 +999,189 @@ function LandingPage() {
 
               {/* Expert Guidance */}
               <div
-                className={`visual-content ${activeFeature === 2 ? 'active' : ''}`}
+                className={`visual-content ${activeFeature === 2 ? 'active' : ''} ${expertGuidanceFading ? 'fade-out' : ''}`}
                 id="expert-guidance"
                 style={{
                   opacity: activeFeature === 2 ? 1 : 0,
                   transform: activeFeature === 2 ? 'scale(1)' : 'scale(0.95)',
-                  pointerEvents: activeFeature === 2 ? 'auto' : 'none'
+                  pointerEvents: activeFeature === 2 ? 'auto' : 'none',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'stretch',
+                  padding: '80px 40px 40px 40px',
+                  gap: '32px'
                 }}
               >
-                <img src="https://i.imgur.com/UkaZJir.png" alt="Expert Guidance" />
+                {/* Contact icons - top center */}
+                <div
+                  className={`contact-icons ${expertGuidanceVisible ? 'contact-icons-visible' : ''}`}
+                  style={{
+                    position: 'absolute',
+                    top: '50px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    display: 'flex',
+                    gap: '12px'
+                  }}
+                >
+                  {/* Email icon */}
+                  <div
+                    className={`contact-icon ${expertGuidanceVisible ? 'contact-icon-visible' : ''}`}
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e5e7eb',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                      '--icon-delay': '0s'
+                    }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c8590" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="4" width="20" height="16" rx="2"/>
+                      <path d="M22 7l-10 7L2 7"/>
+                    </svg>
+                  </div>
+                  {/* Text/Message icon */}
+                  <div
+                    className={`contact-icon ${expertGuidanceVisible ? 'contact-icon-visible' : ''}`}
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e5e7eb',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                      '--icon-delay': '0.15s'
+                    }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c8590" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                  </div>
+                  {/* Call icon */}
+                  <div
+                    className={`contact-icon ${expertGuidanceVisible ? 'contact-icon-visible' : ''}`}
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e5e7eb',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                      '--icon-delay': '0.3s'
+                    }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c8590" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Question bubble - from right */}
+                <div
+                  className={`speech-box-right ${expertGuidanceVisible ? 'speech-box-right-visible' : ''}`}
+                  style={{
+                    width: '400px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '16px',
+                    border: '1px solid #e5e7eb',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                    padding: '24px',
+                    position: 'relative',
+                    alignSelf: 'flex-end'
+                  }}
+                >
+                  {/* Speech bubble tail - right side */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      right: '-10px',
+                      top: '24px',
+                      width: '0',
+                      height: '0',
+                      borderTop: '10px solid transparent',
+                      borderBottom: '10px solid transparent',
+                      borderLeft: '10px solid #ffffff',
+                      filter: 'drop-shadow(2px 0 1px rgba(0, 0, 0, 0.05))'
+                    }}
+                  />
+                  <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590', marginBottom: '12px', display: 'block' }}>Your Question</span>
+
+                  {/* Animated text lines */}
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                      { width: '100%', delay: 0.3 },
+                      { width: '100%', delay: 0.45 },
+                      { width: '60%', delay: 0.6 }
+                    ].map((line, i) => (
+                      <div
+                        key={i}
+                        className={`text-line ${expertGuidanceVisible ? 'text-line-visible' : ''}`}
+                        style={{
+                          width: line.width,
+                          '--line-delay': `${line.delay}s`
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Expert response bubble - from left */}
+                <div
+                  className={`speech-box ${expertGuidanceVisible ? 'speech-box-visible' : ''}`}
+                  style={{
+                    width: '400px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '16px',
+                    border: '1px solid #e5e7eb',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                    padding: '24px',
+                    position: 'relative',
+                    alignSelf: 'flex-start'
+                  }}
+                >
+                  {/* Speech bubble tail - left side */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: '-10px',
+                      top: '24px',
+                      width: '0',
+                      height: '0',
+                      borderTop: '10px solid transparent',
+                      borderBottom: '10px solid transparent',
+                      borderRight: '10px solid #ffffff',
+                      filter: 'drop-shadow(-2px 0 1px rgba(0, 0, 0, 0.05))'
+                    }}
+                  />
+                  <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590', marginBottom: '12px', display: 'block' }}>Expert Answer</span>
+
+                  {/* Animated text lines */}
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                      { width: '100%', delay: 1.2 },
+                      { width: '100%', delay: 1.35 },
+                      { width: '100%', delay: 1.5 },
+                      { width: '45%', delay: 1.65 }
+                    ].map((line, i) => (
+                      <div
+                        key={i}
+                        className={`text-line ${expertGuidanceVisible ? 'text-line-visible' : ''}`}
+                        style={{
+                          width: line.width,
+                          '--line-delay': `${line.delay}s`
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1356,13 +1563,79 @@ function LandingPage() {
           transition: stroke-dashoffset 0.5s ease-out var(--arrow-delay);
         }
 
-        #expert-guidance img {
-          width: 390px;
-          height: 568px;
-          object-fit: cover;
-          border-radius: 8px;
-          border: 1px solid #ccc;
-          background: #fff;
+        /* Speech box fade animations */
+        .speech-box {
+          opacity: 0;
+          transition: opacity 0.5s ease-out 1.1s;
+        }
+
+        .speech-box-visible {
+          opacity: 1;
+        }
+
+        .speech-box-right {
+          opacity: 0;
+          transition: opacity 0.5s ease-out;
+        }
+
+        .speech-box-right-visible {
+          opacity: 1;
+        }
+
+        .contact-icon {
+          opacity: 0;
+          transform: scale(0) translateY(-10px);
+          transition: opacity 0.5s ease-out;
+        }
+
+        .contact-icon-visible {
+          animation: iconBounce 0.5s ease-out forwards;
+          animation-delay: var(--icon-delay);
+        }
+
+        .contact-icon-visible.fade-out-icon {
+          opacity: 0;
+          transform: scale(1) translateY(0);
+          animation: none;
+        }
+
+        @keyframes iconBounce {
+          0% {
+            opacity: 0;
+            transform: scale(0) translateY(-10px);
+          }
+          60% {
+            opacity: 1;
+            transform: scale(1.15) translateY(0);
+          }
+          80% {
+            transform: scale(0.95) translateY(0);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+
+        #expert-guidance.fade-out .speech-box,
+        #expert-guidance.fade-out .speech-box-right {
+          opacity: 0;
+          transition: opacity 0.5s ease-out;
+        }
+
+        #expert-guidance.fade-out .contact-icon {
+          animation: iconFadeOut 0.5s ease-out forwards;
+        }
+
+        @keyframes iconFadeOut {
+          0% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(1) translateY(0);
+          }
         }
 
         /* Equity Calculator Pie Chart Animations */
