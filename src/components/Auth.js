@@ -310,8 +310,11 @@ function Auth({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-white">
-      <div className="bg-transparent p-8 w-full max-w-md">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 bg-white relative overflow-hidden"
+      style={{ cursor: 'url(/images/cherry-cursor.png), auto' }}
+    >
+      <div className="bg-white rounded-lg border border-gray-200 shadow-lg p-8 w-full max-w-md relative z-10" style={{ cursor: 'auto' }}>
         {/* Header */}
         <div className="mb-6 animate-fade-up">
           {step === 'signin' && (
