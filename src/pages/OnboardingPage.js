@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { db, auth } from '../firebase';
@@ -8,6 +8,7 @@ import { signOut } from 'firebase/auth';
 function OnboardingPage() {
   const navigate = useNavigate();
   const { currentUser } = useUser();
+  const [videoOpacity, setVideoOpacity] = useState(0);
 
   const handleGetStarted = async () => {
     // Mark onboarding as complete
@@ -47,8 +48,50 @@ function OnboardingPage() {
             <p className="text-lg text-gray-600 mb-8">
               You and your cofounders will answer a series of guided questions. Once you're done, we'll turn your responses into a fully complete, ready-to-use Cofounder Agreement.
             </p>
-            <div className="w-full aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-              <span className="text-gray-400">Screen recording demo</span>
+            <div className="w-full bg-white rounded-lg overflow-hidden border border-gray-200 shadow-lg" style={{ aspectRatio: '1100/595' }}>
+              <video
+                autoPlay
+                muted
+                playsInline
+                ref={(video) => {
+                  if (video) video.playbackRate = 1.2;
+                }}
+                onTimeUpdate={(e) => {
+                  const video = e.target;
+                  const duration = video.duration;
+                  const currentTime = video.currentTime;
+                  const fadeInTime = 0.3;
+                  const fadeOutTime = 0.8;
+
+                  if (currentTime < fadeInTime) {
+                    const progress = currentTime / fadeInTime;
+                    setVideoOpacity(progress * progress);
+                  } else if (currentTime > duration - fadeOutTime) {
+                    const progress = (duration - currentTime) / fadeOutTime;
+                    setVideoOpacity(progress * progress);
+                  } else {
+                    setVideoOpacity(1);
+                  }
+                }}
+                onLoadedData={() => setVideoOpacity(0)}
+                onEnded={(e) => {
+                  const video = e.target;
+                  setTimeout(() => {
+                    video.currentTime = 0;
+                    video.play();
+                  }, 1000);
+                }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  display: 'block',
+                  opacity: videoOpacity,
+                  transition: 'opacity 0.15s ease-out'
+                }}
+              >
+                <source src="/images/Cherrytree - Cofounder Agreements for Early-Stage Teams 11-21-2025 20-27-31.mp4" type="video/mp4" />
+              </video>
             </div>
           </div>
         </div>
@@ -61,7 +104,7 @@ function OnboardingPage() {
             onClick={handleGetStarted}
             className="next-button bg-black text-white px-7 py-2 rounded font-normal hover:bg-[#1a1a1a] transition flex items-center gap-2"
           >
-            Get Started
+            Let's Begin
             <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>

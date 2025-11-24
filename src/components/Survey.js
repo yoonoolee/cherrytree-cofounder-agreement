@@ -1239,20 +1239,20 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                     .cursor-black {
                       top: 20px;
                       left: 20px;
-                      animation: blackCursorMove 6s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+                      animation: blackCursorMove 4s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
                     }
 
                     /* White cursor - selects from dropdown */
                     .cursor-white {
                       top: 140px;
                       left: 320px;
-                      animation: whiteCursorMove 6s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+                      animation: whiteCursorMove 4s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
                     }
 
                     /* Typing text animation */
                     .typing-text::after {
                       content: '';
-                      animation: typeText 6s steps(1) infinite;
+                      animation: typeText 4s steps(1) infinite;
                     }
 
                     /* Text caret blink */
@@ -1262,7 +1262,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                       height: 14px;
                       background: black;
                       margin-left: 1px;
-                      animation: caretBlink 6s step-end infinite;
+                      animation: caretBlink 4s step-end infinite;
                     }
 
                     /* Dropdown visibility */
@@ -1270,19 +1270,19 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                       opacity: 0;
                       transform: scaleY(0);
                       transform-origin: top;
-                      animation: dropdownShow 6s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+                      animation: dropdownShow 4s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
                     }
 
                     /* Selected industry text */
                     .selected-industry::after {
                       content: 'Select industry';
                       color: #9CA3AF;
-                      animation: industrySelect 6s steps(1) infinite;
+                      animation: industrySelect 4s steps(1) infinite;
                     }
 
                     /* Highlight selected option */
                     .dropdown-option-1 {
-                      animation: optionHighlight 6s steps(1) infinite;
+                      animation: optionHighlight 4s steps(1) infinite;
                     }
 
                     @keyframes blackCursorMove {
