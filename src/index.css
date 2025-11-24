@@ -616,3 +616,181 @@ select:disabled {
   transform: scaleX(1);
 }
 
+/* Landing page step card animations */
+
+/* Step 1: Invite animation */
+.step1-email::after {
+  content: '';
+  animation: step1Type 4s steps(1) infinite;
+}
+
+.step1-user1 {
+  animation: step1User1 4s ease-out infinite;
+}
+
+.step1-user2 {
+  animation: step1User2 4s ease-out infinite;
+}
+
+.step1-user3 {
+  animation: step1User3 4s ease-out infinite;
+}
+
+@keyframes step1Type {
+  0%, 5% { content: ''; }
+  7% { content: 'c'; }
+  9% { content: 'co'; }
+  11% { content: 'cof'; }
+  13% { content: 'cofo'; }
+  15% { content: 'cofou'; }
+  17% { content: 'cofoun'; }
+  19% { content: 'cofounde'; }
+  21% { content: 'cofounder'; }
+  23% { content: 'cofounder@'; }
+  25% { content: 'cofounder@e'; }
+  27% { content: 'cofounder@em'; }
+  29% { content: 'cofounder@ema'; }
+  31% { content: 'cofounder@emai'; }
+  33% { content: 'cofounder@email'; }
+  35% { content: 'cofounder@email.'; }
+  37% { content: 'cofounder@email.c'; }
+  39% { content: 'cofounder@email.co'; }
+  41%, 48% { content: 'cofounder@email.com'; }
+  50%, 100% { content: ''; }
+}
+
+@keyframes step1User1 {
+  0%, 10% { opacity: 0; transform: translateY(10px); }
+  15%, 100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes step1User2 {
+  0%, 52% { opacity: 0; transform: translateY(10px); }
+  58%, 100% { opacity: 1; transform: translateY(0); }
+}
+
+.step1-btn {
+  animation: step1BtnClick 4s ease-out infinite;
+}
+
+@keyframes step1BtnClick {
+  0%, 44% { transform: scale(1); background: black; }
+  46% { transform: scale(0.95); background: #333; }
+  48%, 100% { transform: scale(1); background: black; }
+}
+
+/* Step 2: Collab animation */
+.step2-cursor-black {
+  top: 16px;
+  left: 16px;
+  animation: step2BlackCursor 4s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+}
+
+.step2-cursor-white {
+  top: 100px;
+  left: 240px;
+  animation: step2WhiteCursor 4s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+}
+
+.step2-typing::after {
+  content: '';
+  animation: step2Type 4s steps(1) infinite;
+}
+
+.step2-caret {
+  display: inline-block;
+  width: 1px;
+  height: 12px;
+  background: black;
+  margin-left: 1px;
+  animation: step2Caret 4s step-end infinite;
+}
+
+.step2-dropdown {
+  opacity: 0;
+  transform: scaleY(0);
+  transform-origin: top;
+  animation: step2Dropdown 4s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+}
+
+.step2-industry::after {
+  content: 'Select...';
+  animation: step2Industry 4s steps(1) infinite;
+}
+
+.step2-option {
+  animation: step2Option 4s steps(1) infinite;
+}
+
+@keyframes step2BlackCursor {
+  0% { top: 16px; left: 16px; }
+  10% { top: 38px; left: 100px; }
+  15%, 100% { top: 38px; left: 100px; }
+}
+
+@keyframes step2WhiteCursor {
+  0%, 20% { top: 100px; left: 240px; }
+  30% { top: 95px; left: 260px; }
+  40%, 60% { top: 118px; left: 100px; }
+  70%, 100% { top: 118px; left: 100px; }
+}
+
+@keyframes step2Type {
+  0%, 15% { content: ''; }
+  20% { content: 'C'; }
+  25% { content: 'Ch'; }
+  30% { content: 'Che'; }
+  35%, 100% { content: 'Cherrytree'; }
+}
+
+@keyframes step2Caret {
+  0%, 15% { opacity: 1; }
+  16%, 18% { opacity: 0; }
+  19%, 100% { opacity: 1; }
+}
+
+@keyframes step2Dropdown {
+  0%, 35% { opacity: 0; transform: scaleY(0); }
+  40%, 55% { opacity: 1; transform: scaleY(1); }
+  60%, 100% { opacity: 0; transform: scaleY(0); }
+}
+
+@keyframes step2Industry {
+  0%, 55% { content: 'Select...'; color: #9CA3AF; }
+  60%, 100% { content: 'AI / ML'; color: #374151; }
+}
+
+@keyframes step2Option {
+  0%, 45% { background: white; }
+  50%, 55% { background: #F3F4F6; }
+  60%, 100% { background: white; }
+}
+
+/* Step 3: Review animation */
+.step3-check1-icon {
+  animation: step3Check1 4s ease-out infinite;
+}
+
+.step3-check2-icon {
+  animation: step3Check2 4s ease-out infinite;
+}
+
+.step3-check3-icon {
+  animation: step3Check3 4s ease-out infinite;
+}
+
+@keyframes step3Check1 {
+  0%, 20% { opacity: 0; transform: scale(0); }
+  30%, 100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes step3Check2 {
+  0%, 40% { opacity: 0; transform: scale(0); }
+  50%, 100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes step3Check3 {
+  0%, 60% { opacity: 0; transform: scale(0); }
+  70%, 100% { opacity: 1; transform: scale(1); }
+}
+

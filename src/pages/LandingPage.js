@@ -230,7 +230,8 @@ function LandingPage() {
   }, [typedToday]);
 
   // Scroll-based step detection with stacking card animation
-  const [cardOffsets, setCardOffsets] = useState([0, 0, 0]);
+  const [activeCard, setActiveCard] = useState(0);
+  const [cardProgress, setCardProgress] = useState([0, 0, 0]); // 0-1 progress for each card's shuffle
 
   useEffect(() => {
     const handleScroll = () => {
@@ -252,34 +253,25 @@ function LandingPage() {
         // Section has reached its sticky position, now calculate animation progress
         // based on how much further the user has scrolled
         const scrollDistance = settlingPoint - rect.top;
-        const totalScrollRange = windowHeight * 1.0;
+        const totalScrollRange = windowHeight * 1.5;
         scrollProgress = Math.max(0, Math.min(1, scrollDistance / totalScrollRange));
       }
 
-      // Card height + spacing (approximate)
-      const cardHeight = 280; // Approximate height of each card
-      const spacing = 10; // Gap between cards when spread out
+      // Calculate progress for each card's slide animation
+      // First 50% of scroll = content settles into sticky position, no card movement
+      // Last 50% = cards flick away
+      const delayedProgress = Math.max(0, (scrollProgress - 0.5) / 0.5);
+      const card0Progress = Math.min(1, Math.max(0, delayedProgress / 0.5));
+      const card1Progress = Math.min(1, Math.max(0, (delayedProgress - 0.5) / 0.5));
 
-      // Calculate offsets for each card based on scroll progress
-      // Card 1: Always at top (offset 0)
-      // Card 2: Slides down early (10-40% of scroll progress)
-      // Card 3: Slides down next (40-70% of scroll progress)
+      // Active card is whichever hasn't been fully shuffled yet
+      let newActiveCard = 0;
+      if (card0Progress >= 1) newActiveCard = 1;
+      if (card1Progress >= 1) newActiveCard = 2;
 
-      const card2Progress = Math.max(0, Math.min(1, (scrollProgress - 0.1) / 0.3));
-      const card3Progress = Math.max(0, Math.min(1, (scrollProgress - 0.4) / 0.3));
-
-      const newOffsets = [
-        0,
-        card2Progress * (cardHeight + spacing),
-        card2Progress * (cardHeight + spacing) + card3Progress * (cardHeight + spacing)
-      ];
-
-      setCardOffsets(newOffsets);
-
-      // Set active step based on which card is most "revealed"
-      if (scrollProgress < 0.3) setActiveStep(0);
-      else if (scrollProgress < 0.6) setActiveStep(1);
-      else setActiveStep(2);
+      setActiveCard(newActiveCard);
+      setCardProgress([card0Progress, card1Progress, 0]);
+      setActiveStep(newActiveCard);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -370,17 +362,17 @@ function LandingPage() {
     {
       step: '1',
       title: 'Invite your cofounders',
-      desc: <>Add your cofounders as collaborators. They must be<br />added to be included in the Cofounder Agreement.</>
+      desc: 'Add your cofounders as collaborators. They must be added to be included in the Cofounder Agreement.'
     },
     {
       step: '2',
       title: 'Collab on the agreement',
-      desc: <>You and your cofounders answer a set of guided questions together.<br />Nobody has to play "project manager" or relay answers.</>
+      desc: 'You and your cofounders answer a set of guided questions together. Nobody has to play "project manager" or relay answers.'
     },
     {
       step: '3',
       title: 'Do a final review',
-      desc: <>We take your responses and turn them into a Cofounder<br />Agreement, ready for your final review and signature.</>
+      desc: 'We take your responses and turn them into a Cofounder Agreement, ready for your final review and signature.'
     }
   ];
 
@@ -593,9 +585,9 @@ function LandingPage() {
       </section>
 
       {/* Process Section - Combined heading + cards */}
-      <section className="scroll-section scroll-section-early process-section px-6" style={{ paddingTop: '144px', paddingBottom: '240px' }}>
-        <div className="max-w-7xl mx-auto" style={{ minHeight: '180vh' }}>
-          <div className="sticky top-[120px] mx-auto" style={{ maxWidth: '720px' }}>
+      <section className="scroll-section scroll-section-early process-section px-6" style={{ paddingTop: '144px', paddingBottom: '120px', overflow: 'visible' }}>
+        <div className="max-w-7xl mx-auto" style={{ minHeight: '180vh', overflow: 'visible' }}>
+          <div className="sticky top-[120px] mx-auto" style={{ maxWidth: '720px', overflow: 'visible' }}>
             {/* Heading - now sticky with cards */}
             <div className="max-w-6xl mx-auto text-center mb-10">
               <h2 className="section-header font-heading text-[46px] font-medium mb-4">
@@ -611,29 +603,140 @@ function LandingPage() {
             </div>
 
             {/* Stacked Cards Container */}
-            <div style={{ height: '900px', position: 'relative' }}>
+            <div style={{ height: '510px', position: 'relative', perspective: '1000px', overflow: 'visible' }}>
               {steps.map((step, index) => {
-                const bgColors = ['#fafafa', '#f0f0f0', '#e8e8e8'];
+                const cardStyle = {
+                  background: '#ffffff',
+                  border: '1px solid rgba(0, 0, 0, 0.1)',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
+                };
                 return (
                   <div
                     key={index}
-                    className="absolute left-0 right-0 rounded-2xl border-2 border-gray-300 p-20 transition-all duration-700 ease-out"
+                    className="absolute left-0 right-0 rounded-lg p-12 py-24"
                     style={{
-                      top: `${15 * index}px`,
-                      transform: `translateY(${cardOffsets[index]}px)`,
+                      top: 0,
+                      transform: (() => {
+                        const progress = cardProgress[index];
+
+                        // Calculate base stack position (offset to show bottom edges)
+                        const cardsAbove = Math.min(index, activeCard);
+                        const stackOffset = (index - cardsAbove) * 8;
+
+                        if (progress > 0 && progress < 1) {
+                          // Card being flicked away
+                          const slideX = progress * 150;
+                          const slideY = progress * 30;
+                          const rotate = progress * 8;
+                          return `translateX(${slideX}%) translateY(${slideY + stackOffset}px) rotate(${rotate}deg)`;
+                        } else {
+                          // Card in stack position
+                          return `translateY(${stackOffset}px)`;
+                        }
+                      })(),
                       zIndex: 3 - index,
-                      opacity: 1,
-                      backgroundColor: bgColors[index],
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)'
+                      opacity: cardProgress[index] >= 1 ? 0 : 1,
+                      background: cardStyle.background,
+                      border: cardStyle.border,
+                      boxShadow: cardStyle.boxShadow,
+                      transition: 'transform 0.15s ease-out, opacity 0.15s ease-out'
                     }}
                   >
-                  <div className="text-center">
-                    <div className="font-medium text-[20px] mb-4" style={{ color: '#666' }}>
-                      {step.step}
+                  <div className="flex items-center gap-8">
+                    {/* Animation area */}
+                    <div className="relative bg-white/50 rounded-lg flex-shrink-0" style={{ width: '280px', height: '160px' }}>
+                      {index === 0 && (
+                        /* Step 1: Invite animation */
+                        <div className="p-4 h-full">
+                          <div className="flex gap-2 mb-3">
+                            <div className="step1-input flex-1 h-8 bg-white border border-gray-200 rounded px-2 flex items-center">
+                              <span className="step1-email text-sm text-gray-400"></span>
+                            </div>
+                            <div className="step1-btn h-8 px-3 bg-black text-white text-xs rounded flex items-center">Add</div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="step1-user1 text-sm text-gray-700 opacity-0">you@email.com</div>
+                            <div className="step1-user2 text-sm text-gray-700 opacity-0">cofounder@email.com</div>
+                          </div>
+                        </div>
+                      )}
+                      {index === 1 && (
+                        /* Step 2: Collab animation */
+                        <div className="p-4 h-full relative">
+                          <div className="step2-cursor-black absolute w-3 h-3 z-20">
+                            <svg viewBox="0 0 24 24" fill="black" className="w-3 h-3">
+                              <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
+                            </svg>
+                          </div>
+                          <div className="step2-cursor-white absolute w-3 h-3 z-20">
+                            <svg viewBox="0 0 24 24" fill="white" stroke="black" strokeWidth="1.5" className="w-3 h-3">
+                              <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
+                            </svg>
+                          </div>
+                          <div className="mb-3">
+                            <p className="text-xs text-gray-500 mb-1">Company Name</p>
+                            <div className="bg-white border border-gray-200 rounded px-2 py-1.5 text-sm h-7">
+                              <span className="step2-typing text-gray-700"></span>
+                              <span className="step2-caret"></span>
+                            </div>
+                          </div>
+                          <div className="relative">
+                            <p className="text-xs text-gray-500 mb-1">Industry</p>
+                            <div className="bg-white border border-gray-200 rounded px-2 py-1.5 text-sm h-7 flex items-center justify-between">
+                              <span className="step2-industry text-gray-400"></span>
+                              <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </div>
+                            <div className="step2-dropdown absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded shadow-lg overflow-hidden">
+                              <div className="step2-option px-2 py-1.5 text-xs text-gray-700">AI / ML</div>
+                              <div className="px-2 py-1.5 text-xs text-gray-700">Fintech</div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {index === 2 && (
+                        /* Step 3: Review animation */
+                        <div className="p-4 h-full flex items-center justify-center">
+                          <div className="bg-white rounded border border-gray-200 p-3 w-full">
+                            <p className="text-xs text-gray-500 mb-2">Cofounder Agreement</p>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <div className="step3-check1 w-4 h-4 rounded border border-gray-300 flex items-center justify-center">
+                                  <svg className="w-3 h-3 text-green-500 opacity-0 step3-check1-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                </div>
+                                <span className="text-xs text-gray-600">Equity Split</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="step3-check2 w-4 h-4 rounded border border-gray-300 flex items-center justify-center">
+                                  <svg className="w-3 h-3 text-green-500 opacity-0 step3-check2-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                </div>
+                                <span className="text-xs text-gray-600">Vesting Schedule</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="step3-check3 w-4 h-4 rounded border border-gray-300 flex items-center justify-center">
+                                  <svg className="w-3 h-3 text-green-500 opacity-0 step3-check3-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                </div>
+                                <span className="text-xs text-gray-600">IP Assignment</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div>
-                      <h3 className="text-[24px] font-medium mb-4 text-center" style={{ color: '#333333' }}>{step.title}</h3>
-                      <p className="text-[15px] text-center" style={{ color: '#666', lineHeight: '1.3' }}>{step.desc}</p>
+                    {/* Text content */}
+                    <div className="flex-1">
+                      <div className="font-medium text-[18px] mb-2" style={{ color: '#666' }}>
+                        Step {step.step}
+                      </div>
+                      <h3 className="text-[22px] font-medium mb-2" style={{ color: '#333333' }}>{step.title}</h3>
+                      <p className="text-[14px]" style={{ color: '#666', lineHeight: '1.4' }}>{step.desc}</p>
                     </div>
                   </div>
                 </div>
