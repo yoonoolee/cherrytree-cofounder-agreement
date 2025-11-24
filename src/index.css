@@ -706,18 +706,18 @@ select:disabled {
 .step2-cursor-black {
   top: 16px;
   left: 16px;
-  animation: step2BlackCursor 4s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+  animation: step2BlackCursor 6s ease-in-out infinite;
 }
 
 .step2-cursor-white {
   top: 100px;
   left: 240px;
-  animation: step2WhiteCursor 4s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+  animation: step2WhiteCursor 6s ease-in-out infinite;
 }
 
 .step2-typing::after {
   content: '';
-  animation: step2Type 4s steps(1) infinite;
+  animation: step2Type 6s steps(1) infinite;
 }
 
 .step2-caret {
@@ -726,23 +726,23 @@ select:disabled {
   height: 12px;
   background: black;
   margin-left: 1px;
-  animation: step2Caret 4s step-end infinite;
+  animation: step2Caret 6s step-end infinite;
 }
 
 .step2-dropdown {
   opacity: 0;
   transform: scaleY(0);
   transform-origin: top;
-  animation: step2Dropdown 4s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+  animation: step2Dropdown 6s ease-in-out infinite;
 }
 
 .step2-industry::after {
   content: 'Select...';
-  animation: step2Industry 4s steps(1) infinite;
+  animation: step2Industry 6s steps(1) infinite;
 }
 
 .step2-option {
-  animation: step2Option 4s steps(1) infinite;
+  animation: step2Option 6s steps(1) infinite;
 }
 
 @keyframes step2BlackCursor {

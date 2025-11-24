@@ -616,8 +616,8 @@ function LandingPage() {
                             <div className="step1-btn h-8 px-3 bg-gray-200 hover:bg-gray-300 text-gray-600 text-xs rounded flex items-center transition-colors">Add</div>
                           </div>
                           <div className="space-y-2">
-                            <div className="text-sm text-gray-700">you@email.com</div>
-                            <div className="step1-user2 text-sm text-gray-700 opacity-0">cofounder@email.com</div>
+                            <div className="text-sm text-gray-500">you@email.com</div>
+                            <div className="step1-user2 text-sm text-gray-500 opacity-0">cofounder@email.com</div>
                           </div>
                         </div>
                       )}
