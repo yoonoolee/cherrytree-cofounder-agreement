@@ -229,53 +229,30 @@ function LandingPage() {
     }
   }, [typedToday]);
 
-  // Scroll-based step detection with stacking card animation
-  const [activeCard, setActiveCard] = useState(0);
-  const [cardProgress, setCardProgress] = useState([0, 0, 0]); // 0-1 progress for each card's shuffle
+  // Scroll-based card reveal
+  const [revealedCards, setRevealedCards] = useState([false, false, false]);
 
   useEffect(() => {
     const handleScroll = () => {
-      const sectionElement = document.querySelector('.process-section');
-      if (!sectionElement) return;
-
-      const rect = sectionElement.getBoundingClientRect();
+      const cards = document.querySelectorAll('.process-card');
       const windowHeight = window.innerHeight;
 
-      // The sticky container has top-[120px], so it becomes sticky at rect.top = 120
-      // We only start animating cards AFTER the section has settled at this sticky position
-      // This ensures the "Built for early-stage cofounders" heading is already at the top
-      // before cards start revealing
-      const settlingPoint = 120;
-
-      let scrollProgress = 0;
-
-      if (rect.top <= settlingPoint) {
-        // Section has reached its sticky position, now calculate animation progress
-        // based on how much further the user has scrolled
-        const scrollDistance = settlingPoint - rect.top;
-        const totalScrollRange = windowHeight * 1.5;
-        scrollProgress = Math.max(0, Math.min(1, scrollDistance / totalScrollRange));
-      }
-
-      // Calculate progress for each card's slide animation
-      // First 50% of scroll = content settles into sticky position, no card movement
-      // Last 50% = cards flick away
-      const delayedProgress = Math.max(0, (scrollProgress - 0.5) / 0.5);
-      const card0Progress = Math.min(1, Math.max(0, delayedProgress / 0.5));
-      const card1Progress = Math.min(1, Math.max(0, (delayedProgress - 0.5) / 0.5));
-
-      // Active card is whichever hasn't been fully shuffled yet
-      let newActiveCard = 0;
-      if (card0Progress >= 1) newActiveCard = 1;
-      if (card1Progress >= 1) newActiveCard = 2;
-
-      setActiveCard(newActiveCard);
-      setCardProgress([card0Progress, card1Progress, 0]);
-      setActiveStep(newActiveCard);
+      setRevealedCards(prev => {
+        const newRevealed = [...prev];
+        cards.forEach((card, index) => {
+          const rect = card.getBoundingClientRect();
+          // Reveal when card is 80% into viewport
+          if (rect.top < windowHeight * 0.8) {
+            newRevealed[index] = true;
+          }
+        });
+        return newRevealed;
+      });
     };
 
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Call once on mount
+    // Delay initial check to ensure cards are rendered
+    setTimeout(handleScroll, 100);
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -585,10 +562,10 @@ function LandingPage() {
       </section>
 
       {/* Process Section - Combined heading + cards */}
-      <section className="scroll-section scroll-section-early process-section px-6" style={{ paddingTop: '144px', paddingBottom: '120px', overflow: 'visible' }}>
-        <div className="max-w-7xl mx-auto" style={{ minHeight: '180vh', overflow: 'visible' }}>
-          <div className="sticky top-[120px] mx-auto" style={{ maxWidth: '720px', overflow: 'visible' }}>
-            {/* Heading - now sticky with cards */}
+      <section className="scroll-section scroll-section-early process-section px-6" style={{ paddingTop: '144px', paddingBottom: '120px' }}>
+        <div className="max-w-7xl mx-auto">
+          <div className="mx-auto" style={{ maxWidth: '720px' }}>
+            {/* Heading */}
             <div className="max-w-6xl mx-auto text-center mb-10">
               <h2 className="section-header font-heading text-[46px] font-medium mb-4">
                 Built for <span className="underline-animate">early-stage
@@ -602,67 +579,49 @@ function LandingPage() {
               </p>
             </div>
 
-            {/* Stacked Cards Container */}
-            <div style={{ height: '510px', position: 'relative', perspective: '1000px', overflow: 'visible' }}>
+            {/* Cards - Simple vertical stack */}
+            <div className="space-y-4">
               {steps.map((step, index) => {
                 const cardStyle = {
-                  background: '#ffffff',
+                  background: '#fcfcfc',
                   border: '1px solid rgba(0, 0, 0, 0.1)',
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
                 };
                 return (
                   <div
                     key={index}
-                    className="absolute left-0 right-0 rounded-lg p-12 py-24"
+                    className={`process-card rounded-lg p-12 py-20 transition-all duration-500 ${
+                      revealedCards[index]
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 translate-y-8'
+                    }`}
                     style={{
-                      top: 0,
-                      transform: (() => {
-                        const progress = cardProgress[index];
-
-                        // Calculate base stack position (offset to show bottom edges)
-                        const cardsAbove = Math.min(index, activeCard);
-                        const stackOffset = (index - cardsAbove) * 8;
-
-                        if (progress > 0 && progress < 1) {
-                          // Card being flicked away
-                          const slideX = progress * 150;
-                          const slideY = progress * 30;
-                          const rotate = progress * 8;
-                          return `translateX(${slideX}%) translateY(${slideY + stackOffset}px) rotate(${rotate}deg)`;
-                        } else {
-                          // Card in stack position
-                          return `translateY(${stackOffset}px)`;
-                        }
-                      })(),
-                      zIndex: 3 - index,
-                      opacity: cardProgress[index] >= 1 ? 0 : 1,
                       background: cardStyle.background,
                       border: cardStyle.border,
-                      boxShadow: cardStyle.boxShadow,
-                      transition: 'transform 0.15s ease-out, opacity 0.15s ease-out'
+                      boxShadow: cardStyle.boxShadow
                     }}
                   >
                   <div className="flex items-center gap-8">
                     {/* Animation area */}
-                    <div className="relative bg-white/50 rounded-lg flex-shrink-0" style={{ width: '280px', height: '160px' }}>
+                    <div className="relative rounded-lg flex-shrink-0" style={{ width: '280px', height: '160px' }}>
                       {index === 0 && (
                         /* Step 1: Invite animation */
-                        <div className="p-4 h-full">
+                        <div className="p-4 h-full flex flex-col justify-center">
                           <div className="flex gap-2 mb-3">
                             <div className="step1-input flex-1 h-8 bg-white border border-gray-200 rounded px-2 flex items-center">
                               <span className="step1-email text-sm text-gray-400"></span>
                             </div>
-                            <div className="step1-btn h-8 px-3 bg-black text-white text-xs rounded flex items-center">Add</div>
+                            <div className="step1-btn h-8 px-3 bg-gray-200 hover:bg-gray-300 text-gray-600 text-xs rounded flex items-center transition-colors">Add</div>
                           </div>
                           <div className="space-y-2">
-                            <div className="step1-user1 text-sm text-gray-700 opacity-0">you@email.com</div>
+                            <div className="text-sm text-gray-700">you@email.com</div>
                             <div className="step1-user2 text-sm text-gray-700 opacity-0">cofounder@email.com</div>
                           </div>
                         </div>
                       )}
                       {index === 1 && (
                         /* Step 2: Collab animation */
-                        <div className="p-4 h-full relative">
+                        <div className="p-4 h-full relative flex flex-col justify-center">
                           <div className="step2-cursor-black absolute w-3 h-3 z-20">
                             <svg viewBox="0 0 24 24" fill="black" className="w-3 h-3">
                               <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
@@ -696,36 +655,27 @@ function LandingPage() {
                         </div>
                       )}
                       {index === 2 && (
-                        /* Step 3: Review animation */
-                        <div className="p-4 h-full flex items-center justify-center">
-                          <div className="bg-white rounded border border-gray-200 p-3 w-full">
+                        /* Step 3: Review animation - document scanner */
+                        <div className="p-4 h-full flex items-center justify-center relative">
+                          <div className="bg-white rounded border border-gray-200 p-3 w-full h-full relative">
                             <p className="text-xs text-gray-500 mb-2">Cofounder Agreement</p>
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <div className="step3-check1 w-4 h-4 rounded border border-gray-300 flex items-center justify-center">
-                                  <svg className="w-3 h-3 text-green-500 opacity-0 step3-check1-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </div>
-                                <span className="text-xs text-gray-600">Equity Split</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className="step3-check2 w-4 h-4 rounded border border-gray-300 flex items-center justify-center">
-                                  <svg className="w-3 h-3 text-green-500 opacity-0 step3-check2-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </div>
-                                <span className="text-xs text-gray-600">Vesting Schedule</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className="step3-check3 w-4 h-4 rounded border border-gray-300 flex items-center justify-center">
-                                  <svg className="w-3 h-3 text-green-500 opacity-0 step3-check3-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </div>
-                                <span className="text-xs text-gray-600">IP Assignment</span>
-                              </div>
+                            <div className="space-y-1.5">
+                              {/* Paragraph 1 */}
+                              <div className="h-1 bg-gray-200 rounded w-full"></div>
+                              <div className="h-1 bg-gray-200 rounded w-11/12"></div>
+                              <div className="h-1 bg-gray-200 rounded w-3/4"></div>
+
+                              {/* Paragraph 2 */}
+                              <div className="h-1 bg-gray-200 rounded w-full mt-3"></div>
+                              <div className="h-1 bg-gray-200 rounded w-4/5"></div>
+                              <div className="h-1 bg-gray-200 rounded w-full"></div>
+
+                              {/* Paragraph 3 */}
+                              <div className="h-1 bg-gray-200 rounded w-5/6 mt-3"></div>
+                              <div className="h-1 bg-gray-200 rounded w-full"></div>
                             </div>
+                            {/* Scanner line */}
+                            <div className="step3-scanner absolute left-2 right-2 h-0.5 bg-gray-300" style={{ boxShadow: '0 0 6px 1px rgba(209, 213, 219, 0.5)' }}></div>
                           </div>
                         </div>
                       )}
