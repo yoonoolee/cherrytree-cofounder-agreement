@@ -486,6 +486,29 @@ select:disabled {
   }
 }
 
+/* Bounce animation for process cards */
+.card-bounce-in {
+  animation: cardBounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes cardBounceIn {
+  0% {
+    opacity: 0;
+    transform: translateY(32px) scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1.02);
+  }
+  70% {
+    transform: translateY(4px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* Scroll-triggered section - no animation, just triggers for children */
 .scroll-section {
   opacity: 1;

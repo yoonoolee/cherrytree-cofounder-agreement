@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Spreadsheet from 'react-spreadsheet';
 import './EquityCalculator.css';
 
-function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftChange, onSubmit, isReadOnly, hasSubmitted, submissionError, lastSubmittedAt }) {
+function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftChange, onSubmit, isReadOnly, hasSubmitted, submissionError, lastSubmittedAt, wiggle }) {
   // Function to get cofounder name from email
   const getCofounderName = (email) => {
     // Find index of this collaborator
@@ -483,7 +483,7 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
     <div className="flex flex-col">
       {/* Spreadsheet Container - No scrolling */}
       <div className="flex flex-col">
-        <div className="spreadsheet-wrapper" style={{ overflow: 'visible' }}>
+        <div className={`spreadsheet-wrapper ${wiggle ? 'animate-wiggle' : ''}`} style={{ overflow: 'visible' }}>
           <div
             ref={spreadsheetRef}
             className="single-click-edit spreadsheet-scroll-container"
@@ -503,7 +503,7 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
         </div>
 
         {/* Equity Progress Bar */}
-        <div className="flex justify-center py-6 px-4 bg-gray-50">
+        <div className="flex justify-center py-6 px-4">
           <EquityProgressBar equity={currentEquity} />
         </div>
 

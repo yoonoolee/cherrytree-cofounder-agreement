@@ -32,6 +32,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
   const [slideDirection, setSlideDirection] = React.useState(''); // 'exit-left', 'exit-right', 'enter-from-left', 'enter-from-right'
   const [isAnimating, setIsAnimating] = React.useState(false);
   const [showInstructions, setShowInstructions] = React.useState(false);
+  const [wiggleSpreadsheet, setWiggleSpreadsheet] = React.useState(false);
 
   // Helper function to change view with animation
   const changeView = (newView) => {
@@ -168,6 +169,13 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
   // Handle submit - copy draft to submitted
   const handleSubmit = () => {
     const userDraft = formData.equityCalculatorDraft?.[currentUserEmail];
+
+    // If no data, wiggle the spreadsheet instead of showing error
+    if (!userDraft) {
+      setWiggleSpreadsheet(true);
+      setTimeout(() => setWiggleSpreadsheet(false), 500);
+      return false;
+    }
 
     // Validate the data
     const validation = validateSpreadsheetData(userDraft);
@@ -416,7 +424,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
 
         {/* Single container that stays intact - only content inside animates */}
         <div className="mb-8">
-          <div style={{ minHeight: '700px', overflow: 'visible' }} className="bg-gray-50 rounded-lg p-6">
+          <div style={{ minHeight: '700px', overflow: 'visible' }} className="rounded-lg p-6">
             {/* Edit View - Show calculator */}
             {viewMode === 'edit' && (
               <div className={`flex flex-col ${
@@ -436,6 +444,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                   hasSubmitted={hasSubmitted}
                   submissionError={submissionError}
                   lastSubmittedAt={hasSubmitted ? formData.equityCalculatorSubmitted[currentUserEmail].submittedAt : null}
+                  wiggle={wiggleSpreadsheet}
                 />
               </div>
             )}

@@ -311,9 +311,16 @@ function Auth({ onLogin }) {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 bg-white relative overflow-hidden"
+      className="min-h-screen flex items-center justify-center p-4 bg-gray-50 relative overflow-hidden"
       style={{ cursor: 'url(/images/cherry-cursor.png), auto' }}
     >
+      {/* Abstract background shapes */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <div className="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-gray-200 opacity-30 blur-3xl"></div>
+        <div className="absolute bottom-[-15%] left-[-10%] w-[500px] h-[500px] rounded-full bg-gray-300 opacity-20 blur-3xl"></div>
+        <div className="absolute top-[40%] left-[10%] w-[200px] h-[200px] rounded-full bg-gray-200 opacity-25 blur-2xl"></div>
+        <div className="absolute top-[20%] right-[20%] w-[150px] h-[150px] rounded-full bg-gray-100 opacity-40 blur-xl"></div>
+      </div>
       <div className="bg-white rounded-lg border border-gray-200 shadow-lg p-8 w-full max-w-md relative z-10" style={{ cursor: 'auto' }}>
         {/* Header */}
         <div className="mb-6 animate-fade-up">

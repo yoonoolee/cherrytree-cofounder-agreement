@@ -241,9 +241,11 @@ function LandingPage() {
         const newRevealed = [...prev];
         cards.forEach((card, index) => {
           const rect = card.getBoundingClientRect();
-          // Reveal when card is 80% into viewport
-          if (rect.top < windowHeight * 0.8) {
+          // Reveal when card is 80% into viewport, hide when scrolled out
+          if (rect.top < windowHeight * 0.8 && rect.bottom > 0) {
             newRevealed[index] = true;
+          } else {
+            newRevealed[index] = false;
           }
         });
         return newRevealed;
@@ -590,9 +592,9 @@ function LandingPage() {
                 return (
                   <div
                     key={index}
-                    className={`process-card rounded-lg p-12 py-20 transition-all duration-500 ${
+                    className={`process-card rounded-lg p-12 py-20 ${
                       revealedCards[index]
-                        ? 'opacity-100 translate-y-0'
+                        ? 'card-bounce-in'
                         : 'opacity-0 translate-y-8'
                     }`}
                     style={{
