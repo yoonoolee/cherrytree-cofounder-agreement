@@ -360,7 +360,7 @@ select:disabled {
 
 /* Conditional question sections with left border accent */
 .conditional-section {
-  border-left: 4px solid #D1D5DB;
+  border-left: 2px solid #D1D5DB;
   padding-left: 1.5rem;
   padding-top: 1rem;
   padding-bottom: 1rem;
