@@ -173,7 +173,17 @@ function DashboardPage() {
       <div className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
         <img src="/images/cherrytree-logo.png" alt="Cherrytree" className="h-6" />
         <button
-          onClick={() => signOut(auth).then(() => navigate('/'))}
+          onClick={() => {
+            signOut(auth).then(() => {
+              // Check if we're on a subdomain (like my.cherrytree.app)
+              const isActualDomain = window.location.hostname.endsWith('.cherrytree.app') || window.location.hostname === 'cherrytree.app';
+              if (isActualDomain) {
+                window.location.href = 'https://cherrytree-cofounder-agreement.web.app';
+              } else {
+                navigate('/');
+              }
+            });
+          }}
           className="text-sm text-gray-500 hover:text-gray-700 transition"
         >
           Sign out
