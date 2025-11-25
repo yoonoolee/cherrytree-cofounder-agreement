@@ -134,7 +134,8 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
           <div className="space-y-2">
             {[
               'Consult agreed external advisor / board member',
-              'Mediation with a neutral third party'
+              'Mediation with a neutral third party',
+              'Final decision authority by domain'
             ].map((option) => (
               <label key={option} className="flex items-center">
                 <input
@@ -210,7 +211,7 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             Do you want to include a shotgun clause if you and your cofounder(s) cannot resolve deadlocks?
-            <Tooltip text="You can essentially offer to buy each other out. You're incentivized to make a reasonable offer because you might be bought out." />
+            <Tooltip text="You can essentially offer to buy each other out. You're incentivized to make a reasonable offer because you might be bought out." placement="left" />
             {showValidation && !formData.includeShotgunClause && <span className="text-red-700 ml-0.5">*</span>}
           </label>
           <div className="space-y-2">

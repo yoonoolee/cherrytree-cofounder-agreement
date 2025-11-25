@@ -17,8 +17,9 @@ function Section8Performance({ formData, handleChange, isReadOnly, showValidatio
         {/* Performance Consequences */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
-            What happens if a cofounder fails to meet their agreed-upon obligations (e.g., time commitment, role performance, or deliverables)?
+            What happens if a cofounder fails to meet their agreed-upon obligations?
             {showValidation && (!formData.performanceConsequences || formData.performanceConsequences.length === 0) && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            <Tooltip text="These measures are intended for serious, ongoing failures to meet material obligations, not for minor issues or temporary setbacks." />
           </label>
           <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
           <div className="space-y-2">
@@ -54,6 +55,7 @@ function Section8Performance({ formData, handleChange, isReadOnly, showValidatio
           <label className="block text-base font-medium text-gray-900 mb-2">
             How many days does a cofounder have to fix the issue after receiving written notice before termination can occur?
             {showValidation && !formData.remedyPeriodDays && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            <Tooltip text="This period allows cofounders to address issues in good faith before more serious action is taken." />
           </label>
           <input
             type="number"

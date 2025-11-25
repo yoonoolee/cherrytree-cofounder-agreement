@@ -80,6 +80,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
     // Section 6: IP & Ownership
     hasPreExistingIP: '',
+    preExistingIPList: '',
     acknowledgeIPAssignment: false,
     acknowledgeIPOwnership: false,
 
@@ -314,6 +315,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
             // Section 6: IP & Ownership
             hasPreExistingIP: '',
+            preExistingIPList: '',
             acknowledgeIPAssignment: false,
             acknowledgeIPOwnership: false,
 
@@ -919,7 +921,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       id: 6,
       name: 'IP & Ownership',
       questions: [
-        "Has any cofounder created code, designs, or other assets before the company was formed that will now be used in the business?",
+        "Has any cofounder created code, designs, or other assets before joining the company that might be used in the business?",
         "intellectual property assignment",
         "IP ownership"
       ],

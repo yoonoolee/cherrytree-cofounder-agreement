@@ -1,12 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-function Tooltip({ text }) {
+function Tooltip({ text, placement }) {
   const [isVisible, setIsVisible] = useState(false);
-  const [position, setPosition] = useState('right');
+  const [position, setPosition] = useState(placement || 'right');
   const tooltipRef = useRef(null);
   const containerRef = useRef(null);
 
   useEffect(() => {
+    // If placement is forced, don't auto-calculate
+    if (placement) {
+      setPosition(placement);
+      return;
+    }
+
     if (isVisible && tooltipRef.current && containerRef.current) {
       const tooltipRect = tooltipRef.current.getBoundingClientRect();
       const containerRect = containerRef.current.getBoundingClientRect();
@@ -19,7 +25,7 @@ function Tooltip({ text }) {
         setPosition('right');
       }
     }
-  }, [isVisible]);
+  }, [isVisible, placement]);
 
   return (
     <div ref={containerRef} className="relative inline-block ml-2" style={{ verticalAlign: '0.15em' }}>
