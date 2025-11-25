@@ -100,7 +100,6 @@ function Section8Performance({ formData, handleChange, isReadOnly, showValidatio
               'Willful misconduct or gross negligence',
               'Material breach of this agreement',
               'Criminal conviction',
-              'Violation of Company policies',
               'Other'
             ].map((option) => (
               <label key={option} className="flex items-center">

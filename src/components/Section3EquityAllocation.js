@@ -483,7 +483,6 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                       <div key={assessorEmail} className="mb-4">
                         <p className="font-medium text-gray-900 mb-3">
                           {getCofounderName(assessorEmail)}
-                          {assessorEmail === currentUserEmail && <span className="ml-2 text-xs text-red-950">(You)</span>}
                         </p>
                         {!hasSubmittedAssessment ? (
                           <p className="text-sm text-gray-500 italic">
@@ -591,8 +590,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                             <div key={assessorEmail} className="mb-4">
                               <p className="font-medium text-gray-900 mb-3">
                                 {getCofounderName(assessorEmail)}
-                                {assessorEmail === currentUserEmail && <span className="ml-2 text-xs text-red-950">(You)</span>}
-                              </p>
+                                    </p>
                               <p className="text-sm text-gray-500 italic">
                                 Submission pending
                               </p>
@@ -785,8 +783,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                           <div key={assessorEmail} className="mb-6">
                             <p className="font-medium text-gray-900 mb-3">
                               {getCofounderName(assessorEmail)}
-                              {assessorEmail === currentUserEmail && <span className="ml-2 text-xs text-red-950">(You)</span>}
-                            </p>
+                                </p>
                             <div className="spreadsheet-wrapper" style={{ overflow: 'visible' }}>
                               <div
                                 className="spreadsheet-scroll-container"
@@ -826,7 +823,6 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                 <label className="block text-base font-medium text-gray-900 mb-2">
                   {getCofounderName(email)}
                   {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-                  {email === auth.currentUser?.email && <span className="ml-2 text-xs text-red-950">(You)</span>}
                   {showValidation && !formData.finalEquityPercentages?.[email] && <span className="text-red-700 ml-0.5">*</span>}
                 </label>
                 <input
@@ -935,7 +931,6 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
                     <span className={`${!canAcknowledge ? 'text-gray-400' : 'text-gray-700'}`}>
                       {getCofounderName(email)}
                       {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-                      {isCurrentUser && <span className="ml-2 text-xs text-red-950">(You)</span>}
                     </span>
                   </label>
                 );

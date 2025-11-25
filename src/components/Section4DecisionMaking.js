@@ -196,7 +196,6 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
                         <span className="text-gray-700">
                           {email}
                           {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-                          {isCurrentUser && <span className="ml-2 text-xs text-red-950">(You)</span>}
                         </span>
                       </label>
                     );
@@ -275,7 +274,6 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
                         <span className="text-gray-700">
                           {email}
                           {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-                          {isCurrentUser && <span className="ml-2 text-xs text-red-950">(You)</span>}
                         </span>
                       </label>
                     );

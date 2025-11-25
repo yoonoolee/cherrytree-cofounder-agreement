@@ -52,7 +52,6 @@ function Section9NonCompete({ formData, handleChange, isReadOnly, project, showV
                     <span className="text-gray-700">
                       {email}
                       {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-                      {isCurrentUser && <span className="ml-2 text-xs text-red-950">(You)</span>}
                       
                     </span>
                   </label>
@@ -67,7 +66,7 @@ function Section9NonCompete({ formData, handleChange, isReadOnly, project, showV
           <label className="block text-base font-medium text-gray-900 mb-2">
             How long should the non-competition obligation last after a cofounder leaves?
             {showValidation && !formData.nonCompeteDuration && <span className="text-red-700 ml-0.5 validation-error">*</span>}
-            <Tooltip text="This includes joining or starting a competing company." />
+            <Tooltip text="This includes joining or starting a competing company. Note: Non-compete agreements may not be enforceable in certain states (e.g., California)." />
           </label>
           <div className="space-y-2">
             {[
@@ -114,6 +113,7 @@ function Section9NonCompete({ formData, handleChange, isReadOnly, project, showV
           <label className="block text-base font-medium text-gray-900 mb-2">
             How long should the non-solicitation obligation last after a cofounder leaves?
             {showValidation && !formData.nonSolicitDuration && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            <Tooltip text="Non-solicitation prevents a cofounder who leaves from recruiting the Company's team or clients for a certain period." />
           </label>
           <div className="space-y-2">
             {[

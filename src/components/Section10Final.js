@@ -191,7 +191,6 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
                     <span className="text-gray-700">
                       {email}
                       {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-                      {isCurrentUser && <span className="ml-2 text-xs text-red-950">(You)</span>}
 
                     </span>
                   </label>
@@ -209,7 +208,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
               const allAcknowledged = allCollaborators.length > 0 && allCollaborators.every(email => formData.acknowledgeAmendmentReviewRequest?.[email]);
               return (
                 <>
-                  Any Cofounder may request a review of this Agreement in the event of material changes in circumstances affecting the Company or the Cofounder's role. Any amendments proposed pursuant to such review shall become effective only if approved and executed in writing by all Cofounders.
+                  Any Cofounder may request a review of this Agreement in the event of material changes in circumstances affecting the Company or the Cofounder's role. Any amendments proposed pursuant to such review shall become effective only if approved and executed in writing according to the amendment process set forth in this Agreement.
                   {showValidation && !allAcknowledged && <span className="text-red-700 ml-0.5 validation-error">*</span>}
                 </>
               );
@@ -241,7 +240,6 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
                     <span className="text-gray-700">
                       {email}
                       {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-                      {isCurrentUser && <span className="ml-2 text-xs text-red-950">(You)</span>}
 
                     </span>
                   </label>
@@ -291,7 +289,6 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
                     <span className="text-gray-700">
                       {email}
                       {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-                      {isCurrentUser && <span className="ml-2 text-xs text-red-950">(You)</span>}
                       
                     </span>
                   </label>
@@ -341,7 +338,6 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
                     <span className="text-gray-700">
                       {email}
                       {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-                      {isCurrentUser && <span className="ml-2 text-xs text-red-950">(You)</span>}
                       
                     </span>
                   </label>

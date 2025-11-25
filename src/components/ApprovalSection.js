@@ -97,9 +97,6 @@ function ApprovalSection({ project, projectId }) {
                     {isThisOwner && (
                       <span className="text-xs text-gray-500">(Owner)</span>
                     )}
-                    {isCurrentUser && (
-                      <span className="text-xs text-red-950">(You)</span>
-                    )}
                   </div>
                 </div>
               </div>
