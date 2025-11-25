@@ -5,7 +5,7 @@ import { useUser } from '../contexts/UserContext';
 function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser: user } = useUser();
+  const { currentUser: user, loading } = useUser();
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white z-50">
@@ -27,7 +27,7 @@ function Header() {
           </nav>
 
           <div className="hidden md:flex items-center gap-4 text-sm">
-            {user ? (
+            {!loading && (user ? (
               <button
                 onClick={() => {
                   // Navigate directly to my.cherrytree.app to avoid any redirect issues
@@ -57,7 +57,7 @@ function Header() {
               >
                 Login
               </button>
-            )}
+            ))}
             <button
               onClick={() => {
                 // Navigate directly to my.cherrytree.app to avoid double redirect
