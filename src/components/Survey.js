@@ -1509,10 +1509,12 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       >
 
         {/* Progress Bar */}
-        <div className="px-3 pb-2">
-          <div className="px-3" style={{ width: '90%' }}>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-medium text-gray-600">Progress</span>
+        <div className="px-2 pb-2">
+          <div className="flex items-center mb-2">
+            <span className="text-xs font-medium text-gray-600">Progress</span>
+          </div>
+          <div className="pl-1 pr-3">
+            <div className="flex justify-end items-center mb-2">
               <span className="text-xs font-medium text-gray-600">{calculateProgress()}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-1.5">
@@ -1522,7 +1524,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               />
             </div>
           </div>
-          <div className="mt-2 px-3" style={{ width: '90%', height: '24px', display: 'flex', alignItems: 'center' }}>
+          <div className="mt-2 pl-1" style={{ height: '24px', display: 'flex', alignItems: 'center' }}>
             {saveStatus === 'saving' && (
               <span className="text-xs text-gray-500">Saving...</span>
             )}

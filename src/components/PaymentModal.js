@@ -119,7 +119,7 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
         <div className="flex justify-between items-start mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
-              {isMaxPlan ? "You're on the highest plan" : isUpgrade ? 'Upgrade Your Plan' : 'Start a New Cofounder Agreement'}
+              {isMaxPlan ? "You're Already on the Highest Plan" : isUpgrade ? 'Upgrade Your Plan' : 'Start a New Cofounder Agreement'}
             </h2>
             {!isMaxPlan && (
               <p className="text-sm text-gray-600 mt-1">
