@@ -431,13 +431,12 @@ function Auth({ onLogin }) {
             </div>
 
             {/* Google Sign-In Button */}
-            <button
-              type="button"
-              onClick={handleGoogleSignIn}
-              onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
-              disabled={loading}
-              tabIndex="-1"
-              className="w-full flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded font-semibold bg-white text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed animate-fade-up-delay-5"
+            <div
+              role="button"
+              onClick={loading ? undefined : handleGoogleSignIn}
+              tabIndex={-1}
+              onKeyDown={(e) => e.preventDefault()}
+              className={`w-full flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded font-semibold bg-white text-gray-700 hover:bg-gray-50 transition animate-fade-up-delay-5 ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                 <path
@@ -458,7 +457,7 @@ function Auth({ onLogin }) {
                 />
               </svg>
               Sign in with Google
-            </button>
+            </div>
 
             <div className="text-center animate-fade-up-delay-6 space-y-2">
               <button
@@ -588,13 +587,12 @@ function Auth({ onLogin }) {
             </div>
 
             {/* Google Sign-In Button */}
-            <button
-              type="button"
-              onClick={handleGoogleSignIn}
-              onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
-              disabled={loading}
-              tabIndex="-1"
-              className="w-full flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded font-semibold bg-white text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            <div
+              role="button"
+              onClick={loading ? undefined : handleGoogleSignIn}
+              tabIndex={-1}
+              onKeyDown={(e) => e.preventDefault()}
+              className={`w-full flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded font-semibold bg-white text-gray-700 hover:bg-gray-50 transition ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                 <path
@@ -615,7 +613,7 @@ function Auth({ onLogin }) {
                 />
               </svg>
               Sign up with Google
-            </button>
+            </div>
 
             <div className="text-center">
               <button
