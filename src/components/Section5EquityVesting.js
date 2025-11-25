@@ -152,14 +152,14 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
         {/* Acceleration Trigger */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
-            Should unvested shares accelerate if the cofounder is terminated and the company is acquired?
+            If the company is acquired and a cofounder is terminated without cause, should their unvested shares accelerate?
             {showValidation && !formData.accelerationTrigger && <span className="text-red-700 ml-0.5 validation-error">*</span>}
             <Tooltip text="Acceleration decides if unvested shares vest early. Single-trigger happens when the company is acquired. Double-trigger only kicks in if the company is acquired and you're terminated without cause." />
           </label>
           <div className="space-y-2">
             {[
-              'Acceleration requires termination with cause',
-              'Acceleration requires termination without cause'
+              'Yes',
+              'No'
             ].map((option) => (
               <label key={option} className="flex items-center">
                 <input
@@ -180,6 +180,37 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
               </label>
             ))}
           </div>
+
+          {/* Conditional: Acceleration Protection Period */}
+          {formData.accelerationTrigger === 'Yes' && (
+            <div className="conditional-section">
+              <label className="block text-base font-medium text-gray-900 mb-2">
+                For how long after the acquisition should this protection apply?
+                {showValidation && !formData.accelerationProtectionMonths && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+              </label>
+              <div className="space-y-2">
+                {['6 months', '12 months', '18 months'].map((option) => (
+                  <label key={option} className="flex items-center">
+                    <input
+                      type="radio"
+                      name="accelerationProtectionMonths"
+                      value={option}
+                      checked={formData.accelerationProtectionMonths === option}
+                      onClick={() => {
+                        if (!isReadOnly) {
+                          handleChange('accelerationProtectionMonths', formData.accelerationProtectionMonths === option ? '' : option);
+                        }
+                      }}
+                      onChange={() => {}}
+                      disabled={isReadOnly}
+                      className="mr-3"
+                    />
+                    <span className="text-gray-700">{option}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Shares Sell Notice Days */}

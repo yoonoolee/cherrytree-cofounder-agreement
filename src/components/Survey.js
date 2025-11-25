@@ -848,7 +848,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       name: 'Formation & Purpose',
       questions: [
         "What's your company's name?",
-        "What type of entity is it?",
+        "What is your company's current or intended legal structure?",
         "What state will your company be registered in?",
         "What's your company mailing address?",
         "Can you describe your company in 1 line?",

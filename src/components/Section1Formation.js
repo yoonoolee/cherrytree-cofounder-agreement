@@ -309,7 +309,7 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
         {/* Entity Type */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
-            What type of entity is it?
+            What is your company's current or intended legal structure?
             {showValidation && !formData.entityType && <span className="text-red-700 ml-0.5">*</span>}
             <Tooltip text="This defines how your company is structured for ownership, taxes, and decision-making. If you plan to raise venture capital, a C-Corp is usually preferred." />
           </label>

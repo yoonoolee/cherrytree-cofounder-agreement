@@ -17,7 +17,7 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
         {/* Major Decisions */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
-            Which major decisions require all cofounders to agree?
+            What type of decisions require a discussion between all cofounders?
             {showValidation && (!formData.majorDecisions || formData.majorDecisions.length === 0) && <span className="text-red-700 ml-0.5">*</span>}
             <Tooltip text="Which choices should never happen unless everyone's on board. Not office snacks." />
           </label>
