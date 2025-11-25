@@ -178,7 +178,7 @@ function DashboardPage() {
               // Check if we're on a subdomain (like my.cherrytree.app)
               const isActualDomain = window.location.hostname.endsWith('.cherrytree.app') || window.location.hostname === 'cherrytree.app';
               if (isActualDomain) {
-                window.location.href = 'https://cherrytree-cofounder-agreement.web.app';
+                window.location.href = 'https://cherrytree.app';
               } else {
                 navigate('/');
               }
