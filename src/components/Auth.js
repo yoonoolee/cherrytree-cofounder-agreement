@@ -434,6 +434,7 @@ function Auth({ onLogin }) {
             <button
               type="button"
               onClick={handleGoogleSignIn}
+              onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
               disabled={loading}
               tabIndex="-1"
               className="w-full flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded font-semibold bg-white text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed animate-fade-up-delay-5"
@@ -590,6 +591,7 @@ function Auth({ onLogin }) {
             <button
               type="button"
               onClick={handleGoogleSignIn}
+              onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
               disabled={loading}
               tabIndex="-1"
               className="w-full flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded font-semibold bg-white text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
