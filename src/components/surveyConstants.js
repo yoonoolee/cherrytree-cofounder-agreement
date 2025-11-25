@@ -103,7 +103,6 @@ export const MAJOR_DECISIONS = [
   'Hiring key personnel',
   'Major partnerships or contracts',
   'Product pivots',
-  'Raising funding',
   'Selling the company or merging',
   'None of the above',
   'Other'

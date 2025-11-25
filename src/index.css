@@ -358,9 +358,8 @@ select:disabled {
 .space-y-10 > div:nth-child(10),
 .space-y-12 > div:nth-child(10) { animation-delay: 1.0s; }
 
-/* Conditional question sections with left border accent */
+/* Conditional question sections */
 .conditional-section {
-  border-left: 2px solid #D1D5DB;
   padding-left: 1.5rem;
   padding-top: 1rem;
   padding-bottom: 1rem;
