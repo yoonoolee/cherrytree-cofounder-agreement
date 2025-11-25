@@ -538,13 +538,19 @@ select:disabled {
   opacity: 1;
 }
 
-/* Header fade-in animation within sections */
-.scroll-section .section-header {
+/* Content elements fade-in animation */
+.scroll-section .section-header,
+.scroll-section p,
+.scroll-section ul,
+.scroll-section h3 {
   opacity: 0;
-  transition: opacity 1.5s ease-out;
+  transition: opacity 0.9s ease-out;
 }
 
-.scroll-section.section-visible .section-header {
+.scroll-section .section-header.content-visible,
+.scroll-section p.content-visible,
+.scroll-section ul.content-visible,
+.scroll-section h3.content-visible {
   opacity: 1;
 }
 
