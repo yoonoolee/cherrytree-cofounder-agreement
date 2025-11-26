@@ -126,5 +126,5 @@ export const SECTIONS = [
   { id: 7, name: 'Compensation' },
   { id: 8, name: 'Performance' },
   { id: 9, name: 'Non-Competition' },
-  { id: 10, name: 'Final Details' }
+  { id: 10, name: 'General Provisions' }
 ];

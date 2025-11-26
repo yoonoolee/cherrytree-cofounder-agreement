@@ -35,9 +35,9 @@ function PricingPage() {
       price: '$800',
       description: 'Everything in Starter, plus',
       features: [
-        'Advanced legal clauses',
         'Attorney review',
-        'Cofounder coaching'
+        'Cofounder coaching',
+        'Priority support'
       ],
       featured: true
     },
@@ -190,7 +190,7 @@ function PricingPage() {
                     <td className="text-center py-4 px-6">✓</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-gray-700">Advanced legal clauses</td>
+                    <td className="py-4 px-6 text-gray-700">Priority support</td>
                     <td className="text-center py-4 px-6">-</td>
                     <td className="text-center py-4 px-6 bg-gray-50">✓</td>
                     <td className="text-center py-4 px-6">✓</td>

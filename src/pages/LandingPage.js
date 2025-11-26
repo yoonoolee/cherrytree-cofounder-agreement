@@ -389,9 +389,9 @@ function LandingPage() {
       price: '$800',
       description: 'Everything in Starter, plus',
       features: [
-        'Advanced legal clauses',
         'Attorney review',
-        'Cofounder coaching'
+        'Cofounder coaching',
+        'Priority support'
       ],
       featured: true
     },

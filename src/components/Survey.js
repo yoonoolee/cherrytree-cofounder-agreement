@@ -967,7 +967,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
     },
     {
       id: 10,
-      name: 'Final Details',
+      name: 'General Provisions',
       questions: [
         "How should disputes among cofounders be resolved?",
         "Which state's laws will govern this agreement?",

@@ -20,9 +20,9 @@ const PLANS = {
     priceId: process.env.REACT_APP_STRIPE_PRO_PRICE_ID,
     description: 'Everything in Starter, plus',
     features: [
-      'Advanced legal clauses',
       'Attorney review',
-      'Cofounder coaching'
+      'Cofounder coaching',
+      'Priority support'
     ]
   }
 };
@@ -229,7 +229,7 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
               className="button-shimmer w-full bg-[#000000] text-white py-3 rounded font-medium hover:bg-[#1a1a1a] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Processing...' : isUpgrade
-                ? 'Upgrade your plan'
+                ? 'Upgrade'
                 : 'Continue to Payment'}
             </button>
           )}

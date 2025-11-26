@@ -190,7 +190,7 @@ function SurveyNavigation({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </span>
-                <span className="nav-link-underline">Upgrade your plan</span>
+                <span className="nav-link-underline">Upgrade</span>
               </div>
             </button>
           </div>
