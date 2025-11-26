@@ -70,10 +70,27 @@ function TermsPage() {
         </div>
       </section>
 
+      {/* Nature of Services */}
+      <section className="scroll-section py-8 px-6">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">3. Nature of Services</h2>
+
+          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Not Legal Advice</h3>
+          <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+            The content, information, tools, and services provided by Cherrytree (the "Services") are for general informational and educational purposes only and do not constitute legal advice. Use of the Services does not create an attorney-client relationship between you and Cherrytree, its affiliates, or any of its personnel. You should not act or rely on the Services as a substitute for professional legal advice. For any legal matters, you must consult a licensed attorney.
+          </p>
+
+          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>B. Not Intended For</h3>
+          <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+            The Services are not designed, and should not be relied upon, for the purpose of forming, incorporating, structuring, or otherwise establishing a legal entity, preparing or filing regulatory submissions, or executing any legally binding agreement. Users are solely responsible for obtaining independent legal counsel prior to taking any action that may have legal or regulatory consequences.
+          </p>
+        </div>
+      </section>
+
       {/* Your Right to Use the Site */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">3. Your Right to Use the Site; Your Restrictions</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">4. Your Right to Use the Site; Your Restrictions</h2>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Things you can do</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
@@ -91,7 +108,7 @@ function TermsPage() {
             <li>except as allowed with respect to backups of your data, copy, reproduce, republish, upload, post, transmit, resell or distribute in any way any material from the Site;</li>
             <li>work around any technical limitations in the Site, use any tool to enable features or functionalities that are otherwise disabled in the Site, or decompile, disassemble, or otherwise reverse engineer the Site except as otherwise permitted by applicable law;</li>
             <li>perform or attempt to perform any actions that would interfere with the proper working of the Site, prevent access to or the use of the Site by Cherrytree's other licensees or customers, or impose an unreasonable or disproportionately large load on Cherrytree's infrastructure;</li>
-            <li>frame or utilize framing techniques to enclose any trademark, logo, or other proprietary information (including images, text, page layout, or form) of Cherrtyree or the Site or use any Cherrytree trademark or service marks, unless authorized to do so in writing by Cherrytree;</li>
+            <li>frame or utilize framing techniques to enclose any trademark, logo, or other proprietary information (including images, text, page layout, or form) of Cherrytree or the Site or use any Cherrytree trademark or service marks, unless authorized to do so in writing by Cherrytree;</li>
             <li>attempt to access or search the Site or download content from the Site through the use of any engine, software, tool, agent, device or mechanism (including spiders, robots, crawlers, data mining tools or the like) other than the software and/or search agents provided by Cherrytree or other generally available third-party web browsers;</li>
             <li>impersonate or misrepresent your affiliation with any person or entity; or</li>
             <li>otherwise use the Site except as expressly allowed under the Terms.</li>
@@ -106,7 +123,7 @@ function TermsPage() {
       {/* Intellectual Property Rights */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">4. Intellectual Property Rights</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">5. Intellectual Property Rights</h2>
           
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Cherrytree's (and its licensors') Ownership of IP</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
@@ -124,11 +141,11 @@ function TermsPage() {
       {/* Use of the Services */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">5. Use of the Services; Providing Us Information</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">6. Use of the Services; Providing Us Information</h2>
           
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. You'll Start by Creating an Account; Information You Must Provide</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            You will need to register with Cherrytree to become a Customer. You agree to provide accurate, complete registration information, and to will keep that information current. You agree that Cherrytree may store and use your registration information to maintain your account.
+            You will need to register with Cherrytree to become a Customer. You agree to provide accurate, complete registration information, and will keep that information current. You agree that Cherrytree may store and use your registration information to maintain your account.
           </p>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>B. Information You Must NOT Provide; DISCLAIMERS</h3>
@@ -143,7 +160,7 @@ function TermsPage() {
       {/* How We'll Use Your Information */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">6. How We'll Use Your Information; Our Privacy Policy</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">7. How We'll Use Your Information; Our Privacy Policy</h2>
           <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             Your Privacy is important to Cherrytree. With this in mind, we will protect your personal information in accordance with our Privacy Policy. We do not use data from our customers for any purpose other than to provide the Services to our customers. We do not train any models on customer data. We do not share customer data to our AI providers with the purpose of improving their products.
           </p>
@@ -153,7 +170,7 @@ function TermsPage() {
       {/* Data Security */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">7. Data Security; Disclaimer</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">8. Data Security; Disclaimer</h2>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. The Security of Your Information is Important to Cherrytree</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
@@ -181,7 +198,7 @@ function TermsPage() {
       {/* Ordering Products and Services */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">8. Ordering Products and Services from Cherrytree</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">9. Ordering Products and Services from Cherrytree</h2>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Certain Definitions Applicable to Buying Services from Cherrytree</h3>
           <ul className="bullet-list space-y-3 text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
@@ -226,20 +243,15 @@ function TermsPage() {
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>G. Intellectual Property Rights</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Ownership of Intellectual Property shall be as set for in Section 4 above and in this Section 8.
+            Ownership of Intellectual Property shall be as set for in Section 5 above and in this Section 9.
           </p>
 
-          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>H. Our License Grant to You For the Product</h3>
-          <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Subject to and in consideration of timely payment by you of the license fee applicable to your Product license, and of your compliance with the other terms and conditions of these Terms, we hereby grants to you, solely during the applicable term specified in an Order, a royalty free, limited, personal, non-exclusive, non-transferable license to: (i) in the case of On-Premise Subscriptions, install on a Server, run and Use the Product; (ii) in the case of Cloud Edition Subscription, to access and use the Product via the Internet address provided to you by us; and (iii) use the Documentation.
-          </p>
-
-          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>I. Restrictions on Our License Grant to You For the Product</h3>
+          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>H. Restrictions on Our License Grant to You For the Product</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             You agree that you (and your Authorized Users) will not without our express written permission: (a) reverse compile, disassemble, decompile or engineer, copy, modify or adapt the whole or any part of the Product; (b) make the Product or Documentation or Services available to, or use the Product, Documentation or Services for the benefit of, anyone other than you or your customers; (c) assign, transfer, sell, resell, license, sublicense, distribute, rent or lease the Product, Documentation or Services, or include any Product, Documentation or Services in a service bureau or outsourcing offering; (d) permit direct or indirect access to or use of the Product, Documentation or Services in a way that circumvents a contractual usage limit; (e) copy the Product, Documentation or Services or any part, feature, function or user interface thereof (except as expressly otherwise permitted under these Terms). Despite any of the foregoing, nothing in this paragraph or the Agreement is intended to change or restrict the terms of any free or open source software license. In the case of any conflict between this Agreement and terms and conditions of any free or open source software license, the terms and conditions of such license shall control.
           </p>
 
-          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>J. Your License Grant to Us</h3>
+          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>I. Your License Grant to Us</h3>
           <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             Despite anything to the contrary, we shall have the right collect and analyze data and other information relating to the provision, use and performance of various aspects of the Product and Services and related systems and technologies (including, without limitation, information concerning Customer Data and data derived therefrom), and we will be free (during and after the term hereof) to (i) use such information and data to improve and enhance the Product and Services and for other development, diagnostic and corrective purposes in connection with the Product and Services and other of our offerings, and (ii) disclose such data solely in aggregate or other de-identified form in connection with our business.
           </p>
@@ -250,7 +262,7 @@ function TermsPage() {
       {/* Termination of Product Subscriptions */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">9. Termination of Product Subscriptions</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">10. Termination of Product Subscriptions</h2>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Termination by You or by Us</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
@@ -273,7 +285,7 @@ function TermsPage() {
       {/* Payment Terms */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">10. Payment Terms</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">11. Payment Terms</h2>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Invoicing and Payment</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
@@ -291,7 +303,7 @@ function TermsPage() {
       {/* Limited Warranty */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">11. Limited Warranty</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">12. Limited Warranty</h2>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Our Warranty to You</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
@@ -314,7 +326,7 @@ function TermsPage() {
       {/* Links to Third Party Websites */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">12. Links to Third Party Websites or Resources</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">13. Links to Third Party Websites or Resources</h2>
           <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             The Site may contain links to third-party websites or resources. We provide these links only as a convenience and are not responsible for the content, products or services on or available from those websites or resources or links displayed on such sites. You acknowledge sole responsibility for, and assume all risk arising from, your use of any third-party websites or resources.
           </p>
@@ -324,7 +336,7 @@ function TermsPage() {
       {/* Termination */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">13. Termination</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">14. Termination</h2>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Term</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
@@ -352,15 +364,15 @@ function TermsPage() {
       {/* Important Disclaimers */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">14. Important Disclaimers</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">15. Important Disclaimers</h2>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            EXCEPT AS MAY BE OTHERWISE EXPRESSLY SET FORTH IN THESE TERMS, THE SITE AND THE SERVICE ARE PROVIDED “AS IS,” WITHOUT WARRANTY OF ANY KIND. IN ADDITION TO THE DISCLAIMERS IN SECTION 12 ABOVE, CHERRYTREE DOES NOT REPRESENT OR WARRANT THAT SERVICES, PRODUCTS OR DOCUMENTATION ARE ACCURATE, COMPLETE, RELIABLE, CURRENT OR ERROR-FREE OR THAT THE SITE OR SERVICE ITS SERVERS, OR ANY APPLICATIONS ARE FREE OF VIRUSES OR OTHER HARMFUL COMPONENTS.
+            EXCEPT AS MAY BE OTHERWISE EXPRESSLY SET FORTH IN THESE TERMS, THE SITE AND THE SERVICE ARE PROVIDED "AS IS," WITHOUT WARRANTY OF ANY KIND. IN ADDITION TO THE DISCLAIMERS IN SECTION 13 ABOVE, CHERRYTREE DOES NOT REPRESENT OR WARRANT THAT SERVICES, PRODUCTS OR DOCUMENTATION ARE ACCURATE, COMPLETE, RELIABLE, CURRENT OR ERROR-FREE OR THAT THE SITE OR SERVICE ITS SERVERS, OR ANY APPLICATIONS ARE FREE OF VIRUSES OR OTHER HARMFUL COMPONENTS.
           </p>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             YOU ACKNOWLEDGE THAT THE NATURE OF INTERNET-BASED SERVICE DELIVERY IS SUCH THAT CONFIDENTIALITY AND PERFORMANCE CANNOT BE COMPLETELY ASSURED. WE SHALL HAVE NO LIABILITY TO YOU FOR ANY UNAUTHORIZED ACCESS, USE, CORRUPTION OR LOSS OF ANY OF CUSTOMER DATA, EXCEPT TO THE EXTENT THAT SUCH UNAUTHORIZED ACCESS, USE, CORRUPTION, OR LOSS IS DUE SOLELY TO OUR GROSS NEGLECT OR MISCONDUCT. Despite any other provision of the Agreement, in the case of loss or PHI or other personally identifiable information due to our actions or inactions, your sole remedy shall be for is to restore such PHI and /or other personally identifiable information from the latest available backup.
           </p>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Cherrytree is not responsible or liable for any user content hosted on the Site or in connection with the Service. We do not control and are not responsible for what you or other users of the Site host, transmit or share on the Site and are not responsible for any offensive, inappropriate, obscene, unlawful or otherwise objectionable Site content.
+            To the fullest extent permitted by law, Cherrytree shall not be liable for any indirect, incidental, consequential, special, or punitive damages, including loss of profits, data, goodwill, or business opportunities, even if advised of the possibility of such damages.
           </p>
           <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             The Site and the Service may be temporarily unavailable from time to time for maintenance or other reasons. Cherrytree assumes no responsibility for any error, omission, interruption, deletion, defect, delay in operation or transmission, communications line failure, data loss, theft or destruction or unauthorized access to, or alteration of, any communications.
@@ -371,7 +383,7 @@ function TermsPage() {
       {/* Indemnity */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">15. Indemnity</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">16. Indemnity</h2>
           <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             You agree to defend, indemnify and hold harmless Cherrytree, its affiliates, officers, directors, employees and agents from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney’s fees) arising from: (i) your use of and access to the Cherrytree Site or Service; (ii) your violation of any term of these Terms of Use; (iii) your violation of any third- party right, including without limitation any copyright, property, or privacy right; or (iv) any claim that any of Your Information caused damage to a third party. This defense and indemnification obligation will survive these Terms and your use of the Cherrytree Site. You hereby agree to waive the application of any law that may limit the efficacy of the foregoing agreement to defend and indemnify Cherrytree and its affiliates, officers, directors, employees and agents.
           </p>
@@ -381,7 +393,7 @@ function TermsPage() {
       {/* Limitation of Liability */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">16. Limitation of Liability</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">17. Limitation of Liability</h2>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             Cherrytree shall have no liability for any loss, damage, or injury resulting from your or any third parties' negligence, lack of training, use or misuse, or misapplication of any Product or Service.
           </p>
@@ -397,7 +409,7 @@ function TermsPage() {
       {/* General Terms */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">17. General Terms</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">18. General Terms</h2>
 
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             These Terms constitute the entire and exclusive understanding and agreement between Cherrytree and you regarding the Services, and supersede and replace any and all prior oral or written understandings or agreements between Cherrytree and you regarding the Site and the Services. If for any reason a court of competent jurisdiction finds any provision of these Terms invalid or unenforceable, that provision will be enforced to the maximum extent permissible and the other provisions of these Terms will remain in full force and effect.
@@ -429,7 +441,7 @@ function TermsPage() {
       {/* Data Collection and Consent */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">18. Data Collection and Consent</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">19. Data Collection and Consent</h2>
 
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             In our commitment to provide Cherrytree, we collect and use certain personal information about our users. This section explains what data we collect, how we use it, and the consent mechanisms in place. Our data collection practices are designed exclusively to enhance your experience with our service.
@@ -478,7 +490,7 @@ function TermsPage() {
       {/* Contact Information */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">19. Contact Information</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">20. Contact Information</h2>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             If you have any questions about these Terms or the Services please contact us at {' '} 
             <a href="mailto:hello@cherrytree.app" className="underline hover:text-black transition">
