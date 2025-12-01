@@ -304,16 +304,23 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
               className="text-lg font-semibold text-gray-900 mb-3 w-full border-b border-red-950 focus:outline-none bg-transparent"
             />
           ) : (
-            <h2
-              className="text-lg font-semibold text-gray-900 mb-3 cursor-pointer hover:text-gray-700 transition-colors"
-              onClick={() => {
-                setEditedProjectName(project?.name || '');
-                setIsEditingProjectName(true);
-              }}
-              title="Click to edit project name"
-            >
-              {project?.name || 'Loading...'}
-            </h2>
+            <div>
+              <h2
+                className="text-lg font-semibold text-gray-900 mb-1 cursor-pointer hover:text-gray-700 transition-colors"
+                onClick={() => {
+                  setEditedProjectName(project?.name || '');
+                  setIsEditingProjectName(true);
+                }}
+                title="Click to edit project name"
+              >
+                {project?.name || 'Loading...'}
+              </h2>
+              {project?.plan && (
+                <p className={`text-xs font-medium mb-3 ${project.plan === 'pro' ? 'text-purple-600' : 'text-gray-500'}`}>
+                  {project.plan === 'pro' ? 'Pro' : 'Starter'}
+                </p>
+              )}
+            </div>
           )}
 
           {/* Edit Survey Button (if not readonly) */}
@@ -434,18 +441,20 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
             </>
           )}
 
-          <button
-            onClick={() => {
-              // TODO: Add upgrade functionality
-              console.log('Upgrade clicked');
-            }}
-            className="w-full bg-white text-gray-600 px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-100 transition flex items-center justify-start gap-2 mb-3"
-          >
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            Upgrade
-          </button>
+          {project?.plan !== 'pro' && (
+            <button
+              onClick={() => {
+                // TODO: Add upgrade functionality
+                console.log('Upgrade clicked');
+              }}
+              className="w-full bg-white text-gray-600 px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-100 transition flex items-center justify-start gap-2 mb-3"
+            >
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Upgrade
+            </button>
+          )}
 
           <button
             onClick={() => setShowProjectSelector(!showProjectSelector)}

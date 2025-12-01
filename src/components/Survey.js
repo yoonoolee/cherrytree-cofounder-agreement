@@ -1508,6 +1508,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         allProjects={allProjects}
         onProjectSwitch={onProjectSwitch}
         onCreateProject={onCreateProject}
+        hideUpgrade={project?.plan === 'pro'}
+        planType={project?.plan}
       >
 
         {/* Progress Bar */}
@@ -1708,6 +1710,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 handleChange={handleChange}
                 isReadOnly={isReadOnly}
                 showValidation={showValidation}
+                project={project}
               />
             </div>
           )}

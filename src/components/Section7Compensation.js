@@ -1,10 +1,14 @@
 import React from 'react';
 import CustomSelect from './CustomSelect';
 
-function Section7Compensation({ formData, handleChange, isReadOnly, showValidation }) {
+function Section7Compensation({ formData, handleChange, isReadOnly, showValidation, project }) {
   const compensations = formData.compensations || [];
+  // Count all collaborators including the owner
+  const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
+  const canAddMore = compensations.length < allCollaborators.length;
 
   const handleAddCompensation = () => {
+    if (!canAddMore) return;
     const newCompensations = [...compensations, { who: '', amount: '' }];
     handleChange('compensations', newCompensations);
   };
@@ -65,13 +69,20 @@ function Section7Compensation({ formData, handleChange, isReadOnly, showValidati
         {formData.takingCompensation === 'Yes' && (
           <div className="border-l-4 border-gray-300 pl-6 py-4">
             <div className="flex justify-between items-center mb-4">
-              <label className="block text-base font-medium text-gray-900">
-                Compensation Details
-              </label>
+              <div>
+                <label className="block text-base font-medium text-gray-900">
+                  Compensation Details
+                </label>
+                {!canAddMore && compensations.length > 0 && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    All cofounders have been assigned compensation
+                  </p>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={handleAddCompensation}
-                disabled={isReadOnly}
+                disabled={isReadOnly || !canAddMore}
                 className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
               >
                 + Add Compensation
