@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
 import { getFunctions, httpsCallable } from 'firebase/functions';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const PLANS = {
   starter: {
@@ -35,6 +36,10 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isWiggling, setIsWiggling] = useState(false);
+  const [waitlistEmail, setWaitlistEmail] = useState('');
+  const [waitlistLoading, setWaitlistLoading] = useState(false);
+  const [waitlistSuccess, setWaitlistSuccess] = useState(false);
+  const [waitlistError, setWaitlistError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -113,6 +118,37 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
     }
   };
 
+  const handleWaitlistSubmit = async (e) => {
+    e.preventDefault();
+    setWaitlistError('');
+
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!waitlistEmail.trim() || !emailRegex.test(waitlistEmail)) {
+      setWaitlistError('Please enter a valid email address');
+      return;
+    }
+
+    setWaitlistLoading(true);
+
+    try {
+      // Save to Firestore
+      await addDoc(collection(db, 'proWaitlist'), {
+        email: waitlistEmail.toLowerCase().trim(),
+        timestamp: serverTimestamp(),
+        source: 'payment_modal'
+      });
+
+      setWaitlistSuccess(true);
+      setWaitlistEmail('');
+    } catch (err) {
+      console.error('Error adding to waitlist:', err);
+      setWaitlistError('Failed to join waitlist. Please try again.');
+    } finally {
+      setWaitlistLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]" onClick={onClose}>
       <div className="bg-white/95 backdrop-blur-xl rounded-lg shadow-2xl border border-gray-200/50 max-w-2xl w-full p-8 relative z-[10000]" onClick={(e) => e.stopPropagation()}>
@@ -160,55 +196,108 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Select Plan
             </label>
-            <div className="grid grid-cols-2 gap-4">
-              {Object.entries(PLANS).map(([key, plan]) => {
-                const isDisabled = isMaxPlan || key === currentPlan;
+            <div className={`grid gap-4 ${isUpgrade ? 'grid-cols-1' : 'grid-cols-2'}`}>
+              {Object.entries(PLANS).filter(([key]) => !isUpgrade || key === 'pro').map(([key, plan]) => {
+                const isProPlan = key === 'pro';
+                const isDisabled = isMaxPlan || key === currentPlan || isProPlan;
                 return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => !isDisabled && setSelectedPlan(key)}
-                  disabled={isDisabled}
-                  className={`p-4 rounded-lg border-2 transition text-left ${
-                    isDisabled
-                      ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
-                      : selectedPlan === key
-                        ? 'border-black bg-gray-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{plan.name}</h3>
-                      <p className="text-xs text-gray-500 mt-0.5">{plan.description}</p>
+                <div key={key} className="relative">
+                  {/* Coming Soon Badge for Pro */}
+                  {isProPlan && (
+                    <div className="absolute -top-2 -right-2 bg-black text-white text-xs font-semibold px-3 py-1 rounded-full z-10">
+                      Coming Soon
                     </div>
-                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                      selectedPlan === key ? 'border-black' : 'border-gray-300'
-                    }`}>
-                      {selectedPlan === key && (
-                        <div className="w-2 h-2 rounded-full bg-black"></div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => !isDisabled && setSelectedPlan(key)}
+                    disabled={isDisabled}
+                    className={`p-4 rounded-lg border-2 transition text-left w-full ${
+                      isDisabled
+                        ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                        : selectedPlan === key
+                          ? 'border-black bg-gray-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{plan.name}</h3>
+                        <p className="text-xs text-gray-500 mt-0.5">{plan.description}</p>
+                      </div>
+                      {!isProPlan && (
+                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                          selectedPlan === key ? 'border-black' : 'border-gray-300'
+                        }`}>
+                          {selectedPlan === key && (
+                            <div className="w-2 h-2 rounded-full bg-black"></div>
+                          )}
+                        </div>
                       )}
                     </div>
-                  </div>
-                  <p className="text-2xl font-bold text-gray-900 mb-3">
-                    {isUpgrade && currentPlan === 'starter' && key === 'pro' ? (
-                      <>
-                        <span className="line-through text-gray-400 text-lg mr-2">${plan.price}</span>
-                        $600
-                      </>
-                    ) : (
-                      `$${plan.price}`
-                    )}
-                  </p>
-                  <ul className="space-y-1">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="text-xs text-gray-600 flex items-center">
-                        <span className="mr-1">✓</span>
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </button>
+                    <p className="text-2xl font-bold text-gray-900 mb-3">
+                      {isUpgrade && currentPlan === 'starter' && key === 'pro' ? (
+                        <>
+                          <span className="line-through text-gray-400 text-lg mr-2">${plan.price}</span>
+                          $600
+                        </>
+                      ) : (
+                        `$${plan.price}`
+                      )}
+                    </p>
+                    <ul className="space-y-1">
+                      {plan.features.map((feature, idx) => (
+                        <li key={idx} className="text-xs text-gray-600 flex items-center">
+                          <span className="mr-1">✓</span>
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </button>
+
+                  {/* Waitlist Form for Pro Plan */}
+                  {isProPlan && (
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      {waitlistSuccess ? (
+                        <div className="text-center py-2">
+                          <p className="text-sm text-gray-900">✓ Thanks! We'll email you when Pro launches</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-2">
+                            Join the waitlist
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="email"
+                              value={waitlistEmail}
+                              onChange={(e) => setWaitlistEmail(e.target.value)}
+                              placeholder="your@email.com"
+                              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:border-black focus:ring-0 bg-white"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  handleWaitlistSubmit(e);
+                                }
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={handleWaitlistSubmit}
+                              disabled={waitlistLoading}
+                              className="px-4 py-2 bg-black text-white text-sm font-medium rounded hover:bg-gray-800 transition disabled:opacity-50"
+                            >
+                              {waitlistLoading ? 'Joining...' : 'Join'}
+                            </button>
+                          </div>
+                          {waitlistError && (
+                            <p className="text-xs text-red-600 mt-2">{waitlistError}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
                 );
               })}
             </div>

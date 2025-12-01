@@ -51,6 +51,14 @@ service cloud.firestore {
                       resource.data.ownerEmail == request.auth.token.email;
     }
 
+    // Pro waitlist collection
+    match /proWaitlist/{docId} {
+      // Anyone can add to waitlist (no auth required for better UX)
+      // But cannot read, update, or delete (privacy)
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+
     // Deny all other access
     match /{document=**} {
       allow read, write: if false;
