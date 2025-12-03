@@ -450,18 +450,18 @@ function LandingPage() {
       <Header />
 
       {/* Hero Section */}
-      <section className="px-6" style={{ paddingTop: '154px', paddingBottom: '58px' }}>
+      <section className="px-4 md:px-6 pt-20 md:pt-32 lg:pt-40 pb-8 md:pb-14">
         <div className="max-w-6xl mx-auto text-center">
           <div className="hero-content">
-            <h1 className="font-heading text-[72px] font-normal text-gray-900 mb-6 min-h-[140px]">
+            <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-normal text-gray-900 mb-4 md:mb-6 min-h-[100px] sm:min-h-[120px] md:min-h-[140px]">
               Great companies start
               <br />
               <em className="italic">{typedText || '\u00A0'}</em>
             </h1>
-            <p className="text-[16px] mb-16 max-w-2xl mx-auto font-normal" style={{ color: '#716B6B' }}>
-              Answer guided questions with your cofounders and get a complete<br />Cofounder Agreement. No sketchy templates, no overpriced lawyers.
+            <p className="text-sm md:text-base mb-8 md:mb-16 max-w-2xl mx-auto font-normal px-4" style={{ color: '#716B6B' }}>
+              Answer guided questions with your cofounders and get a complete<br className="hidden sm:block" /> Cofounder Agreement. No sketchy templates, no overpriced lawyers.
             </p>
-            <div className="flex flex-col items-center gap-3 mb-12">
+            <div className="flex flex-col items-center gap-3 mb-8 md:mb-12">
               <button
                 onClick={() => {
                   // Navigate directly to my.cherrytree.app to avoid double redirect
@@ -472,11 +472,11 @@ function LandingPage() {
                     navigate('/dashboard', { replace: true });
                   }
                 }}
-                className="button-shimmer bg-[#000000] text-white px-16 py-4 rounded-md text-[16px] font-normal hover:bg-[#1a1a1a] transition"
+                className="button-shimmer bg-[#000000] text-white px-8 md:px-16 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-[#1a1a1a] transition"
               >
                 Create agreement
               </button>
-              <p className="text-sm text-gray-600">
+              <p className="text-xs md:text-sm text-gray-600">
                 or <a href="#" className="text-black underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
               </p>
             </div>
@@ -505,16 +505,17 @@ function LandingPage() {
           </div>
 
           {/* Tilted Card */}
-          <div className="mt-4" style={{ perspective: '1000px' }}>
+          <div className="mt-2 md:mt-4" style={{ perspective: '1000px' }}>
             <div
               className="tilty-card mx-auto"
               style={{
-                width: '1100px',
-                height: '595px',
-                maxWidth: '90vw',
+                width: '100%',
+                maxWidth: 'min(1100px, 90vw)',
+                height: 'auto',
+                aspectRatio: '1100 / 595',
                 background: '#ffffff',
                 border: '1px solid #E5E7EB',
-                borderRadius: '12px',
+                borderRadius: '8px md:rounded-xl',
                 boxShadow: '0 10px 30px rgba(0, 0, 0, 0.12)',
                 transform: `rotateX(${cardTilt}deg)`,
                 transformStyle: 'preserve-3d',
@@ -571,19 +572,19 @@ function LandingPage() {
       </section>
 
       {/* Process Section - Combined heading + cards */}
-      <section className="scroll-section scroll-section-early process-section px-6" style={{ paddingTop: '144px', paddingBottom: '120px' }}>
+      <section className="scroll-section scroll-section-early process-section px-4 md:px-6 pt-20 md:pt-32 lg:pt-36 pb-16 md:pb-24 lg:pb-30">
         <div className="max-w-7xl mx-auto">
           <div className="mx-auto" style={{ maxWidth: '720px' }}>
             {/* Heading */}
-            <div className="max-w-6xl mx-auto text-center mb-10">
-              <h2 className="section-header font-heading text-[46px] font-medium mb-4">
+            <div className="max-w-6xl mx-auto text-center mb-8 md:mb-10">
+              <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium mb-3 md:mb-4">
                 Built for <span className="underline-animate">early-stage
                   <svg viewBox="0 0 250 12" preserveAspectRatio="none">
                     <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
                   </svg>
                 </span> cofounders<span style={{ marginLeft: '0.05em' }}>.</span>
               </h2>
-              <p className="text-[16px] max-w-3xl mx-auto font-normal" style={{ color: '#716B6B' }}>
+              <p className="text-sm md:text-base max-w-3xl mx-auto font-normal px-4" style={{ color: '#716B6B' }}>
                 Get your equity, expectations, and everything else right from the start.
               </p>
             </div>
@@ -599,7 +600,7 @@ function LandingPage() {
                 return (
                   <div
                     key={index}
-                    className={`process-card rounded-lg p-12 py-20 ${
+                    className={`process-card rounded-lg p-6 md:p-12 py-10 md:py-20 ${
                       revealedCards[index]
                         ? 'card-bounce-in'
                         : 'opacity-0 translate-y-8'
@@ -610,17 +611,17 @@ function LandingPage() {
                       boxShadow: cardStyle.boxShadow
                     }}
                   >
-                  <div className="flex items-center gap-8">
+                  <div className="flex flex-col-reverse md:flex-row items-center gap-6 md:gap-8">
                     {/* Animation area */}
-                    <div className="relative rounded-lg flex-shrink-0" style={{ width: '280px', height: '160px' }}>
+                    <div className="relative rounded-lg flex-shrink-0 w-full md:w-[280px]" style={{ height: '160px' }}>
                       {index === 0 && (
                         /* Step 1: Invite animation */
                         <div className="p-4 h-full flex flex-col justify-center">
                           <div className="flex gap-2 mb-3">
-                            <div className="step1-input flex-1 h-8 bg-white border border-gray-200 rounded px-2 flex items-center">
-                              <span className="step1-email text-sm text-gray-400"></span>
+                            <div className="step1-input h-8 bg-white border border-gray-200 rounded px-2 flex items-center" style={{ minWidth: '160px', flex: '1 1 160px' }}>
+                              <span className="step1-email text-sm text-gray-400" style={{ minWidth: '140px' }}></span>
                             </div>
-                            <div className="step1-btn h-8 px-3 bg-gray-200 hover:bg-gray-300 text-gray-600 text-xs rounded flex items-center transition-colors">Add</div>
+                            <div className="step1-btn h-8 px-3 bg-gray-200 hover:bg-gray-300 text-gray-600 text-xs rounded flex items-center transition-colors whitespace-nowrap">Add</div>
                           </div>
                           <div className="space-y-2">
                             <div className="text-sm text-gray-500">you@email.com</div>
@@ -690,12 +691,12 @@ function LandingPage() {
                       )}
                     </div>
                     {/* Text content */}
-                    <div className="flex-1">
-                      <div className="font-medium text-[18px] mb-2" style={{ color: '#666' }}>
+                    <div className="flex-1 text-center md:text-left">
+                      <div className="font-medium text-base md:text-lg mb-2" style={{ color: '#666' }}>
                         Step {step.step}
                       </div>
-                      <h3 className="text-[22px] font-medium mb-2" style={{ color: '#333333' }}>{step.title}</h3>
-                      <p className="text-[14px]" style={{ color: '#666', lineHeight: '1.4' }}>{step.desc}</p>
+                      <h3 className="text-xl md:text-[22px] font-medium mb-2" style={{ color: '#333333' }}>{step.title}</h3>
+                      <p className="text-sm md:text-[14px]" style={{ color: '#666', lineHeight: '1.4' }}>{step.desc}</p>
                     </div>
                   </div>
                 </div>
@@ -707,9 +708,9 @@ function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" ref={featuresRef} className="scroll-section py-24 px-6">
+      <section id="features" ref={featuresRef} className="scroll-section py-16 md:py-24 px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="section-header font-heading text-[46px] font-medium text-center mb-16">Turn your cofoundership<br />into a company, <em className="italic" style={{ display: 'inline-block', minWidth: '6ch', textAlign: 'left', letterSpacing: '-0.02em' }}>{typedToday || '\u00A0'}</em></h2>
+          <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium text-center mb-10 md:mb-16 px-2">Turn your cofoundership<br className="hidden sm:block" />into a company, <em className="italic" style={{ display: 'inline-block', minWidth: '6ch', textAlign: 'left', letterSpacing: '-0.02em' }}>{typedToday || '\u00A0'}</em></h2>
 
           <div className="features-container">
             <div className="features-left">
@@ -1251,29 +1252,29 @@ function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="scroll-section py-24 px-6">
+      <section id="pricing" className="scroll-section py-16 md:py-24 px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="section-header font-heading text-[46px] font-medium text-center mb-4">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
-          <p className="text-center text-[16px] mb-16 font-normal" style={{ color: '#716B6B' }}>
+          <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium text-center mb-3 md:mb-4">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+          <p className="text-center text-sm md:text-base mb-12 md:mb-16 font-normal px-4" style={{ color: '#716B6B' }}>
             Choose the plan that's right for your team.{' '}
             <a href="/pricing" className="underline hover:text-black transition-colors" style={{ color: '#9CA3AF' }}>
               Compare plans.
             </a>
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 items-stretch max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8 items-stretch max-w-7xl mx-auto">
             {pricingPlans.map((plan, i) => (
               <div
                 key={i}
-                className={`bg-white p-8 rounded-lg flex flex-col ${
+                className={`bg-white p-6 md:p-8 rounded-lg flex flex-col ${
                   plan.featured
                     ? 'ring-2 ring-gray-700'
                     : 'border border-gray-400'
                 }`}
               >
-                <h3 className="text-xl font-normal mb-2 text-[#716B6B]">{plan.name}</h3>
-                <div className="text-4xl font-bold mb-2">{plan.price}</div>
-                <p className="text-gray-600 mb-6">{plan.description}</p>
+                <h3 className="text-lg md:text-xl font-normal mb-2 text-[#716B6B]">{plan.name}</h3>
+                <div className="text-3xl md:text-4xl font-bold mb-2">{plan.price}</div>
+                <p className="text-sm md:text-base text-gray-600 mb-6">{plan.description}</p>
                 <button
                   onClick={() => {
                     if (plan.name === 'Enterprise') {
@@ -1288,7 +1289,7 @@ function LandingPage() {
                       }
                     }
                   }}
-                  className={`w-full py-3 rounded-lg font-semibold transition mb-6 ${
+                  className={`w-full py-2.5 md:py-3 rounded-lg text-sm md:text-base font-semibold transition mb-6 ${
                     plan.featured
                       ? 'button-shimmer bg-[#000000] text-white hover:bg-[#1a1a1a]'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1298,7 +1299,7 @@ function LandingPage() {
                 </button>
                 <ul className="space-y-3 flex-grow">
                   {plan.features.map((feature, j) => (
-                    <li key={j} className="flex items-center gap-2">
+                    <li key={j} className="flex items-center gap-2 text-sm md:text-base">
                       <span className="text-[#716B6B]">✓</span>
                       <span className="text-gray-700">{feature}</span>
                     </li>
@@ -1311,28 +1312,28 @@ function LandingPage() {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="scroll-section py-24 px-6">
+      <section id="faq" className="scroll-section py-16 md:py-24 px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="flex gap-80 items-start justify-center ml-32">
-            <div className="flex-shrink-0">
-              <h2 className="section-header font-heading text-[46px] font-medium">FAQs<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+          <div className="flex flex-col md:flex-row gap-8 md:gap-20 lg:gap-80 items-start md:justify-center md:ml-32">
+            <div className="flex-shrink-0 w-full md:w-auto text-center md:text-left">
+              <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium">FAQs<span style={{ marginLeft: '0.05em' }}>.</span></h2>
             </div>
-            <div className="flex-1 max-w-[700px]">
+            <div className="flex-1 max-w-[700px] w-full">
               {faqs.map((faq, i) => (
                 <div key={i} className="accordion-item border-b border-gray-300">
                   <button
                     onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                    className="accordion-title w-full py-5 px-4 flex justify-between items-center transition hover:bg-gray-50 text-left"
+                    className="accordion-title w-full py-4 md:py-5 px-3 md:px-4 flex justify-between items-center transition hover:bg-gray-50 text-left"
                   >
-                    <span className="font-medium text-black">{faq.q}</span>
-                    <span className={`accordion-icon text-gray-400 font-light transition-all duration-300 flex-shrink-0 ${openFaq === i ? 'rotate-90 scale-110 text-gray-700' : ''}`}>
+                    <span className="font-medium text-black text-sm md:text-base pr-4">{faq.q}</span>
+                    <span className={`accordion-icon text-gray-400 font-light transition-all duration-300 flex-shrink-0 text-xl ${openFaq === i ? 'rotate-90 scale-110 text-gray-700' : ''}`}>
                       +
                     </span>
                   </button>
                   <div
-                    className={`accordion-content overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-[1000px] py-8 px-4' : 'max-h-0 py-0 px-4'}`}
+                    className={`accordion-content overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-[1000px] py-6 md:py-8 px-3 md:px-4' : 'max-h-0 py-0 px-3 md:px-4'}`}
                   >
-                    <p className="text-gray-600 text-[0.95rem]">{faq.a}</p>
+                    <p className="text-gray-600 text-sm md:text-[0.95rem]">{faq.a}</p>
                   </div>
                 </div>
               ))}
@@ -1342,7 +1343,7 @@ function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="scroll-section-full py-24 px-6 bg-white text-gray-900">
+      <section className="scroll-section-full py-16 md:py-24 px-4 md:px-6 bg-white text-gray-900">
         <div className="headline-container">
           <h1 className="typing-title font-heading">
             <span className="first-line">Protect your piece of the pie</span>
@@ -1353,7 +1354,7 @@ function LandingPage() {
             </span>
           </h1>
         </div>
-        <div className="max-w-4xl mx-auto text-center mt-16">
+        <div className="max-w-4xl mx-auto text-center mt-12 md:mt-16">
           <div className="flex flex-col items-center gap-3">
             <button
               onClick={() => {
@@ -1365,11 +1366,11 @@ function LandingPage() {
                   navigate('/dashboard', { replace: true });
                 }
               }}
-              className="button-shimmer bg-[#000000] text-white px-16 py-4 rounded-md text-[16px] font-normal hover:bg-[#1a1a1a] transition"
+              className="button-shimmer bg-[#000000] text-white px-8 md:px-16 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-[#1a1a1a] transition"
             >
               Create agreement
             </button>
-            <p className="text-sm text-gray-600">
+            <p className="text-xs md:text-sm text-gray-600">
               or <a href="#" className="text-black underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
             </p>
           </div>
@@ -1436,6 +1437,11 @@ function LandingPage() {
         @media (max-width: 768px) {
           .logo-track {
             animation: scroll 15s linear infinite;
+          }
+
+          /* Reduce tilt effect on mobile */
+          .tilty-card {
+            transform: rotateX(0deg) !important;
           }
         }
 
@@ -1772,6 +1778,51 @@ function LandingPage() {
           }
           .feature-visual {
             min-height: auto;
+            height: auto;
+            min-height: 320px;
+            padding: 8px;
+            border: 6px solid #f7f7f7;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .feature-card {
+            padding: 20px;
+            min-height: 120px;
+          }
+          .feature-title {
+            font-size: 20px;
+            margin-bottom: 12px;
+          }
+          .feature-description {
+            font-size: 14px;
+          }
+          /* Scale down animations for mobile */
+          .contract-animation-container,
+          .visual-content {
+            transform: scale(0.45);
+            padding: 0 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform-origin: center center;
+          }
+          #equity-calculator {
+            transform: scale(0.4) !important;
+            transform-origin: center center;
+          }
+          #expert-guidance {
+            transform: scale(0.4) !important;
+            transform-origin: center center;
+          }
+          /* Add more spacing for expert guidance icons on mobile */
+          #expert-guidance .contact-icons {
+            top: 5px !important;
+          }
+          #expert-guidance {
+            padding-top: 35px !important;
+            padding-bottom: 20px !important;
           }
         }
 

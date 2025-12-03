@@ -105,25 +105,6 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
           </div>
         </div>
 
-        {/* Final Say */}
-        <div style={{ position: 'relative', zIndex: 10 }}>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            Who has final say, regardless of their field of expertise?
-            {showValidation && !formData.finalSayPerson && <span className="text-red-700 ml-0.5">*</span>}
-            <Tooltip text="This is usually the CEO. It's done to prevent deadlocks but may concentrate power." />
-          </label>
-          <CustomSelect
-            value={formData.finalSayPerson || ''}
-            onChange={(value) => handleChange('finalSayPerson', value)}
-            options={(formData.cofounders || []).map((cofounder, index) => ({
-              value: cofounder.fullName || `Cofounder ${String.fromCharCode(65 + index)}`,
-              label: cofounder.fullName || `Cofounder ${String.fromCharCode(65 + index)}`
-            }))}
-            placeholder="Select a cofounder"
-            disabled={isReadOnly}
-          />
-        </div>
-
         {/* Tie Resolution */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">

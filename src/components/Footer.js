@@ -33,14 +33,14 @@ function Footer() {
   }, []);
 
   return (
-    <footer className="relative bg-black text-white pt-24 pb-20 px-6 mt-auto">
+    <footer className="relative bg-black text-white pt-24 pb-20 mt-auto">
       {/* Rounded top border */}
       <div className="absolute top-0 left-0 right-0 h-12 bg-white rounded-b-[48px]"></div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="footer-content flex flex-col md:flex-row justify-between gap-12">
+        <div className="footer-content flex flex-col md:flex-row justify-between gap-12 px-3">
           {/* Left side - Logo and copyright */}
-          <div className="footer-cascade-1">
+          <div className="footer-cascade-1 text-left">
             <div className="mb-4">
               <img
                 src="/images/cherrytree-logo.png"
@@ -52,9 +52,9 @@ function Footer() {
           </div>
 
           {/* Right side - Three columns */}
-          <div className="grid grid-cols-3 gap-12 ml-auto">
+          <div className="grid grid-cols-3 gap-6 md:gap-16 w-full md:w-auto justify-items-start text-left">
             <div className="footer-cascade-2">
-              <h4 className="text-white text-sm mb-4">Product</h4>
+              <h4 className="text-white text-sm mb-4 uppercase">Product</h4>
               <ul className="space-y-4 text-sm">
                 <li><button onClick={() => {
                   const isProduction = window.location.hostname.includes('cherrytree.app');
@@ -70,7 +70,7 @@ function Footer() {
             </div>
 
             <div className="footer-cascade-3">
-              <h4 className="text-white text-sm mb-4">Resources</h4>
+              <h4 className="text-white text-sm mb-4 uppercase">Resources</h4>
               <ul className="space-y-4 text-sm">
                 <li><a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition nav-link-underline">Newsletter</a></li>
                 <li><a href="https://app.hubble.social/timhe" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition nav-link-underline">Coaching</a></li>
@@ -79,7 +79,7 @@ function Footer() {
             </div>
 
             <div className="footer-cascade-4">
-              <h4 className="text-white text-sm mb-4">Company</h4>
+              <h4 className="text-white text-sm mb-4 uppercase">Company</h4>
               <ul className="space-y-4 text-sm">
                 <li><button onClick={() => navigate('/privacy')} className="text-gray-400 hover:text-white transition nav-link-underline">Privacy</button></li>
                 <li><button onClick={() => navigate('/terms')} className="text-gray-400 hover:text-white transition nav-link-underline">Terms</button></li>

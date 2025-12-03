@@ -60,7 +60,6 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
     majorDecisions: [],
     majorDecisionsOther: '',
     equityVotingPower: '',
-    finalSayPerson: '',
     tieResolution: '',
     tieResolutionOther: '',
     acknowledgeTieResolution: {},
@@ -295,7 +294,6 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
             majorDecisions: [],
             majorDecisionsOther: '',
             equityVotingPower: '',
-            finalSayPerson: '',
             tieResolution: '',
             tieResolutionOther: '',
             acknowledgeTieResolution: {},
@@ -580,8 +578,6 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
     totalRequired++;
     if (formData.equityVotingPower) completed++;
     totalRequired++;
-    if (formData.finalSayPerson) completed++;
-    totalRequired++;
     if (isOtherFieldValid(formData.tieResolution, formData.tieResolutionOther)) completed++;
     totalRequired++;
     // Check if all collaborators have acknowledged tie resolution
@@ -748,7 +744,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           allCollaborators.every(email => formData.acknowledgeShotgunClause?.[email])
         ) : true;
         return isOtherArrayFieldValid(formData.majorDecisions, formData.majorDecisionsOther) &&
-               formData.equityVotingPower && formData.finalSayPerson &&
+               formData.equityVotingPower &&
                isOtherFieldValid(formData.tieResolution, formData.tieResolutionOther) &&
                allAcknowledgedTieResolution &&
                formData.includeShotgunClause && allAcknowledgedShotgunClause;
@@ -908,7 +904,6 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       name: 'Decision-Making',
       questions: [
         "Should equity ownership reflect voting power?",
-        "Who has final say, regardless of their field of expertise?",
         "If cofounders are deadlocked, how should the tie be resolved?",
         "Do you want to include a shotgun clause if you and your cofounder(s) cannot resolve deadlocks?"
       ],

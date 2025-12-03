@@ -9,8 +9,8 @@ function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white z-50">
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between px-3 py-4">
           <div className="cursor-pointer" onClick={() => navigate('/')}>
             <img
               src="/images/cherrytree-logo.png"
