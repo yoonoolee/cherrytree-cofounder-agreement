@@ -1,3 +1,14 @@
-# https://www.robotstxt.org/robotstxt.html
+# robots.txt for Cherrytree
+# Allow search engines to crawl public pages, block private/authenticated pages
+
 User-agent: *
-Disallow:
+Allow: /
+
+# Block private/authenticated pages
+Disallow: /dashboard
+Disallow: /survey/
+Disallow: /onboarding
+Disallow: /settings
+
+# Sitemap location
+Sitemap: https://cherrytree.app/sitemap.xml
