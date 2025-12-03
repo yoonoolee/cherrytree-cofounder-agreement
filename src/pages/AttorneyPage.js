@@ -1,10 +1,17 @@
 import React, { useEffect } from 'react';
 import Header from '../components/Header';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { usePageMeta } from '../hooks/usePageMeta';
 import Footer from '../components/Footer';
 
 function AttorneyPage() {
   useScrollAnimation();
+
+  // SEO meta tags
+  usePageMeta({
+    title: 'Attorney Review - Cherrytree | Professional Legal Support for Cofounders',
+    description: 'Get your cofounder agreement reviewed by experienced attorneys. Professional legal support to ensure your startup agreements are fair, enforceable, and protect all parties.'
+  });
 
   // Trigger hero content fade-in on mount
   useEffect(() => {

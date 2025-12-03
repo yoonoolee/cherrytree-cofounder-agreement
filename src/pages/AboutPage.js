@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { usePageMeta } from '../hooks/usePageMeta';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 function AboutPage() {
   const navigate = useNavigate();
+
+  // SEO meta tags
+  usePageMeta({
+    title: 'About Cherrytree | Fair Cofounder Agreements for Startups',
+    description: 'Learn how Cherrytree helps early-stage cofounders create fair agreements that protect both equity stakes and relationships. Built by founders, for founders.'
+  });
   const [typedCompany, setTypedCompany] = useState('');
   const [showPeriod, setShowPeriod] = useState(false);
   const companyText = 'with the right company';

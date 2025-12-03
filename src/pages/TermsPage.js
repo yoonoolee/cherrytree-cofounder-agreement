@@ -1,10 +1,17 @@
 import React, { useEffect } from 'react';
 import Header from '../components/Header';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { usePageMeta } from '../hooks/usePageMeta';
 import Footer from '../components/Footer';
 
 function TermsPage() {
   useScrollAnimation();
+
+  // SEO meta tags
+  usePageMeta({
+    title: 'Terms of Service - Cherrytree | User Agreement & Legal Terms',
+    description: 'Cherrytree terms of service and user agreement. Review the legal terms and conditions for using our cofounder agreement platform and services.'
+  });
 
   // Trigger hero content fade-in on mount
   useEffect(() => {

@@ -1,12 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Header from '../components/Header';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { usePageMeta } from '../hooks/usePageMeta';
 import Footer from '../components/Footer';
 import Spreadsheet from 'react-spreadsheet';
 import '../components/EquityCalculator.css';
 
 function EquityCalculatorPage() {
   useScrollAnimation();
+
+  // SEO meta tags
+  usePageMeta({
+    title: 'Free Equity Calculator - Cherrytree | Fair Cofounder Equity Split Tool',
+    description: 'Calculate fair equity splits for your startup cofounders. Free interactive tool to determine cofounder equity percentages based on contributions, risk, and commitment.'
+  });
 
   const [numCofounders, setNumCofounders] = useState(2);
   const [cofounderNames, setCofounderNames] = useState(['', '']);

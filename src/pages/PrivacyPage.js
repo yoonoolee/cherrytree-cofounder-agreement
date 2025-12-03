@@ -1,10 +1,17 @@
 import React, { useEffect } from 'react';
 import Header from '../components/Header';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { usePageMeta } from '../hooks/usePageMeta';
 import Footer from '../components/Footer';
 
 function PrivacyPage() {
   useScrollAnimation();
+
+  // SEO meta tags
+  usePageMeta({
+    title: 'Privacy Policy - Cherrytree | Your Data Protection & Privacy',
+    description: 'Cherrytree privacy policy. Learn how we collect, use, and protect your data when creating cofounder agreements. Your privacy and security are our priority.'
+  });
 
   // Trigger hero content fade-in on mount
   useEffect(() => {

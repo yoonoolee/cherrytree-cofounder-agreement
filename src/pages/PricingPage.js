@@ -2,12 +2,48 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { usePageMeta } from '../hooks/usePageMeta';
 import Footer from '../components/Footer';
 
 function PricingPage() {
   const navigate = useNavigate();
   useScrollAnimation();
   const [openFaq, setOpenFaq] = useState(null);
+
+  // SEO meta tags
+  usePageMeta({
+    title: 'Pricing - Cherrytree | Starter $200, Pro $800',
+    description: 'Affordable cofounder agreement pricing for startups. Starter plan at $200 includes real-time collaboration and instant agreements. Pro plan at $800 adds attorney review and coaching.'
+  });
+
+  // Add FAQ schema for SEO
+  useEffect(() => {
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqs.map(faq => ({
+        "@type": "Question",
+        "name": faq.q,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.a
+        }
+      }))
+    };
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(faqSchema);
+    script.id = 'faq-schema';
+    document.head.appendChild(script);
+
+    return () => {
+      const existingScript = document.getElementById('faq-schema');
+      if (existingScript) {
+        document.head.removeChild(existingScript);
+      }
+    };
+  }, []);
 
   // Trigger hero content fade-in on mount
   useEffect(() => {
