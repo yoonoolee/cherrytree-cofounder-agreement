@@ -10,7 +10,11 @@ function AttorneyPage() {
   // SEO meta tags
   usePageMeta({
     title: 'Attorney Review - Cherrytree | Professional Legal Support for Cofounders',
-    description: 'Get your cofounder agreement reviewed by experienced attorneys. Professional legal support to ensure your startup agreements are fair, enforceable, and protect all parties.'
+    description: 'Get your cofounder agreement reviewed by experienced attorneys. Professional legal support to ensure your startup agreements are fair, enforceable, and protect all parties.',
+    breadcrumbs: [
+      { name: 'Home', url: '/' },
+      { name: 'Attorney' }
+    ]
   });
 
   // Trigger hero content fade-in on mount

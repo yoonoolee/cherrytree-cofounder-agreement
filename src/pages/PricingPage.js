@@ -13,7 +13,11 @@ function PricingPage() {
   // SEO meta tags
   usePageMeta({
     title: 'Pricing - Cherrytree | Starter $200, Pro $800',
-    description: 'Affordable cofounder agreement pricing for startups. Starter plan at $200 includes real-time collaboration and instant agreements. Pro plan at $800 adds attorney review and coaching.'
+    description: 'Affordable cofounder agreement pricing for startups. Starter plan at $200 includes real-time collaboration and instant agreements. Pro plan at $800 adds attorney review and coaching.',
+    breadcrumbs: [
+      { name: 'Home', url: '/' },
+      { name: 'Pricing' }
+    ]
   });
 
   // Add FAQ schema for SEO

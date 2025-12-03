@@ -10,7 +10,11 @@ function TermsPage() {
   // SEO meta tags
   usePageMeta({
     title: 'Terms of Service - Cherrytree | User Agreement & Legal Terms',
-    description: 'Cherrytree terms of service and user agreement. Review the legal terms and conditions for using our cofounder agreement platform and services.'
+    description: 'Cherrytree terms of service and user agreement. Review the legal terms and conditions for using our cofounder agreement platform and services.',
+    breadcrumbs: [
+      { name: 'Home', url: '/' },
+      { name: 'Terms of Service' }
+    ]
   });
 
   // Trigger hero content fade-in on mount

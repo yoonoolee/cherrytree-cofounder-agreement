@@ -11,7 +11,11 @@ function AboutPage() {
   // SEO meta tags
   usePageMeta({
     title: 'About Cherrytree | Fair Cofounder Agreements for Startups',
-    description: 'Learn how Cherrytree helps early-stage cofounders create fair agreements that protect both equity stakes and relationships. Built by founders, for founders.'
+    description: 'Learn how Cherrytree helps early-stage cofounders create fair agreements that protect both equity stakes and relationships. Built by founders, for founders.',
+    breadcrumbs: [
+      { name: 'Home', url: '/' },
+      { name: 'About' }
+    ]
   });
   const [typedCompany, setTypedCompany] = useState('');
   const [showPeriod, setShowPeriod] = useState(false);

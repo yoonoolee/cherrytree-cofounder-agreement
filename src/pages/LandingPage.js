@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { usePageMeta } from '../hooks/usePageMeta';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 function LandingPage() {
   const navigate = useNavigate();
+
+  // SEO meta tags for homepage
+  usePageMeta({
+    title: 'Cherrytree - Create Cofounder Agreements',
+    description: 'Cherrytree makes it easy to create cofounder agreements and determine equity splits.'
+  });
   const [activeTab, setActiveTab] = useState(0);
   const [openFaq, setOpenFaq] = useState(null);
   const [typedText, setTypedText] = useState('');

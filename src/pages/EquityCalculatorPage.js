@@ -12,7 +12,11 @@ function EquityCalculatorPage() {
   // SEO meta tags
   usePageMeta({
     title: 'Free Equity Calculator - Cherrytree | Fair Cofounder Equity Split Tool',
-    description: 'Calculate fair equity splits for your startup cofounders. Free interactive tool to determine cofounder equity percentages based on contributions, risk, and commitment.'
+    description: 'Calculate fair equity splits for your startup cofounders. Free interactive tool to determine cofounder equity percentages based on contributions, risk, and commitment.',
+    breadcrumbs: [
+      { name: 'Home', url: '/' },
+      { name: 'Equity Calculator' }
+    ]
   });
 
   const [numCofounders, setNumCofounders] = useState(2);

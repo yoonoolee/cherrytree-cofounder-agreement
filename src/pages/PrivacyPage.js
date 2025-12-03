@@ -10,7 +10,11 @@ function PrivacyPage() {
   // SEO meta tags
   usePageMeta({
     title: 'Privacy Policy - Cherrytree | Your Data Protection & Privacy',
-    description: 'Cherrytree privacy policy. Learn how we collect, use, and protect your data when creating cofounder agreements. Your privacy and security are our priority.'
+    description: 'Cherrytree privacy policy. Learn how we collect, use, and protect your data when creating cofounder agreements. Your privacy and security are our priority.',
+    breadcrumbs: [
+      { name: 'Home', url: '/' },
+      { name: 'Privacy Policy' }
+    ]
   });
 
   // Trigger hero content fade-in on mount
