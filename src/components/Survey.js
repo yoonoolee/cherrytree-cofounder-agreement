@@ -1058,10 +1058,10 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               setTimeout(() => setWelcomeWiggle(false), 500);
             }}
           />
-          <div className="fixed inset-0 flex items-center justify-center z-[9999] pointer-events-none">
-            <div className={`bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 pt-8 px-8 pb-3 pointer-events-auto ${welcomeWiggle ? 'animate-wiggle' : ''}`} style={{ minHeight: '510px' }}>
+          <div className="fixed inset-0 flex items-center justify-center z-[9999] pointer-events-none p-4">
+            <div className={`bg-white rounded-lg shadow-xl max-w-lg w-full pt-6 md:pt-8 px-4 md:px-8 pb-3 pointer-events-auto flex flex-col ${welcomeWiggle ? 'animate-wiggle' : ''}`} style={{ height: '500px' }}>
               {/* Step indicators */}
-              <div className="flex items-center justify-center gap-2 mb-6">
+              <div className="flex items-center justify-center gap-2 mb-4 md:mb-6">
                 {[1, 2, 3].map((step) => (
                   <div
                     key={step}
@@ -1072,8 +1072,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
               {/* Step 1: Add Collaborators */}
               {welcomeStep === 1 && (
-                <div className="flex flex-col h-full" style={{ minHeight: '400px' }}>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                <div className="flex flex-col h-full">
+                  <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
                     Invite Your Cofounders
                   </h2>
                   <p className="text-sm text-gray-600 mb-4">
@@ -1081,7 +1081,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                   </p>
 
                   {/* Add Collaborator Area */}
-                  <div className="bg-gray-50 rounded-lg pt-5 px-5 pb-4 mb-6 flex-grow" style={{ minHeight: '160px' }}>
+                  <div className="bg-gray-50 rounded-lg pt-4 md:pt-5 px-3 md:px-5 pb-4 mb-3 md:mb-4 overflow-auto" style={{ height: '240px' }}>
                     {/* Add Collaborator Form */}
                     <form onSubmit={handleWelcomeAddCollaborator} className="mb-3">
                       <div className="flex gap-2">
@@ -1090,12 +1090,12 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                           value={welcomeCollabEmail}
                           onChange={(e) => setWelcomeCollabEmail(e.target.value)}
                           placeholder="cofounder@example.com"
-                          className="flex-1 px-3 py-2 border border-gray-200 bg-white rounded focus:ring-2 focus:ring-black focus:border-transparent text-sm"
+                          className="flex-1 px-3 py-2 border border-gray-200 bg-white rounded focus:ring-2 focus:ring-black focus:border-transparent text-sm min-w-0"
                         />
                         <button
                           type="submit"
                           disabled={welcomeCollabLoading}
-                          className="bg-black text-white px-4 py-2 rounded text-sm font-medium hover:bg-[#1a1a1a] transition disabled:opacity-50"
+                          className="bg-black text-white px-3 md:px-4 py-2 rounded text-sm font-medium hover:bg-[#1a1a1a] transition disabled:opacity-50 flex-shrink-0"
                         >
                           {welcomeCollabLoading ? 'Adding...' : 'Add'}
                         </button>
@@ -1138,20 +1138,19 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                     </div>
                   </div>
 
-                  <div className="flex justify-between mt-auto">
+                  <div className="flex justify-between items-center gap-3 mt-auto pt-3">
                     <button
                       onClick={() => setWelcomeStep(2)}
-                      className="text-sm text-gray-500 hover:text-gray-700"
+                      className="text-xs md:text-sm text-gray-500 hover:text-gray-700"
                     >
                       Skip for now
                     </button>
                     <button
                       onClick={() => setWelcomeStep(2)}
-                      className="button-shimmer bg-[#000000] text-white px-6 py-2 rounded font-medium hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2"
-                      style={{ width: '190px' }}
+                      className="button-shimmer bg-[#000000] text-white px-4 md:px-6 py-2 rounded text-sm font-medium hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2 flex-shrink-0"
                     >
                       Continue
-                      <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
+                      <svg width="16" height="14" viewBox="0 0 20 16" fill="none" className="flex-shrink-0">
                         <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     </button>
@@ -1161,8 +1160,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
               {/* Step 2: Collab on the agreement */}
               {welcomeStep === 2 && (
-                <div className="flex flex-col h-full" style={{ minHeight: '400px' }}>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                <div className="flex flex-col h-full">
+                  <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
                     Collab on the Agreement
                   </h2>
                   <p className="text-sm text-gray-600 mb-4">
@@ -1170,7 +1169,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                   </p>
 
                   {/* Animation area */}
-                  <div className="relative bg-gray-50 rounded-lg p-5 mb-6" style={{ height: '210px' }}>
+                  <div className="relative bg-gray-50 rounded-lg p-3 md:p-5 mb-3 md:mb-4 overflow-hidden" style={{ height: '240px' }}>
                     {/* Black cursor */}
                     <div className="cursor-black absolute w-4 h-4 z-20">
                       <svg viewBox="0 0 24 24" fill="black" className="w-4 h-4">
@@ -1212,20 +1211,19 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                     </div>
                   </div>
 
-                  <div className="flex justify-between mt-auto">
+                  <div className="flex justify-between items-center gap-3 mt-auto pt-3">
                     <button
                       onClick={() => setWelcomeStep(1)}
-                      className="text-sm text-gray-500 hover:text-gray-700"
+                      className="text-xs md:text-sm text-gray-500 hover:text-gray-700"
                     >
                       Back
                     </button>
                     <button
                       onClick={() => setWelcomeStep(3)}
-                      className="button-shimmer bg-[#000000] text-white px-6 py-2 rounded font-medium hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2"
-                      style={{ width: '190px' }}
+                      className="button-shimmer bg-[#000000] text-white px-4 md:px-6 py-2 rounded text-sm font-medium hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2 flex-shrink-0"
                     >
                       Continue
-                      <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
+                      <svg width="16" height="14" viewBox="0 0 20 16" fill="none" className="flex-shrink-0">
                         <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     </button>
@@ -1340,8 +1338,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
               {/* Step 3: Final Review */}
               {welcomeStep === 3 && (
-                <div className="flex flex-col h-full" style={{ minHeight: '400px' }}>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                <div className="flex flex-col h-full">
+                  <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
                     Do a Final Review
                   </h2>
                   <p className="text-sm text-gray-600 mb-4">
@@ -1349,7 +1347,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                   </p>
 
                   {/* Document preview */}
-                  <div className="bg-gray-50 rounded-lg p-5 mb-6 flex justify-center relative" style={{ height: '210px' }}>
+                  <div className="bg-gray-50 rounded-lg p-3 md:p-5 mb-3 md:mb-4 flex justify-center relative overflow-hidden" style={{ height: '240px' }}>
                     <div className="bg-white rounded border border-gray-200 p-4 h-full relative" style={{ width: '85%' }}>
                       <h3 className="text-xs text-gray-500 mb-3">Cofounder Agreement</h3>
                       <div className="space-y-2">
@@ -1384,17 +1382,16 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                     }
                   `}</style>
 
-                  <div className="flex justify-between mt-auto">
+                  <div className="flex justify-between items-center gap-3 mt-auto pt-3">
                     <button
                       onClick={() => setWelcomeStep(2)}
-                      className="text-sm text-gray-500 hover:text-gray-700"
+                      className="text-xs md:text-sm text-gray-500 hover:text-gray-700"
                     >
                       Back
                     </button>
                     <button
                       onClick={dismissWelcomePopup}
-                      className="button-shimmer bg-[#000000] text-white px-6 py-2 rounded font-medium hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2"
-                      style={{ width: '190px' }}
+                      className="button-shimmer bg-[#000000] text-white px-4 md:px-6 py-2 rounded text-sm font-medium hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2 flex-shrink-0"
                     >
                       Get Started
                       <svg width="20" height="16" viewBox="0 0 20 16" fill="none">

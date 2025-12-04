@@ -1436,7 +1436,7 @@ function LandingPage() {
 
         @media (max-width: 768px) {
           .logo-track {
-            animation: scroll 15s linear infinite;
+            animation: scroll 8s linear infinite;
           }
 
           /* Reduce tilt effect on mobile */

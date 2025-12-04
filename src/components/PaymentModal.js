@@ -150,22 +150,22 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
   };
 
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]" onClick={onClose}>
-      <div className="bg-white/95 backdrop-blur-xl rounded-lg shadow-2xl border border-gray-200/50 max-w-2xl w-full p-8 relative z-[10000]" onClick={(e) => e.stopPropagation()}>
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-3 md:p-4 z-[9999]" onClick={onClose}>
+      <div className="bg-white/95 backdrop-blur-xl rounded-lg shadow-2xl border border-gray-200/50 max-w-2xl w-full p-4 md:p-8 relative z-[10000] max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between items-start mb-4 md:mb-6">
+          <div className="flex-1 pr-4">
+            <h2 className="text-lg md:text-2xl font-bold text-gray-900">
               {isMaxPlan ? "You're Already on the Highest Plan" : isUpgrade ? 'Upgrade Your Plan' : 'Start a New Cofounder Agreement'}
             </h2>
             {!isMaxPlan && (
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-xs md:text-sm text-gray-600 mt-1">
                 {isUpgrade ? 'Get access to advanced features' : 'Choose your plan and get started'}
               </p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
+            className="text-gray-400 hover:text-gray-600 text-2xl flex-shrink-0"
           >
             ×
           </button>
@@ -177,7 +177,7 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
 
         <form onSubmit={handleSubmit}>
           {!isUpgrade && (
-            <div className="mb-6">
+            <div className="mb-4 md:mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Company Name
               </label>
@@ -192,11 +192,11 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
           )}
 
           {/* Plan Selection */}
-          <div className="mb-6">
+          <div className="mb-4 md:mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Select Plan
             </label>
-            <div className={`grid gap-4 ${isUpgrade ? 'grid-cols-1' : 'grid-cols-2'}`}>
+            <div className={`grid gap-3 md:gap-4 ${isUpgrade ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
               {Object.entries(PLANS).filter(([key]) => !isUpgrade || key === 'pro').map(([key, plan]) => {
                 const isProPlan = key === 'pro';
                 const isDisabled = isMaxPlan || key === currentPlan || isProPlan;
@@ -212,7 +212,7 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
                     type="button"
                     onClick={() => !isDisabled && setSelectedPlan(key)}
                     disabled={isDisabled}
-                    className={`p-4 rounded-lg border-2 transition text-left w-full ${
+                    className={`p-3 md:p-4 rounded-lg border-2 transition text-left w-full ${
                       isDisabled
                         ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
                         : selectedPlan === key
@@ -221,12 +221,12 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
                     }`}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{plan.name}</h3>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm md:text-base font-semibold text-gray-900">{plan.name}</h3>
                         <p className="text-xs text-gray-500 mt-0.5">{plan.description}</p>
                       </div>
                       {!isProPlan && (
-                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-2 ${
                           selectedPlan === key ? 'border-black' : 'border-gray-300'
                         }`}>
                           {selectedPlan === key && (
@@ -235,10 +235,10 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
                         </div>
                       )}
                     </div>
-                    <p className="text-2xl font-bold text-gray-900 mb-3">
+                    <p className="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-3">
                       {isUpgrade && currentPlan === 'starter' && key === 'pro' ? (
                         <>
-                          <span className="line-through text-gray-400 text-lg mr-2">${plan.price}</span>
+                          <span className="line-through text-gray-400 text-base md:text-lg mr-2">${plan.price}</span>
                           $600
                         </>
                       ) : (
@@ -257,13 +257,13 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
 
                   {/* Waitlist Form for Pro Plan */}
                   {isProPlan && (
-                    <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="p-3 pt-0 md:mt-4 md:p-4 md:bg-gray-50 md:rounded-lg md:border md:border-gray-200">
                       {waitlistSuccess ? (
-                        <div className="text-center py-2">
+                        <div className="text-center py-2 border-t md:border-0 border-gray-200 pt-3">
                           <p className="text-sm text-gray-900">✓ Thanks! We'll email you when Pro launches</p>
                         </div>
                       ) : (
-                        <div>
+                        <div className="border-t md:border-0 border-gray-200 pt-3 md:pt-0">
                           <label className="block text-xs font-medium text-gray-700 mb-2">
                             Join the waitlist
                           </label>
@@ -307,7 +307,7 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
             <button
               type="button"
               onClick={onClose}
-              className="w-full bg-black text-white py-3 rounded font-semibold hover:bg-gray-800 transition"
+              className="w-full bg-black text-white py-2.5 md:py-3 rounded text-sm md:text-base font-semibold hover:bg-gray-800 transition"
             >
               Got it
             </button>
@@ -315,7 +315,7 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
             <button
               type="submit"
               disabled={loading}
-              className="button-shimmer w-full bg-[#000000] text-white py-3 rounded font-medium hover:bg-[#1a1a1a] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="button-shimmer w-full bg-[#000000] text-white py-2.5 md:py-3 rounded text-sm md:text-base font-medium hover:bg-[#1a1a1a] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Processing...' : isUpgrade
                 ? 'Upgrade'
