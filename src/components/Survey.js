@@ -135,6 +135,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   const [welcomeCollabError, setWelcomeCollabError] = useState('');
   const [welcomeCollabSuccess, setWelcomeCollabSuccess] = useState('');
   const [welcomeWiggle, setWelcomeWiggle] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const handleWelcomeRemoveCollaborator = async (email) => {
     try {
@@ -1502,6 +1503,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         onCreateProject={onCreateProject}
         hideUpgrade={project?.plan === 'pro'}
         planType={project?.plan}
+        isMobileNavOpen={isMobileNavOpen}
+        setIsMobileNavOpen={setIsMobileNavOpen}
       >
 
         {/* Progress Bar */}
@@ -1547,7 +1550,10 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               <button
                 key={section.id}
                 data-section-id={section.id}
-                onClick={() => setCurrentSection(section.id)}
+                onClick={() => {
+                  setCurrentSection(section.id);
+                  setIsMobileNavOpen(false);
+                }}
                 className={`text-left px-2 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between ${
                   currentSection === section.id
                     ? 'text-black font-semibold'
@@ -1617,10 +1623,10 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto" style={{ marginLeft: '270px', marginTop: '64px', backgroundColor: '#ffffff' }}>
-        <div className="max-w-5xl mx-auto pt-6 px-6 pr-12 pb-20" key={currentSection}>
+      <div className="flex-1 overflow-y-auto md:ml-[270px]" style={{ marginTop: '64px', backgroundColor: '#ffffff' }}>
+        <div className="max-w-5xl mx-auto pt-6 px-4 md:px-6 md:pr-12 pb-20" key={currentSection}>
           {/* Content Container */}
-          <div className="px-20 pt-8 pb-8">
+          <div className="px-4 md:px-20 pt-8 pb-8">
           {/* Section Content */}
           {currentSection === 1 && (
             <div className="animate-fade-down">

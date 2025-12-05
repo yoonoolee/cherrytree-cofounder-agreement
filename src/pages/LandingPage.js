@@ -619,7 +619,7 @@ function LandingPage() {
                         <div className="p-4 h-full flex flex-col justify-center">
                           <div className="flex gap-2 mb-3">
                             <div className="step1-input h-8 bg-white border border-gray-200 rounded px-2 flex items-center" style={{ minWidth: '160px', flex: '1 1 160px' }}>
-                              <span className="step1-email text-sm text-gray-400" style={{ minWidth: '140px' }}></span>
+                              <span className="step1-email text-sm text-gray-400" style={{ minWidth: '140px' }}>cofounder@email.com</span>
                             </div>
                             <div className="step1-btn h-8 px-3 bg-gray-200 hover:bg-gray-300 text-gray-600 text-xs rounded flex items-center transition-colors whitespace-nowrap">Add</div>
                           </div>

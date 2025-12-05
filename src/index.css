@@ -647,9 +647,9 @@ select:disabled {
 /* Landing page step card animations */
 
 /* Step 1: Invite animation */
-.step1-email::after {
-  content: '';
-  animation: step1Type 4s steps(1) infinite;
+.step1-email {
+  display: inline-block;
+  animation: step1Type 4s ease-in-out infinite;
 }
 
 .step1-user1 {
@@ -665,26 +665,14 @@ select:disabled {
 }
 
 @keyframes step1Type {
-  0%, 5% { content: ''; }
-  7% { content: 'c'; }
-  9% { content: 'co'; }
-  11% { content: 'cof'; }
-  13% { content: 'cofo'; }
-  15% { content: 'cofou'; }
-  17% { content: 'cofoun'; }
-  19% { content: 'cofounde'; }
-  21% { content: 'cofounder'; }
-  23% { content: 'cofounder@'; }
-  25% { content: 'cofounder@e'; }
-  27% { content: 'cofounder@em'; }
-  29% { content: 'cofounder@ema'; }
-  31% { content: 'cofounder@emai'; }
-  33% { content: 'cofounder@email'; }
-  35% { content: 'cofounder@email.'; }
-  37% { content: 'cofounder@email.c'; }
-  39% { content: 'cofounder@email.co'; }
-  41%, 48% { content: 'cofounder@email.com'; }
-  50%, 100% { content: ''; }
+  0%, 5% { opacity: 0; }
+  7% { opacity: 0.1; }
+  10% { opacity: 0.2; }
+  15% { opacity: 0.4; }
+  20% { opacity: 0.6; }
+  30% { opacity: 0.8; }
+  40%, 48% { opacity: 1; }
+  50%, 100% { opacity: 0; }
 }
 
 @keyframes step1User1 {
@@ -718,6 +706,17 @@ select:disabled {
   top: 100px;
   left: 240px;
   animation: step2WhiteCursor 6s ease-in-out infinite;
+}
+
+/* Smoother cursor animations on mobile */
+@media (max-width: 768px) {
+  .step2-cursor-black {
+    animation: step2BlackCursor 8s ease-out infinite;
+  }
+
+  .step2-cursor-white {
+    animation: step2WhiteCursor 8s ease-out infinite;
+  }
 }
 
 .step2-typing::after {
