@@ -53,37 +53,37 @@ function Footer() {
 
           {/* Right side - Three columns */}
           <div className="grid grid-cols-3 gap-6 md:gap-16 w-full md:w-auto justify-items-start text-left">
-            <div className="footer-cascade-2">
-              <h4 className="text-white text-sm mb-4 uppercase">Product</h4>
-              <ul className="space-y-4 text-sm">
-                <li><button onClick={() => {
+            <div className="footer-cascade-2 text-left">
+              <h4 className="text-white text-sm mb-4 uppercase text-left">Product</h4>
+              <ul className="space-y-4 text-sm text-left">
+                <li className="text-left"><button onClick={() => {
                   const isProduction = window.location.hostname.includes('cherrytree.app');
                   if (isProduction) {
                     window.location.href = 'https://my.cherrytree.app/dashboard';
                   } else {
                     navigate('/dashboard', { replace: true });
                   }
-                }} className="text-gray-400 hover:text-white transition nav-link-underline">Contract Creator</button></li>
-                <li><button onClick={() => navigate('/equity-calculator')} className="text-gray-400 hover:text-white transition nav-link-underline">Equity Calculator</button></li>
-                <li><button onClick={() => navigate('/pricing')} className="text-gray-400 hover:text-white transition nav-link-underline">Pricing</button></li>
+                }} className="text-gray-400 hover:text-white transition nav-link-underline text-left">Contract Creator</button></li>
+                <li className="text-left"><button onClick={() => navigate('/equity-calculator')} className="text-gray-400 hover:text-white transition nav-link-underline text-left">Equity Calculator</button></li>
+                <li className="text-left"><button onClick={() => navigate('/pricing')} className="text-gray-400 hover:text-white transition nav-link-underline text-left">Pricing</button></li>
               </ul>
             </div>
 
-            <div className="footer-cascade-3">
-              <h4 className="text-white text-sm mb-4 uppercase">Resources</h4>
-              <ul className="space-y-4 text-sm">
-                <li><a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition nav-link-underline">Newsletter</a></li>
-                <li><a href="https://app.hubble.social/timhe" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition nav-link-underline">Coaching</a></li>
-                <li><button onClick={() => navigate('/attorney')} className="text-gray-400 hover:text-white transition nav-link-underline">Attorney</button></li>
+            <div className="footer-cascade-3 text-left">
+              <h4 className="text-white text-sm mb-4 uppercase text-left">Resources</h4>
+              <ul className="space-y-4 text-sm text-left">
+                <li className="text-left"><a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition nav-link-underline">Newsletter</a></li>
+                <li className="text-left"><a href="https://app.hubble.social/timhe" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition nav-link-underline">Coaching</a></li>
+                <li className="text-left"><button onClick={() => navigate('/attorney')} className="text-gray-400 hover:text-white transition nav-link-underline text-left">Attorney</button></li>
               </ul>
             </div>
 
-            <div className="footer-cascade-4">
-              <h4 className="text-white text-sm mb-4 uppercase">Company</h4>
-              <ul className="space-y-4 text-sm">
-                <li><button onClick={() => navigate('/privacy')} className="text-gray-400 hover:text-white transition nav-link-underline">Privacy</button></li>
-                <li><button onClick={() => navigate('/terms')} className="text-gray-400 hover:text-white transition nav-link-underline">Terms</button></li>
-                <li><button onClick={() => window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })} className="text-gray-400 hover:text-white transition nav-link-underline">Contact</button></li>
+            <div className="footer-cascade-4 text-left">
+              <h4 className="text-white text-sm mb-4 uppercase text-left">Company</h4>
+              <ul className="space-y-4 text-sm text-left">
+                <li className="text-left"><button onClick={() => navigate('/privacy')} className="text-gray-400 hover:text-white transition nav-link-underline text-left">Privacy</button></li>
+                <li className="text-left"><button onClick={() => navigate('/terms')} className="text-gray-400 hover:text-white transition nav-link-underline text-left">Terms</button></li>
+                <li className="text-left"><button onClick={() => window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })} className="text-gray-400 hover:text-white transition nav-link-underline text-left">Contact</button></li>
               </ul>
             </div>
           </div>

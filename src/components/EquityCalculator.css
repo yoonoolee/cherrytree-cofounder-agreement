@@ -343,3 +343,71 @@ td.separator-cell {
 .single-click-edit .Spreadsheet__cell:not(.Spreadsheet__cell--readonly):active {
   pointer-events: none !important;
 }
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  /* Make spreadsheet container much wider on mobile by extending beyond padding */
+  .equity-calculator-container {
+    margin-left: -1.5rem !important;
+    margin-right: -1.5rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  /* Reduce padding in wrapper to maximize spreadsheet width */
+  .spreadsheet-wrapper {
+    border-radius: 0.25rem !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Optimize cell padding for mobile - more compact */
+  .Spreadsheet tbody .Spreadsheet__cell,
+  .Spreadsheet td {
+    padding: 0.4rem 0.5rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  /* Optimize header cell padding for mobile */
+  .Spreadsheet th,
+  .Spreadsheet thead .Spreadsheet__cell {
+    padding: 0.4rem 0.5rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* Make header cells more compact */
+  .spreadsheet-scroll-container .Spreadsheet .header-cell,
+  .spreadsheet-scroll-container .Spreadsheet td.header-cell,
+  .spreadsheet-scroll-container td.header-cell {
+    font-size: 0.85rem !important;
+    padding: 0.4rem 0.5rem !important;
+  }
+
+  /* Ensure smooth horizontal scrolling on mobile */
+  .spreadsheet-scroll-container {
+    -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: smooth !important;
+  }
+
+  /* Make first column (category) more compact on mobile */
+  .Spreadsheet tbody .Spreadsheet__cell:first-child,
+  .Spreadsheet tbody td:first-child,
+  .Spreadsheet th:first-child,
+  .Spreadsheet thead .Spreadsheet__cell:first-child {
+    min-width: 100px !important;
+    max-width: 130px !important;
+    font-size: 0.7rem !important;
+  }
+
+  /* Make cofounder columns more compact on mobile */
+  .Spreadsheet__cell:nth-child(n+2),
+  .Spreadsheet td:nth-child(n+2),
+  .Spreadsheet th:nth-child(n+2) {
+    min-width: 70px !important;
+  }
+
+  /* Reduce input font size on mobile */
+  .Spreadsheet__cell input {
+    font-size: 0.75rem !important;
+  }
+}
