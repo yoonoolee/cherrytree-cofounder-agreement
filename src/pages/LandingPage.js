@@ -474,10 +474,10 @@ function LandingPage() {
                 }}
                 className="button-shimmer bg-[#000000] text-white px-8 md:px-16 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-[#1a1a1a] transition"
               >
-                Create agreement
+                Get started
               </button>
               <p className="text-xs md:text-sm text-gray-600">
-                or <a href="#" className="text-black underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
+                or <a href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer" className="text-black underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
               </p>
             </div>
           </div>
@@ -710,7 +710,7 @@ function LandingPage() {
       {/* Features Section */}
       <section id="features" ref={featuresRef} className="scroll-section py-16 md:py-24 px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium text-center mb-10 md:mb-16 px-2">Turn your cofoundership<br className="hidden sm:block" />into a company, <em className="italic" style={{ display: 'inline-block', minWidth: '6ch', textAlign: 'left', letterSpacing: '-0.02em' }}>{typedToday || '\u00A0'}</em></h2>
+          <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium text-center mb-10 md:mb-16 px-2">Turn your cofoundership<br />into a company, <em className="italic" style={{ display: 'inline-block', minWidth: '6ch', textAlign: 'left', letterSpacing: '-0.02em' }}>{typedToday || '\u00A0'}</em></h2>
 
           <div className="features-container">
             <div className="features-left">
@@ -1368,10 +1368,10 @@ function LandingPage() {
               }}
               className="button-shimmer bg-[#000000] text-white px-8 md:px-16 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-[#1a1a1a] transition"
             >
-              Create agreement
+              Get started
             </button>
             <p className="text-xs md:text-sm text-gray-600">
-              or <a href="#" className="text-black underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
+              or <a href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer" className="text-black underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
             </p>
           </div>
         </div>

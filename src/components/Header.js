@@ -96,7 +96,7 @@ function Header() {
               }}
               className="button-shimmer bg-[#000000] text-white px-5 py-2.5 rounded hover:bg-[#1a1a1a] transition"
             >
-              Create agreement
+              Get started
             </button>
           </div>
 
@@ -183,7 +183,7 @@ function Header() {
                   onClick={handleDashboardNavigation}
                   className="button-shimmer bg-[#000000] text-white px-4 py-3 rounded hover:bg-[#1a1a1a] transition mx-4 mt-2 text-sm w-[calc(100%-2rem)]"
                 >
-                  Create agreement
+                  Get started
                 </button>
               </div>
             </nav>
