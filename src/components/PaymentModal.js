@@ -12,7 +12,11 @@ const PLANS = {
     features: [
       'Real-time collaboration',
       'Instant agreement from survey',
-      'Unlimited collaborators'
+      'Unlimited collaborators',
+      'Equity split calculator',
+      'Decision-making framework',
+      'Vesting schedules',
+      'IP assignment clauses'
     ]
   },
   pro: {
@@ -196,7 +200,7 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Select Plan
             </label>
-            <div className={`grid gap-3 md:gap-4 ${isUpgrade ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+            <div className={`grid gap-3 md:gap-4 ${isUpgrade ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} items-stretch`}>
               {Object.entries(PLANS).filter(([key]) => !isUpgrade || key === 'pro').map(([key, plan]) => {
                 const isProPlan = key === 'pro';
                 const isDisabled = isMaxPlan || key === currentPlan || isProPlan;
@@ -212,9 +216,11 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
                     type="button"
                     onClick={() => !isDisabled && setSelectedPlan(key)}
                     disabled={isDisabled}
-                    className={`p-3 md:p-4 rounded-lg border-2 transition text-left w-full ${
+                    className={`p-3 md:p-4 rounded-lg border-2 transition text-left w-full h-full ${
                       isDisabled
-                        ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                        ? isProPlan
+                          ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
+                          : 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
                         : selectedPlan === key
                           ? 'border-black bg-gray-50'
                           : 'border-gray-200 hover:border-gray-300'
@@ -253,50 +259,48 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
                         </li>
                       ))}
                     </ul>
-                  </button>
-
-                  {/* Waitlist Form for Pro Plan */}
-                  {isProPlan && (
-                    <div className="p-3 pt-0 md:mt-4 md:p-4 md:bg-gray-50 md:rounded-lg md:border md:border-gray-200">
-                      {waitlistSuccess ? (
-                        <div className="text-center py-2 border-t md:border-0 border-gray-200 pt-3">
-                          <p className="text-sm text-gray-900">✓ Thanks! We'll email you when Pro launches</p>
-                        </div>
-                      ) : (
-                        <div className="border-t md:border-0 border-gray-200 pt-3 md:pt-0">
-                          <label className="block text-xs font-medium text-gray-700 mb-2">
-                            Join the waitlist
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              type="email"
-                              value={waitlistEmail}
-                              onChange={(e) => setWaitlistEmail(e.target.value)}
-                              placeholder="your@email.com"
-                              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:border-black focus:ring-0 bg-white"
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault();
-                                  handleWaitlistSubmit(e);
-                                }
-                              }}
-                            />
-                            <button
-                              type="button"
-                              onClick={handleWaitlistSubmit}
-                              disabled={waitlistLoading}
-                              className="px-4 py-2 bg-black text-white text-sm font-medium rounded hover:bg-gray-800 transition disabled:opacity-50"
-                            >
-                              {waitlistLoading ? 'Joining...' : 'Join'}
-                            </button>
+                    {isProPlan && (
+                      <div className="mt-3 pt-3 border-t border-gray-200 md:mt-4 md:pt-4">
+                        {waitlistSuccess ? (
+                          <div className="text-center">
+                            <p className="text-sm text-gray-900">✓ Thanks! We'll email you when Pro launches</p>
                           </div>
-                          {waitlistError && (
-                            <p className="text-xs text-red-600 mt-2">{waitlistError}</p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                        ) : (
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-2">
+                              Join the waitlist
+                            </label>
+                            <div className="flex gap-2">
+                              <input
+                                type="email"
+                                value={waitlistEmail}
+                                onChange={(e) => setWaitlistEmail(e.target.value)}
+                                placeholder="your@email.com"
+                                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:border-black focus:ring-0 bg-white"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleWaitlistSubmit(e);
+                                  }
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={handleWaitlistSubmit}
+                                disabled={waitlistLoading}
+                                className="px-4 py-2 bg-black text-white text-sm font-medium rounded hover:bg-gray-800 transition disabled:opacity-50"
+                              >
+                                {waitlistLoading ? 'Joining...' : 'Join'}
+                              </button>
+                            </div>
+                            {waitlistError && (
+                              <p className="text-xs text-red-600 mt-2">{waitlistError}</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </button>
                 </div>
                 );
               })}
