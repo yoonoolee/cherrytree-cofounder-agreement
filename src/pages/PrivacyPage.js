@@ -74,7 +74,7 @@ function PrivacyPage() {
           </p>
 
           <p className="text-[16px] leading-relaxed mb-6" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            <strong>Data Processor:</strong> A "Data Processor" is an organization which processes Personal Information for a Data Controller. We are the Data Processor for our customers. As a Data Processor, we are bound by the requirements of the General Data Protection Regulations (the "GDPR").
+            <strong>Data Processor:</strong> A "Data Processor" is an organization which processes Personal Information for a Data Controller. We are the Data Processor for our customers. As a Data Processor, we are bound by the requirements of the General Data Protection Regulation (the "GDPR").
           </p>
 
           <p className="text-[16px] leading-relaxed mb-6" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
@@ -82,7 +82,7 @@ function PrivacyPage() {
           </p>
 
           <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            <strong>Personal Information:</strong> Personal information is any information which is about you, from which you can be identified. Personal Information includes information such as an individual's name, address, telephone number, or e-mail address. Personal Information also includes information about an individual's activities, such as information about his or her activity on Site or our Services, and demographic information, such as date of birth, gender, geographic area, and preferences, when any of this information is linked to personal information that identifies that individual. Personal Information does not include "aggregate" or other non-personally identifiable information. Aggregate information is information that we collect about a group or category of products, services, or users that is not personally identifiable or from which individual identities are removed.
+            <strong>Personal Information:</strong> Personal information is any information which is about you, from which you can be identified. Personal Information includes information such as an individual's name, address, telephone number, or e-mail address. Personal Information also includes information about an individual's activities, such as information about his or her activity on the Site or our services, and demographic information, such as date of birth, gender, geographic area, and preferences, when any of this information is linked to personal information that identifies that individual. Personal Information does not include aggregate or other non-personally identifiable information. Aggregate information is information that we collect about a group or category of products, services, or users that is not personally identifiable or from which individual identities are removed.
           </p>
         </div>
       </section>
@@ -92,14 +92,18 @@ function PrivacyPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">How We Collect Personal Info</h2>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            In our service as a Data Processor, we collect Personal Information from Data Controllers in several ways:
+            We collect Personal Information in the following ways, including when acting as a Data Processor on behalf of our customers:
           </p>
 
-          <ul className="bullet-list space-y-3 text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+          <ul className="bullet-list space-y-3 text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             <li>Information you provide to us directly.</li>
+            <li>Information we receive from our customers acting as Data Controllers.</li>
             <li>Information we may receive from third parties.</li>
-            <li>We may receive information about you, including Personal information, from other third parties, and may combine this information with other personal information we maintain about you. If we do so, this Privacy Policy governs any combined information that we maintain in personally identifiable format.</li>
           </ul>
+
+          <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+            We may receive Personal Information about you from third parties and may combine it with other Personal Information we maintain. If we do so, this Privacy Policy governs the combined Personal Information in its personally identifiable form.
+          </p>
         </div>
       </section>
 
@@ -115,10 +119,8 @@ function PrivacyPage() {
             <li>Your first and last name, username and email address.</li>
             <li>Your company's name.</li>
             <li>Your (and/or your company's) physical address.</li>
-            <li>Information you choose to provide us through our Services (including, for example, your birthdate and/or phone number).</li>
             <li>We may collect information you post to, or collect from, users of the Services. We use this information to operate, maintain, and provide to you the features and functionality of the Services.</li>
             <li>We may also collect and aggregate information about the use of our Site and our Services. That information includes browser and device data, such as IP address, device type, screen resolution, browser type, operating system name and version, language, as well as add-ons for your browser. The information may also include usage data, including the pages visited on and links clicked on our Site, the time spent on those pages, and the pages that led or referred you to our Site.</li>
-            <li>We may also permit third-party online advertising networks to collect information (through Cookies or similar tracking technology) about your and others' use of our Services and any of your mobile or web applications, in order to allow those third-party networks to display ads that may be relevant to your interests on our Services as well as on other websites or apps.</li>
           </ul>
         </div>
       </section>
