@@ -903,9 +903,12 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
 
           {/* Acknowledgment Checkboxes */}
           <div className="mt-6">
-            <p className="text-gray-700 mb-4">
+            <p className="text-gray-700 mb-2">
               I acknowledge and accept this equity allocation.
               {showValidation && !allCollaborators.every(email => formData.acknowledgeEquityAllocation?.[email]) && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            </p>
+            <p className="text-gray-600 text-sm mb-4 italic">
+              This equity calculator is for informational and planning purposes only. Using it does not grant, issue, vest, or transfer any equity, securities, or ownership interest of any kind. No equity exists unless and until it is formally approved and issued through proper corporate action (e.g., board approval) and documented via legally binding agreements (such as a stock purchase agreement, option grant, or equity incentive plan). You must complete the required legal and administrative steps for any equity to be valid.
             </p>
             <div className="space-y-2 pl-4">
               {allCollaborators.map((email) => {
