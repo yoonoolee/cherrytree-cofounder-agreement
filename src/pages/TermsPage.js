@@ -66,7 +66,7 @@ function TermsPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">1. Agreement to Terms</h2>
           <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            By accessing or using the Site, and/or using a Service (including a Product), you agree to these Terms.
+            By accessing or using the Site, and/or using a Service (including a Product), you agree to these Terms. If you do not agree with these Terms, you must not use the Site or Services.
           </p>
         </div>
       </section>
@@ -88,7 +88,11 @@ function TermsPage() {
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Not Legal Advice</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            The content, information, tools, and services provided by Cherrytree (the "Services") are for general informational and educational purposes only and do not constitute legal advice. Use of the Services does not create an attorney-client relationship between you and Cherrytree, its affiliates, or any of its personnel. You should not act or rely on the Services as a substitute for professional legal advice. For any legal matters, you must consult a licensed attorney.
+            The content, information, tools, and services provided by Cherrytree (the "Services") are for general informational and educational purposes only and do not constitute legal advice. We are not lawyers or a law firm and we do not provide legal or tax advice. None of our representatives are lawyers and they also do not provide legal or tax advice. Use of the Services does not create an attorney-client relationship between you and Cherrytree, its affiliates, or any of its personnel. As the law differs in each legal jurisdiction and may be interpreted or applied differently depending on your location or situation, the information on the Site is not a substitute for the advice of a lawyer. For any legal matters, you must consult a licensed attorney.
+          </p>
+
+          <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+            The Services offer you ways to access legal information and handle legal matters yourself with do-it-yourself forms. These self-help services are your own responsibility as is determining whether you require assistance from an attorney to review the materials. The accuracy, completeness, adequacy, or currency are not warranted or guaranteed.
           </p>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>B. Not Intended For</h3>
@@ -125,8 +129,13 @@ function TermsPage() {
             <li>otherwise use the Site except as expressly allowed under the Terms.</li>
           </ul>
 
-          <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+          <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             The license granted in these Terms does not include any right of resale of any Cherrytree Product or Service; or any collection and use of any service listings, descriptions, or prices; any derivative use of any Cherrytree Service or its contents. No Cherrytree Service may be reproduced, duplicated, copied, sold, resold, visited, or otherwise exploited for any commercial purpose without express written consent of Cherrytree. The licenses granted by Cherrytree terminate if you do not comply with these Terms of Use.
+          </p>
+
+          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>C. Our Rights to Monitor and Enforce</h3>
+          <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+            We reserve the right, but not the obligation, to: (1) monitor the Site for violations of these Terms; (2) take appropriate legal action against anyone who, in our sole descretion, violates these Terms; (3) in our sole discretion and without limitation, refuse, restrict access to, limit the availability of, or disable any of your contributions; (4) otherwise manage the Site in a manner designed to protect our rights and property.
           </p>
         </div>
       </section>
@@ -136,9 +145,9 @@ function TermsPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">5. Intellectual Property Rights</h2>
           
-          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Cherrytree's (and its licensors') Ownership of IP</h3>
+          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Cherrytree's Ownership of IP</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            The content, organization, graphics, design, compilation, know-how, concepts, methodologies, procedures, magnetic translation, digital conversion and other matters related to the Site are protected under applicable copyrights, trademarks and other proprietary rights. Some of the content on the Site may be the copyrighted work of third parties. Cherrytree, the Cherrytree logo, and other Cherrytree trademarks, service marks, graphics, and logos used in connection with the Service are trademarks or registered trademarks of Cherrytree. Other trademarks, service marks, graphics, and logos used in connection with the Service may be the trademarks of their respective owners. In addition, the Product and Documentation contain proprietary and confidential information of Cherrytree and its licensors. Cherrytree and its licensors exclusively own all rights, title and interest in and to any software programs, tools, utilities, processes, inventions, devices, methodologies, specifications, documentation, techniques and materials of any kind used or developed by Cherrytree or its personnel in connection with the Products and performing the Services (collectively “Cherrytree Materials”), including all worldwide patent rights, copyright rights, trade secret rights, know-how and any other intellectual property rights (“Intellectual Property Rights”) therein. You will have no rights in any trademarks, the Cherrytree Materials or the Site except as expressly set forth in these Terms.
+            The content, organization, graphics, design, compilation, know-how, concepts, methodologies, procedures, digital conversion and other matters related to the Site are protected under applicable copyrights, trademarks and other proprietary rights. Cherrytree, the Cherrytree logo, and other Cherrytree trademarks, service marks, graphics, and logos used in connection with the Service are trademarks or registered trademarks of Cherrytree. Other trademarks, service marks, graphics, and logos used in connection with the Service may be the trademarks of their respective owners. Cherrytree and its licensors exclusively own all rights, title and interest in and to any software programs, tools, utilities, processes, inventions, devices, methodologies, specifications, documentation, techniques and materials of any kind used or developed by Cherrytree or its personnel in connection with the Products and performing the Services (collectively "Cherrytree Materials"), including all worldwide patent rights, copyright rights, trade secret rights, know-how and any other intellectual property rights ("Intellectual Property Rights") therein. You will have no rights in any trademarks, the Cherrytree Materials or the Site except as expressly set forth in these Terms.
           </p>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>B. Your Ownership of IP</h3>
@@ -173,7 +182,7 @@ function TermsPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">7. How We'll Use Your Information; Our Privacy Policy</h2>
           <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Your Privacy is important to Cherrytree. With this in mind, we will protect your personal information in accordance with our Privacy Policy. We do not use data from our customers for any purpose other than to provide the Services to our customers. We do not train any models on customer data. We do not share customer data to our AI providers with the purpose of improving their products.
+            Your Privacy is important to Cherrytree. With this in mind, we will protect your personal information in accordance with our Privacy Policy. We do not use data from our customers for any purpose other than to provide the Services to our customers. We do not train any models on customer data.
           </p>
         </div>
       </section>
@@ -300,12 +309,12 @@ function TermsPage() {
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Invoicing and Payment</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Cherrytree's right to payment for any Product or Service purchased by you shall accrue on the date the Product or Service is Delivered to you. Except as otherwise expressly provided in these Terms, all payments accrued or made under these Terms are non-cancelable and nonrefundable. All stated prices are exclusive of any taxes, fees, and duties or other amounts, however designated, and including without limitation value added and withholding taxes that are levied or based upon such charges, or upon these Terms. Any taxes related to the Product, Documentation or Services purchased or licensed pursuant to these Terms including, but not limited to, withholding taxes, will be paid by you, or you will present an exemption certificate acceptable to the taxing authorities. You will not be liable for taxes based on our net income. All payments will be made in United States dollars.
+            Cherrytree's right to payment for any Product or Service purchased by you shall accrue on the date the Product or Service is Delivered to you. All stated prices are exclusive of any taxes, fees, and duties or other amounts, however designated, and including without limitation value added and withholding taxes that are levied or based upon such charges, or upon these Terms. Any taxes related to the Product, Documentation or Services purchased or licensed pursuant to these Terms including, but not limited to, withholding taxes, will be paid by you, or you will present an exemption certificate acceptable to the taxing authorities.
           </p>
 
-          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>B. Your Failure to Pay or Failure to Pay on Time</h3>
+          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>B. Refund Policy</h3>
           <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            If you have any outstanding balance due on your account, then we have the right to withhold Delivering any Product and Services to you until you have paid your account balance in full. If your payment is late, we may charge interest on your outstanding late balance at the rate of one and one-half percent (1.5%) per month or the maximum rate permitted by law, calculated from the date such amount was due until the date that payment is received by us. You agree to reimburse us for all reasonable costs and expenses incurred (including reasonable attorneys' fees) in collecting any overdue amounts.
+            If you contact us, we can help you resolve any issues you may have, provide a refund, or offer credit for future services. When you contact us, explain all the details relating to the Service you are not satisfied with. If a refund request is not made within 30 days of purchase, we cannot provide a refund. Except as expressly provided in these Terms or where prohibited by law, the maximum liability of Cherrytree is the amount paid to Cherrytree by the customer.
           </p>
 
         </div>
