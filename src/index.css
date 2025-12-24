@@ -649,7 +649,13 @@ select:disabled {
 /* Step 1: Invite animation */
 .step1-email {
   display: inline-block;
-  animation: step1Type 4s ease-in-out infinite;
+  font-size: 0; /* Hide the original text */
+}
+
+.step1-email::after {
+  content: '';
+  font-size: 0.875rem; /* text-sm */
+  animation: step1Type 4s steps(1) infinite;
 }
 
 .step1-user1 {
@@ -665,14 +671,26 @@ select:disabled {
 }
 
 @keyframes step1Type {
-  0%, 5% { opacity: 0; }
-  7% { opacity: 0.1; }
-  10% { opacity: 0.2; }
-  15% { opacity: 0.4; }
-  20% { opacity: 0.6; }
-  30% { opacity: 0.8; }
-  40%, 48% { opacity: 1; }
-  50%, 100% { opacity: 0; }
+  0%, 5% { content: ''; }
+  6% { content: 'c'; }
+  7% { content: 'co'; }
+  8% { content: 'cof'; }
+  9% { content: 'cofo'; }
+  10% { content: 'cofou'; }
+  11% { content: 'cofoun'; }
+  12% { content: 'cofounde'; }
+  13% { content: 'cofounder'; }
+  14% { content: 'cofounder@'; }
+  15% { content: 'cofounder@e'; }
+  16% { content: 'cofounder@em'; }
+  17% { content: 'cofounder@ema'; }
+  18% { content: 'cofounder@emai'; }
+  19% { content: 'cofounder@email'; }
+  20% { content: 'cofounder@email.'; }
+  21% { content: 'cofounder@email.c'; }
+  22% { content: 'cofounder@email.co'; }
+  23%, 48% { content: 'cofounder@email.com'; }
+  50%, 100% { content: ''; }
 }
 
 @keyframes step1User1 {
@@ -681,8 +699,8 @@ select:disabled {
 }
 
 @keyframes step1User2 {
-  0%, 56% { opacity: 0; transform: translateY(10px); }
-  62%, 100% { opacity: 1; transform: translateY(0); }
+  0%, 48% { opacity: 0; transform: translateY(10px); }
+  54%, 100% { opacity: 1; transform: translateY(0); }
 }
 
 .step1-btn {
