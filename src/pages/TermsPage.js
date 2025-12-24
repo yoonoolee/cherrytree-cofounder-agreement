@@ -39,7 +39,7 @@ function TermsPage() {
               Terms<span style={{ marginLeft: '0.05em' }}>.</span>
             </h1>
             <p className="text-[16px] font-normal" style={{ color: '#716B6B' }}>
-              Updated: November 2025
+              Updated: December 2025
             </p>
           </div>
         </div>
@@ -399,7 +399,7 @@ function TermsPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">15. Indemnity</h2>
           <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            You agree to defend, indemnify and hold harmless Cherrytree, its affiliates, officers, directors, employees and agents from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney’s fees) arising from: (i) your use of and access to the Cherrytree Site or Service; (ii) your violation of any term of these Terms of Use; (iii) your violation of any third- party right, including without limitation any copyright, property, or privacy right; or (iv) any claim that any of Your Information caused damage to a third party. This defense and indemnification obligation will survive these Terms and your use of the Cherrytree Site. You hereby agree to waive the application of any law that may limit the efficacy of the foregoing agreement to defend and indemnify Cherrytree and its affiliates, officers, directors, employees and agents.
+            You agree to defend, indemnify and hold harmless Cherrytree, its affiliates, officers, directors, employees and agents from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney's fees) arising from: (1) your use of and access to the Cherrytree Site or Service; (2) your violation of any term of these Terms of Use; (3) your violation of any third- party right, including without limitation any copyright, property, or privacy right; or (4) any claim that any of Your Information caused damage to a third party. This defense and indemnification obligation will survive these Terms and your use of the Cherrytree Site. You hereby agree to waive the application of any law that may limit the efficacy of the foregoing agreement to defend and indemnify Cherrytree and its affiliates, officers, directors, employees and agents.
           </p>
         </div>
       </section>
@@ -515,7 +515,7 @@ function TermsPage() {
           <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             Cherrytree<br />
             Terms of Service<br />
-            Last Updated: Nov, 2025
+            Last Updated: December 2025
           </p>
         </div>
       </section>
