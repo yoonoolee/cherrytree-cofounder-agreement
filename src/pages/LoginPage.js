@@ -21,12 +21,16 @@ function LoginPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (currentUser) {
-      navigate('/dashboard', { replace: true });
+      // Preserve query parameters (for collaborator invitations)
+      const queryParams = window.location.search;
+      navigate(`/dashboard${queryParams}`, { replace: true });
     }
   }, [currentUser, navigate]);
 
   const handleLogin = () => {
-    navigate('/dashboard', { replace: true });
+    // Preserve query parameters (for collaborator invitations)
+    const queryParams = window.location.search;
+    navigate(`/dashboard${queryParams}`, { replace: true });
   };
 
   return <Auth onLogin={handleLogin} />;

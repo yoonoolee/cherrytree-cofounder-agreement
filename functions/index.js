@@ -17,6 +17,7 @@ const axios = require('axios');
 const { Resend } = require('resend');
 const { defineString } = require('firebase-functions/params');
 const Stripe = require('stripe');
+const crypto = require('crypto');
 
 initializeApp();
 const db = getFirestore();
@@ -367,12 +368,30 @@ exports.sendCollaboratorInvite = onCall({
       throw new HttpsError('permission-denied', 'Only project owner can invite');
     }
 
-    // Create invitation link
+    // Generate secure invitation token
+    const invitationToken = crypto.randomBytes(32).toString('hex');
+
+    // Store invitation in database
+    const invitationRef = db.collection('invitations').doc(invitationToken);
+    await invitationRef.set({
+      token: invitationToken,
+      email: collaboratorEmail,
+      projectId: projectId,
+      projectName: sanitizedProjectName,
+      invitedBy: request.auth.token.email,
+      createdAt: FieldValue.serverTimestamp(),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      used: false,
+      usedAt: null,
+      usedBy: null
+    });
+
+    // Create invitation link with secure token
     // Use production URL in production, otherwise localhost for testing
     const appUrl = process.env.NODE_ENV === 'production'
       ? 'https://my.cherrytree.app'
       : 'http://localhost:3000';
-    const inviteLink = `${appUrl}?project=${projectId}&email=${encodeURIComponent(collaboratorEmail)}`;
+    const inviteLink = `${appUrl}?invite=${invitationToken}`;
 
     // Send email
     const resend = getResend();
@@ -394,9 +413,15 @@ exports.sendCollaboratorInvite = onCall({
             <p style="margin: 0 0 10px 0;"><strong>What happens next:</strong></p>
             <ol style="color: #4b5563; line-height: 1.8;">
               <li>Click the button below to access the project</li>
-              <li>Create a free Cherry Tree account or sign in</li>
+              <li>Sign in with <strong>${collaboratorEmail}</strong> or create an account</li>
               <li>Start collaborating on the survey!</li>
             </ol>
+          </div>
+
+          <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; margin: 20px 0;">
+            <p style="margin: 0; color: #92400e; font-size: 14px;">
+              <strong>Important:</strong> You must sign in with <strong>${collaboratorEmail}</strong> to access this project. This link expires in 7 days.
+            </p>
           </div>
           
           <div style="text-align: center; margin: 30px 0;">

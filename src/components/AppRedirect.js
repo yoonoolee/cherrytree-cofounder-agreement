@@ -8,12 +8,15 @@ function AppRedirect() {
 
   useEffect(() => {
     if (!loading) {
+      // Preserve query parameters (for collaborator invitations, etc.)
+      const queryParams = window.location.search;
+
       if (currentUser) {
         // Logged in: go to dashboard (which redirects to latest project)
-        navigate('/dashboard', { replace: true });
+        navigate(`/dashboard${queryParams}`, { replace: true });
       } else {
         // Not logged in: go to login page
-        navigate('/login');
+        navigate(`/login${queryParams}`);
       }
     }
   }, [currentUser, loading, navigate]);

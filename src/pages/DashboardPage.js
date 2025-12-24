@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
-import { collection, query, where, getDocs, limit, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import PaymentModal from '../components/PaymentModal';
 
 function DashboardPage() {
@@ -65,9 +65,17 @@ function DashboardPage() {
           limit(100)
         );
 
-        const [ownedSnapshot, collaboratorSnapshot] = await Promise.all([
+        // Fallback query for projects where user is in collaborators by email (legacy)
+        const collaboratorEmailQuery = query(
+          projectsRef,
+          where('collaborators', 'array-contains', currentUser.email),
+          limit(100)
+        );
+
+        const [ownedSnapshot, collaboratorSnapshot, collaboratorEmailSnapshot] = await Promise.all([
           getDocs(ownedQuery),
-          getDocs(collaboratorQuery)
+          getDocs(collaboratorQuery),
+          getDocs(collaboratorEmailQuery)
         ]);
 
         const allProjects = [];
@@ -82,6 +90,12 @@ function DashboardPage() {
           }
         });
 
+        collaboratorEmailSnapshot.docs.forEach(doc => {
+          if (!allProjects.find(p => p.id === doc.id)) {
+            allProjects.push({ id: doc.id, ...doc.data() });
+          }
+        });
+
         // Sort by lastOpened
         allProjects.sort((a, b) => {
           const aTime = a.lastOpened?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
@@ -90,6 +104,125 @@ function DashboardPage() {
         });
 
         setProjects(allProjects);
+
+        // Handle secure token-based invitation
+        const inviteToken = searchParams.get('invite');
+
+        if (inviteToken) {
+          try {
+            // Fetch invitation by token
+            const invitationRef = doc(db, 'invitations', inviteToken);
+            const invitationDoc = await getDoc(invitationRef);
+
+            if (!invitationDoc.exists()) {
+              console.error('Invitation not found or expired');
+              setLoading(false);
+              return;
+            }
+
+            const invitation = invitationDoc.data();
+
+            // Validate invitation
+            if (invitation.used) {
+              console.error('Invitation already used');
+              setLoading(false);
+              return;
+            }
+
+            if (invitation.expiresAt && invitation.expiresAt.toDate() < new Date()) {
+              console.error('Invitation expired');
+              setLoading(false);
+              return;
+            }
+
+            if (invitation.email !== currentUser.email) {
+              console.error('Invitation email does not match logged-in user');
+              alert(`This invitation is for ${invitation.email}. Please sign in with that email address.`);
+              setLoading(false);
+              return;
+            }
+
+            // Add user to project
+            const projectRef = doc(db, 'projects', invitation.projectId);
+            const projectDoc = await getDoc(projectRef);
+
+            if (!projectDoc.exists()) {
+              console.error('Project not found');
+              setLoading(false);
+              return;
+            }
+
+            const projectData = projectDoc.data();
+
+            // Check if user is already a collaborator
+            const isAlreadyCollaborator =
+              projectData.collaboratorIds?.includes(currentUser.uid) ||
+              projectData.ownerId === currentUser.uid;
+
+            if (!isAlreadyCollaborator) {
+              // Add user to collaborators
+              await updateDoc(projectRef, {
+                collaborators: arrayUnion(currentUser.email),
+                collaboratorIds: arrayUnion(currentUser.uid),
+                [`approvals.${currentUser.email}`]: false
+              });
+
+              // Mark invitation as used
+              await updateDoc(invitationRef, {
+                used: true,
+                usedAt: new Date(),
+                usedBy: currentUser.uid
+              });
+
+              // Refetch projects to include the newly joined project
+              const [ownedSnap, collabSnap, collabEmailSnap] = await Promise.all([
+                getDocs(ownedQuery),
+                getDocs(collaboratorQuery),
+                getDocs(collaboratorEmailQuery)
+              ]);
+
+              const updatedProjects = [];
+
+              ownedSnap.docs.forEach(doc => {
+                updatedProjects.push({ id: doc.id, ...doc.data() });
+              });
+
+              collabSnap.docs.forEach(doc => {
+                if (!updatedProjects.find(p => p.id === doc.id)) {
+                  updatedProjects.push({ id: doc.id, ...doc.data() });
+                }
+              });
+
+              collabEmailSnap.docs.forEach(doc => {
+                if (!updatedProjects.find(p => p.id === doc.id)) {
+                  updatedProjects.push({ id: doc.id, ...doc.data() });
+                }
+              });
+
+              updatedProjects.sort((a, b) => {
+                const aTime = a.lastOpened?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
+                const bTime = b.lastOpened?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
+                return bTime - aTime;
+              });
+
+              setProjects(updatedProjects);
+            } else {
+              // Already a collaborator, just mark invitation as used
+              await updateDoc(invitationRef, {
+                used: true,
+                usedAt: new Date(),
+                usedBy: currentUser.uid
+              });
+            }
+
+            // Redirect to the project
+            navigate(`/survey/${invitation.projectId}`, { replace: true });
+            return;
+          } catch (error) {
+            console.error('Error processing invitation:', error);
+            setLoading(false);
+          }
+        }
 
         // If payment was successful, redirect to the newly created project's survey
         if (searchParams.get('payment') === 'success') {
