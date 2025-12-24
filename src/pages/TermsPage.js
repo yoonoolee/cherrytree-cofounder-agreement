@@ -218,23 +218,40 @@ function TermsPage() {
       {/* Ordering Products and Services */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">9. Ordering Products and Services from Cherrytree</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">9. Purchasing Products and Services from Cherrytree</h2>
 
-          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Certain Definitions Applicable to Buying Services from Cherrytree</h3>
-          <ul className="bullet-list space-y-3 text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            <li>“Authorized User” means any individual (including your employees, agents, contractors, suppliers of services, and customers, in each case to the extent that your license includes, and you pay for, such individual) who is authorized to access the Product, Documentation or Services and exercise the rights licensed by you. Each Authorized User must use a unique identity to access and use the Product unless otherwise licensed, and may access the services only to the extent licensed by you.</li>
-            <li>“Delivery” means the availability of the Product and/or Documentation by us to the you via electronic or other means, without regard to when you actually install or use such Product.</li>
-            <li>“Documentation” means the instruction manuals, user guides, and other information to be made available from time to time by us to you in electronic form.</li>
-            <li>“Order” is defined as the purchase of a Product (accepted by us) which you select and pay for with a valid online payment.</li>
-            <li>All references in this Agreement to “buying” or to the “sale” or “purchase” (or other similar terms) of any Subscription or Service or Product shall mean the sale or purchase of a license to such Subscription or Service or Product.</li>
-            <li>“Product” means, collectively, the product(s) set forth in any Order (to the extent such product(s) are subsequently made available to you by us), as well as any Update made available to you by us.</li>
-            <li>“Public Application” means an application that is available to the public without restriction (by password, payment, network infrastructure, or otherwise).</li>
-            <li>A “Server” means that computer device on which the Product is installed and operated. A Server may be located on your site or may be a “cloud” server located on our site or at a third party's remote hosting site contracted for by either us or you. You agree that our third-party hosting provider meets or exceeds your standards for security and related certifications.</li>
-            <li>“Specifications” means those technical specifications in respect of the Product(s) which are published by us and are in effect at the time of Delivery.</li>
-            <li>“Subscription” means licenses to the Product and Documentation. A Subscription includes access to currently supported versions of the Product for the term of the Subscription.</li>
-            <li>An “Update” means enhancements, modifications, or additions to the Product or Documentation as may be made available from time to time by us to you.</li>
-            <li>“Use” shall mean the legal use by Customer of the Product and Documentation and/or Services in accordance with the terms and condition of these Terms and in a manner consistent with the Specifications, subject to any applicable Usage Limitation.</li>
-          </ul>
+          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Definitions</h3>
+          <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+            For the purposes of these Terms:
+          </p>
+
+          <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+            <strong>Product</strong> means the online tool or digital content made available to you by Cherrytree as part of a one-time purchase, including any associated Documentation or updates provided at no additional cost.
+          </p>
+
+          <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+            <strong>Documentation</strong> means any instruction manuals, user guides, or other information provided by Cherrytree in connection with the Product.
+          </p>
+
+          <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+            <strong>Order</strong> means the one-time purchase of a Product that you select and successfully pay for through the Site. Your Order constitutes your license to access and use the Product under these Terms.
+          </p>
+
+          <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+            <strong>Delivery</strong> occurs when access to the Product is provided to you electronically via the Site or email.
+          </p>
+
+          <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+            <strong>Authorized Users</strong> means any individuals you designate to access the Product under your license, if applicable. Each Authorized User must use a unique account to access the Product unless otherwise allowed.
+          </p>
+
+          <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+            <strong>Update</strong> means enhancements, modifications, or additions to the Product or Documentation as may be made available from time to time by us to you.
+          </p>
+
+          <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+            <strong>Use</strong> shall mean the legal use by Customer of the Product and Documentation and/or Services in accordance with the terms and condition of these Terms and in a manner consistent with the Specifications, subject to any applicable Usage Limitation.
+          </p>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>B. How to Order Products</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
@@ -253,27 +270,27 @@ function TermsPage() {
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>E. Products are Delivered Electronically</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            All Products, Updates and Documentation licensed by you pursuant to these Terms will be delivered electronically (such as by electronic mail, file transfer or other means of electronic transmission, or in the case of Cloud Edition subscriptions, by giving you access to such Products, Updates and Documentation). In the case of a renewal of a Subscription, you acknowledge and agree that there is no delivery requirement for such renewal. Such renewals shall be deemed Delivered on the first day of the then-current renewal term of the applicable Subscription.
+            All Products, Updates and Documentation licensed by you pursuant to these Terms will be delivered electronically (such as by electronic mail, file transfer or other means of electronic transmission, or by giving you access to such Products, Updates and Documentation).
           </p>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>F. Usage Limitations</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Your Subscription may be subject to Usage Limitations. Usage Limitations may include (among other things) a description of the specific product or service licensed from us, a maximum number of Authorized Users, the initial term of your Subscription, the fees you agree to pay us, a maximum amount of allotted storage, or other limitations. Usage Limitations applicable to your Subscription are set forth in our Product offerings on our pricing page. If your use of our Services exceeds a Usage Limitation or otherwise requires the payment of additional fees, you shall be billed for such usage and you agree to pay the additional fees.
+            Your access to the Product may be subject to Usage Limitations. Usage Limitations may include, among other things, the specific features of the Product you are licensed to use, the maximum number of Authorized Users, the amount of allotted storage, or other restrictions set forth in our Product offerings on the pricing page. If your use exceeds any Usage Limitation, you may be required to obtain an additional license or pay additional fees as determined by Cherrytree, and you agree to pay any such fees.
           </p>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>G. Intellectual Property Rights</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Ownership of Intellectual Property shall be as set for in Section 5 above and in this Section 9.
+            Ownership of Intellectual Property shall be as set for in Section 5.
           </p>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>H. Restrictions on Our License Grant to You For the Product</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            You agree that you (and your Authorized Users) will not without our express written permission: (a) reverse compile, disassemble, decompile or engineer, copy, modify or adapt the whole or any part of the Product; (b) make the Product or Documentation or Services available to, or use the Product, Documentation or Services for the benefit of, anyone other than you or your customers; (c) assign, transfer, sell, resell, license, sublicense, distribute, rent or lease the Product, Documentation or Services, or include any Product, Documentation or Services in a service bureau or outsourcing offering; (d) permit direct or indirect access to or use of the Product, Documentation or Services in a way that circumvents a contractual usage limit; (e) copy the Product, Documentation or Services or any part, feature, function or user interface thereof (except as expressly otherwise permitted under these Terms). Despite any of the foregoing, nothing in this paragraph or the Agreement is intended to change or restrict the terms of any free or open source software license. In the case of any conflict between this Agreement and terms and conditions of any free or open source software license, the terms and conditions of such license shall control.
+            You agree that you (and your Authorized Users) will not without our express written permission: (1) reverse compile, disassemble, decompile or engineer, copy, modify or adapt the whole or any part of the Product; (2) make the Product or Documentation or Services available to, or use the Product, Documentation or Services for the benefit of, anyone other than you or your customers; (3) assign, transfer, sell, resell, license, sublicense, distribute, rent or lease the Product, Documentation or Services, or include any Product, Documentation or Services in a service bureau or outsourcing offering; (4) permit direct or indirect access to or use of the Product, Documentation or Services in a way that circumvents a contractual usage limit; (5) copy the Product, Documentation or Services or any part, feature, function or user interface thereof (except as expressly otherwise permitted under these Terms). Despite any of the foregoing, nothing in this paragraph or the Agreement is intended to change or restrict the terms of any free or open source software license. In the case of any conflict between this Agreement and terms and conditions of any free or open source software license, the terms and conditions of such license shall control.
           </p>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>I. Your License Grant to Us</h3>
           <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Despite anything to the contrary, we shall have the right collect and analyze data and other information relating to the provision, use and performance of various aspects of the Product and Services and related systems and technologies (including, without limitation, information concerning Customer Data and data derived therefrom), and we will be free (during and after the term hereof) to (i) use such information and data to improve and enhance the Product and Services and for other development, diagnostic and corrective purposes in connection with the Product and Services and other of our offerings, and (ii) disclose such data solely in aggregate or other de-identified form in connection with our business.
+            Despite anything to the contrary, we shall have the right collect and analyze data and other information relating to the provision, use and performance of various aspects of the Product and Services and related systems and technologies (including, without limitation, information concerning Customer Data and data derived therefrom), and we will be free (during and after the term hereof) to (1) use such information and data to improve and enhance the Product and Services and for other development, diagnostic and corrective purposes in connection with the Product and Services and other of our offerings, and (2) disclose such data solely in aggregate or other de-identified form in connection with our business.
           </p>
 
         </div>
@@ -282,21 +299,26 @@ function TermsPage() {
       {/* Termination of Product Subscriptions */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">10. Termination of Product Subscriptions</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">10. Termination of Product Access</h2>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Termination by You or by Us</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Either of us may terminate any Product Subscription under these Terms immediately if the other commits any material breach of any term of these Terms and which (in the case of a breach capable of being remedied) shall not have been remedied within thirty (30) days of a written request to remedy the breach.
+            Either party may terminate your access to the Product under these Terms immediately if the other party commits a material breach of any term of these Terms and, in the case of a breach that can be remedied, such breach is not remedied within thirty (30) days of written notice requesting remedy.
           </p>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>B. Termination by Us</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            We may terminate any Product Subscription under these Terms upon our reasonable determination that your Use of the Product or Documentation or Services (i) violates any applicable law or regulation or (ii) poses a threat to the secure or reliable provision of Services to other customers, or to the Cloud Infrastructure, or to the data contained therein.
+            Cherrytree may terminate your access to the Product if we reasonably determine that your use:
           </p>
 
-          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>C. What Happens if a Product Subscription is Terminated</h3>
+          <ul className="bullet-list space-y-3 text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+            <li>Violates any applicable law or regulation; or</li>
+            <li>Poses a threat to the security, reliability, or operation of the Product, our systems, or the data of other users.</li>
+          </ul>
+
+          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>C. Effect of Termination</h3>
           <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Any termination of any Product Subscription pursuant to these Terms shall be without prejudice to any other rights or remedies a party may be entitled to hereunder or at law and shall not affect any accrued rights or liabilities of either party nor the coming into or continuance in force of any provision hereof which is expressly or by implication intended to come into or continue in force on or after such termination. Upon termination of any Product Subscription pursuant to these Terms, you will immediately uninstall or destroy (or at our sole option) all copies of the Product and Documentation in its possession or control, and your duly authorized officer shall certify in writing to us that the you have complied with this obligation.
+            Termination of your access under this Section does not affect any other rights or remedies available to either party under these Terms or at law. Upon termination, you must immediately cease using the Product and destroy or uninstall any copies of the Product and Documentation in your possession or control. At our request, you will certify in writing that you have complied with this obligation.
           </p>
 
         </div>
@@ -309,7 +331,7 @@ function TermsPage() {
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Invoicing and Payment</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Cherrytree's right to payment for any Product or Service purchased by you shall accrue on the date the Product or Service is Delivered to you. All stated prices are exclusive of any taxes, fees, and duties or other amounts, however designated, and including without limitation value added and withholding taxes that are levied or based upon such charges, or upon these Terms. Any taxes related to the Product, Documentation or Services purchased or licensed pursuant to these Terms including, but not limited to, withholding taxes, will be paid by you, or you will present an exemption certificate acceptable to the taxing authorities.
+            Cherrytree's right to payment for any Product or Service purchased by you shall accrue on the date the Product or Service is delivered to you. All stated prices are exclusive of any taxes, fees, and duties or other amounts, however designated, and including without limitation value added and withholding taxes that are levied or based upon such charges, or upon these Terms. Any taxes related to the Product, Documentation or Services purchased or licensed pursuant to these Terms including, but not limited to, withholding taxes, will be paid by you, or you will present an exemption certificate acceptable to the taxing authorities.
           </p>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>B. Refund Policy</h3>
@@ -327,12 +349,12 @@ function TermsPage() {
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Our Warranty to You</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Subject to each of the other provisions of these Terms, we warrant, solely to you as a Customer, that for a period of thirty (30) days after the Product is initially Delivered to you (the “Warranty Period”), the Product, (and, in the case of an On-Premise Subscription, when installed properly) will be capable of functioning substantially in accordance with the Specifications. That warranty will not apply, however, (i) you fail to notify us during the Warranty Period of any warranty claim; or (ii) in the case an On-Premise Subscription (A) you modify the Product or any portion thereof or (B) you fail to implement all Updates to the Product made available at no charge to you during the Warranty Period.
+            Subject to each of the other provisions of these Terms, we warrant, solely to you as a Customer, that for a period of thirty (30) days after the Product is initially Delivered to you (the "Warranty Period"), the Product, (and, in the case of an On-Premise Subscription, when installed properly) will be capable of functioning substantially in accordance with the Specifications. That warranty will not apply, however, if (1) you fail to notify us during the Warranty Period of any warranty claim; or (2) if you fail to implement all Updates to the Product made available at no charge to you during the Warranty Period.
           </p>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>B. How We'll Fix a Warranty Breach</h3>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            If we breach the warranty set forth in this Section, your sole and exclusive remedy, and our sole obligation, shall be to remedy such breach as set forth in this Section. At our sole discretion, we will, at our expense, either: (i) repair or replace the defective Product to enable it to perform substantially in accordance with the Specifications; or (ii) terminate these Terms and refund to you the fees paid by you to us for the defective Product.
+            If we breach the warranty set forth in this Section, your sole and exclusive remedy, and our sole obligation, shall be to remedy such breach as set forth in this Section. At our sole discretion, we will, at our expense, either: (1) repair or replace the defective Product to enable it to perform substantially in accordance with the Specifications; or (2) terminate these Terms and refund to you the fees paid by you to us for the defective Product.
           </p>
 
           <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>C. WARRANTY DISCLAIMER</h3>
@@ -353,38 +375,10 @@ function TermsPage() {
         </div>
       </section>
 
-      {/* Termination */}
-      <section className="scroll-section py-8 px-6">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">14. Termination</h2>
-
-          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>A. Term</h3>
-          <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            These Terms commence on the date on which you accept them and, unless terminated earlier, will continue until terminated.
-          </p>
-
-          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>B. Termination</h3>
-          <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Cherrytree is eager to have a long-term relationship with you. Cherrytree may, however, cancel your account, and/or terminate your rights to any or all of the Site if you provide false, inaccurate or incomplete information to us, if you are in breach of any of your obligations under these Terms, or if your account is associated with a competitor of Cherrytree.
-          </p>
-
-          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>C. Effect of Termination</h3>
-          <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Upon termination of these Terms (i) your right to access and use the Site and Services will immediately terminate; and (ii) all fees you may owe will become immediately due and payable.
-          </p>
-
-          <h3 className="text-[20px] font-semibold mb-3" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif' }}>D. Survival</h3>
-          <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            All related definitions and all accrued rights to payment will survive any termination or expiration of these Terms.
-          </p>
-
-        </div>
-      </section>
-
       {/* Important Disclaimers */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">15. Important Disclaimers</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">14. Important Disclaimers</h2>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             EXCEPT AS MAY BE OTHERWISE EXPRESSLY SET FORTH IN THESE TERMS, THE SITE AND THE SERVICE ARE PROVIDED "AS IS," WITHOUT WARRANTY OF ANY KIND. IN ADDITION TO THE DISCLAIMERS IN SECTION 13 ABOVE, CHERRYTREE DOES NOT REPRESENT OR WARRANT THAT SERVICES, PRODUCTS OR DOCUMENTATION ARE ACCURATE, COMPLETE, RELIABLE, CURRENT OR ERROR-FREE OR THAT THE SITE OR SERVICE ITS SERVERS, OR ANY APPLICATIONS ARE FREE OF VIRUSES OR OTHER HARMFUL COMPONENTS.
           </p>
@@ -403,7 +397,7 @@ function TermsPage() {
       {/* Indemnity */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">16. Indemnity</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">15. Indemnity</h2>
           <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             You agree to defend, indemnify and hold harmless Cherrytree, its affiliates, officers, directors, employees and agents from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney’s fees) arising from: (i) your use of and access to the Cherrytree Site or Service; (ii) your violation of any term of these Terms of Use; (iii) your violation of any third- party right, including without limitation any copyright, property, or privacy right; or (iv) any claim that any of Your Information caused damage to a third party. This defense and indemnification obligation will survive these Terms and your use of the Cherrytree Site. You hereby agree to waive the application of any law that may limit the efficacy of the foregoing agreement to defend and indemnify Cherrytree and its affiliates, officers, directors, employees and agents.
           </p>
@@ -413,7 +407,7 @@ function TermsPage() {
       {/* Limitation of Liability */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">17. Limitation of Liability</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">16. Limitation of Liability</h2>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             Cherrytree shall have no liability for any loss, damage, or injury resulting from your or any third parties' negligence, lack of training, use or misuse, or misapplication of any Product or Service.
           </p>
@@ -429,7 +423,7 @@ function TermsPage() {
       {/* General Terms */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">18. General Terms</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">17. General Terms</h2>
 
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             These Terms constitute the entire and exclusive understanding and agreement between Cherrytree and you regarding the Services, and supersede and replace any and all prior oral or written understandings or agreements between Cherrytree and you regarding the Site and the Services. If for any reason a court of competent jurisdiction finds any provision of these Terms invalid or unenforceable, that provision will be enforced to the maximum extent permissible and the other provisions of these Terms will remain in full force and effect.
@@ -461,7 +455,7 @@ function TermsPage() {
       {/* Data Collection and Consent */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">19. Data Collection and Consent</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">18. Data Collection and Consent</h2>
 
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             In our commitment to provide Cherrytree, we collect and use certain personal information about our users. This section explains what data we collect, how we use it, and the consent mechanisms in place. Our data collection practices are designed exclusively to enhance your experience with our service.
@@ -510,7 +504,7 @@ function TermsPage() {
       {/* Contact Information */}
       <section className="scroll-section py-8 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">20. Contact Information</h2>
+          <h2 className="section-header font-heading-transform-origin-left text-[32px] font-normal mb-4">19. Contact Information</h2>
           <p className="text-[16px] leading-relaxed mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
             If you have any questions about these Terms or the Services please contact us at {' '} 
             <a href="mailto:hello@cherrytree.app" className="underline hover:text-black transition">
