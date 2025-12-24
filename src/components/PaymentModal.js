@@ -196,7 +196,7 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
           )}
 
           {/* Plan Selection */}
-          <div className="mb-4 md:mb-6">
+          <div className={isUpgrade ? "mb-0" : "mb-4 md:mb-6"}>
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Select Plan
             </label>
@@ -315,17 +315,15 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
             >
               Got it
             </button>
-          ) : (
+          ) : !isUpgrade ? (
             <button
               type="submit"
               disabled={loading}
               className="button-shimmer w-full bg-[#000000] text-white py-2.5 md:py-3 rounded text-sm md:text-base font-medium hover:bg-[#1a1a1a] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Processing...' : isUpgrade
-                ? 'Upgrade'
-                : 'Continue to Payment'}
+              {loading ? 'Processing...' : 'Continue to Payment'}
             </button>
-          )}
+          ) : null}
         </form>
       </div>
     </div>
