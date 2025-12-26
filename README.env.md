@@ -2,9 +2,9 @@
 
 ## File Structure
 
-- **`.env`** - Template file (committed to Git, no real keys)
-- **`.env.development`** - Development keys (committed, used by `npm start`)
-- **`.env.production`** - Production keys (committed, used by `npm run build`)  
+- **`.env.example`** - Template file (committed to Git, no real keys)
+- **`.env.development`** - Development keys (gitignored, used by `npm start`)
+- **`.env.production`** - Production keys (gitignored, used by `npm run build`)
 - **`.env.local`** - Local overrides (gitignored, for personal use)
 
 ## How It Works
@@ -14,20 +14,21 @@ Create React App automatically loads environment files in this priority order:
 ### Development (`npm start`):
 1. `.env.development.local` (gitignored)
 2. `.env.local` (gitignored)
-3. `.env.development` (committed)
-4. `.env` (committed, template only)
+3. `.env.development` (gitignored)
+4. `.env` (gitignored)
 
 ### Production (`npm run build`):
 1. `.env.production.local` (gitignored)
 2. `.env.local` (gitignored)
-3. `.env.production` (committed)
-4. `.env` (committed, template only)
+3. `.env.production` (gitignored)
+4. `.env` (gitignored)
 
 ## Setup Instructions
 
 1. **First time setup:**
-   - Files already exist with proper keys
-   - No action needed!
+   - Copy `.env.example` to `.env`, `.env.development`, and `.env.production`
+   - Update each file with the appropriate API keys
+   - All files are gitignored (only `.env.example` is committed)
 
 2. **Local development overrides (optional):**
    - Create `.env.local` to override any keys
