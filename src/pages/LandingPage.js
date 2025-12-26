@@ -1403,12 +1403,14 @@ function LandingPage() {
           background: #fff;
           -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
           mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+          padding: 20px 0;
         }
 
         .logo-track {
           display: flex;
-          width: calc(200%);
+          width: fit-content;
           animation: scroll 30s linear infinite;
+          will-change: transform;
         }
 
         .logo-box {
@@ -1416,7 +1418,7 @@ function LandingPage() {
           display: flex;
           justify-content: center;
           align-items: center;
-          margin: 0 40px;
+          width: 200px;
         }
 
         .logo-box img {
@@ -1425,18 +1427,28 @@ function LandingPage() {
           object-fit: contain;
         }
 
-        .logo-scroller {
-          padding: 20px 0;
-        }
-
         @keyframes scroll {
           0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          100% { transform: translateX(calc(-200px * 7)); }
         }
 
         @media (max-width: 768px) {
+          .logo-box {
+            width: 160px;
+          }
+
+          .logo-box img {
+            max-height: 28px;
+            max-width: 100px;
+          }
+
           .logo-track {
-            animation: scroll 8s linear infinite;
+            animation: scrollMobile 20s linear infinite;
+          }
+
+          @keyframes scrollMobile {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(-160px * 7)); }
           }
 
           /* Reduce tilt effect on mobile */

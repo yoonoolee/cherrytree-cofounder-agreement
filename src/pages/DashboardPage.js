@@ -159,7 +159,7 @@ function DashboardPage() {
           <div className="w-full md:flex-1">
             <button
               onClick={() => setShowPaymentModal(true)}
-              className="group w-full h-full p-6 md:p-8 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 min-h-[200px] md:min-h-0 flex items-center justify-center"
+              className="group w-full h-full p-6 md:p-8 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 min-h-[432px] md:min-h-[468px] flex items-center justify-center"
             >
               <div className="flex flex-col items-center text-center">
                 <div className="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center mb-4 transition-colors">
@@ -176,7 +176,7 @@ function DashboardPage() {
           {/* Right - Projects + Resources */}
           <div className="w-full md:flex-1 flex flex-col gap-4">
             {/* Projects List */}
-            <div className="bg-white rounded-lg border border-gray-200 max-h-[280px] md:max-h-[320px] flex flex-col hover:border-gray-300 hover:shadow-lg transition-all duration-200">
+            <div className="bg-white rounded-lg border border-gray-200 min-h-[288px] md:min-h-[324px] max-h-[288px] md:max-h-[324px] flex flex-col hover:border-gray-300 hover:shadow-lg transition-all duration-200">
               <div className="px-4 py-3 border-b border-gray-200">
                 <span className="text-sm font-medium text-gray-700">Existing projects</span>
               </div>
