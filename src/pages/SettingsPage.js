@@ -184,9 +184,7 @@ function SettingsPage() {
 
       // Call Cloud Function to handle account deletion with pseudonymization
       const deleteAccount = httpsCallable(functions, 'deleteAccount');
-      const result = await deleteAccount({ sessionToken });
-
-      console.log('Account deleted:', result.data);
+      await deleteAccount({ sessionToken });
 
       // Redirect to homepage
       window.location.href = 'https://cherrytree.app';

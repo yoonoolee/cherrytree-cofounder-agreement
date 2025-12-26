@@ -24,33 +24,24 @@ export const UserProvider = ({ children }) => {
   // Sign in to Firebase Auth when Clerk user is authenticated
   useEffect(() => {
     const signInToFirebase = async () => {
-      console.log('🔐 [UserContext] signInToFirebase - isLoaded:', isLoaded, 'clerkUser:', clerkUser?.id);
-
       if (isLoaded && clerkUser) {
         try {
-          console.log('🔐 [UserContext] Getting Clerk session token...');
           // Get Clerk session token
           const sessionToken = await getToken();
-          console.log('🔐 [UserContext] Session token received:', !!sessionToken);
 
           if (sessionToken) {
             // Exchange for Firebase custom token
-            console.log('🔐 [UserContext] Calling getFirebaseToken...');
             const getFirebaseToken = httpsCallable(functions, 'getFirebaseToken');
             const result = await getFirebaseToken({ sessionToken });
-            console.log('🔐 [UserContext] Firebase token received:', !!result.data.firebaseToken);
 
             // Sign in to Firebase Auth with custom token
-            console.log('🔐 [UserContext] Signing in to Firebase Auth...');
             await signInWithCustomToken(auth, result.data.firebaseToken);
-            console.log('🔐 [UserContext] ✅ Firebase Auth sign-in successful! User:', auth.currentUser?.uid);
           }
         } catch (error) {
-          console.error('🔐 [UserContext] ❌ Error signing in to Firebase:', error);
+          console.error('Error signing in to Firebase:', error);
         }
       } else if (isLoaded && !clerkUser) {
         // Sign out from Firebase Auth when Clerk user is null
-        console.log('🔐 [UserContext] Signing out from Firebase...');
         try {
           await firebaseSignOut(auth);
         } catch (error) {

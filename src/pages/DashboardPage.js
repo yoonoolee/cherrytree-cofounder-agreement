@@ -41,12 +41,10 @@ function DashboardPage() {
 
   useEffect(() => {
     const fetchProjects = async () => {
-      console.log('📋 [Dashboard] fetchProjects - currentUser:', currentUser?.id, 'orgsLoaded:', orgsLoaded);
       if (!currentUser || !orgsLoaded) return;
 
       // On first load, wait 3 seconds for webhooks to complete
       if (!initialLoadComplete) {
-        console.log('📋 [Dashboard] First load - waiting 3 seconds for webhooks...');
         await new Promise(resolve => setTimeout(resolve, 3000));
         setInitialLoadComplete(true);
       }
@@ -56,7 +54,6 @@ function DashboardPage() {
 
         // Get organization IDs from Clerk user memberships
         const orgIds = userMemberships?.data?.map(membership => membership.organization.id) || [];
-        console.log('📋 [Dashboard] Organization IDs:', orgIds);
 
         if (orgIds.length > 0) {
           // Fetch projects for each organization
@@ -64,14 +61,12 @@ function DashboardPage() {
 
           // Query projects by Clerk Organization IDs
           for (const orgId of orgIds) {
-            console.log('📋 [Dashboard] Querying projects for org:', orgId);
             const orgQuery = query(
               projectsRef,
               where('clerkOrgId', '==', orgId),
               limit(100)
             );
             const orgSnapshot = await getDocs(orgQuery);
-            console.log('📋 [Dashboard] Found', orgSnapshot.docs.length, 'projects for org', orgId);
 
             orgSnapshot.docs.forEach(doc => {
               if (!allProjects.find(p => p.id === doc.id)) {
@@ -103,10 +98,9 @@ function DashboardPage() {
           return bTime - aTime;
         });
 
-        console.log('📋 [Dashboard] ✅ Total projects found:', allProjects.length, allProjects.map(p => ({ id: p.id, name: p.name })));
         setProjects(allProjects);
       } catch (error) {
-        console.error('📋 [Dashboard] ❌ Error fetching projects:', error);
+        console.error('Error fetching projects:', error);
       } finally {
         setLoading(false);
       }
