@@ -5,19 +5,22 @@
  * - PDF generation via Make.com webhook
  * - Email invitations via Resend
  * - Stripe payment processing
+ * - Clerk webhook handling for user sync
  *
- * Note: User sync and basic CRUD operations are now handled client-side with Firebase Auth + Firestore
+ * Note: Authentication is handled by Clerk. User sync happens via Clerk webhooks.
  */
 
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
 const { initializeApp } = require('firebase-admin/app');
-const { getAuth } = require('firebase-admin/auth');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getAuth } = require('firebase-admin/auth');
 const axios = require('axios');
 const { Resend } = require('resend');
 const { defineString } = require('firebase-functions/params');
 const Stripe = require('stripe');
 const crypto = require('crypto');
+const { createClerkClient, verifyToken: clerkVerifyToken } = require('@clerk/backend');
+const { Webhook } = require('svix');
 
 initializeApp();
 const db = getFirestore();
@@ -29,6 +32,8 @@ const MAKE_WEBHOOK_URL = defineSecret('MAKE_WEBHOOK_URL');
 const RESEND_API_KEY = defineSecret('RESEND_API_KEY');
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');
+const CLERK_SECRET_KEY = defineSecret('CLERK_SECRET_KEY');
+const CLERK_WEBHOOK_SECRET = defineSecret('CLERK_WEBHOOK_SECRET');
 const SENDER_EMAIL = 'onboarding@resend.dev';  // Use Resend's test email
 
 // Lazy-load Resend instance
@@ -39,6 +44,72 @@ const getResend = () => {
   }
   return resendInstance;
 };
+
+// Lazy-load Clerk instance
+let clerkInstance = null;
+const getClerk = () => {
+  if (!clerkInstance) {
+    clerkInstance = createClerkClient({ secretKey: CLERK_SECRET_KEY.value() });
+  }
+  return clerkInstance;
+};
+
+// ============================================================================
+// CLERK AUTHENTICATION HELPERS
+// ============================================================================
+
+/**
+ * Verify Clerk session token and return user data
+ * @param {string} sessionToken - Clerk session token from client
+ * @returns {Promise<{userId: string, email: string}>} - User ID and email
+ * @throws {HttpsError} - If token is invalid or verification fails
+ */
+async function verifyClerkToken(sessionToken) {
+  if (!sessionToken || typeof sessionToken !== 'string') {
+    throw new HttpsError('unauthenticated', 'Missing or invalid session token');
+  }
+
+  try {
+    const clerk = getClerk();
+
+    // Verify the session token using standalone JWT verification (no network call)
+    const payload = await clerkVerifyToken(sessionToken, {
+      secretKey: CLERK_SECRET_KEY.value()
+    });
+
+    if (!payload || !payload.sub) {
+      throw new HttpsError('unauthenticated', 'Invalid session');
+    }
+
+    const userId = payload.sub;
+
+    // Get user details
+    const user = await clerk.users.getUser(userId);
+
+    if (!user) {
+      throw new HttpsError('unauthenticated', 'User not found');
+    }
+
+    const primaryEmail = user.emailAddresses.find(
+      email => email.id === user.primaryEmailAddressId
+    );
+
+    if (!primaryEmail) {
+      throw new HttpsError('unauthenticated', 'User email not found');
+    }
+
+    return {
+      userId: user.id,
+      email: primaryEmail.emailAddress,
+    };
+  } catch (error) {
+    console.error('Clerk token verification error:', error);
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    throw new HttpsError('unauthenticated', 'Failed to verify authentication token');
+  }
+}
 
 // ============================================================================
 // INPUT VALIDATION & SANITIZATION HELPERS
@@ -79,17 +150,13 @@ function isValidEmail(email) {
 // ============================================================================
 
 exports.submitSurvey = onCall({
-  secrets: [MAKE_WEBHOOK_URL],
+  secrets: [MAKE_WEBHOOK_URL, CLERK_SECRET_KEY],
   invoker: 'public',
   consumeAppCheckToken: true  // Enforce App Check to prevent bots
 }, async (request) => {
-  // Check if user is authenticated
-  if (!request.auth) {
-    console.error('No auth context');
-    throw new HttpsError('unauthenticated', 'User must be logged in');
-  }
-
-  const { projectId } = request.data;
+  // Verify Clerk authentication
+  const { sessionToken, projectId } = request.data;
+  const { userId, email } = await verifyClerkToken(sessionToken);
 
   if (!projectId) {
     throw new HttpsError('invalid-argument', 'Project ID is required');
@@ -106,8 +173,8 @@ exports.submitSurvey = onCall({
 
     const projectData = projectDoc.data();
 
-    // Check if user is the owner
-    if (projectData.ownerEmail !== request.auth.token.email) {
+    // Check if user is the owner (using Clerk user ID)
+    if (projectData.ownerId !== userId) {
       throw new HttpsError(
         'permission-denied',
         'Only the project owner can submit'
@@ -123,7 +190,7 @@ exports.submitSurvey = onCall({
     await projectRef.update({
       submitted: true,
       submittedAt: FieldValue.serverTimestamp(),
-      submittedBy: request.auth.token.email
+      submittedBy: userId
     });
 
     // Prepare data for Make.com
@@ -202,15 +269,13 @@ exports.submitSurvey = onCall({
 
 // Generate preview PDF without submitting
 exports.generatePreviewPDF = onCall({
-  secrets: [MAKE_WEBHOOK_URL],
+  secrets: [MAKE_WEBHOOK_URL, CLERK_SECRET_KEY],
   invoker: 'public',
   consumeAppCheckToken: true  // Enforce App Check to prevent bots
 }, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'User must be logged in');
-  }
-
-  const { projectId } = request.data;
+  // Verify Clerk authentication
+  const { sessionToken, projectId } = request.data;
+  const { userId, email } = await verifyClerkToken(sessionToken);
 
   if (!projectId) {
     throw new HttpsError('invalid-argument', 'Project ID is required');
@@ -227,11 +292,10 @@ exports.generatePreviewPDF = onCall({
 
     const projectData = projectDoc.data();
 
-    // Check if user has access to this project
-    const userEmail = request.auth.token.email;
+    // Check if user has access to this project (using Clerk user ID)
     const hasAccess =
-      projectData.ownerEmail === userEmail ||
-      (projectData.collaborators || []).includes(userEmail);
+      projectData.ownerId === userId ||
+      (projectData.collaboratorIds || []).includes(userId);
 
     if (!hasAccess) {
       throw new HttpsError('permission-denied', 'No access to this project');
@@ -324,160 +388,21 @@ exports.generatePreviewPDF = onCall({
 });
 
 // ============================================================================
-// EMAIL OPERATIONS
-// ============================================================================
-
-// Send collaborator invitation email
-exports.sendCollaboratorInvite = onCall({
-  secrets: [RESEND_API_KEY],
-  invoker: 'public',
-  consumeAppCheckToken: true  // Enforce App Check to prevent spam
-}, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'User must be logged in');
-  }
-
-  const { projectId, collaboratorEmail, projectName } = request.data;
-
-  if (!projectId || !collaboratorEmail || !projectName) {
-    throw new HttpsError('invalid-argument', 'Missing required fields');
-  }
-
-  // Validate and sanitize inputs
-  if (!isValidEmail(collaboratorEmail)) {
-    throw new HttpsError('invalid-argument', 'Invalid email address');
-  }
-
-  const sanitizedProjectName = sanitizeInput(projectName, 100);
-  if (!sanitizedProjectName || sanitizedProjectName.length < 2) {
-    throw new HttpsError('invalid-argument', 'Invalid project name');
-  }
-
-  try {
-    // Verify the user is the project owner
-    const projectRef = db.collection('projects').doc(projectId);
-    const projectDoc = await projectRef.get();
-
-    if (!projectDoc.exists) {
-      throw new HttpsError('not-found', 'Project not found');
-    }
-
-    const projectData = projectDoc.data();
-
-    if (projectData.ownerEmail !== request.auth.token.email) {
-      throw new HttpsError('permission-denied', 'Only project owner can invite');
-    }
-
-    // Generate secure invitation token
-    const invitationToken = crypto.randomBytes(32).toString('hex');
-
-    // Store invitation in database
-    const invitationRef = db.collection('invitations').doc(invitationToken);
-    await invitationRef.set({
-      token: invitationToken,
-      email: collaboratorEmail,
-      projectId: projectId,
-      projectName: sanitizedProjectName,
-      invitedBy: request.auth.token.email,
-      createdAt: FieldValue.serverTimestamp(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      used: false,
-      usedAt: null,
-      usedBy: null
-    });
-
-    // Create invitation link with secure token
-    // Use production URL in production, otherwise localhost for testing
-    const appUrl = process.env.NODE_ENV === 'production'
-      ? 'https://my.cherrytree.app'
-      : 'http://localhost:3000';
-    const inviteLink = `${appUrl}?invite=${invitationToken}`;
-
-    // Send email
-    const resend = getResend();
-    const { data, error } = await resend.emails.send({
-      from: 'Cherrytree <onboarding@resend.dev>',
-      to: collaboratorEmail,
-      subject: `${request.auth.token.email} invited you to collaborate on "${sanitizedProjectName}"`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #1f2937;">You've been invited to collaborate!</h2>
-          <p style="color: #4b5563; font-size: 16px;">
-            <strong>${request.auth.token.email}</strong> has invited you to collaborate on the project:
-          </p>
-          <div style="background-color: #eff6ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #2563eb; margin: 0;">${sanitizedProjectName}</h3>
-          </div>
-          
-          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0 0 10px 0;"><strong>What happens next:</strong></p>
-            <ol style="color: #4b5563; line-height: 1.8;">
-              <li>Click the button below to access the project</li>
-              <li>Sign in with <strong>${collaboratorEmail}</strong> or create an account</li>
-              <li>Start collaborating on the survey!</li>
-            </ol>
-          </div>
-
-          <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; margin: 20px 0;">
-            <p style="margin: 0; color: #92400e; font-size: 14px;">
-              <strong>Important:</strong> You must sign in with <strong>${collaboratorEmail}</strong> to access this project. This link expires in 7 days.
-            </p>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${inviteLink}" 
-              style="display: inline-block; background-color: #2563eb; color: white; 
-                      padding: 14px 28px; text-decoration: none; border-radius: 8px; 
-                      font-weight: bold; font-size: 16px;">
-              Access Project
-            </a>
-          </div>
-          
-          <p style="color: #9ca3af; font-size: 13px; margin-top: 40px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
-            This invitation was sent by Cherry Tree. If you didn't expect this email, you can safely ignore it.
-          </p>
-        </div>
-      `,
-    });
-
-    if (error) {
-      console.error('Resend error:', error);
-      throw new HttpsError('internal', 'Failed to send email');
-    }
-
-    return {
-      success: true,
-      message: 'Invitation email sent successfully'
-    };
-
-  } catch (error) {
-    console.error('Error sending invitation:', error);
-    if (error instanceof HttpsError) {
-      throw error;
-    }
-    // Don't expose internal error details to client
-    throw new HttpsError('internal', 'An error occurred while sending the invitation');
-  }
-});
-
-// ============================================================================
 // STRIPE PAYMENT OPERATIONS
 // ============================================================================
 
 // Create Stripe checkout session
 exports.createCheckoutSession = onCall({
-  secrets: [STRIPE_SECRET_KEY],
+  secrets: [STRIPE_SECRET_KEY, CLERK_SECRET_KEY],
   invoker: 'public',
   consumeAppCheckToken: true  // Enforce App Check to prevent payment fraud
 }, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'User must be logged in');
-  }
+  // Verify Clerk authentication
+  const { sessionToken, priceId, plan, projectName } = request.data;
+  const { userId, email } = await verifyClerkToken(sessionToken);
 
   // Initialize Stripe
   const stripe = Stripe(STRIPE_SECRET_KEY.value());
-
-  const { priceId, plan, projectName } = request.data;
 
   if (!priceId || !plan) {
     throw new HttpsError('invalid-argument', 'Price ID and plan are required');
@@ -499,9 +424,6 @@ exports.createCheckoutSession = onCall({
   }
 
   try {
-    const userId = request.auth.uid;
-    const userEmail = request.auth.token.email;
-
     // Create or retrieve Stripe customer
     const userRef = db.collection('users').doc(userId);
     const userDoc = await userRef.get();
@@ -512,9 +434,9 @@ exports.createCheckoutSession = onCall({
     } else {
       // Create new Stripe customer
       const customer = await stripe.customers.create({
-        email: userEmail,
+        email: email,
         metadata: {
-          firebaseUID: userId,
+          clerkUserId: userId,
         },
       });
       stripeCustomerId = customer.id;
@@ -542,7 +464,7 @@ exports.createCheckoutSession = onCall({
         userId: userId,
         plan: plan,
         projectName: sanitizedProjectName,
-        userEmail: userEmail,
+        userEmail: email,
       },
       client_reference_id: userId,
     });
@@ -565,7 +487,7 @@ exports.createCheckoutSession = onCall({
 // Handle Stripe webhooks
 exports.stripeWebhook = onRequest({
   cors: false,  // Disable CORS - webhooks are server-to-server only
-  secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET]
+  secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, CLERK_SECRET_KEY]
 }, async (req, res) => {
   // Initialize Stripe
   const stripe = Stripe(STRIPE_SECRET_KEY.value());
@@ -606,42 +528,65 @@ exports.stripeWebhook = onRequest({
         const sanitizedProjectName = sanitizeInput(projectName || 'New Project', 100);
 
         if (userId && plan && sanitizedProjectName && userEmail) {
-          // Update user's subscription status
-          await db.collection('users').doc(userId).set({
-            plan: plan,
-            subscriptionStatus: 'active',
-            stripeCustomerId: session.customer,
-            lastPaymentAt: FieldValue.serverTimestamp(),
-          }, { merge: true });
+          try {
+            // Update user's subscription status
+            await db.collection('users').doc(userId).set({
+              subscriptionStatus: 'active',
+              stripeCustomerId: session.customer,
+              lastPaymentAt: FieldValue.serverTimestamp(),
+            }, { merge: true });
 
-          // Create a project for the user with proper structure
-          const projectRef = db.collection('projects').doc();
-          await projectRef.set({
-            name: sanitizedProjectName,
-            ownerId: userId,
-            ownerEmail: userEmail,
-            collaborators: [userEmail],
-            collaboratorIds: [userId],
-            approvals: {
-              [userEmail]: true
-            },
-            requiresApprovals: true,
-            surveyData: {
-              companyName: sanitizedProjectName
-            },
-            activeUsers: [],
-            submitted: false,
-            submittedAt: null,
-            submittedBy: null,
-            pdfUrl: null,
-            pdfGeneratedAt: null,
-            plan: plan,
-            createdAt: FieldValue.serverTimestamp(),
-            lastUpdated: FieldValue.serverTimestamp(),
-            lastOpened: FieldValue.serverTimestamp()
-          });
+            // Create Clerk Organization for this project
+            const clerk = getClerk();
+            let clerkOrgId = null;
 
-          console.log(`User ${userId} paid for ${plan}, project created: ${projectRef.id} - ${sanitizedProjectName}`);
+            try {
+              const organization = await clerk.organizations.createOrganization({
+                name: sanitizedProjectName,
+                createdBy: userId,
+              });
+              clerkOrgId = organization.id;
+              console.log(`Clerk Organization created: ${clerkOrgId} for project: ${sanitizedProjectName}`);
+            } catch (clerkError) {
+              console.error('Error creating Clerk Organization:', clerkError);
+              // Continue creating project even if org creation fails
+            }
+
+            // Create a project for the user with proper structure
+            const projectRef = db.collection('projects').doc();
+            await projectRef.set({
+              name: sanitizedProjectName,
+              ownerId: userId,
+              ownerEmail: userEmail,
+              collaborators: [userEmail],
+              collaboratorIds: [userId],
+              clerkOrgId: clerkOrgId, // Store Clerk Organization ID
+              approvals: {
+                [userEmail]: true
+              },
+              onboardingCompleted: {
+                [userId]: false
+              },
+              requiresApprovals: true,
+              surveyData: {
+                companyName: sanitizedProjectName
+              },
+              activeUsers: [],
+              submitted: false,
+              submittedAt: null,
+              submittedBy: null,
+              pdfUrl: null,
+              pdfGeneratedAt: null,
+              plan: plan,
+              createdAt: FieldValue.serverTimestamp(),
+              lastUpdated: FieldValue.serverTimestamp(),
+              lastOpened: FieldValue.serverTimestamp()
+            });
+
+            console.log(`User ${userId} paid for ${plan}, project created: ${projectRef.id} - ${sanitizedProjectName}`);
+          } catch (error) {
+            console.error('Error in project creation:', error);
+          }
         } else {
           console.error('Missing required metadata in checkout session:', { userId, plan, projectName: sanitizedProjectName, userEmail });
         }
@@ -667,6 +612,482 @@ exports.stripeWebhook = onRequest({
     res.json({ received: true });
   } catch (error) {
     console.error('Webhook error:', error);
+    res.status(400).send(`Webhook Error: ${error.message}`);
+  }
+});
+
+// ============================================================================
+// FIREBASE AUTH TOKEN EXCHANGE
+// ============================================================================
+
+// Exchange Clerk session token for Firebase custom token
+// This allows Clerk-authenticated users to access Firestore with security rules
+exports.getFirebaseToken = onCall({
+  secrets: [CLERK_SECRET_KEY],
+  invoker: 'public',
+}, async (request) => {
+  try {
+    const { sessionToken } = request.data;
+
+    if (!sessionToken) {
+      throw new HttpsError('invalid-argument', 'Session token is required');
+    }
+
+    // Verify Clerk session token
+    const { userId } = await verifyClerkToken(sessionToken);
+
+    // Create Firebase custom token for this user
+    const firebaseToken = await auth.createCustomToken(userId);
+
+    return {
+      firebaseToken,
+      userId
+    };
+  } catch (error) {
+    console.error('Error creating Firebase token:', error);
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    throw new HttpsError('internal', 'Failed to create Firebase token');
+  }
+});
+
+// ============================================================================
+// ACCOUNT DELETION (GDPR/CCPA Compliant Pseudonymization)
+// ============================================================================
+
+// Delete user account with proper pseudonymization for legal compliance
+exports.deleteAccount = onCall({
+  secrets: [CLERK_SECRET_KEY],
+  invoker: 'public',
+}, async (request) => {
+  try {
+    const { sessionToken } = request.data;
+
+    if (!sessionToken) {
+      throw new HttpsError('invalid-argument', 'Session token is required');
+    }
+
+    // Verify Clerk session token
+    const { userId, email } = await verifyClerkToken(sessionToken);
+
+    console.log(`Account deletion requested for user: ${userId} (${email})`);
+
+    // Generate pseudonymized identifier
+    const pseudoId = `deleted_user_${userId.substring(0, 8)}`;
+    const pseudoEmail = `${pseudoId}@cherrytree.internal`;
+
+    // Get all projects owned by this user
+    const projectsSnapshot = await db.collection('projects')
+      .where('ownerId', '==', userId)
+      .get();
+
+    const clerk = getClerk();
+    const transferredProjects = [];
+    const archivedProjects = [];
+
+    // Handle each project
+    for (const projectDoc of projectsSnapshot.docs) {
+      const project = projectDoc.data();
+
+      // Get other collaborators (excluding the owner)
+      const otherCollaborators = project.collaboratorIds?.filter(id => id !== userId) || [];
+
+      if (otherCollaborators.length > 0) {
+        // Transfer ownership to first collaborator
+        const newOwnerId = otherCollaborators[0];
+        const newOwnerEmail = project.collaborators?.find(e => e !== project.ownerEmail) || '';
+
+        await projectDoc.ref.update({
+          ownerId: newOwnerId,
+          ownerEmail: newOwnerEmail,
+          collaboratorIds: otherCollaborators,
+          collaborators: project.collaborators?.filter(e => e !== project.ownerEmail) || [],
+          transferredFrom: userId,
+          transferredAt: FieldValue.serverTimestamp()
+        });
+
+        // Transfer Clerk organization ownership if it exists
+        if (project.clerkOrgId) {
+          try {
+            await clerk.organizations.updateOrganizationMembership({
+              organizationId: project.clerkOrgId,
+              userId: newOwnerId,
+              role: 'admin'
+            });
+            console.log(`Clerk org ${project.clerkOrgId} transferred to ${newOwnerId}`);
+          } catch (clerkError) {
+            console.error('Error updating Clerk org ownership:', clerkError);
+          }
+        }
+
+        transferredProjects.push({
+          name: project.name,
+          transferredTo: newOwnerEmail
+        });
+
+        console.log(`Project "${project.name}" transferred to ${newOwnerEmail}`);
+      } else {
+        // No collaborators - pseudonymize and archive the project
+        await projectDoc.ref.update({
+          ownerEmail: pseudoEmail,
+          collaborators: [pseudoEmail],
+          archived: true,
+          archivedReason: 'owner_deleted',
+          archivedAt: FieldValue.serverTimestamp()
+        });
+
+        // Delete Clerk organization (no members left)
+        if (project.clerkOrgId) {
+          try {
+            await clerk.organizations.deleteOrganization(project.clerkOrgId);
+            console.log(`Clerk org ${project.clerkOrgId} deleted (no collaborators)`);
+          } catch (clerkError) {
+            console.error('Error deleting Clerk org:', clerkError);
+          }
+        }
+
+        archivedProjects.push(project.name);
+        console.log(`Project "${project.name}" archived and pseudonymized`);
+      }
+    }
+
+    // Pseudonymize user document in Firestore
+    await db.collection('users').doc(userId).update({
+      email: pseudoEmail,
+      name: 'Deleted User',
+      picture: null,
+      deleted: true,
+      deletedAt: FieldValue.serverTimestamp(),
+      originalEmail: email // Keep for audit trail only
+    });
+
+    console.log(`User document pseudonymized: ${userId}`);
+
+    // Delete user from Clerk (triggers webhook that deletes Firebase Auth)
+    try {
+      await clerk.users.deleteUser(userId);
+      console.log(`Clerk user deleted: ${userId}`);
+    } catch (clerkError) {
+      console.error('Error deleting Clerk user:', clerkError);
+      throw new HttpsError('internal', 'Failed to delete user account');
+    }
+
+    return {
+      success: true,
+      message: 'Account deleted successfully',
+      transferredProjects,
+      archivedProjects
+    };
+
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    throw new HttpsError('internal', 'Failed to delete account');
+  }
+});
+
+// ============================================================================
+// ORGANIZATION MEMBER MANAGEMENT
+// ============================================================================
+
+// Remove a member from an organization using Clerk backend API
+exports.removeOrganizationMember = onCall({
+  secrets: [CLERK_SECRET_KEY],
+  invoker: 'public',
+}, async (request) => {
+  try {
+    const { sessionToken, membershipId, organizationId } = request.data;
+
+    if (!sessionToken) {
+      throw new HttpsError('invalid-argument', 'Session token is required');
+    }
+
+    if (!membershipId) {
+      throw new HttpsError('invalid-argument', 'Membership ID is required');
+    }
+
+    if (!organizationId) {
+      throw new HttpsError('invalid-argument', 'Organization ID is required');
+    }
+
+    // Verify Clerk session token (ensures user is authenticated)
+    await verifyClerkToken(sessionToken);
+
+    // Get Clerk client
+    const clerk = getClerk();
+
+    // Fetch all memberships to find the userId for this membershipId
+    const { data: memberships } = await clerk.organizations.getOrganizationMembershipList({
+      organizationId
+    });
+
+    // Find the membership by ID
+    const membership = memberships.find(m => m.id === membershipId);
+
+    if (!membership) {
+      throw new HttpsError('not-found', 'Membership not found');
+    }
+
+    // Remove the member using Clerk's backend API with organizationId and userId
+    await clerk.organizations.deleteOrganizationMembership({
+      organizationId,
+      userId: membership.publicUserData.userId
+    });
+
+    return {
+      success: true,
+      message: 'Member removed successfully'
+    };
+  } catch (error) {
+    console.error('Error removing organization member:', error);
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    throw new HttpsError('internal', `Failed to remove member: ${error.message}`);
+  }
+});
+
+// ============================================================================
+// CLERK WEBHOOKS (Best Practice: Server-side user sync)
+// ============================================================================
+
+// Handle Clerk webhooks for user and organization events
+exports.clerkWebhook = onRequest({
+  cors: false,
+  secrets: [CLERK_WEBHOOK_SECRET]
+}, async (req, res) => {
+  try {
+    // Verify webhook signature using Svix
+    const webhookSecret = CLERK_WEBHOOK_SECRET.value();
+
+    if (!webhookSecret) {
+      console.error('Missing CLERK_WEBHOOK_SECRET');
+      return res.status(400).send('Missing webhook secret');
+    }
+
+    // Get headers
+    const svixId = req.headers['svix-id'];
+    const svixTimestamp = req.headers['svix-timestamp'];
+    const svixSignature = req.headers['svix-signature'];
+
+    if (!svixId || !svixTimestamp || !svixSignature) {
+      console.error('Missing svix headers');
+      return res.status(400).send('Missing svix headers');
+    }
+
+    // Verify the webhook
+    const wh = new Webhook(webhookSecret);
+    let evt;
+
+    try {
+      evt = wh.verify(JSON.stringify(req.body), {
+        'svix-id': svixId,
+        'svix-timestamp': svixTimestamp,
+        'svix-signature': svixSignature,
+      });
+    } catch (err) {
+      console.error('Webhook verification failed:', err);
+      return res.status(400).send('Webhook verification failed');
+    }
+
+    // Handle the webhook event
+    const eventType = evt.type;
+    console.log('Clerk webhook event:', eventType);
+
+    switch (eventType) {
+      case 'user.created': {
+        const { id, email_addresses, first_name, last_name, image_url } = evt.data;
+        const primaryEmail = email_addresses?.find(e => e.id === evt.data.primary_email_address_id);
+
+        if (id && primaryEmail) {
+          // Create Firebase Auth user with Clerk user ID
+          try {
+            await auth.createUser({
+              uid: id,
+              email: primaryEmail.email_address,
+              displayName: [first_name, last_name].filter(Boolean).join(' ') || primaryEmail.email_address.split('@')[0],
+              photoURL: image_url || null,
+              emailVerified: primaryEmail.verified || false,
+            });
+            console.log(`Firebase Auth user created: ${id}`);
+          } catch (authError) {
+            // User might already exist if this is a retry
+            if (authError.code !== 'auth/uid-already-exists') {
+              console.error('Error creating Firebase Auth user:', authError);
+            }
+          }
+
+          // Create user document in Firestore
+          await db.collection('users').doc(id).set({
+            userId: id,
+            email: primaryEmail.email_address,
+            firstName: first_name || '',
+            lastName: last_name || '',
+            picture: image_url || null,
+            createdAt: FieldValue.serverTimestamp(),
+            deleted: false,
+          });
+
+          console.log(`User created in Firestore: ${id} (${primaryEmail.email_address})`);
+        }
+        break;
+      }
+
+      case 'user.updated': {
+        const { id, email_addresses, first_name, last_name, image_url } = evt.data;
+        const primaryEmail = email_addresses?.find(e => e.id === evt.data.primary_email_address_id);
+
+        if (id && primaryEmail) {
+          // Update or create Firebase Auth user
+          try {
+            await auth.updateUser(id, {
+              email: primaryEmail.email_address,
+              displayName: [first_name, last_name].filter(Boolean).join(' ') || primaryEmail.email_address.split('@')[0],
+              photoURL: image_url || null,
+              emailVerified: primaryEmail.verified || false,
+            });
+            console.log(`Firebase Auth user updated: ${id}`);
+          } catch (authError) {
+            // If user doesn't exist, create them (for existing Clerk users)
+            if (authError.code === 'auth/user-not-found') {
+              try {
+                await auth.createUser({
+                  uid: id,
+                  email: primaryEmail.email_address,
+                  displayName: [first_name, last_name].filter(Boolean).join(' ') || primaryEmail.email_address.split('@')[0],
+                  photoURL: image_url || null,
+                  emailVerified: primaryEmail.verified || false,
+                });
+                console.log(`Firebase Auth user created (from update): ${id}`);
+              } catch (createError) {
+                console.error('Error creating Firebase Auth user:', createError);
+              }
+            } else {
+              console.error('Error updating Firebase Auth user:', authError);
+            }
+          }
+
+          // Update or create user document (use set with merge for existing Clerk users)
+          await db.collection('users').doc(id).set({
+            userId: id,
+            email: primaryEmail.email_address,
+            firstName: first_name || '',
+            lastName: last_name || '',
+            picture: image_url || null,
+            updatedAt: FieldValue.serverTimestamp(),
+            // Set defaults for new users (won't overwrite existing due to merge)
+            hasCompletedOnboarding: false,
+            deleted: false,
+          }, { merge: true });
+
+          console.log(`User updated in Firestore: ${id}`);
+        }
+        break;
+      }
+
+      case 'user.deleted': {
+        const { id } = evt.data;
+
+        if (id) {
+          // Delete Firebase Auth user (authentication only)
+          try {
+            await auth.deleteUser(id);
+            console.log(`Firebase Auth user deleted: ${id}`);
+          } catch (authError) {
+            console.error('Error deleting Firebase Auth user:', authError);
+          }
+
+          // Mark user as deleted in Firestore
+          try {
+            await db.collection('users').doc(id).set({
+              deleted: true,
+              deletedAt: FieldValue.serverTimestamp()
+            }, { merge: true });
+            console.log(`User ${id} marked as deleted in Firestore`);
+          } catch (firestoreError) {
+            console.error('Error marking user as deleted in Firestore:', firestoreError);
+          }
+        }
+        break;
+      }
+
+      case 'organization.created': {
+        const { id, name, created_by } = evt.data;
+        console.log(`Organization created: ${id} (${name}) by ${created_by}`);
+        // Organization data is already in Clerk, no need to duplicate in Firestore
+        break;
+      }
+
+      case 'organizationMembership.created': {
+        const { organization, public_user_data } = evt.data;
+        const userId = public_user_data.user_id;
+        const userEmail = public_user_data.identifier; // Email address
+        const orgId = organization.id;
+
+        console.log(`User ${userId} (${userEmail}) joined org ${orgId}`);
+
+        // Find project with this Clerk org ID and add user to collaboratorIds and collaborators
+        try {
+          const projectsSnapshot = await db.collection('projects')
+            .where('clerkOrgId', '==', orgId)
+            .limit(1)
+            .get();
+
+          if (!projectsSnapshot.empty) {
+            const projectDoc = projectsSnapshot.docs[0];
+            await projectDoc.ref.update({
+              collaboratorIds: FieldValue.arrayUnion(userId),
+              collaborators: FieldValue.arrayUnion(userEmail), // Also add email for legacy compatibility
+              lastUpdated: FieldValue.serverTimestamp()
+            });
+            console.log(`Added user ${userId} (${userEmail}) to project ${projectDoc.id} collaborators`);
+          }
+        } catch (error) {
+          console.error('Error adding collaborator to project:', error);
+        }
+        break;
+      }
+
+      case 'organizationMembership.deleted': {
+        const { organization, public_user_data } = evt.data;
+        const userId = public_user_data.user_id;
+        const userEmail = public_user_data.identifier; // Email address
+        const orgId = organization.id;
+
+        console.log(`User ${userId} (${userEmail}) left org ${orgId}`);
+
+        // Find project with this Clerk org ID and remove user from collaboratorIds and collaborators
+        try {
+          const projectsSnapshot = await db.collection('projects')
+            .where('clerkOrgId', '==', orgId)
+            .limit(1)
+            .get();
+
+          if (!projectsSnapshot.empty) {
+            const projectDoc = projectsSnapshot.docs[0];
+            await projectDoc.ref.update({
+              collaboratorIds: FieldValue.arrayRemove(userId),
+              collaborators: FieldValue.arrayRemove(userEmail), // Also remove email for legacy compatibility
+              lastUpdated: FieldValue.serverTimestamp()
+            });
+            console.log(`Removed user ${userId} (${userEmail}) from project ${projectDoc.id} collaborators`);
+          }
+        } catch (error) {
+          console.error('Error removing collaborator from project:', error);
+        }
+        break;
+      }
+
+      default:
+        console.log(`Unhandled Clerk event type: ${eventType}`);
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    console.error('Clerk webhook error:', error);
     res.status(400).send(`Webhook Error: ${error.message}`);
   }
 });

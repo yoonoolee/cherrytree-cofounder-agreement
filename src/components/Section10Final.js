@@ -1,9 +1,11 @@
 import React from 'react';
 import { US_STATES } from './surveyConstants';
-import { auth } from '../firebase';
+import { useUser } from '../contexts/UserContext';
 import CustomSelect from './CustomSelect';
 
 function Section10Final({ formData, handleChange, isReadOnly, project, showValidation }) {
+  const { currentUser } = useUser();
+
   return (
     <div>
       <h2 className="text-3xl font-medium text-gray-800 mb-6">General Provisions</h2>
@@ -125,7 +127,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
             {(() => {
               const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
               const approvals = formData.acknowledgePeriodicReview || {};
-              const currentUserEmail = auth.currentUser?.email;
+              const currentUserEmail = currentUser?.primaryEmailAddress?.emailAddress;
 
               return allCollaborators.map((email, index) => {
                 const isApproved = approvals[email] || false;
@@ -174,7 +176,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
             {(() => {
               const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
               const approvals = formData.acknowledgeAmendmentReviewRequest || {};
-              const currentUserEmail = auth.currentUser?.email;
+              const currentUserEmail = currentUser?.primaryEmailAddress?.emailAddress;
 
               return allCollaborators.map((email, index) => {
                 const isApproved = approvals[email] || false;
@@ -223,7 +225,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
             {(() => {
               const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
               const approvals = formData.acknowledgeEntireAgreement || {};
-              const currentUserEmail = auth.currentUser?.email;
+              const currentUserEmail = currentUser?.primaryEmailAddress?.emailAddress;
 
               return allCollaborators.map((email, index) => {
                 const isApproved = approvals[email] || false;
@@ -272,7 +274,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
             {(() => {
               const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
               const approvals = formData.acknowledgeSeverability || {};
-              const currentUserEmail = auth.currentUser?.email;
+              const currentUserEmail = currentUser?.primaryEmailAddress?.emailAddress;
 
               return allCollaborators.map((email, index) => {
                 const isApproved = approvals[email] || false;

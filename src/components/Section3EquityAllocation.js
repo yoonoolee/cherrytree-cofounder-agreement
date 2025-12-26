@@ -1,14 +1,15 @@
 import React, { useRef, useImperativeHandle, forwardRef } from 'react';
 import EquityCalculator from './EquityCalculator';
 import Spreadsheet from 'react-spreadsheet';
-import { auth } from '../firebase';
+import { useUser } from '../contexts/UserContext';
 import './Section3EquityAllocation.css';
 
 const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnly, showValidation, project, onViewModeChange }, ref) => {
+  const { currentUser } = useUser();
   const visualBarsRef = useRef(null);
   // Calculate number of cofounders from collaborators (owner + collaborators)
   const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
-  const currentUserEmail = auth.currentUser?.email;
+  const currentUserEmail = currentUser?.primaryEmailAddress?.emailAddress;
 
   // Function to get cofounder name from email
   const getCofounderName = (email) => {
@@ -913,7 +914,7 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
             <div className="space-y-2 pl-4">
               {allCollaborators.map((email) => {
                 const isApproved = formData.acknowledgeEquityAllocation?.[email] || false;
-                const isCurrentUser = email === auth.currentUser?.email;
+                const isCurrentUser = email === currentUser?.primaryEmailAddress?.emailAddress;
 
                 // Check if all equity percentages are filled and total equals 100%
                 const allPercentagesFilled = allCollaborators.every(email =>

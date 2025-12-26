@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { auth, db } from '../firebase';
+import { db } from '../firebase';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useUser } from '../contexts/UserContext';
+import { useAuth } from '@clerk/clerk-react';
 
 const PLANS = {
   starter: {
@@ -32,11 +34,11 @@ const PLANS = {
   }
 };
 
-function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: initialProjectName = '' }) {
-  const [projectName, setProjectName] = useState(initialProjectName);
-  const [selectedPlan, setSelectedPlan] = useState(currentPlan === 'starter' ? 'pro' : 'starter');
-  const isUpgrade = !!initialProjectName;
-  const isMaxPlan = currentPlan === 'pro';
+function PaymentModal({ onClose, onSuccess }) {
+  const { currentUser, loading: userLoading } = useUser();
+  const { getToken } = useAuth();
+  const [projectName, setProjectName] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState('starter');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isWiggling, setIsWiggling] = useState(false);
@@ -79,12 +81,21 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
     setError('');
 
     try {
-      const currentUser = auth.currentUser;
+      if (userLoading) {
+        throw new Error('Please wait while we load your account...');
+      }
+
       if (!currentUser) {
         throw new Error('You must be logged in to create a project');
       }
 
       const plan = PLANS[selectedPlan];
+
+      // Get Clerk session token
+      const sessionToken = await getToken();
+      if (!sessionToken) {
+        throw new Error('Unable to verify authentication. Please try logging in again.');
+      }
 
       // Create Stripe checkout session
       const functions = getFunctions();
@@ -96,6 +107,7 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
         : window.location.origin;
 
       const result = await createCheckoutSession({
+        sessionToken,
         priceId: plan.priceId,
         plan: selectedPlan,
         projectName: trimmedName,
@@ -113,10 +125,7 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
       }
 
     } catch (err) {
-      // Don't log detailed errors in production for security
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error creating checkout session:', err);
-      }
+      console.error('Error creating checkout session:', err);
       setError(err.message || 'Failed to start payment. Please try again.');
       setLoading(false);
     }
@@ -159,13 +168,11 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
         <div className="flex justify-between items-start mb-4 md:mb-6">
           <div className="flex-1 pr-4">
             <h2 className="text-lg md:text-2xl font-bold text-gray-900">
-              {isMaxPlan ? "You're Already on the Highest Plan" : isUpgrade ? 'Upgrade Your Plan' : 'Start a New Cofounder Agreement'}
+              Start a New Cofounder Agreement
             </h2>
-            {!isMaxPlan && (
-              <p className="text-xs md:text-sm text-gray-600 mt-1">
-                {isUpgrade ? 'Get access to advanced features' : 'Choose your plan and get started'}
-              </p>
-            )}
+            <p className="text-xs md:text-sm text-gray-600 mt-1">
+              Choose your plan and get started
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -180,52 +187,31 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
         )}
 
         <form onSubmit={handleSubmit}>
-          {!isUpgrade && (
-            <div className="mb-4 md:mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Company Name
-              </label>
-              <input
-                type="text"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                className={`w-full px-0 py-2 border-0 border-b-2 border-gray-300 focus:border-black focus:ring-0 bg-transparent text-gray-900 ${isWiggling ? 'animate-wiggle' : ''}`}
-                placeholder="Enter company name"
-              />
-            </div>
-          )}
+          <div className="mb-4 md:mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Company Name
+            </label>
+            <input
+              type="text"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              className={`w-full px-0 py-2 border-0 border-b-2 border-gray-300 focus:border-black focus:ring-0 bg-transparent text-gray-900 ${isWiggling ? 'animate-wiggle' : ''}`}
+              placeholder="Enter company name"
+            />
+          </div>
 
           {/* Plan Selection */}
-          <div className={isUpgrade ? "mb-0" : "mb-4 md:mb-6"}>
+          <div className="mb-4 md:mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Select Plan
             </label>
-            <div className={`grid gap-3 md:gap-4 ${isUpgrade ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} items-stretch`}>
-              {Object.entries(PLANS).filter(([key]) => !isUpgrade || key === 'pro').map(([key, plan]) => {
+            <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 items-stretch">
+              {Object.entries(PLANS).map(([key, plan]) => {
                 const isProPlan = key === 'pro';
-                const isDisabled = isMaxPlan || key === currentPlan || isProPlan;
-                return (
-                <div key={key} className="relative">
-                  {/* Coming Soon Badge for Pro */}
-                  {isProPlan && (
-                    <div className="absolute -top-2 -right-2 bg-black text-white text-xs font-semibold px-3 py-1 rounded-full z-10">
-                      Coming Soon
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => !isDisabled && setSelectedPlan(key)}
-                    disabled={isDisabled}
-                    className={`p-3 md:p-4 rounded-lg border-2 transition text-left w-full h-full ${
-                      isDisabled
-                        ? isProPlan
-                          ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
-                          : 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
-                        : selectedPlan === key
-                          ? 'border-black bg-gray-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
+                const isDisabled = isProPlan;
+
+                const cardContent = (
+                  <>
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1 min-w-0">
                         <h3 className="text-sm md:text-base font-semibold text-gray-900">{plan.name}</h3>
@@ -242,14 +228,7 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
                       )}
                     </div>
                     <p className="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-3">
-                      {isUpgrade && currentPlan === 'starter' && key === 'pro' ? (
-                        <>
-                          <span className="line-through text-gray-400 text-base md:text-lg mr-2">${plan.price}</span>
-                          $600
-                        </>
-                      ) : (
-                        `$${plan.price}`
-                      )}
+                      ${plan.price}
                     </p>
                     <ul className="space-y-1">
                       {plan.features.map((feature, idx) => (
@@ -300,30 +279,50 @@ function PaymentModal({ onClose, onSuccess, currentPlan = null, projectName: ini
                         )}
                       </div>
                     )}
-                  </button>
+                  </>
+                );
+
+                return (
+                <div key={key} className="relative">
+                  {/* Coming Soon Badge for Pro */}
+                  {isProPlan && (
+                    <div className="absolute -top-2 -right-2 bg-black text-white text-xs font-semibold px-3 py-1 rounded-full z-10">
+                      Coming Soon
+                    </div>
+                  )}
+                  {isProPlan ? (
+                    <div className="p-3 md:p-4 rounded-lg border-2 transition text-left w-full h-full border-gray-200 bg-gray-50 cursor-not-allowed">
+                      {cardContent}
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => !isDisabled && setSelectedPlan(key)}
+                      disabled={isDisabled}
+                      className={`p-3 md:p-4 rounded-lg border-2 transition text-left w-full h-full ${
+                        isDisabled
+                          ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                          : selectedPlan === key
+                            ? 'border-black bg-gray-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      {cardContent}
+                    </button>
+                  )}
                 </div>
                 );
               })}
             </div>
           </div>
 
-          {isMaxPlan ? (
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full bg-black text-white py-2.5 md:py-3 rounded text-sm md:text-base font-semibold hover:bg-gray-800 transition"
-            >
-              Got it
-            </button>
-          ) : !isUpgrade ? (
-            <button
-              type="submit"
-              disabled={loading}
-              className="button-shimmer w-full bg-[#000000] text-white py-2.5 md:py-3 rounded text-sm md:text-base font-medium hover:bg-[#1a1a1a] transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Processing...' : 'Continue to Payment'}
-            </button>
-          ) : null}
+          <button
+            type="submit"
+            disabled={loading}
+            className="button-shimmer w-full bg-[#000000] text-white py-2.5 md:py-3 rounded text-sm md:text-base font-medium hover:bg-[#1a1a1a] transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Processing...' : 'Continue to Payment'}
+          </button>
         </form>
       </div>
     </div>

@@ -1,24 +1,24 @@
 import React from 'react';
-import { SignIn } from '@clerk/clerk-react';
+import { SignUp } from '@clerk/clerk-react';
 import { usePageMeta } from '../hooks/usePageMeta';
 
-function LoginPage() {
+function SignUpPage() {
   usePageMeta({
-    title: 'Login | Cherrytree',
-    description: 'Login to Cherrytree to access your cofounder agreements and manage your equity splits.',
+    title: 'Sign Up | Cherrytree',
+    description: 'Create your Cherrytree account to start building your cofounder agreement.',
     breadcrumbs: [
       { name: 'Home', url: '/' },
-      { name: 'Login' }
+      { name: 'Sign Up' }
     ]
   });
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
-        <SignIn
+        <SignUp
           routing="path"
-          path="/login"
-          signUpUrl="/signup"
+          path="/signup"
+          signInUrl="/login"
           appearance={{
             elements: {
               rootBox: 'mx-auto',
@@ -31,4 +31,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default SignUpPage;

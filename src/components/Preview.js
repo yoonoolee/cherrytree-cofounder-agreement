@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { db, auth, functions } from '../firebase';
+import { db, functions } from '../firebase';
 import { doc, onSnapshot, getDoc, updateDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { signOut } from 'firebase/auth';
 import ApprovalSection from './ApprovalSection';
 import { SECTIONS } from './surveyConstants';
+import { useUser } from '../contexts/UserContext';
+import { useClerk, useAuth } from '@clerk/clerk-react';
 
 function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreateProject }) {
+  const { currentUser } = useUser();
+  const { signOut } = useClerk();
+  const { getToken } = useAuth();
   const [project, setProject] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -100,8 +104,9 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
     setPdfError('');
 
     try {
+      const sessionToken = await getToken();
       const generatePreviewPDF = httpsCallable(functions, 'generatePreviewPDF');
-      const result = await generatePreviewPDF({ projectId });
+      const result = await generatePreviewPDF({ sessionToken, projectId });
 
       if (result.data && result.data.pdfUrl) {
         setPdfUrl(result.data.pdfUrl);
@@ -145,8 +150,12 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
       if (project?.submittedBy) {
         try {
           const userDoc = await getDoc(doc(db, 'users', project.ownerId));
-          if (userDoc.exists() && userDoc.data().name) {
-            setSubmitterName(userDoc.data().name);
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const fullName = [userData.firstName, userData.lastName].filter(Boolean).join(' ');
+            if (fullName) {
+              setSubmitterName(fullName);
+            }
           }
         } catch (error) {
           console.error('Error fetching submitter name:', error);
@@ -177,7 +186,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
       return;
     }
 
-    if (!auth.currentUser) {
+    if (!currentUser) {
       setSubmitError('You must be logged in to submit');
       return;
     }
@@ -190,8 +199,9 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
     setIsSubmitting(true);
 
     try {
+      const sessionToken = await getToken();
       const submitSurvey = httpsCallable(functions, 'submitSurvey');
-      await submitSurvey({ projectId });
+      await submitSurvey({ sessionToken, projectId });
     } catch (error) {
       console.error('Submit error:', error);
       setSubmitError(error.message || 'Failed to submit survey. Please try again.');
@@ -199,7 +209,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
     }
   };
 
-  const isOwner = project?.ownerEmail === auth.currentUser?.email;
+  const isOwner = project?.ownerEmail === currentUser?.primaryEmailAddress?.emailAddress;
   const isReadOnly = project?.submitted;
 
   // Create sections array with the 11th section
@@ -233,7 +243,6 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
         <button
           onClick={() => {
             // TODO: Add help functionality
-            console.log('Help clicked');
           }}
           className="text-gray-600 transition w-6 h-6 flex items-center justify-center"
         >
@@ -247,7 +256,6 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
         <button
           onClick={() => {
             // TODO: Add settings functionality
-            console.log('Settings clicked');
           }}
           className="text-gray-600 transition"
         >
@@ -261,7 +269,6 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
         <button
           onClick={() => {
             // TODO: Add collaborators functionality
-            console.log('Add Collaborators clicked');
           }}
           className="button-shimmer bg-[#820e22] text-white p-1.5 rounded-full hover:bg-[#620a1a] transition"
         >
@@ -445,7 +452,6 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
             <button
               onClick={() => {
                 // TODO: Add upgrade functionality
-                console.log('Upgrade clicked');
               }}
               className="w-full bg-white text-gray-600 px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-100 transition flex items-center justify-start gap-2 mb-3"
             >
@@ -476,7 +482,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                 const targetUrl = isProduction ? 'https://cherrytree.app' : 'http://localhost:3000';
 
                 // Sign out (will trigger React re-renders but flag prevents redirect)
-                signOut(auth).catch(err => console.error('Error signing out:', err));
+                signOut().catch(err => console.error('Error signing out:', err));
 
                 // Then redirect (page will unload and clear sessionStorage)
                 window.location.replace(targetUrl);

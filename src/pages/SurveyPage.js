@@ -1,15 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useOrganizationList } from '@clerk/clerk-react';
 import Survey from '../components/Survey';
 import PaymentModal from '../components/PaymentModal';
-import { db, auth } from '../firebase';
-import { collection, query, where, getDocs, orderBy, doc, updateDoc, limit } from 'firebase/firestore';
+import { db } from '../firebase';
+import { collection, query, where, getDocs, orderBy, doc, updateDoc, limit, getDoc } from 'firebase/firestore';
+import { useUser } from '../contexts/UserContext';
 
 function SurveyPage() {
   const { projectId } = useParams();
   const navigate = useNavigate();
+  const { currentUser } = useUser();
+  const { setActive, organizationList, isLoaded } = useOrganizationList();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [allProjects, setAllProjects] = useState([]);
+
+  // Set active organization based on project's clerkOrgId
+  useEffect(() => {
+    const setActiveOrg = async () => {
+      if (!projectId || !isLoaded) return;
+
+      try {
+        const projectRef = doc(db, 'projects', projectId);
+        const projectDoc = await getDoc(projectRef);
+
+        if (projectDoc.exists()) {
+          const projectData = projectDoc.data();
+          const clerkOrgId = projectData.clerkOrgId;
+
+          // If project has a Clerk org, set it as active
+          if (clerkOrgId && setActive) {
+            const org = organizationList?.find(o => o.organization.id === clerkOrgId);
+            if (org) {
+              await setActive({ organization: clerkOrgId });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error setting active organization:', error);
+      }
+    };
+
+    setActiveOrg();
+  }, [projectId, isLoaded, organizationList, setActive]);
 
   // Update lastOpened timestamp when project is accessed
   useEffect(() => {
@@ -32,8 +65,7 @@ function SurveyPage() {
   // Fetch all projects for the current user (both owned and collaborated)
   useEffect(() => {
     const fetchProjects = async () => {
-      const user = auth.currentUser;
-      if (!user) return;
+      if (!currentUser) return;
 
       try {
         const projectsRef = collection(db, 'projects');
@@ -41,7 +73,7 @@ function SurveyPage() {
         // Query 1: Projects where user is the owner
         const ownedQuery = query(
           projectsRef,
-          where('ownerId', '==', user.uid),
+          where('ownerId', '==', currentUser.id),
           limit(100)
         );
         const ownedSnapshot = await getDocs(ownedQuery);
@@ -49,7 +81,7 @@ function SurveyPage() {
         // Query 2: Projects where user is a collaborator
         const collaboratorQuery = query(
           projectsRef,
-          where('collaboratorIds', 'array-contains', user.uid),
+          where('collaboratorIds', 'array-contains', currentUser.id),
           limit(100)
         );
         const collaboratorSnapshot = await getDocs(collaboratorQuery);
@@ -74,7 +106,6 @@ function SurveyPage() {
           return bTime - aTime;
         });
 
-        console.log('Fetched projects:', projects);
         setAllProjects(projects);
       } catch (error) {
         console.error('Error fetching projects:', error);
@@ -82,7 +113,7 @@ function SurveyPage() {
     };
 
     fetchProjects();
-  }, [projectId]);
+  }, [projectId, currentUser]);
 
   const handlePreview = () => {
     navigate(`/preview/${projectId}`);

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db } from '../firebase';
-import { signOut } from 'firebase/auth';
-import { collection, query, where, getDocs, limit, doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import PaymentModal from './PaymentModal';
+import { useUser } from '../contexts/UserContext';
+import { useClerk } from '@clerk/clerk-react';
 
 function SurveyNavigation({
   displayTitle, // What to show in the header (user name or project name)
@@ -20,10 +21,11 @@ function SurveyNavigation({
   setIsMobileNavOpen = () => {} // Mobile nav setState from parent
 }) {
   const navigate = useNavigate();
+  const { currentUser } = useUser();
+  const { signOut } = useClerk();
   const [fetchedProjects, setFetchedProjects] = useState([]);
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [userPlan, setUserPlan] = useState(null);
   const dropdownRef = useRef(null);
 
   // Use provided projects or fetch them
@@ -34,7 +36,7 @@ function SurveyNavigation({
     if (providedProjects !== null) return; // Skip if projects are provided
 
     const fetchProjects = async () => {
-      const user = auth.currentUser;
+      const user = currentUser;
       if (!user) return;
 
       try {
@@ -43,7 +45,7 @@ function SurveyNavigation({
         // Query 1: Projects where user is the owner
         const ownedQuery = query(
           projectsRef,
-          where('ownerId', '==', user.uid),
+          where('ownerId', '==', user.id),
           limit(100)
         );
         const ownedSnapshot = await getDocs(ownedQuery);
@@ -51,7 +53,7 @@ function SurveyNavigation({
         // Query 2: Projects where user is a collaborator
         const collaboratorQuery = query(
           projectsRef,
-          where('collaboratorIds', 'array-contains', user.uid),
+          where('collaboratorIds', 'array-contains', user.id),
           limit(100)
         );
         const collaboratorSnapshot = await getDocs(collaboratorQuery);
@@ -84,26 +86,6 @@ function SurveyNavigation({
 
     fetchProjects();
   }, [projectId, providedProjects]);
-
-  // Fetch user's current plan
-  useEffect(() => {
-    const fetchUserPlan = async () => {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      try {
-        const userRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          setUserPlan(userSnap.data().plan || null);
-        }
-      } catch (error) {
-        console.error('Error fetching user plan:', error);
-      }
-    };
-
-    fetchUserPlan();
-  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -153,7 +135,7 @@ function SurveyNavigation({
     const targetUrl = isProduction ? 'https://cherrytree.app' : 'http://localhost:3000';
 
     // Sign out (will trigger React re-renders but flag prevents redirect)
-    signOut(auth).catch(err => console.error('Error signing out:', err));
+    signOut().catch(err => console.error('Error signing out:', err));
 
     // Then redirect (page will unload and clear sessionStorage)
     window.location.replace(targetUrl);
@@ -272,8 +254,6 @@ function SurveyNavigation({
         <PaymentModal
           onClose={() => setShowPaymentModal(false)}
           onSuccess={handlePaymentSuccess}
-          currentPlan={userPlan}
-          projectName={displayTitle}
         />
       )}
     </>

@@ -1,181 +1,191 @@
 import React, { useState } from 'react';
-import { db, auth, functions } from '../firebase';
-import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions'; 
+import { useOrganization } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/clerk-react';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../firebase';
 
 function CollaboratorManager({ project }) {
+  const { organization, memberships, invitations } = useOrganization({
+    memberships: {
+      infinite: true,
+      keepPreviousData: true
+    },
+    invitations: {
+      infinite: true,
+      keepPreviousData: true
+    }
+  });
+  const { getToken } = useAuth();
+
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [inviting, setInviting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const isOwner = project.ownerEmail === auth.currentUser?.email;
-
-  const handleAddCollaborator = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    // Validation
-    if (!email.trim()) {
-      setError('Please enter an email address');
-      return;
-    }
-
-    if (!email.includes('@')) {
-      setError('Please enter a valid email address');
-      return;
-    }
-
-    if (email === project.ownerEmail) {
-      setError("You're already the owner of this project");
-      return;
-    }
-
-    if (project.collaborators?.includes(email)) {
-      setError('This person is already a collaborator');
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const projectRef = doc(db, 'projects', project.id);
-      
-      // Add email to collaborators array and initialize approval
-      await updateDoc(projectRef, {
-        collaborators: arrayUnion(email),
-        [`approvals.${email}`]: false
-      });
-
-      // Send invitation email
-      try {
-        const sendInvite = httpsCallable(functions, 'sendCollaboratorInvite');
-        await sendInvite({
-          projectId: project.id,
-          collaboratorEmail: email,
-          projectName: project.name
-        });
-        setSuccess(`✓ Invitation email sent to ${email}`);
-      } catch (emailError) {
-        console.error('Email error:', emailError);
-        setSuccess(`✓ ${email} added (email may not have been delivered)`);
-      }
-
-      setEmail('');
-      
-    } catch (err) {
-      console.error('Error adding collaborator:', err);
-      setError('Failed to add collaborator. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRemoveCollaborator = async (collaboratorEmail) => {
-    if (!window.confirm(`Remove ${collaboratorEmail} from this project?`)) {
-      return;
-    }
-
-    try {
-      const projectRef = doc(db, 'projects', project.id);
-      
-      // Remove from collaborators array
-      await updateDoc(projectRef, {
-        collaborators: arrayRemove(collaboratorEmail)
-      });
-
-      // Remove their approval status
-      await updateDoc(projectRef, {
-        [`approvals.${collaboratorEmail}`]: null
-      });
-
-      setSuccess(`✓ Removed ${collaboratorEmail}`);
-    } catch (err) {
-      console.error('Error removing collaborator:', err);
-      setError('Failed to remove collaborator. Please try again.');
-    }
-  };
-
-  if (!isOwner) {
-    // Show read-only list for non-owners
+  // If project doesn't have a Clerk organization, show message
+  if (!project.clerkOrgId) {
     return (
-      <div>
-        <div className="space-y-3">
-          {project.collaborators?.map((collab, index) => (
-            <div key={index} className="py-2">
-              <p className="text-gray-900 text-sm">{collab}</p>
-              {collab === project.ownerEmail && (
-                <p className="text-xs text-gray-500">Owner</p>
-              )}
-            </div>
-          ))}
-        </div>
+      <div className="text-center py-8">
+        <p className="text-sm text-gray-600 mb-2">
+          This is a legacy project. Please create a new project to use the member management features.
+        </p>
       </div>
     );
   }
 
+  // If the organization context doesn't match this project, show message
+  if (organization?.id !== project.clerkOrgId) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-sm text-gray-600 mb-2">
+          Please switch to this project's organization to manage members.
+        </p>
+      </div>
+    );
+  }
+
+  const handleInvite = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setInviting(true);
+
+    try {
+      // Invite member to organization
+      // Clerk automatically accepts invitation during auth flow
+      // Redirects to dashboard via signInFallbackRedirectUrl/signUpFallbackRedirectUrl
+      await organization.inviteMember({
+        emailAddress: email,
+        role: 'org:member'
+      });
+      setSuccess('Invitation sent');
+      setEmail('');
+      // Refresh the invitations list
+      await invitations?.revalidate?.();
+      // Clear success message after 10 seconds
+      setTimeout(() => setSuccess(''), 10000);
+    } catch (err) {
+      console.error('Invite error:', err);
+      setError(err.errors?.[0]?.message || 'Failed to send invitation');
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const handleRemoveMember = async (membershipId) => {
+    try {
+      // Get Clerk session token
+      const sessionToken = await getToken({ template: 'firebase' });
+
+      // Call Firebase Function to remove member via backend API
+      const removeOrganizationMember = httpsCallable(functions, 'removeOrganizationMember');
+      await removeOrganizationMember({
+        sessionToken,
+        membershipId,
+        organizationId: organization.id
+      });
+    } catch (err) {
+      console.error('Error removing member:', err);
+    } finally {
+      // Always refresh the list to show current state
+      await memberships?.revalidate?.();
+    }
+  };
+
+  const handleRevokeInvitation = async (invitationId) => {
+    try {
+      const invitation = invitations?.data?.find(inv => inv.id === invitationId);
+      if (invitation) {
+        await invitation.revoke();
+        // Refresh the invitations list
+        await invitations?.revalidate?.();
+      }
+    } catch (err) {
+      // Silently handle errors - the UI will still update via revalidate
+      console.error('Error revoking invitation:', err);
+    }
+  };
+
   return (
-    <div>
-      {/* Note about cofounders */}
-      <p className="text-sm text-gray-700 font-medium mb-4">
+    <div className="w-full">
+      <p className="text-sm text-gray-700 font-medium mb-6">
         Every cofounder needs to be added as a collaborator.
       </p>
 
-      {/* Add Collaborator Form */}
-      <form onSubmit={handleAddCollaborator} className="mb-6">
-        <div className="flex gap-2">
+      {/* Invite Form */}
+      <form onSubmit={handleInvite} className="mb-8">
+        <div className="flex gap-3">
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="email@example.com"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-sm"
+            placeholder="Enter email address"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+            required
           />
           <button
             type="submit"
-            disabled={loading}
-            className="button-shimmer bg-black text-white px-7 py-2 rounded text-sm font-medium hover:bg-[#1a1a1a] transition disabled:opacity-50"
+            disabled={inviting}
+            className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? 'Adding...' : 'Add'}
+            {inviting ? 'Sending...' : 'Invite'}
           </button>
         </div>
+        {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+        {success && <p className="text-sm text-green-600 mt-2">{success}</p>}
       </form>
 
-      {/* Success/Error Messages */}
-      {error && (
-        <p className="text-xs text-red-950 mb-4">{error}</p>
-      )}
-      {success && (
-        <p className="text-xs text-gray-600 mb-4">{success}</p>
-      )}
+      {/* Members List */}
+      {(memberships?.data?.length > 0 || invitations?.data?.length > 0) && (
+        <div>
+          <h4 className="text-sm font-semibold text-gray-900 mb-3">Members</h4>
+          <div className="space-y-2">
+            {/* Active Members */}
+            {memberships?.data?.map((membership) => (
+              <div key={membership.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">
+                    {membership.publicUserData.identifier}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    <span className="capitalize">{membership.role.replace('org:', '').replace('_', ' ').replace('basic ', '')}</span>
+                    <span className="mx-1">·</span>
+                    <span className="text-green-700 font-medium">Active</span>
+                  </p>
+                </div>
+                {membership.role !== 'org:admin' && (
+                  <button
+                    onClick={() => handleRemoveMember(membership.id)}
+                    className="text-sm text-red-600 hover:text-red-800"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))}
 
-      {/* Collaborators List */}
-      <div className="space-y-1">
-        {project.collaborators?.map((collab, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 transition"
-          >
-            <p className="text-gray-900 text-sm">{collab}</p>
-
-            {collab === project.ownerEmail ? (
-              <p className="text-xs text-gray-500">Owner</p>
-            ) : (
-              <button
-                onClick={() => handleRemoveCollaborator(collab)}
-                className="text-red-500 hover:text-red-700 text-xs font-medium"
-              >
-                Remove
-              </button>
-            )}
+            {/* Pending Invitations */}
+            {invitations?.data?.map((invitation) => (
+              <div key={invitation.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">{invitation.emailAddress}</p>
+                  <p className="text-xs text-gray-500">
+                    <span className="capitalize">{invitation.role.replace('org:', '').replace('_', ' ').replace('basic ', '')}</span>
+                    <span className="mx-1">·</span>
+                    <span className="text-yellow-700 font-medium">Pending</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleRevokeInvitation(invitation.id)}
+                  className="text-sm text-red-600 hover:text-red-800"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-
-      <p className="text-xs text-gray-500 mt-4">
-        Collaborators can edit the survey, but only the owner can submit it.
-      </p>
+        </div>
+      )}
     </div>
   );
 }

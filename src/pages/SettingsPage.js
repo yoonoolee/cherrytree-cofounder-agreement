@@ -1,24 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db } from '../firebase';
-import {
-  updateProfile,
-  updateEmail,
-  updatePassword,
-  EmailAuthProvider,
-  reauthenticateWithCredential
-} from 'firebase/auth';
+import { useUser as useClerkUser, useAuth } from '@clerk/clerk-react';
+import { db, functions } from '../firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 
 function SettingsPage() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user, isLoaded } = useClerkUser();
+  const { getToken } = useAuth();
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [originalEmail, setOriginalEmail] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -26,115 +22,46 @@ function SettingsPage() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmChecked, setDeleteConfirmChecked] = useState(false);
-  const [memberSince, setMemberSince] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        setEmail(currentUser.email || '');
-        setOriginalEmail(currentUser.email || '');
+    if (!isLoaded) return;
 
-        // Fetch name and member since from Firestore
-        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          if (userData.name) {
-            setDisplayName(userData.name);
-          } else {
-            setDisplayName(currentUser.displayName || '');
+    if (user) {
+      // Get email from Clerk user
+      const userEmail = user.primaryEmailAddress?.emailAddress || '';
+      setEmail(userEmail);
+      setOriginalEmail(userEmail);
+
+      // Get display name from Clerk
+      const clerkName = user.fullName || user.firstName || '';
+      setDisplayName(clerkName);
+
+      // Fetch member since from Firestore
+      const fetchUserData = async () => {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.id));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            // Use Firestore name if available, otherwise use Clerk name
+            const fullName = [userData.firstName, userData.lastName].filter(Boolean).join(' ');
+            if (fullName) {
+              setDisplayName(fullName);
+            }
           }
-          if (userData.createdAt) {
-            setMemberSince(userData.createdAt.toDate());
-          }
-        } else {
-          setDisplayName(currentUser.displayName || '');
+        } catch (error) {
+          console.error('Error fetching user data:', error);
         }
-      } else {
-        navigate('/login');
-      }
-    });
-    return () => unsubscribe();
-  }, [navigate]);
+      };
+
+      fetchUserData();
+    } else {
+      navigate('/login');
+    }
+  }, [user, isLoaded, navigate]);
 
   const showMessage = (type, text) => {
     setMessage({ type, text });
     setTimeout(() => setMessage({ type: '', text: '' }), 5000);
-  };
-
-  const handleUpdateProfile = async (e) => {
-    e.preventDefault();
-    if (!displayName.trim()) {
-      showMessage('error', 'Please enter a name');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Update Firebase Auth profile
-      await updateProfile(user, { displayName: displayName.trim() });
-
-      // Update Firestore user document
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, {
-        name: displayName.trim(),
-        updatedAt: new Date()
-      });
-
-      showMessage('success', 'Profile updated successfully');
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      showMessage('error', error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpdateEmail = async (e) => {
-    e.preventDefault();
-    if (!email.trim()) {
-      showMessage('error', 'Please enter an email');
-      return;
-    }
-    if (!currentPassword) {
-      showMessage('error', 'Please enter your current password to update email');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Re-authenticate user before sensitive operation
-      const credential = EmailAuthProvider.credential(user.email, currentPassword);
-      await reauthenticateWithCredential(user, credential);
-
-      // Update email
-      await updateEmail(user, email.trim());
-
-      // Update Firestore user document
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, {
-        email: email.trim(),
-        updatedAt: new Date()
-      });
-
-      setCurrentPassword('');
-      showMessage('success', 'Email updated successfully');
-    } catch (error) {
-      console.error('Error updating email:', error);
-      if (error.code === 'auth/wrong-password') {
-        showMessage('error', 'Incorrect password');
-      } else if (error.code === 'auth/email-already-in-use') {
-        showMessage('error', 'This email is already in use');
-      } else if (error.code === 'auth/invalid-email') {
-        showMessage('error', 'Invalid email address');
-      } else if (error.code === 'auth/requires-recent-login') {
-        showMessage('error', 'Please log out and log back in before changing your email');
-      } else {
-        showMessage('error', error.message);
-      }
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleSaveProfile = async (e) => {
@@ -146,53 +73,48 @@ function SettingsPage() {
 
     const emailChanged = email.trim() !== originalEmail;
 
-    if (emailChanged && !currentPassword) {
-      showMessage('error', 'Please enter your current password to update email');
-      return;
-    }
-
     setLoading(true);
     try {
-      // Update name in Firebase Auth and Firestore
-      await updateProfile(user, { displayName: displayName.trim() });
-      const userRef = doc(db, 'users', user.uid);
+      // Update name in Clerk
+      await user.update({
+        firstName: displayName.trim().split(' ')[0] || displayName.trim(),
+        lastName: displayName.trim().split(' ').slice(1).join(' ') || ''
+      });
 
+      // Update name in Firestore
+      const userRef = doc(db, 'users', user.id);
       const updateData = {
         name: displayName.trim(),
         updatedAt: new Date()
       };
 
-      // If email changed, update it too
+      // If email changed, update it in Clerk
       if (emailChanged) {
-        // Re-authenticate user before sensitive operation
-        const credential = EmailAuthProvider.credential(originalEmail, currentPassword);
-        await reauthenticateWithCredential(user, credential);
+        // Create new email address in Clerk
+        await user.createEmailAddress({ email: email.trim() });
+        // Set it as primary
+        const newEmailAddress = user.emailAddresses.find(e => e.emailAddress === email.trim());
+        if (newEmailAddress) {
+          await user.update({
+            primaryEmailAddressId: newEmailAddress.id
+          });
+        }
 
-        // Update email in Firebase Auth
-        await updateEmail(user, email.trim());
-
-        // Add email to update data
+        // Update email in Firestore
         updateData.email = email.trim();
-
-        // Update original email state
         setOriginalEmail(email.trim());
       }
 
       await updateDoc(userRef, updateData);
       setCurrentPassword('');
       showMessage('success', emailChanged ? 'Profile and email updated successfully' : 'Profile updated successfully');
+      setIsEditing(false);
     } catch (error) {
       console.error('Error updating profile:', error);
-      if (error.code === 'auth/wrong-password') {
-        showMessage('error', 'Incorrect password');
-      } else if (error.code === 'auth/email-already-in-use') {
-        showMessage('error', 'This email is already in use');
-      } else if (error.code === 'auth/invalid-email') {
-        showMessage('error', 'Invalid email address');
-      } else if (error.code === 'auth/requires-recent-login') {
-        showMessage('error', 'Please log out and log back in before changing your email');
+      if (error.errors && error.errors.length > 0) {
+        showMessage('error', error.errors[0].message);
       } else {
-        showMessage('error', error.message);
+        showMessage('error', error.message || 'Failed to update profile');
       }
     } finally {
       setLoading(false);
@@ -209,8 +131,8 @@ function SettingsPage() {
       showMessage('error', 'Please enter a new password');
       return;
     }
-    if (newPassword.length < 6) {
-      showMessage('error', 'Password must be at least 6 characters');
+    if (newPassword.length < 8) {
+      showMessage('error', 'Password must be at least 8 characters');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -220,34 +142,65 @@ function SettingsPage() {
 
     setLoading(true);
     try {
-      // Re-authenticate user before sensitive operation
-      const credential = EmailAuthProvider.credential(user.email, currentPassword);
-      await reauthenticateWithCredential(user, credential);
-
-      // Update password
-      await updatePassword(user, newPassword);
+      // Update password in Clerk
+      await user.updatePassword({
+        currentPassword: currentPassword,
+        newPassword: newPassword
+      });
 
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       showMessage('success', 'Password updated successfully');
+      setIsChangingPassword(false);
     } catch (error) {
       console.error('Error updating password:', error);
-      if (error.code === 'auth/wrong-password') {
-        showMessage('error', 'Incorrect current password');
-      } else if (error.code === 'auth/weak-password') {
-        showMessage('error', 'Password is too weak');
-      } else if (error.code === 'auth/requires-recent-login') {
-        showMessage('error', 'Please log out and log back in before changing your password');
+      if (error.errors && error.errors.length > 0) {
+        const errorMessage = error.errors[0].message;
+        if (errorMessage.includes('password')) {
+          showMessage('error', 'Incorrect current password');
+        } else {
+          showMessage('error', errorMessage);
+        }
       } else {
-        showMessage('error', error.message);
+        showMessage('error', error.message || 'Failed to update password');
       }
     } finally {
       setLoading(false);
     }
   };
 
-  if (!user) {
+  const handleDeleteAccount = async () => {
+    if (!deleteConfirmChecked) return;
+
+    setLoading(true);
+    try {
+      // Get Clerk session token
+      const sessionToken = await getToken();
+
+      if (!sessionToken) {
+        throw new Error('Unable to verify authentication. Please try logging in again.');
+      }
+
+      // Call Cloud Function to handle account deletion with pseudonymization
+      const deleteAccount = httpsCallable(functions, 'deleteAccount');
+      const result = await deleteAccount({ sessionToken });
+
+      console.log('Account deleted:', result.data);
+
+      // Redirect to homepage
+      window.location.href = 'https://cherrytree.app';
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      showMessage('error', 'Failed to delete account. Please contact support.');
+      setShowDeleteConfirm(false);
+      setDeleteConfirmChecked(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isLoaded || !user) {
     return null;
   }
 
@@ -282,9 +235,9 @@ function SettingsPage() {
 
           {/* Profile Header */}
           <div className="flex items-center gap-4 pb-6">
-            {user?.photoURL ? (
+            {user?.imageUrl ? (
               <img
-                src={user.photoURL}
+                src={user.imageUrl}
                 alt="Profile"
                 className="w-16 h-16 rounded-full object-cover"
               />
@@ -319,10 +272,7 @@ function SettingsPage() {
             </div>
 
             {isEditing ? (
-              <form onSubmit={async (e) => {
-                await handleSaveProfile(e);
-                if (!loading) setIsEditing(false);
-              }}>
+              <form onSubmit={handleSaveProfile}>
                 {/* Name Field - Edit Mode */}
                 <div className="flex items-center justify-between py-4 border-b border-gray-100">
                   <div>
@@ -342,7 +292,7 @@ function SettingsPage() {
                 </div>
 
                 {/* Email Field - Edit Mode */}
-                <div className={`flex items-center justify-between py-4 ${email !== originalEmail ? '' : 'border-b border-gray-100'}`}>
+                <div className="flex items-center justify-between py-4">
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-900">
                       Email address
@@ -359,26 +309,6 @@ function SettingsPage() {
                   />
                 </div>
 
-                {/* Password Field - Only shown when email is changed */}
-                {email !== originalEmail && (
-                  <div className="flex items-center justify-between py-4 border-b border-gray-100 bg-gray-50 -mx-6 px-6">
-                    <div>
-                      <label htmlFor="currentPasswordEmail" className="block text-sm font-medium text-gray-900">
-                        Current password
-                      </label>
-                      <p className="text-sm text-gray-500">Required to change your email address.</p>
-                    </div>
-                    <input
-                      type="password"
-                      id="currentPasswordEmail"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      className="w-64 px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-black focus:border-transparent transition text-sm"
-                      placeholder="Enter current password"
-                    />
-                  </div>
-                )}
-
                 {/* Save/Cancel Buttons */}
                 <div className="flex justify-end gap-3 pt-4">
                   <button
@@ -386,7 +316,7 @@ function SettingsPage() {
                     onClick={() => {
                       setIsEditing(false);
                       setEmail(originalEmail);
-                      setCurrentPassword('');
+                      setDisplayName(user.fullName || user.firstName || '');
                     }}
                     className="px-4 py-2 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
                   >
@@ -451,10 +381,7 @@ function SettingsPage() {
             </div>
 
             {isChangingPassword && (
-              <form onSubmit={(e) => {
-                handleUpdatePassword(e);
-                setIsChangingPassword(false);
-              }} className="mt-6 pt-6 border-t border-gray-100 space-y-4">
+              <form onSubmit={handleUpdatePassword} className="mt-6 pt-6 border-t border-gray-100 space-y-4">
                 <div>
                   <label htmlFor="currentPasswordPwd" className="block text-sm font-medium text-gray-700 mb-1">
                     Current Password
@@ -479,7 +406,7 @@ function SettingsPage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-black focus:border-transparent transition text-sm"
-                    placeholder="Enter new password (min 6 characters)"
+                    placeholder="Enter new password (min 8 characters)"
                   />
                 </div>
 
@@ -500,7 +427,12 @@ function SettingsPage() {
                 <div className="flex justify-end gap-3 pt-2">
                   <button
                     type="button"
-                    onClick={() => setIsChangingPassword(false)}
+                    onClick={() => {
+                      setIsChangingPassword(false);
+                      setCurrentPassword('');
+                      setNewPassword('');
+                      setConfirmPassword('');
+                    }}
                     className="px-4 py-2 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
                   >
                     Cancel
@@ -577,16 +509,11 @@ function SettingsPage() {
               </button>
               <button
                 type="button"
-                disabled={!deleteConfirmChecked}
-                onClick={() => {
-                  // TODO: Implement account deletion
-                  showMessage('error', 'Account deletion is not yet implemented. Please contact support.');
-                  setShowDeleteConfirm(false);
-                  setDeleteConfirmChecked(false);
-                }}
+                disabled={!deleteConfirmChecked || loading}
+                onClick={handleDeleteAccount}
                 className="px-4 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Delete my account
+                {loading ? 'Deleting...' : 'Delete my account'}
               </button>
             </div>
           </div>

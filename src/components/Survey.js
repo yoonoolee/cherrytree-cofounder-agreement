@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLoadScript } from '@react-google-maps/api';
-import { db, auth } from '../firebase';
+import { db } from '../firebase';
 import { doc, updateDoc, onSnapshot, serverTimestamp, arrayUnion } from 'firebase/firestore';
+import { useUser } from '../contexts/UserContext';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase';
+import { useAuth, useOrganizationList } from '@clerk/clerk-react';
 import { SECTIONS, INDUSTRIES, MAJOR_DECISIONS, TERMINATION_CONSEQUENCES, US_STATES } from './surveyConstants';
 import Section1Formation from './Section1Formation';
 import Section2Cofounders from './Section2Cofounders';
@@ -23,6 +25,13 @@ const libraries = ['places'];
 
 function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCreateProject }) {
   const navigate = useNavigate();
+  const { currentUser } = useUser();
+  const { getToken, orgId } = useAuth();
+  const { setActive, userMemberships, isLoaded: orgsLoaded } = useOrganizationList({
+    userMemberships: {
+      infinite: true // Enable fetching user memberships
+    }
+  });
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -130,24 +139,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   const [section3InResultsView, setSection3InResultsView] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
   const [welcomeStep, setWelcomeStep] = useState(1);
-  const [welcomeCollabEmail, setWelcomeCollabEmail] = useState('');
-  const [welcomeCollabLoading, setWelcomeCollabLoading] = useState(false);
-  const [welcomeCollabError, setWelcomeCollabError] = useState('');
-  const [welcomeCollabSuccess, setWelcomeCollabSuccess] = useState('');
   const [welcomeWiggle, setWelcomeWiggle] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-
-  const handleWelcomeRemoveCollaborator = async (email) => {
-    try {
-      const projectRef = doc(db, 'projects', projectId);
-      const updatedCollaborators = project?.collaborators?.filter(c => c !== email) || [];
-      await updateDoc(projectRef, {
-        collaborators: updatedCollaborators
-      });
-    } catch (err) {
-      console.error('Error removing collaborator:', err);
-    }
-  };
 
   // Helper function to calculate fullMailingAddress
   const calculateFullMailingAddress = (addressData) => {
@@ -180,79 +173,81 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
     }
   }, [currentSection]);
 
-  // Show welcome popup on first visit
+  // Show welcome popup on first visit per user per project
   useEffect(() => {
-    const hasSeenWelcome = localStorage.getItem(`welcome_seen_${projectId}`);
-    if (!hasSeenWelcome) {
-      setShowWelcomePopup(true);
-    }
-  }, [projectId]);
+    const initializeOnboarding = async () => {
+      if (project && currentUser) {
+        const hasCompletedOnboarding = project.onboardingCompleted?.[currentUser.id];
 
-  const dismissWelcomePopup = () => {
+        // If user is not in onboardingCompleted map at all, add them with false
+        if (hasCompletedOnboarding === undefined) {
+          try {
+            const projectRef = doc(db, 'projects', projectId);
+            await updateDoc(projectRef, {
+              [`onboardingCompleted.${currentUser.id}`]: false
+            });
+          } catch (error) {
+            console.error('Error initializing onboarding status:', error);
+          }
+        }
+
+        // Show popup if they haven't completed onboarding
+        if (hasCompletedOnboarding === false || hasCompletedOnboarding === undefined) {
+          setShowWelcomePopup(true);
+        }
+      }
+    };
+
+    initializeOnboarding();
+  }, [project, currentUser, projectId]);
+
+  const dismissWelcomePopup = async () => {
     setShowWelcomePopup(false);
-    localStorage.setItem(`welcome_seen_${projectId}`, 'true');
+
+    // Mark onboarding as completed for this user on this project
+    if (currentUser) {
+      try {
+        const projectRef = doc(db, 'projects', projectId);
+        await updateDoc(projectRef, {
+          [`onboardingCompleted.${currentUser.id}`]: true
+        });
+      } catch (error) {
+        console.error('Error updating onboarding status:', error);
+      }
+    }
   };
 
-  const handleWelcomeAddCollaborator = async (e) => {
-    e.preventDefault();
-    setWelcomeCollabError('');
-    setWelcomeCollabSuccess('');
 
-    const email = welcomeCollabEmail.trim().toLowerCase();
 
-    if (!email) {
-      setWelcomeCollabError('Please enter an email address');
-      return;
-    }
-
-    if (!email.includes('@')) {
-      setWelcomeCollabError('Please enter a valid email address');
-      return;
-    }
-
-    if (email === project?.ownerEmail) {
-      setWelcomeCollabError("You're already the owner of this project");
-      return;
-    }
-
-    if (project?.collaborators?.includes(email)) {
-      setWelcomeCollabError('This person is already a collaborator');
-      return;
-    }
-
-    setWelcomeCollabLoading(true);
-
-    try {
-      const projectRef = doc(db, 'projects', projectId);
-
-      await updateDoc(projectRef, {
-        collaborators: arrayUnion(email),
-        [`approvals.${email}`]: false
-      });
-
-      // Send invitation email
-      try {
-        const sendInvite = httpsCallable(functions, 'sendCollaboratorInvite');
-        await sendInvite({
-          projectId: projectId,
-          collaboratorEmail: email,
-          projectName: project?.name
-        });
-        setWelcomeCollabSuccess(`✓ Invitation sent to ${email}`);
-      } catch (emailError) {
-        setWelcomeCollabSuccess(`✓ ${email} added`);
+  // Automatically switch to the project's organization
+  useEffect(() => {
+    const switchToProjectOrg = async () => {
+      // Wait for Clerk to load organization data
+      if (!orgsLoaded || !project?.clerkOrgId || !setActive || !userMemberships) {
+        return;
       }
 
-      setWelcomeCollabEmail('');
+      // Check if we're already in the right org
+      if (orgId === project.clerkOrgId) {
+        return;
+      }
 
-    } catch (err) {
-      console.error('Error adding collaborator:', err);
-      setWelcomeCollabError('Failed to add collaborator. Please try again.');
-    } finally {
-      setWelcomeCollabLoading(false);
-    }
-  };
+      // Find the membership for this project's org
+      const membership = userMemberships.data?.find(
+        m => m.organization.id === project.clerkOrgId
+      );
 
+      if (membership) {
+        try {
+          await setActive({ organization: project.clerkOrgId });
+        } catch (error) {
+          console.error('Error switching organization:', error);
+        }
+      }
+    };
+
+    switchToProjectOrg();
+  }, [project?.clerkOrgId, orgId, setActive, userMemberships, orgsLoaded]);
 
   // Listen to project changes
   useEffect(() => {
@@ -444,7 +439,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       const updateData = {
         surveyData: cleanedData,
         lastUpdated: serverTimestamp(),
-        lastEditedBy: auth.currentUser.email
+        lastEditedBy: currentUser?.primaryEmailAddress?.emailAddress
       };
 
       // Sync project name with company name
@@ -1071,72 +1066,19 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                 ))}
               </div>
 
-              {/* Step 1: Add Collaborators */}
+              {/* Step 1: Video Tutorial */}
               {welcomeStep === 1 && (
                 <div className="flex flex-col h-full">
                   <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
-                    Invite Your Cofounders
+                    Welcome to Your Project
                   </h2>
                   <p className="text-sm text-gray-600 mb-4">
-                    Add your cofounders as collaborators. They must be added to be included in the agreement.
+                    Watch this quick video to get started.
                   </p>
 
-                  {/* Add Collaborator Area */}
-                  <div className="bg-gray-50 rounded-lg pt-4 md:pt-5 px-3 md:px-5 pb-4 mb-3 md:mb-4 overflow-auto" style={{ height: '240px' }}>
-                    {/* Add Collaborator Form */}
-                    <form onSubmit={handleWelcomeAddCollaborator} className="mb-3">
-                      <div className="flex gap-2">
-                        <input
-                          type="email"
-                          value={welcomeCollabEmail}
-                          onChange={(e) => setWelcomeCollabEmail(e.target.value)}
-                          placeholder="cofounder@example.com"
-                          className="flex-1 px-3 py-2 border border-gray-200 bg-white rounded focus:ring-2 focus:ring-black focus:border-transparent text-sm min-w-0"
-                        />
-                        <button
-                          type="submit"
-                          disabled={welcomeCollabLoading}
-                          className="bg-black text-white px-3 md:px-4 py-2 rounded text-sm font-medium hover:bg-[#1a1a1a] transition disabled:opacity-50 flex-shrink-0"
-                        >
-                          {welcomeCollabLoading ? 'Adding...' : 'Add'}
-                        </button>
-                      </div>
-                    </form>
-
-                    {/* Error/Success Messages */}
-                    <div className="h-5 mb-3">
-                      {welcomeCollabError && (
-                        <p className="text-xs text-red-600">{welcomeCollabError}</p>
-                      )}
-                      {welcomeCollabSuccess && (
-                        <p className="text-xs text-gray-500">{welcomeCollabSuccess}</p>
-                      )}
-                    </div>
-
-                    {/* Collaborators List */}
-                    <div>
-                      <p className="text-xs text-gray-500 mb-2">Collaborators:</p>
-                      <div className="space-y-1">
-                        {/* Show owner first */}
-                        <div className="text-sm text-gray-700 py-0.5">
-                          {project?.ownerEmail} <span className="text-gray-400">(you)</span>
-                        </div>
-                        {/* Show other collaborators (excluding owner) */}
-                        {project?.collaborators?.filter(collab => collab !== project?.ownerEmail).map((collab, index) => (
-                          <div key={index} className="text-sm text-gray-700 py-0.5 flex items-center justify-between">
-                            <span>{collab}</span>
-                            <button
-                              onClick={() => handleWelcomeRemoveCollaborator(collab)}
-                              className="text-gray-400 hover:text-gray-600 ml-2"
-                            >
-                              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                  {/* Video Container - Replace with your video embed */}
+                  <div className="bg-gray-50 rounded-lg flex items-center justify-center overflow-auto mb-4" style={{ height: '240px' }}>
+                    <p className="text-sm text-gray-500">Video placeholder - add your video embed here</p>
                   </div>
 
                   <div className="flex justify-between items-center gap-3 mt-auto pt-3">
@@ -1144,7 +1086,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                       onClick={() => setWelcomeStep(2)}
                       className="text-xs md:text-sm text-gray-500 hover:text-gray-700"
                     >
-                      Skip for now
+                      Skip
                     </button>
                     <button
                       onClick={() => setWelcomeStep(2)}
@@ -1602,9 +1544,9 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           />
 
           {/* Modal */}
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-xl rounded-lg shadow-2xl border border-gray-200/50 w-full max-w-lg" style={{ zIndex: 10001 }}>
-            <div className="p-8">
-              <div className="flex justify-between items-center mb-8">
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl border border-gray-200 w-[90vw] max-w-lg max-h-[90vh] overflow-hidden flex flex-col" style={{ zIndex: 10001 }}>
+            <div className="p-6 border-b border-gray-200 flex-shrink-0">
+              <div className="flex justify-between items-center">
                 <h3 className="text-xl font-semibold text-gray-900">Collaborators</h3>
                 <button
                   onClick={() => setShowCollaborators(false)}
@@ -1615,6 +1557,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                   </svg>
                 </button>
               </div>
+            </div>
+            <div className="overflow-y-auto flex-1 p-6">
               <CollaboratorManager project={{ ...project, id: projectId }} />
             </div>
           </div>

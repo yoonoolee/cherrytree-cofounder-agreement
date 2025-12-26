@@ -1380,7 +1380,7 @@ function LandingPage() {
       {/* Footer */}
       <Footer />
 
-      <style jsx>{`
+      <style>{`
         /* Disable fadeInDown/fadeInUp animations on landing page only */
         .scroll-section .text-3xl,
         .scroll-section .leading-relaxed,

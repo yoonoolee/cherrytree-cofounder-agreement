@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
-import { auth, db } from '../firebase';
-import { signOut } from 'firebase/auth';
-import { collection, query, where, getDocs, limit, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { useOrganizationList, UserButton } from '@clerk/clerk-react';
+import { db } from '../firebase';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import PaymentModal from '../components/PaymentModal';
 
 function DashboardPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { currentUser, loading: authLoading } = useUser();
+  const { userMemberships, isLoaded: orgsLoaded } = useOrganizationList({
+    userMemberships: {
+      infinite: true
+    }
+  });
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [displayedTagline, setDisplayedTagline] = useState('');
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const fullTagline = 'Great companies start with great company.';
+
+  // Helper variables for Clerk user data
+  const userId = currentUser?.id;
+  const userEmail = currentUser?.primaryEmailAddress?.emailAddress;
 
   useEffect(() => {
     let currentIndex = 0;
@@ -32,65 +41,56 @@ function DashboardPage() {
 
   useEffect(() => {
     const fetchProjects = async () => {
-      if (!currentUser) return;
+      console.log('📋 [Dashboard] fetchProjects - currentUser:', currentUser?.id, 'orgsLoaded:', orgsLoaded);
+      if (!currentUser || !orgsLoaded) return;
+
+      // On first load, wait 3 seconds for webhooks to complete
+      if (!initialLoadComplete) {
+        console.log('📋 [Dashboard] First load - waiting 3 seconds for webhooks...');
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        setInitialLoadComplete(true);
+      }
 
       try {
-        // First check if user has completed onboarding
-        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          // Redirect if hasCompletedOnboarding is explicitly false
-          if (userData.hasCompletedOnboarding === false) {
-            navigate('/onboarding', { replace: true });
-            return;
-          }
-        } else {
-          // User doc doesn't exist yet (race condition) - redirect to onboarding
-          navigate('/onboarding', { replace: true });
-          return;
-        }
-
-        const projectsRef = collection(db, 'projects');
-
-        // Query for user's projects
-        const ownedQuery = query(
-          projectsRef,
-          where('ownerId', '==', currentUser.uid),
-          limit(100)
-        );
-
-        const collaboratorQuery = query(
-          projectsRef,
-          where('collaboratorIds', 'array-contains', currentUser.uid),
-          limit(100)
-        );
-
-        // Fallback query for projects where user is in collaborators by email (legacy)
-        const collaboratorEmailQuery = query(
-          projectsRef,
-          where('collaborators', 'array-contains', currentUser.email),
-          limit(100)
-        );
-
-        const [ownedSnapshot, collaboratorSnapshot, collaboratorEmailSnapshot] = await Promise.all([
-          getDocs(ownedQuery),
-          getDocs(collaboratorQuery),
-          getDocs(collaboratorEmailQuery)
-        ]);
-
         const allProjects = [];
 
-        ownedSnapshot.docs.forEach(doc => {
-          allProjects.push({ id: doc.id, ...doc.data() });
-        });
+        // Get organization IDs from Clerk user memberships
+        const orgIds = userMemberships?.data?.map(membership => membership.organization.id) || [];
+        console.log('📋 [Dashboard] Organization IDs:', orgIds);
 
-        collaboratorSnapshot.docs.forEach(doc => {
-          if (!allProjects.find(p => p.id === doc.id)) {
-            allProjects.push({ id: doc.id, ...doc.data() });
+        if (orgIds.length > 0) {
+          // Fetch projects for each organization
+          const projectsRef = collection(db, 'projects');
+
+          // Query projects by Clerk Organization IDs
+          for (const orgId of orgIds) {
+            console.log('📋 [Dashboard] Querying projects for org:', orgId);
+            const orgQuery = query(
+              projectsRef,
+              where('clerkOrgId', '==', orgId),
+              limit(100)
+            );
+            const orgSnapshot = await getDocs(orgQuery);
+            console.log('📋 [Dashboard] Found', orgSnapshot.docs.length, 'projects for org', orgId);
+
+            orgSnapshot.docs.forEach(doc => {
+              if (!allProjects.find(p => p.id === doc.id)) {
+                allProjects.push({ id: doc.id, ...doc.data() });
+              }
+            });
           }
-        });
+        }
 
-        collaboratorEmailSnapshot.docs.forEach(doc => {
+        // Fallback: Also fetch projects without clerkOrgId (legacy projects)
+        const projectsRef = collection(db, 'projects');
+        const ownedQuery = query(
+          projectsRef,
+          where('ownerId', '==', userId),
+          limit(100)
+        );
+        const ownedSnapshot = await getDocs(ownedQuery);
+
+        ownedSnapshot.docs.forEach(doc => {
           if (!allProjects.find(p => p.id === doc.id)) {
             allProjects.push({ id: doc.id, ...doc.data() });
           }
@@ -103,192 +103,22 @@ function DashboardPage() {
           return bTime - aTime;
         });
 
+        console.log('📋 [Dashboard] ✅ Total projects found:', allProjects.length, allProjects.map(p => ({ id: p.id, name: p.name })));
         setProjects(allProjects);
-
-        // Handle secure token-based invitation
-        const inviteToken = searchParams.get('invite');
-
-        if (inviteToken) {
-          try {
-            // Fetch invitation by token
-            const invitationRef = doc(db, 'invitations', inviteToken);
-            const invitationDoc = await getDoc(invitationRef);
-
-            if (!invitationDoc.exists()) {
-              console.error('Invitation not found or expired');
-              setLoading(false);
-              return;
-            }
-
-            const invitation = invitationDoc.data();
-
-            // Validate invitation
-            if (invitation.used) {
-              console.error('Invitation already used');
-              setLoading(false);
-              return;
-            }
-
-            if (invitation.expiresAt && invitation.expiresAt.toDate() < new Date()) {
-              console.error('Invitation expired');
-              setLoading(false);
-              return;
-            }
-
-            if (invitation.email !== currentUser.email) {
-              console.error('Invitation email does not match logged-in user');
-              alert(`This invitation is for ${invitation.email}. Please sign in with that email address.`);
-              setLoading(false);
-              return;
-            }
-
-            // Add user to project
-            const projectRef = doc(db, 'projects', invitation.projectId);
-            const projectDoc = await getDoc(projectRef);
-
-            if (!projectDoc.exists()) {
-              console.error('Project not found');
-              setLoading(false);
-              return;
-            }
-
-            const projectData = projectDoc.data();
-
-            // Check if user is already a collaborator
-            const isAlreadyCollaborator =
-              projectData.collaboratorIds?.includes(currentUser.uid) ||
-              projectData.ownerId === currentUser.uid;
-
-            if (!isAlreadyCollaborator) {
-              // Add user to collaborators
-              await updateDoc(projectRef, {
-                collaborators: arrayUnion(currentUser.email),
-                collaboratorIds: arrayUnion(currentUser.uid),
-                [`approvals.${currentUser.email}`]: false
-              });
-
-              // Mark invitation as used
-              await updateDoc(invitationRef, {
-                used: true,
-                usedAt: new Date(),
-                usedBy: currentUser.uid
-              });
-
-              // Refetch projects to include the newly joined project
-              const [ownedSnap, collabSnap, collabEmailSnap] = await Promise.all([
-                getDocs(ownedQuery),
-                getDocs(collaboratorQuery),
-                getDocs(collaboratorEmailQuery)
-              ]);
-
-              const updatedProjects = [];
-
-              ownedSnap.docs.forEach(doc => {
-                updatedProjects.push({ id: doc.id, ...doc.data() });
-              });
-
-              collabSnap.docs.forEach(doc => {
-                if (!updatedProjects.find(p => p.id === doc.id)) {
-                  updatedProjects.push({ id: doc.id, ...doc.data() });
-                }
-              });
-
-              collabEmailSnap.docs.forEach(doc => {
-                if (!updatedProjects.find(p => p.id === doc.id)) {
-                  updatedProjects.push({ id: doc.id, ...doc.data() });
-                }
-              });
-
-              updatedProjects.sort((a, b) => {
-                const aTime = a.lastOpened?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
-                const bTime = b.lastOpened?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
-                return bTime - aTime;
-              });
-
-              setProjects(updatedProjects);
-            } else {
-              // Already a collaborator, just mark invitation as used
-              await updateDoc(invitationRef, {
-                used: true,
-                usedAt: new Date(),
-                usedBy: currentUser.uid
-              });
-            }
-
-            // Redirect to the project
-            navigate(`/survey/${invitation.projectId}`, { replace: true });
-            return;
-          } catch (error) {
-            console.error('Error processing invitation:', error);
-            setLoading(false);
-          }
-        }
-
-        // If payment was successful, redirect to the newly created project's survey
-        if (searchParams.get('payment') === 'success') {
-          const paymentStartTime = parseInt(sessionStorage.getItem('paymentStartTime') || '0', 10);
-          sessionStorage.removeItem('paymentStartTime');
-
-          // Find project created after payment started
-          const newProject = allProjects.find(p => {
-            const createdTime = p.createdAt?.toMillis?.() || 0;
-            return createdTime > paymentStartTime;
-          });
-
-          if (newProject) {
-            navigate(`/survey/${newProject.id}`, { replace: true });
-            return;
-          }
-
-          // Project not created yet (webhook delay), poll for it
-          const pollForProject = async (attempts = 0) => {
-            if (attempts >= 20) {
-              // Give up after 20 attempts (10 seconds)
-              setLoading(false);
-              return;
-            }
-
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            const [ownedSnap, collabSnap] = await Promise.all([
-              getDocs(query(collection(db, 'projects'), where('ownerId', '==', currentUser.uid), limit(100))),
-              getDocs(query(collection(db, 'projects'), where('collaboratorIds', 'array-contains', currentUser.uid), limit(100)))
-            ]);
-
-            // Find project created after payment started
-            const allDocs = [...ownedSnap.docs, ...collabSnap.docs];
-            const newProj = allDocs.find(doc => {
-              const createdTime = doc.data().createdAt?.toMillis?.() || 0;
-              return createdTime > paymentStartTime;
-            });
-
-            if (newProj) {
-              navigate(`/survey/${newProj.id}`, { replace: true });
-            } else {
-              pollForProject(attempts + 1);
-            }
-          };
-
-          pollForProject();
-          return;
-        }
       } catch (error) {
-        console.error('Error fetching projects:', error);
+        console.error('📋 [Dashboard] ❌ Error fetching projects:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (!authLoading) {
+    if (!authLoading && orgsLoaded) {
       fetchProjects();
     }
-  }, [currentUser, authLoading, navigate, searchParams]);
+  }, [currentUser?.id, authLoading, orgsLoaded, userMemberships?.data?.length, userId, initialLoadComplete]);
 
   const handlePaymentSuccess = (newProjectId) => {
     setShowPaymentModal(false);
-    if (newProjectId) {
-      navigate(`/survey/${newProjectId}`);
-    }
   };
 
 
@@ -305,22 +135,18 @@ function DashboardPage() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between">
         <img src="/images/cherrytree-logo.png" alt="Cherrytree" className="h-6" />
-        <button
-          onClick={() => {
-            signOut(auth).then(() => {
-              // Check if we're on a subdomain (like my.cherrytree.app)
-              const isActualDomain = window.location.hostname.endsWith('.cherrytree.app') || window.location.hostname === 'cherrytree.app';
-              if (isActualDomain) {
-                window.location.href = 'https://cherrytree.app';
-              } else {
-                navigate('/');
+
+        <div className="flex items-center gap-4">
+          {/* UserButton - Clerk's built-in user menu with sign-out */}
+          <UserButton
+            afterSignOutUrl="/"
+            appearance={{
+              elements: {
+                avatarBox: 'w-8 h-8'
               }
-            });
-          }}
-          className="text-sm text-gray-500 hover:text-gray-700 transition"
-        >
-          Sign out
-        </button>
+            }}
+          />
+        </div>
       </div>
 
       {/* Main Content */}

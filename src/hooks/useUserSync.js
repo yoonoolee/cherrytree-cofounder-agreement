@@ -1,61 +1,61 @@
 import { useEffect } from 'react';
-import { auth, db } from '../firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { useUser } from '@clerk/clerk-react';
+import { db } from '../firebase';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 
 /**
- * Hook to sync Firebase Auth user data to Firestore
+ * Hook to sync Clerk user data to Firestore
  * Creates/updates user document when user logs in
- * Works automatically with Firebase Auth state changes
+ * Works automatically with Clerk user state changes
  */
 function useUserSync() {
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        // User is logged out
-        return;
-      }
+  const { user, isLoaded } = useUser();
 
+  useEffect(() => {
+    if (!isLoaded || !user) {
+      return;
+    }
+
+    const syncUser = async () => {
       try {
-        const userId = user.uid;
+        const userId = user.id;
         const userRef = doc(db, 'users', userId);
 
         // Check if user already exists
         const userSnap = await getDoc(userRef);
 
+        const primaryEmail = user.primaryEmailAddress?.emailAddress || user.emailAddresses[0]?.emailAddress;
+        const userName = user.firstName || user.fullName || primaryEmail?.split('@')[0];
+
         if (!userSnap.exists()) {
           // New user - create document
           await setDoc(userRef, {
             userId: userId,
-            email: user.email,
-            name: user.displayName || user.email?.split('@')[0],
-            picture: user.photoURL || null,
-            emailVerified: user.emailVerified || false,
+            email: primaryEmail,
+            name: userName,
+            picture: user.imageUrl || null,
+            emailVerified: user.primaryEmailAddress?.verification?.status === 'verified',
             createdAt: serverTimestamp(),
             lastLoginAt: serverTimestamp(),
-            subscriptionStatus: 'none', // none, active, cancelled
-            plan: null, // starter, pro
+            subscriptionStatus: 'none',
             stripeCustomerId: null,
-            hasCompletedOnboarding: false,
           });
         } else {
           // Existing user - update last login
           await setDoc(userRef, {
             lastLoginAt: serverTimestamp(),
-            // Update email/name in case they changed
-            email: user.email,
-            name: user.displayName || user.email?.split('@')[0],
-            picture: user.photoURL || null,
+            email: primaryEmail,
+            name: userName,
+            picture: user.imageUrl || null,
           }, { merge: true });
         }
       } catch (error) {
         console.error('Error syncing user to Firestore:', error);
       }
-    });
+    };
 
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, []);
+    syncUser();
+  }, [user?.id, isLoaded]);
 }
 
 export default useUserSync;
