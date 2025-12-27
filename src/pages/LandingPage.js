@@ -38,7 +38,9 @@ function LandingPage() {
   const [typedCompanyName, setTypedCompanyName] = useState('');
   const [showCursor, setShowCursor] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState('');
+  const [typedEntity, setTypedEntity] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
+  const [typedDate, setTypedDate] = useState('');
   const [showCalendar, setShowCalendar] = useState(false);
   const fullText = 'with great company.';
   const andText = 'and';
@@ -305,7 +307,9 @@ function LandingPage() {
     setTypedCompanyName('');
     setShowCursor(false);
     setSelectedEntity('');
+    setTypedEntity('');
     setSelectedDate('');
+    setTypedDate('');
     setShowCalendar(false);
 
     const timers = [];
@@ -327,20 +331,38 @@ function LandingPage() {
     // Hide cursor after typing
     timers.push(setTimeout(() => setShowCursor(false), 1200 + companyName.length * 100 + 300));
 
-    // Select C-Corp after typing finishes
-    timers.push(setTimeout(() => setSelectedEntity('C-Corp'), 1200 + companyName.length * 100 + 800));
+    // Select C-Corp after typing finishes (increased delay)
+    timers.push(setTimeout(() => setSelectedEntity('C-Corp'), 1200 + companyName.length * 100 + 1500));
 
-    // Show calendar
-    timers.push(setTimeout(() => setShowCalendar(true), 1200 + companyName.length * 100 + 1600));
+    // Type C-Corp in the agreement
+    const entity = 'C-Corp';
+    const entityStartTime = 1200 + companyName.length * 100 + 1550;
+    entity.split('').forEach((char, index) => {
+      timers.push(setTimeout(() => {
+        setTypedEntity(prev => prev + char);
+      }, entityStartTime + index * 60));
+    });
 
-    // Select date after calendar appears
-    timers.push(setTimeout(() => setSelectedDate('January 15, 2025'), 1200 + companyName.length * 100 + 2400));
+    // Show calendar (increased delay)
+    timers.push(setTimeout(() => setShowCalendar(true), 1200 + companyName.length * 100 + 3200));
 
-    // Fade out
-    timers.push(setTimeout(() => setSection1Fading(true), 7700));
+    // Select date after calendar appears (increased delay)
+    const dateText = 'January 15, 2025';
+    timers.push(setTimeout(() => setSelectedDate(dateText), 1200 + companyName.length * 100 + 5000));
 
-    // Restart cycle
-    timers.push(setTimeout(() => setSection1AnimationCycle(prev => prev + 1), 8500));
+    // Type date in the agreement
+    const dateStartTime = 1200 + companyName.length * 100 + 5050;
+    dateText.split('').forEach((char, index) => {
+      timers.push(setTimeout(() => {
+        setTypedDate(prev => prev + char);
+      }, dateStartTime + index * 60));
+    });
+
+    // Fade out (adjusted for longer animation)
+    timers.push(setTimeout(() => setSection1Fading(true), 10000));
+
+    // Restart cycle (adjusted for longer animation)
+    timers.push(setTimeout(() => setSection1AnimationCycle(prev => prev + 1), 11000));
 
     return () => timers.forEach(timer => clearTimeout(timer));
   }, [section1AnimationCycle]);
@@ -608,7 +630,7 @@ function LandingPage() {
                     gap: '6px',
                     borderRight: '1px solid #e1e4e8'
                   }}>
-                    <div className={section1Visible ? 'visible' : 'invisible'} style={{ padding: '0 12px', marginBottom: '16px' }}>
+                    <div className={section1Visible ? 'visible' : 'invisible'} style={{ padding: '0 12px', marginBottom: '16px', textAlign: 'left' }}>
                       <span style={{
                         fontSize: '11px',
                         fontWeight: 600,
@@ -714,7 +736,7 @@ function LandingPage() {
                             <span
                               className="absolute"
                               style={{
-                                left: `${16 + typedCompanyName.length * 8.5}px`,
+                                left: `${typedCompanyName.length * 8.8}px`,
                                 top: '50%',
                                 transform: 'translateY(-50%)',
                                 width: '2px',
@@ -936,98 +958,92 @@ function LandingPage() {
                         Cofounder Agreement
                       </h3>
                     </div>
-                    {/* 1. Company Name - appears first */}
-                    {typedCompanyName && (
-                      <div style={{ animation: 'fadeIn 0.3s ease-out', textAlign: 'left' }}>
-                        <div style={{
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          color: '#0f1419',
-                          marginBottom: '10px',
-                          letterSpacing: '-0.01em',
-                          textAlign: 'left'
-                        }}>
-                          Article I: Formation
-                        </div>
-                        <div style={{
-                          fontSize: '13px',
-                          lineHeight: '1.7',
-                          color: '#4a5568',
-                          fontFamily: 'Inter, system-ui, sans-serif',
-                          textAlign: 'left'
-                        }}>
-                          The undersigned cofounders hereby form <span style={{
-                            fontWeight: 600,
-                            color: '#0f1419',
-                            background: '#f3f4f6',
-                            padding: '2px 6px',
-                            borderRadius: '4px'
-                          }}>{typedCompanyName}</span>, a company to be organized for the purpose of developing and operating a technology business.
-                        </div>
+                    {/* 1. Company Name */}
+                    <div style={{ textAlign: 'left' }}>
+                      <div style={{
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: '#0f1419',
+                        marginBottom: '10px',
+                        letterSpacing: '-0.01em',
+                        textAlign: 'left'
+                      }}>
+                        Article I: Formation
                       </div>
-                    )}
+                      <div style={{
+                        fontSize: '13px',
+                        lineHeight: '1.7',
+                        color: '#4a5568',
+                        fontFamily: 'Inter, system-ui, sans-serif',
+                        textAlign: 'left'
+                      }}>
+                        The undersigned cofounders hereby form <span style={{
+                          fontWeight: 600,
+                          color: typedCompanyName ? '#0f1419' : '#9ca3af',
+                          background: '#e5e7eb',
+                          padding: '2px 6px',
+                          borderRadius: '4px'
+                        }}>{typedCompanyName || '[Company Name]'}</span>, a company to be organized for the purpose of developing and operating a technology business.
+                      </div>
+                    </div>
 
-                    {/* 2. Legal Structure - appears second */}
-                    {selectedEntity && (
-                      <div style={{ animation: 'fadeIn 0.3s ease-out', textAlign: 'left' }}>
-                        <div style={{
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          color: '#0f1419',
-                          marginBottom: '10px',
-                          letterSpacing: '-0.01em',
-                          textAlign: 'left'
-                        }}>
-                          Article II: Corporate Structure
-                        </div>
-                        <div style={{
-                          fontSize: '13px',
-                          lineHeight: '1.7',
-                          color: '#4a5568',
-                          fontFamily: 'Inter, system-ui, sans-serif',
-                          textAlign: 'left'
-                        }}>
-                          The Company shall be organized as a <span style={{
-                            fontWeight: 600,
-                            color: '#0f1419',
-                            background: '#f3f4f6',
-                            padding: '2px 6px',
-                            borderRadius: '4px'
-                          }}>{selectedEntity}</span> under the laws of [State], and the cofounders agree to take all necessary steps to effect such organization.
-                        </div>
+                    {/* 2. Legal Structure */}
+                    <div style={{ textAlign: 'left', marginTop: '20px' }}>
+                      <div style={{
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: '#0f1419',
+                        marginBottom: '10px',
+                        letterSpacing: '-0.01em',
+                        textAlign: 'left'
+                      }}>
+                        Article II: Corporate Structure
                       </div>
-                    )}
+                      <div style={{
+                        fontSize: '13px',
+                        lineHeight: '1.7',
+                        color: '#4a5568',
+                        fontFamily: 'Inter, system-ui, sans-serif',
+                        textAlign: 'left'
+                      }}>
+                        The Company shall be organized as a <span style={{
+                          fontWeight: 600,
+                          color: typedEntity ? '#0f1419' : '#9ca3af',
+                          background: '#e5e7eb',
+                          padding: '2px 6px',
+                          borderRadius: '4px'
+                        }}>{typedEntity || '[Legal Entity]'}</span>, and the cofounders agree to take all necessary steps to effect such organization.
+                      </div>
+                    </div>
 
-                    {/* 3. Effective Date - appears third */}
-                    {selectedDate && (
-                      <div style={{ animation: 'fadeIn 0.3s ease-out', textAlign: 'left' }}>
-                        <div style={{
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          color: '#0f1419',
-                          marginBottom: '10px',
-                          letterSpacing: '-0.01em',
-                          textAlign: 'left'
-                        }}>
-                          Article III: Effective Date
-                        </div>
-                        <div style={{
-                          fontSize: '13px',
-                          lineHeight: '1.7',
-                          color: '#4a5568',
-                          fontFamily: 'Inter, system-ui, sans-serif',
-                          textAlign: 'left'
-                        }}>
-                          This Agreement shall be effective as of <span style={{
-                            fontWeight: 600,
-                            color: '#0f1419',
-                            background: '#f3f4f6',
-                            padding: '2px 6px',
-                            borderRadius: '4px'
-                          }}>{selectedDate}</span>, and shall remain in effect until terminated in accordance with the terms herein.
-                        </div>
+                    {/* 3. Effective Date */}
+                    <div style={{ textAlign: 'left', marginTop: '20px' }}>
+                      <div style={{
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: '#0f1419',
+                        marginBottom: '10px',
+                        letterSpacing: '-0.01em',
+                        textAlign: 'left'
+                      }}>
+                        Article III: Effective Date
                       </div>
-                    )}
+                      <div style={{
+                        fontSize: '13px',
+                        lineHeight: '1.7',
+                        color: '#4a5568',
+                        fontFamily: 'Inter, system-ui, sans-serif',
+                        textAlign: 'left'
+                      }}>
+                        This Agreement shall be effective as of <span style={{
+                          fontWeight: 600,
+                          color: typedDate ? '#0f1419' : '#9ca3af',
+                          background: '#e5e7eb',
+                          padding: '2px 6px',
+                          borderRadius: '4px'
+                        }}>{typedDate || '[Effective Date]'}</span>, and shall remain in effect until terminated in accordance with the terms herein.
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
