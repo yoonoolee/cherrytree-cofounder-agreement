@@ -39,6 +39,7 @@ function LandingPage() {
   const [showCursor, setShowCursor] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
+  const [showCalendar, setShowCalendar] = useState(false);
   const fullText = 'with great company.';
   const andText = 'and';
   const todayText = 'today.';
@@ -305,6 +306,7 @@ function LandingPage() {
     setShowCursor(false);
     setSelectedEntity('');
     setSelectedDate('');
+    setShowCalendar(false);
 
     const timers = [];
 
@@ -328,14 +330,17 @@ function LandingPage() {
     // Select C-Corp after typing finishes
     timers.push(setTimeout(() => setSelectedEntity('C-Corp'), 1200 + companyName.length * 100 + 800));
 
-    // Select date after entity type
-    timers.push(setTimeout(() => setSelectedDate('January 15, 2025'), 1200 + companyName.length * 100 + 1400));
+    // Show calendar
+    timers.push(setTimeout(() => setShowCalendar(true), 1200 + companyName.length * 100 + 1600));
+
+    // Select date after calendar appears
+    timers.push(setTimeout(() => setSelectedDate('January 15, 2025'), 1200 + companyName.length * 100 + 2400));
 
     // Fade out
-    timers.push(setTimeout(() => setSection1Fading(true), 6500));
+    timers.push(setTimeout(() => setSection1Fading(true), 7700));
 
     // Restart cycle
-    timers.push(setTimeout(() => setSection1AnimationCycle(prev => prev + 1), 7300));
+    timers.push(setTimeout(() => setSection1AnimationCycle(prev => prev + 1), 8500));
 
     return () => timers.forEach(timer => clearTimeout(timer));
   }, [section1AnimationCycle]);
@@ -575,7 +580,7 @@ function LandingPage() {
               }}
             >
               <div
-                className={section1Fading ? 'fade-out' : ''}
+                className={section1Fading ? 'fade-out' : (section1Visible ? 'fade-in' : '')}
                 style={{
                   width: '100%',
                   height: '100%',
@@ -583,7 +588,8 @@ function LandingPage() {
                   borderRadius: '16px',
                   overflow: 'hidden',
                   display: 'flex',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 20px 40px rgba(0, 0, 0, 0.08)'
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 20px 40px rgba(0, 0, 0, 0.08)',
+                  opacity: 0
                 }}
               >
                 {/* LEFT SIDE - Survey Interface */}
@@ -595,12 +601,12 @@ function LandingPage() {
                   {/* Sidebar */}
                   <div style={{
                     width: '220px',
-                    background: 'linear-gradient(180deg, #fafbfc 0%, #f8f9fb 100%)',
+                    background: '#ffffff',
                     padding: '28px 16px',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '6px',
-                    borderRight: '1px solid #e8ebed'
+                    borderRight: '1px solid #e1e4e8'
                   }}>
                     <div className={section1Visible ? 'visible' : 'invisible'} style={{ padding: '0 12px', marginBottom: '16px' }}>
                       <span style={{
@@ -631,11 +637,12 @@ function LandingPage() {
                         style={{
                           padding: '10px 12px',
                           borderRadius: '8px',
-                          background: idx === 0 ? '#ffffff' : 'transparent',
-                          boxShadow: idx === 0 ? '0 1px 3px rgba(0, 0, 0, 0.06)' : 'none',
+                          background: idx === 0 ? '#f3f4f6' : 'transparent',
+                          border: idx === 0 ? '1.5px solid #e5e7eb' : 'none',
+                          boxShadow: idx === 0 ? '0 2px 4px rgba(0, 0, 0, 0.08)' : 'none',
                           fontSize: '12px',
                           color: idx === 0 ? '#0f1419' : '#6b7789',
-                          fontWeight: idx === 0 ? 500 : 400,
+                          fontWeight: idx === 0 ? 600 : 400,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'flex-start',
@@ -667,7 +674,7 @@ function LandingPage() {
                     flex: 1,
                     padding: '40px 48px',
                     overflow: 'hidden',
-                    background: '#ffffff'
+                    background: 'transparent'
                   }}>
                     <div className={`${section1Visible ? 'visible' : 'invisible'}`} style={{ display: 'flex', flexDirection: 'column', gap: '32px', alignItems: 'flex-start' }}>
                       {/* Question 1 - Company Name */}
@@ -675,8 +682,8 @@ function LandingPage() {
                         <label style={{
                           display: 'block',
                           fontSize: '14px',
-                          fontWeight: 600,
-                          color: '#0f1419',
+                          fontWeight: 500,
+                          color: '#4a5568',
                           marginBottom: '10px',
                           letterSpacing: '-0.01em',
                           textAlign: 'left'
@@ -690,16 +697,16 @@ function LandingPage() {
                             value={typedCompanyName}
                             style={{
                               width: '100%',
-                              padding: '12px 16px',
-                              border: '1.5px solid',
-                              borderColor: showCursor || typedCompanyName ? '#0f1419' : '#e1e4e8',
-                              borderRadius: '10px',
+                              padding: '12px 0',
+                              border: 'none',
+                              borderBottom: '2px solid',
+                              borderBottomColor: showCursor || typedCompanyName ? '#000000' : '#d1d5db',
+                              borderRadius: '0',
                               fontSize: '15px',
-                              color: '#0f1419',
-                              background: '#ffffff',
+                              color: '#374151',
+                              background: 'transparent',
                               outline: 'none',
                               transition: 'all 0.2s ease',
-                              boxShadow: showCursor || typedCompanyName ? '0 0 0 3px rgba(15, 20, 25, 0.05)' : '0 1px 2px rgba(0, 0, 0, 0.04)',
                               fontFamily: 'Inter, system-ui, sans-serif'
                             }}
                           />
@@ -707,7 +714,7 @@ function LandingPage() {
                             <span
                               className="absolute"
                               style={{
-                                left: `${16 + typedCompanyName.length * 9.6}px`,
+                                left: `${16 + typedCompanyName.length * 8.5}px`,
                                 top: '50%',
                                 transform: 'translateY(-50%)',
                                 width: '2px',
@@ -726,8 +733,8 @@ function LandingPage() {
                         <label style={{
                           display: 'block',
                           fontSize: '14px',
-                          fontWeight: 600,
-                          color: '#0f1419',
+                          fontWeight: 500,
+                          color: '#4a5568',
                           marginBottom: '10px',
                           letterSpacing: '-0.01em',
                           textAlign: 'left'
@@ -741,47 +748,23 @@ function LandingPage() {
                               style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                padding: '12px 16px',
-                                borderRadius: '10px',
-                                border: '1.5px solid',
-                                borderColor: selectedEntity === type ? '#0f1419' : '#e1e4e8',
-                                background: selectedEntity === type ? '#f8f9fb' : '#ffffff',
                                 cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                boxShadow: selectedEntity === type ? '0 0 0 3px rgba(15, 20, 25, 0.05)' : '0 1px 2px rgba(0, 0, 0, 0.04)'
+                                fontFamily: 'Inter, system-ui, sans-serif'
                               }}
                             >
-                              <div
+                              <input
+                                type="radio"
+                                name="entityType"
+                                checked={selectedEntity === type}
+                                readOnly
                                 style={{
-                                  width: '18px',
-                                  height: '18px',
-                                  borderRadius: '50%',
-                                  border: '2px solid',
-                                  borderColor: selectedEntity === type ? '#0f1419' : '#cbd2d9',
                                   marginRight: '12px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  transition: 'all 0.2s ease',
-                                  flexShrink: 0
+                                  cursor: 'pointer'
                                 }}
-                              >
-                                {selectedEntity === type && (
-                                  <div
-                                    style={{
-                                      width: '8px',
-                                      height: '8px',
-                                      borderRadius: '50%',
-                                      backgroundColor: '#0f1419',
-                                      animation: 'scaleIn 0.2s ease-out'
-                                    }}
-                                  />
-                                )}
-                              </div>
+                              />
                               <span style={{
                                 fontSize: '15px',
-                                color: '#0f1419',
-                                fontWeight: 500,
+                                color: '#374151',
                                 fontFamily: 'Inter, system-ui, sans-serif'
                               }}>{type}</span>
                             </label>
@@ -790,12 +773,12 @@ function LandingPage() {
                       </div>
 
                       {/* Question 3 - Effective Date */}
-                      <div style={{ width: '100%', textAlign: 'left' }}>
+                      <div style={{ width: '100%', textAlign: 'left', position: 'relative' }}>
                         <label style={{
                           display: 'block',
                           fontSize: '14px',
-                          fontWeight: 600,
-                          color: '#0f1419',
+                          fontWeight: 500,
+                          color: '#4a5568',
                           marginBottom: '10px',
                           letterSpacing: '-0.01em',
                           textAlign: 'left'
@@ -808,20 +791,100 @@ function LandingPage() {
                           value={selectedDate}
                           style={{
                             width: '100%',
-                            padding: '12px 16px',
-                            border: '1.5px solid',
-                            borderColor: selectedDate ? '#0f1419' : '#e1e4e8',
-                            borderRadius: '10px',
+                            padding: '12px 0',
+                            border: 'none',
+                            borderBottom: '2px solid',
+                            borderBottomColor: showCalendar || selectedDate ? '#000000' : '#d1d5db',
+                            borderRadius: '0',
                             fontSize: '15px',
-                            color: '#0f1419',
-                            background: '#ffffff',
+                            color: '#374151',
+                            background: 'transparent',
                             outline: 'none',
                             transition: 'all 0.2s ease',
-                            boxShadow: selectedDate ? '0 0 0 3px rgba(15, 20, 25, 0.05)' : '0 1px 2px rgba(0, 0, 0, 0.04)',
-                            fontFamily: 'Inter, system-ui, sans-serif'
+                            fontFamily: 'Inter, system-ui, sans-serif',
+                            cursor: 'pointer'
                           }}
                           placeholder="Select date"
                         />
+                        {showCalendar && (
+                          <div style={{
+                            position: 'absolute',
+                            top: 'calc(100% + 8px)',
+                            left: 0,
+                            background: '#ffffff',
+                            border: '1.5px solid #e1e4e8',
+                            borderRadius: '12px',
+                            padding: '16px',
+                            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+                            zIndex: 10,
+                            animation: 'fadeIn 0.2s ease-out',
+                            width: '320px'
+                          }}>
+                            {/* Calendar Header */}
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              marginBottom: '16px',
+                              paddingBottom: '12px',
+                              borderBottom: '1px solid #e1e4e8'
+                            }}>
+                              <span style={{
+                                fontSize: '15px',
+                                fontWeight: 600,
+                                color: '#0f1419',
+                                fontFamily: 'Inter, system-ui, sans-serif'
+                              }}>January 2025</span>
+                            </div>
+                            {/* Calendar Grid */}
+                            <div style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(7, 1fr)',
+                              gap: '4px'
+                            }}>
+                              {/* Day headers */}
+                              {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day, idx) => (
+                                <div key={idx} style={{
+                                  textAlign: 'center',
+                                  fontSize: '11px',
+                                  fontWeight: 600,
+                                  color: '#6b7789',
+                                  padding: '8px 0',
+                                  fontFamily: 'Inter, system-ui, sans-serif'
+                                }}>{day}</div>
+                              ))}
+                              {/* Empty cells for padding */}
+                              {[...Array(3)].map((_, idx) => (
+                                <div key={`empty-${idx}`} />
+                              ))}
+                              {/* Date cells */}
+                              {[...Array(31)].map((_, idx) => {
+                                const date = idx + 1;
+                                const isSelected = date === 15 && selectedDate;
+                                return (
+                                  <div
+                                    key={date}
+                                    style={{
+                                      textAlign: 'center',
+                                      padding: '8px',
+                                      borderRadius: '6px',
+                                      fontSize: '14px',
+                                      fontWeight: isSelected ? 600 : 400,
+                                      color: isSelected ? '#ffffff' : '#0f1419',
+                                      background: isSelected ? '#0f1419' : 'transparent',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.15s ease',
+                                      fontFamily: 'Inter, system-ui, sans-serif',
+                                      animation: isSelected ? 'scaleIn 0.2s ease-out' : 'none'
+                                    }}
+                                  >
+                                    {date}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -836,43 +899,53 @@ function LandingPage() {
                 {/* RIGHT SIDE - Generated Agreement */}
                 <div style={{
                   flex: '0.8',
-                  padding: '40px 48px',
-                  background: 'linear-gradient(to bottom, #fafbfc, #ffffff)',
-                  overflow: 'hidden'
+                  padding: '32px',
+                  background: '#f5f7fa',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column'
                 }}>
-                  {/* Document Header */}
-                  <div className={section1Visible ? 'visible' : 'invisible'} style={{ marginBottom: '32px' }}>
-                    <h3 style={{
-                      fontSize: '18px',
-                      fontWeight: 600,
-                      color: '#0f1419',
-                      margin: 0,
-                      letterSpacing: '-0.02em'
-                    }}>
-                      Cofounder Agreement
-                    </h3>
-                  </div>
-
                   {/* Document Content */}
                   <div className={section1Visible ? 'visible' : 'invisible'} style={{
                     background: '#ffffff',
                     borderRadius: '12px',
-                    padding: '24px',
-                    border: '1px solid #e8ebed',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06)',
+                    padding: '28px',
+                    border: '1px solid #e1e4e8',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.08)',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '20px'
+                    gap: '20px',
+                    flex: 1
                   }}>
+                    {/* Document Header */}
+                    <div style={{
+                      textAlign: 'center',
+                      paddingBottom: '20px',
+                      borderBottom: '2px solid #e1e4e8',
+                      marginBottom: '8px'
+                    }}>
+                      <h3 style={{
+                        fontSize: '20px',
+                        fontWeight: 700,
+                        color: '#0f1419',
+                        margin: 0,
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        fontFamily: 'Georgia, serif'
+                      }}>
+                        Cofounder Agreement
+                      </h3>
+                    </div>
                     {/* 1. Company Name - appears first */}
                     {typedCompanyName && (
-                      <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                      <div style={{ animation: 'fadeIn 0.3s ease-out', textAlign: 'left' }}>
                         <div style={{
                           fontSize: '13px',
                           fontWeight: 600,
                           color: '#0f1419',
                           marginBottom: '10px',
-                          letterSpacing: '-0.01em'
+                          letterSpacing: '-0.01em',
+                          textAlign: 'left'
                         }}>
                           Article I: Formation
                         </div>
@@ -880,12 +953,13 @@ function LandingPage() {
                           fontSize: '13px',
                           lineHeight: '1.7',
                           color: '#4a5568',
-                          fontFamily: 'Inter, system-ui, sans-serif'
+                          fontFamily: 'Inter, system-ui, sans-serif',
+                          textAlign: 'left'
                         }}>
                           The undersigned cofounders hereby form <span style={{
                             fontWeight: 600,
                             color: '#0f1419',
-                            background: 'linear-gradient(to right, #fef3c7, #fde68a)',
+                            background: '#f3f4f6',
                             padding: '2px 6px',
                             borderRadius: '4px'
                           }}>{typedCompanyName}</span>, a company to be organized for the purpose of developing and operating a technology business.
@@ -895,13 +969,14 @@ function LandingPage() {
 
                     {/* 2. Legal Structure - appears second */}
                     {selectedEntity && (
-                      <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                      <div style={{ animation: 'fadeIn 0.3s ease-out', textAlign: 'left' }}>
                         <div style={{
                           fontSize: '13px',
                           fontWeight: 600,
                           color: '#0f1419',
                           marginBottom: '10px',
-                          letterSpacing: '-0.01em'
+                          letterSpacing: '-0.01em',
+                          textAlign: 'left'
                         }}>
                           Article II: Corporate Structure
                         </div>
@@ -909,12 +984,13 @@ function LandingPage() {
                           fontSize: '13px',
                           lineHeight: '1.7',
                           color: '#4a5568',
-                          fontFamily: 'Inter, system-ui, sans-serif'
+                          fontFamily: 'Inter, system-ui, sans-serif',
+                          textAlign: 'left'
                         }}>
                           The Company shall be organized as a <span style={{
                             fontWeight: 600,
                             color: '#0f1419',
-                            background: 'linear-gradient(to right, #dbeafe, #bfdbfe)',
+                            background: '#f3f4f6',
                             padding: '2px 6px',
                             borderRadius: '4px'
                           }}>{selectedEntity}</span> under the laws of [State], and the cofounders agree to take all necessary steps to effect such organization.
@@ -924,13 +1000,14 @@ function LandingPage() {
 
                     {/* 3. Effective Date - appears third */}
                     {selectedDate && (
-                      <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                      <div style={{ animation: 'fadeIn 0.3s ease-out', textAlign: 'left' }}>
                         <div style={{
                           fontSize: '13px',
                           fontWeight: 600,
                           color: '#0f1419',
                           marginBottom: '10px',
-                          letterSpacing: '-0.01em'
+                          letterSpacing: '-0.01em',
+                          textAlign: 'left'
                         }}>
                           Article III: Effective Date
                         </div>
@@ -938,12 +1015,13 @@ function LandingPage() {
                           fontSize: '13px',
                           lineHeight: '1.7',
                           color: '#4a5568',
-                          fontFamily: 'Inter, system-ui, sans-serif'
+                          fontFamily: 'Inter, system-ui, sans-serif',
+                          textAlign: 'left'
                         }}>
                           This Agreement shall be effective as of <span style={{
                             fontWeight: 600,
                             color: '#0f1419',
-                            background: 'linear-gradient(to right, #dcfce7, #bbf7d0)',
+                            background: '#f3f4f6',
                             padding: '2px 6px',
                             borderRadius: '4px'
                           }}>{selectedDate}</span>, and shall remain in effect until terminated in accordance with the terms herein.
@@ -2414,6 +2492,11 @@ function LandingPage() {
         .slide-out-up {
           transform: translateY(-500px) !important;
           transition: transform 0.8s ease-in-out !important;
+        }
+
+        .fade-in {
+          opacity: 1 !important;
+          transition: opacity 0.8s ease-in-out !important;
         }
 
         .fade-out {
