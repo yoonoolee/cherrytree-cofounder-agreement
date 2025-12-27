@@ -724,6 +724,446 @@ function LandingPage() {
                   <p className={`feature-description ${activeFeature === i ? 'active' : ''}`}>
                     {feature.description}
                   </p>
+                  {/* Mobile animation container */}
+                  <div className="mobile-visual">
+                    {i === 0 && (
+                      <div
+                        className={`visual-content contract-animation-container ${activeFeature === 0 ? 'active' : ''} ${contractCardsFading ? 'contract-animation-fading' : ''}`}
+                        style={{
+                          opacity: 1,
+                          pointerEvents: 'auto',
+                          flexDirection: 'row',
+                          gap: '20px',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          padding: '0',
+                          width: '100%',
+                          height: '100%',
+                          display: 'flex'
+                        }}
+                      >
+                        <div className={contractCardsFading ? 'slide-out-left' : ''} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {[
+                            { title: 'Cofounders', content: 'Steve Jobs\u00A0\u00A0Steve Woz\nRon Wayne' },
+                            { title: 'Equity', content: '45% - 45% - 10%' },
+                            { title: 'Vesting', content: '4 years with 1 year cliff' },
+                            { title: 'And more', content: '' }
+                          ].map((card, idx) => (
+                            <div
+                              key={idx}
+                              className={contractCardsVisible ? 'card-visible' : 'card-hidden'}
+                              style={{
+                                width: '200px',
+                                height: '100px',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '8px',
+                                border: '1px solid #e5e7eb',
+                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                                '--delay': `${0.5 + idx * 0.3}s`,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'flex-start',
+                                justifyContent: 'flex-start',
+                                padding: '16px'
+                              }}
+                            >
+                              <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590' }}>{card.title}</span>
+                              {card.content && (
+                                <span style={{ fontSize: '13px', color: '#9ca3af', marginTop: '8px', whiteSpace: 'pre-line' }}>{card.content}</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <svg
+                          className={`${contractCardsVisible ? 'card-visible' : 'card-hidden'} ${contractCardsFading ? 'slide-out-left' : ''}`}
+                          style={{
+                            width: '40px',
+                            height: '436px',
+                            '--delay': '1.7s',
+                            transformOrigin: 'center'
+                          }}
+                          viewBox="0 0 40 436"
+                          fill="none"
+                        >
+                          <path
+                            d="M 0 0 Q 20 0, 20 109 Q 20 218, 40 218 Q 20 218, 20 327 Q 20 436, 0 436"
+                            stroke="#e5e7eb"
+                            strokeWidth="2"
+                            fill="none"
+                          />
+                        </svg>
+                        <div
+                          className={`${contractCardsVisible ? 'card-visible' : 'card-hidden'} ${contractCardsFading ? 'slide-out-right' : ''}`}
+                          style={{
+                            width: '360px',
+                            height: '436px',
+                            backgroundColor: '#ffffff',
+                            borderRadius: '8px',
+                            border: '1px solid #e5e7eb',
+                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                            '--delay': '2.0s',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'flex-start',
+                            padding: '24px'
+                          }}
+                        >
+                          <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590', marginBottom: '20px' }}>Cofounder Agreement</span>
+                          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 8px' }}>
+                            {[
+                              { width: '100%', delay: 2.3, paragraphStart: false },
+                              { width: '100%', delay: 2.45, paragraphStart: false },
+                              { width: '100%', delay: 2.6, paragraphStart: false },
+                              { width: '50%', delay: 2.75, paragraphStart: false },
+                              { width: '100%', delay: 2.9, paragraphStart: true },
+                              { width: '100%', delay: 3.05, paragraphStart: false },
+                              { width: '100%', delay: 3.2, paragraphStart: false },
+                              { width: '65%', delay: 3.35, paragraphStart: false },
+                              { width: '100%', delay: 3.5, paragraphStart: true },
+                              { width: '100%', delay: 3.65, paragraphStart: false },
+                              { width: '100%', delay: 3.8, paragraphStart: false },
+                              { width: '40%', delay: 3.95, paragraphStart: false },
+                            ].map((line, idx) => (
+                              <div
+                                key={idx}
+                                className={`text-line ${contractCardsVisible ? 'text-line-visible' : ''}`}
+                                style={{
+                                  width: line.width,
+                                  '--line-delay': `${line.delay}s`,
+                                  marginTop: line.paragraphStart ? '12px' : '0'
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <div style={{ width: '100%', marginTop: 'auto', padding: '0 8px' }}>
+                            <svg
+                              style={{
+                                width: '140px',
+                                height: '50px',
+                                '--sig-delay': '4.2s'
+                              }}
+                              viewBox="0 0 140 50"
+                              fill="none"
+                            >
+                              <path
+                                className={`signature-path ${contractCardsVisible ? 'signature-draw' : ''}`}
+                                d="M 5 35 C 10 20, 15 15, 20 25 C 25 35, 30 40, 35 30 C 40 20, 42 15, 48 20 C 54 25, 56 35, 62 28 C 68 21, 70 18, 78 22 C 86 26, 88 32, 95 25 C 102 18, 105 15, 112 20 C 119 25, 122 30, 130 22 L 135 18"
+                                stroke="#9ca3af"
+                                strokeWidth="2"
+                                fill="none"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                            <div style={{ width: '140px', height: '1px', backgroundColor: '#e5e7eb', marginTop: '2px' }} />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {i === 1 && (
+                      <div
+                        className={`visual-content ${activeFeature === 1 ? 'active' : ''}`}
+                        id="equity-calculator"
+                        style={{
+                          opacity: 1,
+                          pointerEvents: 'auto',
+                          flexDirection: 'row',
+                          gap: '32px',
+                          padding: '24px'
+                        }}
+                      >
+                        <div className={equityChartFading ? 'fade-out' : ''} style={{ display: 'flex', flexDirection: 'row', gap: '32px' }}>
+                        {/* Score Table */}
+                        <div className={`equity-table ${equityChartVisible ? 'equity-table-visible' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                          {/* Header row */}
+                          <div
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: '100px 50px 50px 50px',
+                              gap: '8px',
+                              padding: '8px 12px',
+                              backgroundColor: '#f7f7f7',
+                              borderRadius: '6px 6px 0 0'
+                            }}
+                          >
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#666' }}>Category</span>
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SJ</span>
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SW</span>
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>RW</span>
+                          </div>
+                          {/* Data rows */}
+                          {[
+                            { category: 'Cash Invested', scores: [6, 6, 4], delays: [0.2, 0.35, 0.1] },
+                            { category: 'Time Commit', scores: [10, 8, 4], delays: [0.4, 0.25, 0.5] },
+                            { category: 'Leadership', scores: [8, 10, 2], delays: [0.55, 0.7, 0.45] },
+                            { category: 'Engineering', scores: [4, 8, 4], delays: [0.65, 0.8, 0.6] },
+                            { category: 'Sales', scores: [8, 4, 2], delays: [0.75, 0.9, 0.85] },
+                            { category: 'Domain', scores: [6, 8, 6], delays: [1.0, 0.95, 1.1] },
+                            { category: 'Network', scores: [8, 6, 4], delays: [1.15, 1.25, 1.05] },
+                            { category: 'Idea Origin', scores: [10, 10, 4], delays: [1.3, 1.2, 1.35] }
+                          ].map((row, i) => (
+                            <div
+                              key={i}
+                              style={{
+                                display: 'grid',
+                                gridTemplateColumns: '100px 50px 50px 50px',
+                                gap: '8px',
+                                padding: '8px 12px',
+                                backgroundColor: i % 2 === 0 ? '#fff' : '#fafafa',
+                                borderLeft: '1px solid #e5e7eb',
+                                borderRight: '1px solid #e5e7eb',
+                                borderBottom: '1px solid #e5e7eb'
+                              }}
+                            >
+                              <span style={{ fontSize: '11px', color: '#666' }}>{row.category}</span>
+                              {row.scores.map((score, j) => (
+                                <span
+                                  key={j}
+                                  className={`equity-number ${equityChartVisible ? 'equity-fade-in' : ''}`}
+                                  style={{
+                                    fontSize: '11px',
+                                    fontWeight: 500,
+                                    color: '#999',
+                                    textAlign: 'center',
+                                    '--fade-delay': `${row.delays[j] + 0.3}s`
+                                  }}
+                                >
+                                  {score}
+                                </span>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Pie Chart */}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                          <div style={{ position: 'relative', width: '180px', height: '180px' }}>
+                            <svg
+                              viewBox="0 0 100 100"
+                              style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}
+                            >
+                              {/* Border circles for each segment */}
+                              <circle
+                                className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
+                                cx="50"
+                                cy="50"
+                                r="35"
+                                fill="none"
+                                stroke="#cccccc"
+                                strokeWidth="13"
+                                strokeDasharray="98.96 120.95"
+                                strokeDashoffset="0"
+                                style={{ '--segment-delay': '1.62s', '--segment-length': '98.96' }}
+                              />
+                              <circle
+                                className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
+                                cx="50"
+                                cy="50"
+                                r="35"
+                                fill="none"
+                                stroke="#cccccc"
+                                strokeWidth="13"
+                                strokeDasharray="98.96 120.95"
+                                strokeDashoffset="-98.96"
+                                style={{ '--segment-delay': '1.89s', '--segment-length': '98.96' }}
+                              />
+                              <circle
+                                className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
+                                cx="50"
+                                cy="50"
+                                r="35"
+                                fill="none"
+                                stroke="#cccccc"
+                                strokeWidth="13"
+                                strokeDasharray="21.99 197.92"
+                                strokeDashoffset="-197.92"
+                                style={{ '--segment-delay': '2.16s', '--segment-length': '21.99' }}
+                              />
+                              {/* Segment 1 - 45% (Steve) */}
+                              <circle
+                                className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
+                                cx="50"
+                                cy="50"
+                                r="35"
+                                fill="none"
+                                stroke="#d0d0d0"
+                                strokeWidth="12"
+                                strokeDasharray="98.96 120.95"
+                                strokeDashoffset="0"
+                                style={{ '--segment-delay': '1.62s', '--segment-length': '98.96' }}
+                              />
+                              {/* Segment 2 - 45% (Woz) */}
+                              <circle
+                                className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
+                                cx="50"
+                                cy="50"
+                                r="35"
+                                fill="none"
+                                stroke="#f0f0f0"
+                                strokeWidth="12"
+                                strokeDasharray="98.96 120.95"
+                                strokeDashoffset="-98.96"
+                                style={{ '--segment-delay': '1.89s', '--segment-length': '98.96' }}
+                              />
+                              {/* Segment 3 - 10% (Ron) */}
+                              <circle
+                                className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
+                                cx="50"
+                                cy="50"
+                                r="35"
+                                fill="none"
+                                stroke="#ffffff"
+                                strokeWidth="12"
+                                strokeDasharray="21.99 197.92"
+                                strokeDashoffset="-197.92"
+                                style={{ '--segment-delay': '2.16s', '--segment-length': '21.99' }}
+                              />
+                            </svg>
+                          </div>
+
+                          {/* Legend */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {[
+                              { name: 'Steve J.', percent: '45%', color: '#d0d0d0', border: false, delay: '2.43s' },
+                              { name: 'Steve W.', percent: '45%', color: '#f0f0f0', border: false, delay: '2.52s' },
+                              { name: 'Ron W.', percent: '10%', color: '#ffffff', border: true, delay: '2.61s' }
+                            ].map((item, i) => (
+                              <div
+                                key={i}
+                                className={`equity-legend-item ${equityChartVisible ? 'equity-fade-in' : ''}`}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  '--fade-delay': item.delay
+                                }}
+                              >
+                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: item.color, border: item.border ? '1px solid #ccc' : 'none' }} />
+                                <span style={{ fontSize: '11px', color: '#666' }}>{item.name}</span>
+                                <span style={{ fontSize: '11px', fontWeight: 600, color: '#888' }}>{item.percent}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        </div>
+                      </div>
+                    )}
+                    {i === 2 && (
+                      <div
+                        className={`visual-content ${activeFeature === 2 ? 'active' : ''} ${expertGuidanceFading ? 'fade-out' : ''}`}
+                        id="expert-guidance"
+                        style={{
+                          opacity: 1,
+                          pointerEvents: 'auto',
+                          flexDirection: 'column',
+                          justifyContent: 'center',
+                          alignItems: 'stretch',
+                          padding: '40px',
+                          gap: '32px'
+                        }}
+                      >
+                        {/* Question bubble - from right */}
+                        <div
+                          className={`speech-box-right ${expertGuidanceVisible ? 'speech-box-right-visible' : ''}`}
+                          style={{
+                            width: '400px',
+                            backgroundColor: '#ffffff',
+                            borderRadius: '16px',
+                            border: '1px solid #e5e7eb',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                            padding: '24px',
+                            position: 'relative',
+                            alignSelf: 'flex-start'
+                          }}
+                        >
+                          {/* Speech bubble tail - right side */}
+                          <div
+                            style={{
+                              position: 'absolute',
+                              right: '-10px',
+                              top: '24px',
+                              width: '0',
+                              height: '0',
+                              borderTop: '10px solid transparent',
+                              borderBottom: '10px solid transparent',
+                              borderLeft: '10px solid #ffffff',
+                              filter: 'drop-shadow(2px 0 1px rgba(0, 0, 0, 0.05))'
+                            }}
+                          />
+                          <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590', marginBottom: '12px', display: 'block' }}>Your Question</span>
+
+                          {/* Animated text lines */}
+                          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {[
+                              { width: '100%', delay: 0.3 },
+                              { width: '100%', delay: 0.45 },
+                              { width: '60%', delay: 0.6 }
+                            ].map((line, i) => (
+                              <div
+                                key={i}
+                                className={`text-line ${expertGuidanceVisible ? 'text-line-visible' : ''}`}
+                                style={{
+                                  width: line.width,
+                                  '--line-delay': `${line.delay}s`
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Expert response bubble - from left */}
+                        <div
+                          className={`speech-box ${expertGuidanceVisible ? 'speech-box-visible' : ''}`}
+                          style={{
+                            width: '400px',
+                            backgroundColor: '#ffffff',
+                            borderRadius: '16px',
+                            border: '1px solid #e5e7eb',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                            padding: '24px',
+                            position: 'relative',
+                            alignSelf: 'flex-end'
+                          }}
+                        >
+                          {/* Speech bubble tail - left side */}
+                          <div
+                            style={{
+                              position: 'absolute',
+                              left: '-10px',
+                              top: '24px',
+                              width: '0',
+                              height: '0',
+                              borderTop: '10px solid transparent',
+                              borderBottom: '10px solid transparent',
+                              borderRight: '10px solid #ffffff',
+                              filter: 'drop-shadow(-2px 0 1px rgba(0, 0, 0, 0.05))'
+                            }}
+                          />
+                          <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590', marginBottom: '12px', display: 'block' }}>Expert Answer</span>
+
+                          {/* Animated text lines */}
+                          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {[
+                              { width: '100%', delay: 1.2 },
+                              { width: '100%', delay: 1.35 },
+                              { width: '100%', delay: 1.5 },
+                              { width: '45%', delay: 1.65 }
+                            ].map((line, i) => (
+                              <div
+                                key={i}
+                                className={`text-line ${expertGuidanceVisible ? 'text-line-visible' : ''}`}
+                                style={{
+                                  width: line.width,
+                                  '--line-delay': `${line.delay}s`
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -1784,24 +2224,47 @@ function LandingPage() {
           }
         }
 
+        /* Hide mobile animations on desktop */
+        .mobile-visual {
+          display: none !important;
+        }
+
         @media (max-width: 968px) {
           .features-container {
             flex-direction: column;
+            gap: 12px;
+          }
+          .features-left {
+            order: 1;
           }
           .feature-visual {
-            min-height: auto;
-            height: auto;
-            min-height: 320px;
-            padding: 8px;
-            border: 6px solid #f7f7f7;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: none;
           }
           .feature-card {
             padding: 20px;
             min-height: 120px;
+            position: relative;
+            transition: all 0.3s ease;
+          }
+          .feature-card.active {
+            min-height: 380px;
+            padding-bottom: 20px;
+          }
+          .feature-card .mobile-visual {
+            display: none;
+          }
+          .feature-card.active .mobile-visual {
+            display: flex !important;
+            width: 100%;
+            height: 220px;
+            margin-top: 16px;
+            align-items: center;
+            justify-content: center;
+            background: #fefefe;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            position: relative;
           }
           .feature-title {
             font-size: 20px;
@@ -1810,31 +2273,33 @@ function LandingPage() {
           .feature-description {
             font-size: 14px;
           }
+          .feature-description.active {
+            margin-bottom: 0;
+          }
           /* Scale down animations for mobile */
-          .contract-animation-container,
-          .visual-content {
-            transform: scale(0.45);
+          .mobile-visual .contract-animation-container,
+          .mobile-visual .visual-content {
+            transform: translate(-50%, -50%) scale(0.4);
             padding: 0 !important;
             display: flex;
             align-items: center;
             justify-content: center;
-            transform-origin: center center;
+            position: absolute;
+            opacity: 1 !important;
+            left: 50%;
+            top: 50%;
           }
-          #equity-calculator {
-            transform: scale(0.4) !important;
-            transform-origin: center center;
+          .mobile-visual #equity-calculator {
+            transform: translate(-50%, -50%) scale(0.4) !important;
+            position: absolute;
+            left: 50%;
+            top: 50%;
           }
-          #expert-guidance {
-            transform: scale(0.4) !important;
-            transform-origin: center center;
-          }
-          /* Add more spacing for expert guidance icons on mobile */
-          #expert-guidance .contact-icons {
-            top: 5px !important;
-          }
-          #expert-guidance {
-            padding-top: 35px !important;
-            padding-bottom: 20px !important;
+          .mobile-visual #expert-guidance {
+            transform: translate(-50%, -50%) scale(0.4) !important;
+            position: absolute;
+            left: 50%;
+            top: 50%;
           }
         }
 
