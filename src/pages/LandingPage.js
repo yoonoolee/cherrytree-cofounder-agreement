@@ -32,7 +32,13 @@ function LandingPage() {
   const featuresRef = useRef(null);
   const [typedAnd, setTypedAnd] = useState('');
   const [typedToday, setTypedToday] = useState('');
-  const [videoOpacity, setVideoOpacity] = useState(0);
+  const [section1Visible, setSection1Visible] = useState(false);
+  const [section1Fading, setSection1Fading] = useState(false);
+  const [section1AnimationCycle, setSection1AnimationCycle] = useState(0);
+  const [typedCompanyName, setTypedCompanyName] = useState('');
+  const [showCursor, setShowCursor] = useState(false);
+  const [selectedEntity, setSelectedEntity] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
   const fullText = 'with great company.';
   const andText = 'and';
   const todayText = 'today.';
@@ -290,6 +296,50 @@ function LandingPage() {
     return () => window.removeEventListener('scroll', handleTiltScroll);
   }, []);
 
+  // Section1 animation with typing and selection
+  useEffect(() => {
+    // Reset animation
+    setSection1Fading(false);
+    setSection1Visible(false);
+    setTypedCompanyName('');
+    setShowCursor(false);
+    setSelectedEntity('');
+    setSelectedDate('');
+
+    const timers = [];
+
+    // Show form
+    timers.push(setTimeout(() => setSection1Visible(true), 100));
+
+    // Show cursor in company name field
+    timers.push(setTimeout(() => setShowCursor(true), 800));
+
+    // Type company name
+    const companyName = 'Cherrytree';
+    companyName.split('').forEach((char, index) => {
+      timers.push(setTimeout(() => {
+        setTypedCompanyName(prev => prev + char);
+      }, 1200 + index * 100));
+    });
+
+    // Hide cursor after typing
+    timers.push(setTimeout(() => setShowCursor(false), 1200 + companyName.length * 100 + 300));
+
+    // Select C-Corp after typing finishes
+    timers.push(setTimeout(() => setSelectedEntity('C-Corp'), 1200 + companyName.length * 100 + 800));
+
+    // Select date after entity type
+    timers.push(setTimeout(() => setSelectedDate('January 15, 2025'), 1200 + companyName.length * 100 + 1400));
+
+    // Fade out
+    timers.push(setTimeout(() => setSection1Fading(true), 6500));
+
+    // Restart cycle
+    timers.push(setTimeout(() => setSection1AnimationCycle(prev => prev + 1), 7300));
+
+    return () => timers.forEach(timer => clearTimeout(timer));
+  }, [section1AnimationCycle]);
+
   // Scroll-triggered section animations
   useScrollAnimation();
 
@@ -524,48 +574,385 @@ function LandingPage() {
                 overflow: 'hidden'
               }}
             >
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="tilty-video"
-                ref={(video) => {
-                  if (video) video.playbackRate = 1.2;
-                }}
-                onTimeUpdate={(e) => {
-                  const video = e.target;
-                  const duration = video.duration;
-                  const currentTime = video.currentTime;
-                  const fadeTime = 0.8; // seconds for fade
-
-                  if (currentTime < fadeTime) {
-                    // Fade in at start - use ease-in curve
-                    const progress = currentTime / fadeTime;
-                    setVideoOpacity(progress * progress);
-                  } else if (currentTime > duration - fadeTime) {
-                    // Fade out at end - use ease-out curve
-                    const progress = (duration - currentTime) / fadeTime;
-                    setVideoOpacity(progress * progress);
-                  } else {
-                    setVideoOpacity(1);
-                  }
-                }}
-                onLoadedData={() => setVideoOpacity(0)}
+              <div
+                className={section1Fading ? 'fade-out' : ''}
                 style={{
                   width: '100%',
                   height: '100%',
-                  objectFit: 'cover',
-                  objectPosition: 'center top',
-                  borderRadius: '12px',
-                  background: '#ffffff',
-                  display: 'block',
-                  opacity: videoOpacity,
-                  transition: 'opacity 0.15s ease-out'
+                  background: 'linear-gradient(to bottom, #fafbfc, #f5f7fa)',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 20px 40px rgba(0, 0, 0, 0.08)'
                 }}
               >
-                <source src="/images/Cherrytree - Cofounder Agreements for Early-Stage Teams 11-21-2025 20-27-31.mp4" type="video/mp4" />
-              </video>
+                {/* LEFT SIDE - Survey Interface */}
+                <div style={{
+                  flex: '1.4',
+                  display: 'flex',
+                  background: '#ffffff'
+                }}>
+                  {/* Sidebar */}
+                  <div style={{
+                    width: '220px',
+                    background: 'linear-gradient(180deg, #fafbfc 0%, #f8f9fb 100%)',
+                    padding: '28px 16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                    borderRight: '1px solid #e8ebed'
+                  }}>
+                    <div className={section1Visible ? 'visible' : 'invisible'} style={{ padding: '0 12px', marginBottom: '16px' }}>
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        color: '#6b7789',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px'
+                      }}>
+                        Sections
+                      </span>
+                    </div>
+                    {[
+                      { id: 1, name: 'Formation & Purpose' },
+                      { id: 2, name: 'Cofounder Info' },
+                      { id: 3, name: 'Equity Allocation' },
+                      { id: 4, name: 'Vesting Schedule' },
+                      { id: 5, name: 'Decision-Making' },
+                      { id: 6, name: 'Intellectual Property' },
+                      { id: 7, name: 'Roles & Responsibilities' },
+                      { id: 8, name: 'Compensation' },
+                      { id: 9, name: 'Conflict Resolution' },
+                      { id: 10, name: 'Exit & Termination' }
+                    ].map((section, idx) => (
+                      <div
+                        key={section.id}
+                        className={section1Visible ? 'visible' : 'invisible'}
+                        style={{
+                          padding: '10px 12px',
+                          borderRadius: '8px',
+                          background: idx === 0 ? '#ffffff' : 'transparent',
+                          boxShadow: idx === 0 ? '0 1px 3px rgba(0, 0, 0, 0.06)' : 'none',
+                          fontSize: '12px',
+                          color: idx === 0 ? '#0f1419' : '#6b7789',
+                          fontWeight: idx === 0 ? 500 : 400,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'flex-start',
+                          gap: '10px',
+                          transition: 'all 0.15s ease',
+                          textAlign: 'left'
+                        }}
+                      >
+                        <span style={{
+                          fontSize: '11px',
+                          opacity: 0.5,
+                          fontWeight: 600,
+                          minWidth: '16px',
+                          textAlign: 'left',
+                          flexShrink: 0
+                        }}>{section.id}</span>
+                        <span style={{
+                          textAlign: 'left',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
+                        }}>{section.name}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Survey Questions */}
+                  <div style={{
+                    flex: 1,
+                    padding: '40px 48px',
+                    overflow: 'hidden',
+                    background: '#ffffff'
+                  }}>
+                    <div className={`${section1Visible ? 'visible' : 'invisible'}`} style={{ display: 'flex', flexDirection: 'column', gap: '32px', alignItems: 'flex-start' }}>
+                      {/* Question 1 - Company Name */}
+                      <div style={{ width: '100%', textAlign: 'left' }}>
+                        <label style={{
+                          display: 'block',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          color: '#0f1419',
+                          marginBottom: '10px',
+                          letterSpacing: '-0.01em',
+                          textAlign: 'left'
+                        }}>
+                          What's your company's name?
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            readOnly
+                            value={typedCompanyName}
+                            style={{
+                              width: '100%',
+                              padding: '12px 16px',
+                              border: '1.5px solid',
+                              borderColor: showCursor || typedCompanyName ? '#0f1419' : '#e1e4e8',
+                              borderRadius: '10px',
+                              fontSize: '15px',
+                              color: '#0f1419',
+                              background: '#ffffff',
+                              outline: 'none',
+                              transition: 'all 0.2s ease',
+                              boxShadow: showCursor || typedCompanyName ? '0 0 0 3px rgba(15, 20, 25, 0.05)' : '0 1px 2px rgba(0, 0, 0, 0.04)',
+                              fontFamily: 'Inter, system-ui, sans-serif'
+                            }}
+                          />
+                          {showCursor && (
+                            <span
+                              className="absolute"
+                              style={{
+                                left: `${16 + typedCompanyName.length * 9.6}px`,
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                width: '2px',
+                                height: '20px',
+                                backgroundColor: '#0f1419',
+                                animation: 'blink 1s step-end infinite',
+                                borderRadius: '1px'
+                              }}
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Question 2 - Entity Type */}
+                      <div style={{ width: '100%', textAlign: 'left' }}>
+                        <label style={{
+                          display: 'block',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          color: '#0f1419',
+                          marginBottom: '10px',
+                          letterSpacing: '-0.01em',
+                          textAlign: 'left'
+                        }}>
+                          Legal structure?
+                        </label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {['C-Corp', 'S-Corp', 'LLC'].map((type) => (
+                            <label
+                              key={type}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '12px 16px',
+                                borderRadius: '10px',
+                                border: '1.5px solid',
+                                borderColor: selectedEntity === type ? '#0f1419' : '#e1e4e8',
+                                background: selectedEntity === type ? '#f8f9fb' : '#ffffff',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                boxShadow: selectedEntity === type ? '0 0 0 3px rgba(15, 20, 25, 0.05)' : '0 1px 2px rgba(0, 0, 0, 0.04)'
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: '18px',
+                                  height: '18px',
+                                  borderRadius: '50%',
+                                  border: '2px solid',
+                                  borderColor: selectedEntity === type ? '#0f1419' : '#cbd2d9',
+                                  marginRight: '12px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  transition: 'all 0.2s ease',
+                                  flexShrink: 0
+                                }}
+                              >
+                                {selectedEntity === type && (
+                                  <div
+                                    style={{
+                                      width: '8px',
+                                      height: '8px',
+                                      borderRadius: '50%',
+                                      backgroundColor: '#0f1419',
+                                      animation: 'scaleIn 0.2s ease-out'
+                                    }}
+                                  />
+                                )}
+                              </div>
+                              <span style={{
+                                fontSize: '15px',
+                                color: '#0f1419',
+                                fontWeight: 500,
+                                fontFamily: 'Inter, system-ui, sans-serif'
+                              }}>{type}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Question 3 - Effective Date */}
+                      <div style={{ width: '100%', textAlign: 'left' }}>
+                        <label style={{
+                          display: 'block',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          color: '#0f1419',
+                          marginBottom: '10px',
+                          letterSpacing: '-0.01em',
+                          textAlign: 'left'
+                        }}>
+                          Effective date of agreement?
+                        </label>
+                        <input
+                          type="text"
+                          readOnly
+                          value={selectedDate}
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            border: '1.5px solid',
+                            borderColor: selectedDate ? '#0f1419' : '#e1e4e8',
+                            borderRadius: '10px',
+                            fontSize: '15px',
+                            color: '#0f1419',
+                            background: '#ffffff',
+                            outline: 'none',
+                            transition: 'all 0.2s ease',
+                            boxShadow: selectedDate ? '0 0 0 3px rgba(15, 20, 25, 0.05)' : '0 1px 2px rgba(0, 0, 0, 0.04)',
+                            fontFamily: 'Inter, system-ui, sans-serif'
+                          }}
+                          placeholder="Select date"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div style={{
+                  width: '1px',
+                  background: 'linear-gradient(to bottom, transparent, #e1e4e8 20%, #e1e4e8 80%, transparent)'
+                }} />
+
+                {/* RIGHT SIDE - Generated Agreement */}
+                <div style={{
+                  flex: '0.8',
+                  padding: '40px 48px',
+                  background: 'linear-gradient(to bottom, #fafbfc, #ffffff)',
+                  overflow: 'hidden'
+                }}>
+                  {/* Document Header */}
+                  <div className={section1Visible ? 'visible' : 'invisible'} style={{ marginBottom: '32px' }}>
+                    <h3 style={{
+                      fontSize: '18px',
+                      fontWeight: 600,
+                      color: '#0f1419',
+                      margin: 0,
+                      letterSpacing: '-0.02em'
+                    }}>
+                      Cofounder Agreement
+                    </h3>
+                  </div>
+
+                  {/* Document Content */}
+                  <div className={section1Visible ? 'visible' : 'invisible'} style={{
+                    background: '#ffffff',
+                    borderRadius: '12px',
+                    padding: '24px',
+                    border: '1px solid #e8ebed',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '20px'
+                  }}>
+                    {/* 1. Company Name - appears first */}
+                    {typedCompanyName && (
+                      <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                        <div style={{
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          color: '#0f1419',
+                          marginBottom: '10px',
+                          letterSpacing: '-0.01em'
+                        }}>
+                          Article I: Formation
+                        </div>
+                        <div style={{
+                          fontSize: '13px',
+                          lineHeight: '1.7',
+                          color: '#4a5568',
+                          fontFamily: 'Inter, system-ui, sans-serif'
+                        }}>
+                          The undersigned cofounders hereby form <span style={{
+                            fontWeight: 600,
+                            color: '#0f1419',
+                            background: 'linear-gradient(to right, #fef3c7, #fde68a)',
+                            padding: '2px 6px',
+                            borderRadius: '4px'
+                          }}>{typedCompanyName}</span>, a company to be organized for the purpose of developing and operating a technology business.
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 2. Legal Structure - appears second */}
+                    {selectedEntity && (
+                      <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                        <div style={{
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          color: '#0f1419',
+                          marginBottom: '10px',
+                          letterSpacing: '-0.01em'
+                        }}>
+                          Article II: Corporate Structure
+                        </div>
+                        <div style={{
+                          fontSize: '13px',
+                          lineHeight: '1.7',
+                          color: '#4a5568',
+                          fontFamily: 'Inter, system-ui, sans-serif'
+                        }}>
+                          The Company shall be organized as a <span style={{
+                            fontWeight: 600,
+                            color: '#0f1419',
+                            background: 'linear-gradient(to right, #dbeafe, #bfdbfe)',
+                            padding: '2px 6px',
+                            borderRadius: '4px'
+                          }}>{selectedEntity}</span> under the laws of [State], and the cofounders agree to take all necessary steps to effect such organization.
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 3. Effective Date - appears third */}
+                    {selectedDate && (
+                      <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                        <div style={{
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          color: '#0f1419',
+                          marginBottom: '10px',
+                          letterSpacing: '-0.01em'
+                        }}>
+                          Article III: Effective Date
+                        </div>
+                        <div style={{
+                          fontSize: '13px',
+                          lineHeight: '1.7',
+                          color: '#4a5568',
+                          fontFamily: 'Inter, system-ui, sans-serif'
+                        }}>
+                          This Agreement shall be effective as of <span style={{
+                            fontWeight: 600,
+                            color: '#0f1419',
+                            background: 'linear-gradient(to right, #dcfce7, #bbf7d0)',
+                            padding: '2px 6px',
+                            borderRadius: '4px'
+                          }}>{selectedDate}</span>, and shall remain in effect until terminated in accordance with the terms herein.
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -2047,12 +2434,73 @@ function LandingPage() {
           animation-delay: var(--line-delay);
         }
 
+        /* Document lines for the transformation animation */
+        .doc-line {
+          height: 4px;
+          background-color: #e5e7eb;
+          border-radius: 2px;
+          transform-origin: left;
+          transform: scaleX(0);
+        }
+
+        .doc-line-visible {
+          animation: drawDocLine 0.3s ease-out forwards;
+          animation-delay: var(--line-delay);
+        }
+
         @keyframes drawLine {
           from {
             transform: scaleX(0);
           }
           to {
             transform: scaleX(1);
+          }
+        }
+
+        @keyframes drawDocLine {
+          from {
+            transform: scaleX(0);
+            opacity: 0;
+          }
+          to {
+            transform: scaleX(1);
+            opacity: 1;
+          }
+        }
+
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
+        }
+
+        @keyframes scaleIn {
+          from {
+            transform: scale(0);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.6;
           }
         }
 
@@ -2096,6 +2544,29 @@ function LandingPage() {
         .speech-box-right {
           opacity: 0;
           transition: opacity 0.5s ease-out;
+        }
+
+        /* Typing text animation */
+        .typing-text {
+          opacity: 0;
+          animation: typeIn 0.5s ease-out forwards;
+          animation-delay: var(--typing-delay);
+        }
+
+        /* Typing input animation */
+        .typing-input {
+          opacity: 0;
+          animation: typeIn 0.5s ease-out forwards;
+          animation-delay: var(--typing-delay);
+        }
+
+        @keyframes typeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
         }
 
         .speech-box-right-visible {
