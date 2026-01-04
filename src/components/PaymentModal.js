@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { db } from '../firebase';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { db, functions } from '../firebase';
+import { httpsCallable } from 'firebase/functions';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useAuth } from '@clerk/clerk-react';
@@ -98,13 +98,10 @@ function PaymentModal({ onClose, onSuccess }) {
       }
 
       // Create Stripe checkout session
-      const functions = getFunctions();
       const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
 
-      // Use my.cherrytree.app for production, local origin for development
-      const baseUrl = process.env.NODE_ENV === 'production'
-        ? 'https://my.cherrytree.app'
-        : window.location.origin;
+      // Use environment-specific app URL
+      const baseUrl = process.env.REACT_APP_APP_URL || window.location.origin;
 
       const result = await createCheckoutSession({
         sessionToken,

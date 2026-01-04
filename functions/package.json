@@ -17,7 +17,6 @@
     "axios": "^1.12.2",
     "firebase-admin": "^12.6.0",
     "firebase-functions": "^6.6.0",
-    "resend": "^6.2.2",
     "stripe": "^19.3.0",
     "svix": "^1.82.0"
   },

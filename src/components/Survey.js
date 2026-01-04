@@ -141,6 +141,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   const [welcomeStep, setWelcomeStep] = useState(1);
   const [welcomeWiggle, setWelcomeWiggle] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   // Helper function to calculate fullMailingAddress
   const calculateFullMailingAddress = (addressData) => {
@@ -253,12 +254,15 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   useEffect(() => {
     const projectRef = doc(db, 'projects', projectId);
 
-    const unsubscribe = onSnapshot(projectRef, (doc) => {
-      if (doc.exists()) {
-        const data = doc.data();
-        setProject(data);
+    const unsubscribe = onSnapshot(
+      projectRef,
+      (doc) => {
+        if (doc.exists()) {
+          const data = doc.data();
+          setProject(data);
+          setAccessDenied(false);
 
-        if (!isSavingRef.current) {
+          if (!isSavingRef.current) {
           // Create initial blank form data
           const initialFormData = {
             // Section 1: Formation & Purpose
@@ -363,7 +367,14 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           setLastSaved(data.updatedAt.toDate());
         }
       }
-    });
+      },
+      (error) => {
+        console.error('Error loading project:', error);
+        if (error.code === 'permission-denied') {
+          setAccessDenied(true);
+        }
+      }
+    );
 
     return unsubscribe;
   }, [projectId]);
@@ -1033,6 +1044,31 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
     setShowSearchResults(false);
   };
 
+  // Show access denied message if user doesn't have permission
+  if (accessDenied) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Access Denied
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              You don't have permission to access this project. Please contact the project owner if you believe this is an error.
+            </p>
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="w-full bg-black text-white py-2 px-4 rounded hover:bg-gray-800 transition"
+            >
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading spinner while waiting for project data
   if (!project) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#ffffff' }}>

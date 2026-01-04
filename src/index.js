@@ -20,20 +20,18 @@ if (!clerkPubKey) {
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <ClerkProvider
-      publishableKey={clerkPubKey}
-      appearance={{
-        variables: { colorPrimary: '#000000' }
-      }}
-      signInUrl="/login"
-      signUpUrl="/signup"
-      signInFallbackRedirectUrl="/dashboard"
-      signUpFallbackRedirectUrl="/dashboard"
-    >
-      <UserProvider>
-        <App />
-      </UserProvider>
-    </ClerkProvider>
-  </React.StrictMode>
+  <ClerkProvider
+    publishableKey={clerkPubKey}
+    appearance={{
+      variables: { colorPrimary: '#000000' }
+    }}
+    signInUrl="/login"
+    signUpUrl="/signup"
+    signInFallbackRedirectUrl="/dashboard"
+    signUpFallbackRedirectUrl="/dashboard"
+  >
+    <UserProvider>
+      <App />
+    </UserProvider>
+  </ClerkProvider>
 );

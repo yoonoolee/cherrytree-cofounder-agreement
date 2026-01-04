@@ -3,11 +3,11 @@
  *
  * This file contains server-side functions for operations that cannot be performed client-side:
  * - PDF generation via Make.com webhook
- * - Email invitations via Resend
  * - Stripe payment processing
  * - Clerk webhook handling for user sync
+ * - User management (account deletion, organization management)
  *
- * Note: Authentication is handled by Clerk. User sync happens via Clerk webhooks.
+ * Note: Authentication and email invitations are handled by Clerk.
  */
 
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
@@ -15,7 +15,6 @@ const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
 const axios = require('axios');
-const { Resend } = require('resend');
 const { defineString } = require('firebase-functions/params');
 const Stripe = require('stripe');
 const crypto = require('crypto');
@@ -29,21 +28,10 @@ const auth = getAuth();
 // Load secrets from environment config
 const { defineSecret } = require('firebase-functions/params');
 const MAKE_WEBHOOK_URL = defineSecret('MAKE_WEBHOOK_URL');
-const RESEND_API_KEY = defineSecret('RESEND_API_KEY');
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');
 const CLERK_SECRET_KEY = defineSecret('CLERK_SECRET_KEY');
 const CLERK_WEBHOOK_SECRET = defineSecret('CLERK_WEBHOOK_SECRET');
-const SENDER_EMAIL = 'onboarding@resend.dev';  // Use Resend's test email
-
-// Lazy-load Resend instance
-let resendInstance = null;
-const getResend = () => {
-  if (!resendInstance) {
-    resendInstance = new Resend(RESEND_API_KEY.value());
-  }
-  return resendInstance;
-};
 
 // Lazy-load Clerk instance
 let clerkInstance = null;
@@ -52,6 +40,12 @@ const getClerk = () => {
     clerkInstance = createClerkClient({ secretKey: CLERK_SECRET_KEY.value() });
   }
   return clerkInstance;
+};
+
+// Shared Cloud Functions configuration
+const FUNCTION_CONFIG = {
+  region: 'us-west2',
+  serviceAccount: `cloud-functions@${process.env.GCLOUD_PROJECT}.iam.gserviceaccount.com`,
 };
 
 // ============================================================================
@@ -150,9 +144,10 @@ function isValidEmail(email) {
 // ============================================================================
 
 exports.submitSurvey = onCall({
+  ...FUNCTION_CONFIG,
   secrets: [MAKE_WEBHOOK_URL, CLERK_SECRET_KEY],
   invoker: 'public',
-  consumeAppCheckToken: true  // Enforce App Check to prevent bots
+  consumeAppCheckToken: true
 }, async (request) => {
   // Verify Clerk authentication
   const { sessionToken, projectId } = request.data;
@@ -269,9 +264,10 @@ exports.submitSurvey = onCall({
 
 // Generate preview PDF without submitting
 exports.generatePreviewPDF = onCall({
+  ...FUNCTION_CONFIG,
   secrets: [MAKE_WEBHOOK_URL, CLERK_SECRET_KEY],
   invoker: 'public',
-  consumeAppCheckToken: true  // Enforce App Check to prevent bots
+  consumeAppCheckToken: true
 }, async (request) => {
   // Verify Clerk authentication
   const { sessionToken, projectId } = request.data;
@@ -393,9 +389,10 @@ exports.generatePreviewPDF = onCall({
 
 // Create Stripe checkout session
 exports.createCheckoutSession = onCall({
+  ...FUNCTION_CONFIG,
   secrets: [STRIPE_SECRET_KEY, CLERK_SECRET_KEY],
   invoker: 'public',
-  consumeAppCheckToken: true  // Enforce App Check to prevent payment fraud
+  consumeAppCheckToken: true
 }, async (request) => {
   // Verify Clerk authentication
   const { sessionToken, priceId, plan, projectName } = request.data;
@@ -486,7 +483,8 @@ exports.createCheckoutSession = onCall({
 
 // Handle Stripe webhooks
 exports.stripeWebhook = onRequest({
-  cors: false,  // Disable CORS - webhooks are server-to-server only
+  ...FUNCTION_CONFIG,
+  cors: false,
   secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, CLERK_SECRET_KEY]
 }, async (req, res) => {
   // Initialize Stripe
@@ -529,13 +527,6 @@ exports.stripeWebhook = onRequest({
 
         if (userId && plan && sanitizedProjectName && userEmail) {
           try {
-            // Update user's subscription status
-            await db.collection('users').doc(userId).set({
-              subscriptionStatus: 'active',
-              stripeCustomerId: session.customer,
-              lastPaymentAt: FieldValue.serverTimestamp(),
-            }, { merge: true });
-
             // Create Clerk Organization for this project
             const clerk = getClerk();
             let clerkOrgId = null;
@@ -623,6 +614,7 @@ exports.stripeWebhook = onRequest({
 // Exchange Clerk session token for Firebase custom token
 // This allows Clerk-authenticated users to access Firestore with security rules
 exports.getFirebaseToken = onCall({
+  ...FUNCTION_CONFIG,
   secrets: [CLERK_SECRET_KEY],
   invoker: 'public',
 }, async (request) => {
@@ -658,6 +650,7 @@ exports.getFirebaseToken = onCall({
 
 // Delete user account with proper pseudonymization for legal compliance
 exports.deleteAccount = onCall({
+  ...FUNCTION_CONFIG,
   secrets: [CLERK_SECRET_KEY],
   invoker: 'public',
 }, async (request) => {
@@ -795,6 +788,7 @@ exports.deleteAccount = onCall({
 
 // Remove a member from an organization using Clerk backend API
 exports.removeOrganizationMember = onCall({
+  ...FUNCTION_CONFIG,
   secrets: [CLERK_SECRET_KEY],
   invoker: 'public',
 }, async (request) => {
@@ -851,11 +845,12 @@ exports.removeOrganizationMember = onCall({
 });
 
 // ============================================================================
-// CLERK WEBHOOKS (Best Practice: Server-side user sync)
+// CLERK WEBHOOKS
 // ============================================================================
 
 // Handle Clerk webhooks for user and organization events
 exports.clerkWebhook = onRequest({
+  ...FUNCTION_CONFIG,
   cors: false,
   secrets: [CLERK_WEBHOOK_SECRET]
 }, async (req, res) => {
@@ -1000,13 +995,18 @@ exports.clerkWebhook = onRequest({
             console.error('Error deleting Firebase Auth user:', authError);
           }
 
-          // Mark user as deleted in Firestore
+          // Mark user as deleted in Firestore (only if they exist)
           try {
-            await db.collection('users').doc(id).set({
-              deleted: true,
-              deletedAt: FieldValue.serverTimestamp()
-            }, { merge: true });
-            console.log(`User ${id} marked as deleted in Firestore`);
+            const userDoc = await db.collection('users').doc(id).get();
+            if (userDoc.exists) {
+              await db.collection('users').doc(id).update({
+                deleted: true,
+                deletedAt: FieldValue.serverTimestamp()
+              });
+              console.log(`User ${id} marked as deleted in Firestore`);
+            } else {
+              console.log(`User ${id} doesn't exist in Firestore, skipping deletion marker`);
+            }
           } catch (firestoreError) {
             console.error('Error marking user as deleted in Firestore:', firestoreError);
           }

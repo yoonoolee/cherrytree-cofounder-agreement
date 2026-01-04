@@ -1,16 +1,28 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-// Define which routes belong to the app (my.cherrytree.app)
+// Get environment-specific domains
+const getHostnameFromUrl = (url) => {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return '';
+  }
+};
+
+const APP_DOMAIN = getHostnameFromUrl(process.env.REACT_APP_APP_URL);
+const MARKETING_DOMAIN = getHostnameFromUrl(process.env.REACT_APP_MARKETING_URL);
+
+// Define which routes belong to the app (e.g., my.cherrytree.app)
 const APP_ROUTES = [
-  '/login',     // Login must be on my.cherrytree.app for auth to work
+  '/login',     // Login must be on app domain for auth to work
   '/survey',
   '/preview',
   '/settings',
   '/dashboard'
 ];
 
-// Define which routes belong to the main site (cherrytree.app)
+// Define which routes belong to the main site (e.g., cherrytree.app)
 const MAIN_ROUTES = [
   '/equity-calculator',
   '/pricing',
@@ -45,16 +57,16 @@ function DomainRedirect() {
     // Check if we're on a main site route
     const isMainRoute = MAIN_ROUTES.some(route => currentPath.startsWith(route));
 
-    // If on app route but not on my.cherrytree.app, redirect
-    if (isAppRoute && !currentHostname.includes('my.cherrytree.app')) {
-      const newUrl = fullUrl.replace(currentHostname, 'my.cherrytree.app');
+    // If on app route but not on app domain, redirect
+    if (isAppRoute && APP_DOMAIN && !currentHostname.includes(APP_DOMAIN)) {
+      const newUrl = fullUrl.replace(currentHostname, APP_DOMAIN);
       window.location.href = newUrl;
       return;
     }
 
-    // If on main route but on my.cherrytree.app subdomain, redirect to main domain
-    if (isMainRoute && currentHostname.includes('my.cherrytree.app')) {
-      const newUrl = fullUrl.replace('my.cherrytree.app', 'cherrytree.app');
+    // If on main route but on app subdomain, redirect to main domain
+    if (isMainRoute && APP_DOMAIN && MARKETING_DOMAIN && currentHostname.includes(APP_DOMAIN)) {
+      const newUrl = fullUrl.replace(APP_DOMAIN, MARKETING_DOMAIN);
       window.location.href = newUrl;
       return;
     }

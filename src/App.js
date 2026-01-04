@@ -17,8 +17,6 @@ import PreviewPage from './pages/PreviewPage';
 import SettingsPage from './pages/SettingsPage';
 
 function App() {
-  // User sync now handled server-side via Clerk webhooks (best practice)
-
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ResetPagePosition />

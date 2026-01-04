@@ -20,6 +20,7 @@ export const UserProvider = ({ children }) => {
   const { getToken } = useAuth();
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [firebaseAuthReady, setFirebaseAuthReady] = useState(false);
 
   // Sign in to Firebase Auth when Clerk user is authenticated
   useEffect(() => {
@@ -36,12 +37,15 @@ export const UserProvider = ({ children }) => {
 
             // Sign in to Firebase Auth with custom token
             await signInWithCustomToken(auth, result.data.firebaseToken);
+            setFirebaseAuthReady(true);
           }
         } catch (error) {
           console.error('Error signing in to Firebase:', error);
+          setFirebaseAuthReady(false);
         }
       } else if (isLoaded && !clerkUser) {
         // Sign out from Firebase Auth when Clerk user is null
+        setFirebaseAuthReady(false);
         try {
           await firebaseSignOut(auth);
         } catch (error) {
@@ -56,26 +60,24 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     let unsubscribeFirestore = null;
 
-    if (isLoaded) {
-      if (clerkUser) {
-        // Listen to Firestore user document in real-time
-        const userRef = doc(db, 'users', clerkUser.id);
-        unsubscribeFirestore = onSnapshot(userRef, (docSnap) => {
-          if (docSnap.exists()) {
-            setUserProfile(docSnap.data());
-          } else {
-            setUserProfile(null);
-          }
-          setLoading(false);
-        }, (error) => {
-          console.error('Error fetching user profile:', error);
+    if (isLoaded && firebaseAuthReady && clerkUser) {
+      // Listen to Firestore user document in real-time
+      const userRef = doc(db, 'users', clerkUser.id);
+      unsubscribeFirestore = onSnapshot(userRef, (docSnap) => {
+        if (docSnap.exists()) {
+          setUserProfile(docSnap.data());
+        } else {
           setUserProfile(null);
-          setLoading(false);
-        });
-      } else {
+        }
+        setLoading(false);
+      }, (error) => {
+        console.error('Error fetching user profile:', error);
         setUserProfile(null);
         setLoading(false);
-      }
+      });
+    } else if (isLoaded && !clerkUser) {
+      setUserProfile(null);
+      setLoading(false);
     }
 
     return () => {
@@ -83,7 +85,7 @@ export const UserProvider = ({ children }) => {
         unsubscribeFirestore();
       }
     };
-  }, [clerkUser?.id, isLoaded]);
+  }, [clerkUser?.id, isLoaded, firebaseAuthReady]);
 
   const value = {
     currentUser: clerkUser, // Clerk user (id, emailAddresses, etc.)

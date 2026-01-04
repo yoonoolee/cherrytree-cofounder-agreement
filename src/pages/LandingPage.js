@@ -541,10 +541,10 @@ function LandingPage() {
             <div className="flex flex-col items-center gap-3 mb-8 md:mb-12">
               <button
                 onClick={() => {
-                  // Navigate directly to my.cherrytree.app to avoid double redirect
+                  // Navigate directly to app domain to avoid double redirect
                   const isProduction = window.location.hostname.includes('cherrytree.app');
                   if (isProduction) {
-                    window.location.href = 'https://my.cherrytree.app/dashboard';
+                    window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
                   } else {
                     navigate('/dashboard', { replace: true });
                   }
@@ -2201,10 +2201,10 @@ function LandingPage() {
                     if (plan.name === 'Enterprise') {
                       window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 });
                     } else {
-                      // Navigate directly to my.cherrytree.app to avoid double redirect
+                      // Navigate directly to app domain to avoid double redirect
                       const isProduction = window.location.hostname.includes('cherrytree.app');
                       if (isProduction) {
-                        window.location.href = 'https://my.cherrytree.app/dashboard';
+                        window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
                       } else {
                         navigate('/dashboard', { replace: true });
                       }
@@ -2279,10 +2279,10 @@ function LandingPage() {
           <div className="flex flex-col items-center gap-3">
             <button
               onClick={() => {
-                // Navigate directly to my.cherrytree.app to avoid double redirect
+                // Navigate directly to app domain to avoid double redirect
                 const isProduction = window.location.hostname.includes('cherrytree.app');
                 if (isProduction) {
-                  window.location.href = 'https://my.cherrytree.app/dashboard';
+                  window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
                 } else {
                   navigate('/dashboard', { replace: true });
                 }
