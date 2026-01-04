@@ -1,0 +1,42 @@
+export const PRICING_PLANS = [
+  {
+    name: 'Starter',
+    key: 'starter',
+    price: '$200',
+    priceValue: 200,
+    priceId: process.env.REACT_APP_STRIPE_STARTER_PRICE_ID,
+    description: 'For individuals to get started',
+    features: [
+      'Real-time collaboration',
+      'Instant agreement from survey',
+      'Unlimited collaborators'
+    ]
+  },
+  {
+    name: 'Pro',
+    key: 'pro',
+    price: '$800',
+    priceValue: 800,
+    priceId: process.env.REACT_APP_STRIPE_PRO_PRICE_ID,
+    description: 'Everything in Starter, plus',
+    features: [
+      'Attorney review',
+      'Cofounder coaching',
+      'Priority support'
+    ],
+    featured: true
+  },
+  {
+    name: 'Enterprise',
+    key: 'enterprise',
+    price: 'Custom',
+    priceValue: null,
+    priceId: null,
+    description: 'For investors and schools',
+    features: [
+      'Bulk licensing',
+      'White label option',
+      'Priority support'
+    ]
+  }
+];

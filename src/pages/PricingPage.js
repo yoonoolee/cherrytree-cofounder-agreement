@@ -4,6 +4,8 @@ import Header from '../components/Header';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { usePageMeta } from '../hooks/usePageMeta';
 import Footer from '../components/Footer';
+import PricingCard from '../components/PricingCard';
+import { PRICING_PLANS } from '../constants/pricing';
 
 function PricingPage() {
   const navigate = useNavigate();
@@ -59,40 +61,6 @@ function PricingPage() {
     }
   }, []);
 
-  const pricingPlans = [
-    {
-      name: 'Starter',
-      price: '$200',
-      description: 'For individuals to get started',
-      features: [
-        'Real-time collaboration',
-        'Instant agreement from survey',
-        'Unlimited collaborators'
-      ]
-    },
-    {
-      name: 'Pro',
-      price: '$800',
-      description: 'Everything in Starter, plus',
-      features: [
-        'Attorney review',
-        'Cofounder coaching',
-        'Priority support'
-      ],
-      featured: true
-    },
-    {
-      name: 'Enterprise',
-      price: 'Custom',
-      description: 'For investors and schools',
-      features: [
-        'Bulk licensing',
-        'White label option',
-        'Priority support'
-      ]
-    }
-  ];
-
   const faqs = [
     {
       q: `Which plan is right for me?`,
@@ -133,49 +101,25 @@ function PricingPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 items-stretch max-w-7xl mx-auto">
-            {pricingPlans.map((plan, i) => (
-              <div
+            {PRICING_PLANS.map((plan, i) => (
+              <PricingCard
                 key={i}
-                className={`bg-white p-8 rounded-lg flex flex-col ${
-                  plan.featured
-                    ? 'ring-2 ring-gray-700'
-                    : 'border border-gray-400'
-                }`}
-              >
-                <h3 className="text-xl font-normal mb-2 text-[#716B6B]">{plan.name}</h3>
-                <div className="text-4xl font-bold mb-2">{plan.price}</div>
-                <p className="text-gray-600 mb-6">{plan.description}</p>
-                <button
-                  onClick={() => {
-                    if (plan.name === 'Enterprise') {
-                      window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 });
+                plan={plan}
+                buttonText={plan.name === 'Enterprise' ? 'Contact sales' : 'Get started'}
+                onButtonClick={() => {
+                  if (plan.name === 'Enterprise') {
+                    window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 });
+                  } else {
+                    // Navigate directly to my.cherrytree.app to avoid double redirect
+                    const isProduction = window.location.hostname.includes('cherrytree.app');
+                    if (isProduction) {
+                      window.location.href = 'https://my.cherrytree.app/dashboard';
                     } else {
-                      // Navigate directly to my.cherrytree.app to avoid double redirect
-                      const isProduction = window.location.hostname.includes('cherrytree.app');
-                      if (isProduction) {
-                        window.location.href = 'https://my.cherrytree.app/dashboard';
-                      } else {
-                        navigate('/dashboard', { replace: true });
-                      }
+                      navigate('/dashboard', { replace: true });
                     }
-                  }}
-                  className={`w-full py-3 rounded-lg font-semibold transition mb-6 ${
-                    plan.featured
-                      ? 'button-shimmer bg-[#000000] text-white hover:bg-[#1a1a1a]'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {plan.name === 'Enterprise' ? 'Contact sales' : 'Get started'}
-                </button>
-                <ul className="space-y-3 flex-grow">
-                  {plan.features.map((feature, j) => (
-                    <li key={j} className="flex items-center gap-2">
-                      <span className="text-[#716B6B]">✓</span>
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                  }
+                }}
+              />
             ))}
           </div>
 

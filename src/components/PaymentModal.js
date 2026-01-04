@@ -1,38 +1,16 @@
 import React, { useState } from 'react';
-import { db, functions } from '../firebase';
+import { functions } from '../firebase';
 import { httpsCallable } from 'firebase/functions';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useAuth } from '@clerk/clerk-react';
+import { PRICING_PLANS } from '../constants/pricing';
+import ProWaitlistForm from './ProWaitlistForm';
 
-const PLANS = {
-  starter: {
-    name: 'Starter',
-    price: 200,
-    priceId: process.env.REACT_APP_STRIPE_STARTER_PRICE_ID,
-    description: 'For individuals to get started',
-    features: [
-      'Real-time collaboration',
-      'Instant agreement from survey',
-      'Unlimited collaborators',
-      'Equity split calculator',
-      'Decision-making framework',
-      'Vesting schedules',
-      'IP assignment clauses'
-    ]
-  },
-  pro: {
-    name: 'Pro',
-    price: 800,
-    priceId: process.env.REACT_APP_STRIPE_PRO_PRICE_ID,
-    description: 'Everything in Starter, plus',
-    features: [
-      'Attorney review',
-      'Cofounder coaching',
-      'Priority support'
-    ]
-  }
-};
+// Filter to only Starter and Pro for payment modal
+const PLANS = PRICING_PLANS.filter(plan => plan.key === 'starter' || plan.key === 'pro').reduce((acc, plan) => {
+  acc[plan.key] = plan;
+  return acc;
+}, {});
 
 function PaymentModal({ onClose, onSuccess }) {
   const { currentUser, loading: userLoading } = useUser();
@@ -42,10 +20,6 @@ function PaymentModal({ onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isWiggling, setIsWiggling] = useState(false);
-  const [waitlistEmail, setWaitlistEmail] = useState('');
-  const [waitlistLoading, setWaitlistLoading] = useState(false);
-  const [waitlistSuccess, setWaitlistSuccess] = useState(false);
-  const [waitlistError, setWaitlistError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -128,37 +102,6 @@ function PaymentModal({ onClose, onSuccess }) {
     }
   };
 
-  const handleWaitlistSubmit = async (e) => {
-    e.preventDefault();
-    setWaitlistError('');
-
-    // Validate email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!waitlistEmail.trim() || !emailRegex.test(waitlistEmail)) {
-      setWaitlistError('Please enter a valid email address');
-      return;
-    }
-
-    setWaitlistLoading(true);
-
-    try {
-      // Save to Firestore
-      await addDoc(collection(db, 'proWaitlist'), {
-        email: waitlistEmail.toLowerCase().trim(),
-        timestamp: serverTimestamp(),
-        source: 'payment_modal'
-      });
-
-      setWaitlistSuccess(true);
-      setWaitlistEmail('');
-    } catch (err) {
-      console.error('Error adding to waitlist:', err);
-      setWaitlistError('Failed to join waitlist. Please try again.');
-    } finally {
-      setWaitlistLoading(false);
-    }
-  };
-
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-3 md:p-4 z-[9999]" onClick={onClose}>
       <div className="bg-white/95 backdrop-blur-xl rounded-lg shadow-2xl border border-gray-200/50 max-w-2xl w-full p-4 md:p-8 relative z-[10000] max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -209,23 +152,21 @@ function PaymentModal({ onClose, onSuccess }) {
 
                 const cardContent = (
                   <>
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm md:text-base font-semibold text-gray-900">{plan.name}</h3>
-                        <p className="text-xs text-gray-500 mt-0.5">{plan.description}</p>
+                    {!isProPlan && (
+                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 mb-2 ${
+                        selectedPlan === key ? 'border-black' : 'border-gray-300'
+                      }`}>
+                        {selectedPlan === key && (
+                          <div className="w-2 h-2 rounded-full bg-black"></div>
+                        )}
                       </div>
-                      {!isProPlan && (
-                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-2 ${
-                          selectedPlan === key ? 'border-black' : 'border-gray-300'
-                        }`}>
-                          {selectedPlan === key && (
-                            <div className="w-2 h-2 rounded-full bg-black"></div>
-                          )}
-                        </div>
-                      )}
+                    )}
+                    <div className="mb-2">
+                      <h3 className="text-sm md:text-base font-semibold text-gray-900">{plan.name}</h3>
+                      <p className="text-xs text-gray-500 mt-0.5">{plan.description}</p>
                     </div>
                     <p className="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-3">
-                      ${plan.price}
+                      {plan.price}
                     </p>
                     <ul className="space-y-1">
                       {plan.features.map((feature, idx) => (
@@ -237,43 +178,7 @@ function PaymentModal({ onClose, onSuccess }) {
                     </ul>
                     {isProPlan && (
                       <div className="mt-3 pt-3 border-t border-gray-200 md:mt-4 md:pt-4">
-                        {waitlistSuccess ? (
-                          <div className="text-center">
-                            <p className="text-sm text-gray-900">✓ Thanks! We'll email you when Pro launches</p>
-                          </div>
-                        ) : (
-                          <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-2">
-                              Join the waitlist
-                            </label>
-                            <div className="flex gap-2">
-                              <input
-                                type="email"
-                                value={waitlistEmail}
-                                onChange={(e) => setWaitlistEmail(e.target.value)}
-                                placeholder="your@email.com"
-                                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:border-black focus:ring-0 bg-white"
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    handleWaitlistSubmit(e);
-                                  }
-                                }}
-                              />
-                              <button
-                                type="button"
-                                onClick={handleWaitlistSubmit}
-                                disabled={waitlistLoading}
-                                className="px-4 py-2 bg-black text-white text-sm font-medium rounded hover:bg-gray-800 transition disabled:opacity-50"
-                              >
-                                {waitlistLoading ? 'Joining...' : 'Join'}
-                              </button>
-                            </div>
-                            {waitlistError && (
-                              <p className="text-xs text-red-600 mt-2">{waitlistError}</p>
-                            )}
-                          </div>
-                        )}
+                        <ProWaitlistForm source="payment_modal" />
                       </div>
                     )}
                   </>

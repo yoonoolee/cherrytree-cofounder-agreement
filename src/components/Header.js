@@ -66,7 +66,7 @@ function Header() {
                 }}
                 className="text-[#808080] hover:text-black transition nav-link-underline"
               >
-                My Projects
+                Dashboard
               </button>
             ) : (
               <button
@@ -169,7 +169,7 @@ function Header() {
                     onClick={handleDashboardNavigation}
                     className="text-[#808080] hover:text-black hover:bg-gray-50 transition px-4 py-3 text-left text-sm w-full"
                   >
-                    My Projects
+                    Dashboard
                   </button>
                 ) : (
                   <button

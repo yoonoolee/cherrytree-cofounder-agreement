@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import PaymentModal from './PaymentModal';
+import UpgradeModal from './UpgradeModal';
 import { useUser } from '../contexts/UserContext';
 import { useClerk } from '@clerk/clerk-react';
 
@@ -26,6 +27,7 @@ function SurveyNavigation({
   const [fetchedProjects, setFetchedProjects] = useState([]);
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const dropdownRef = useRef(null);
 
   // Use provided projects or fetch them
@@ -207,7 +209,7 @@ function SurveyNavigation({
         {!hideUpgrade && (
           <div className="px-3 pb-1">
             <button
-              onClick={() => setShowPaymentModal(true)}
+              onClick={() => setShowUpgradeModal(true)}
               className="text-left px-2 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center text-gray-600"
               style={{ width: '100%', fontSize: '15px' }}
             >
@@ -254,6 +256,14 @@ function SurveyNavigation({
         <PaymentModal
           onClose={() => setShowPaymentModal(false)}
           onSuccess={handlePaymentSuccess}
+        />
+      )}
+
+      {/* Upgrade Modal */}
+      {showUpgradeModal && (
+        <UpgradeModal
+          onClose={() => setShowUpgradeModal(false)}
+          currentPlan={planType || 'starter'}
         />
       )}
     </>
