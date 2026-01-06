@@ -52,13 +52,11 @@ function CollaboratorManager({ project }) {
 
     try {
       // Invite member to organization
-      // Clerk automatically accepts invitation during auth flow
-      // Redirects to dashboard via signInFallbackRedirectUrl/signUpFallbackRedirectUrl
       await organization.inviteMember({
         emailAddress: email,
         role: 'org:member'
       });
-      setSuccess('Invitation sent');
+      setSuccess('An invitation has been sent if the email exists. Please ask them to check their spam folder if they don\'t see it in their inbox.');
       setEmail('');
       // Refresh the invitations list
       await invitations?.revalidate?.();

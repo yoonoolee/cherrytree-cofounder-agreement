@@ -14,7 +14,6 @@ import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import SurveyPage from './pages/SurveyPage';
 import PreviewPage from './pages/PreviewPage';
-import SettingsPage from './pages/SettingsPage';
 
 function App() {
   return (
@@ -56,15 +55,6 @@ function App() {
           element={
             <ProtectedRoute>
               <PreviewPage />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <SettingsPage />
             </ProtectedRoute>
           }
         />

@@ -7,7 +7,6 @@ Allow: /
 # Block private/authenticated pages
 Disallow: /dashboard
 Disallow: /survey/
-Disallow: /onboarding
 Disallow: /settings
 
 # Sitemap location

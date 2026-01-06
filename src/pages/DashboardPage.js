@@ -18,7 +18,6 @@ function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [displayedTagline, setDisplayedTagline] = useState('');
-  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const fullTagline = 'Great companies start with great company.';
 
   // Helper variables for Clerk user data
@@ -42,12 +41,6 @@ function DashboardPage() {
   useEffect(() => {
     const fetchProjects = async () => {
       if (!currentUser || !orgsLoaded) return;
-
-      // On first load, wait 3 seconds for webhooks to complete
-      if (!initialLoadComplete) {
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        setInitialLoadComplete(true);
-      }
 
       try {
         const allProjects = [];
@@ -109,7 +102,7 @@ function DashboardPage() {
     if (!authLoading && orgsLoaded) {
       fetchProjects();
     }
-  }, [currentUser?.id, authLoading, orgsLoaded, userMemberships?.data?.length, userId, initialLoadComplete]);
+  }, [currentUser?.id, authLoading, orgsLoaded, userMemberships?.data?.length, userId]);
 
   const handlePaymentSuccess = (newProjectId) => {
     setShowPaymentModal(false);
@@ -218,7 +211,7 @@ function DashboardPage() {
             {/* Resources Section */}
             <div className="grid grid-cols-2 gap-3 md:gap-4">
               <button
-                onClick={() => navigate('/settings')}
+                onClick={() => {}}
                 className="group p-3 md:p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 text-left"
               >
                 <div className="flex items-center gap-2 md:gap-3">
@@ -228,8 +221,8 @@ function DashboardPage() {
                     </svg>
                   </div>
                   <div className="min-w-0">
-                    <h4 className="text-sm font-medium text-gray-900 truncate">Profile</h4>
-                    <p className="text-xs text-gray-500 truncate">Your account</p>
+                    <h4 className="text-sm font-medium text-gray-900 truncate">[PLACEHOLDER]</h4>
+                    <p className="text-xs text-gray-500 truncate">Coming soon</p>
                   </div>
                 </div>
               </button>

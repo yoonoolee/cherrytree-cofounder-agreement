@@ -18,6 +18,7 @@ function LoginPage() {
         <SignIn
           routing="virtual"
           signUpUrl="/signup"
+          fallbackRedirectUrl="/dashboard"
           appearance={{
             elements: {
               rootBox: 'mx-auto',
