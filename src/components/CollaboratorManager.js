@@ -5,7 +5,7 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase';
 
 function CollaboratorManager({ project }) {
-  const { organization, memberships, invitations } = useOrganization({
+  const { organization, memberships, invitations, membership } = useOrganization({
     memberships: {
       infinite: true,
       keepPreviousData: true
@@ -16,6 +16,9 @@ function CollaboratorManager({ project }) {
     }
   });
   const { getToken } = useAuth();
+
+  // Check if current user is admin
+  const isAdmin = membership?.role === 'org:admin';
 
   const [email, setEmail] = useState('');
   const [inviting, setInviting] = useState(false);
@@ -106,32 +109,37 @@ function CollaboratorManager({ project }) {
 
   return (
     <div className="w-full">
-      <p className="text-sm text-gray-700 font-medium mb-6">
+      <p className="text-sm text-gray-700 font-medium mb-2">
         Every cofounder needs to be added as a collaborator.
       </p>
+      <p className="text-sm text-gray-600 mb-6">
+        Only Admins can add or remove collaborators.
+      </p>
 
-      {/* Invite Form */}
-      <form onSubmit={handleInvite} className="mb-8">
-        <div className="flex gap-3">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter email address"
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-            required
-          />
-          <button
-            type="submit"
-            disabled={inviting}
-            className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-          >
-            {inviting ? 'Sending...' : 'Invite'}
-          </button>
-        </div>
-        {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
-        {success && <p className="text-sm text-green-600 mt-2">{success}</p>}
-      </form>
+      {/* Invite Form - Only visible to admins */}
+      {isAdmin && (
+        <form onSubmit={handleInvite} className="mb-8">
+          <div className="flex gap-3">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter email address"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+              required
+            />
+            <button
+              type="submit"
+              disabled={inviting}
+              className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            >
+              {inviting ? 'Sending...' : 'Invite'}
+            </button>
+          </div>
+          {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+          {success && <p className="text-sm text-green-600 mt-2">{success}</p>}
+        </form>
+      )}
 
       {/* Members List */}
       {(memberships?.data?.length > 0 || invitations?.data?.length > 0) && (
@@ -151,7 +159,7 @@ function CollaboratorManager({ project }) {
                     <span className="text-green-700 font-medium">Active</span>
                   </p>
                 </div>
-                {membership.role !== 'org:admin' && (
+                {isAdmin && membership.role !== 'org:admin' && (
                   <button
                     onClick={() => handleRemoveMember(membership.id)}
                     className="text-sm text-red-600 hover:text-red-800"
@@ -173,12 +181,14 @@ function CollaboratorManager({ project }) {
                     <span className="text-yellow-700 font-medium">Pending</span>
                   </p>
                 </div>
-                <button
-                  onClick={() => handleRevokeInvitation(invitation.id)}
-                  className="text-sm text-red-600 hover:text-red-800"
-                >
-                  Remove
-                </button>
+                {isAdmin && (
+                  <button
+                    onClick={() => handleRevokeInvitation(invitation.id)}
+                    className="text-sm text-red-600 hover:text-red-800"
+                  >
+                    Remove
+                  </button>
+                )}
               </div>
             ))}
           </div>

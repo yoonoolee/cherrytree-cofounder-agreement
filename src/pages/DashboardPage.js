@@ -141,7 +141,7 @@ function DashboardPage() {
         {/* Greeting */}
         <div className="mb-6 md:mb-10">
           <h1 className="text-2xl md:text-4xl font-light text-gray-900">
-            Your Dashboard
+            Hello, {currentUser?.firstName || 'there'}
           </h1>
           <p className="text-sm md:text-lg mt-2" style={{ color: '#6B7280' }}>{displayedTagline}</p>
         </div>
@@ -169,7 +169,7 @@ function DashboardPage() {
           {/* Right - Projects + Resources */}
           <div className="w-full md:flex-1 flex flex-col gap-4">
             {/* Projects List */}
-            <div className="bg-white rounded-lg border border-gray-200 min-h-[288px] md:min-h-[324px] max-h-[288px] md:max-h-[324px] flex flex-col hover:border-gray-300 hover:shadow-lg transition-all duration-200">
+            <div className="bg-white rounded-lg border border-gray-200 min-h-[200px] md:min-h-[220px] max-h-[200px] md:max-h-[220px] flex flex-col hover:border-gray-300 hover:shadow-lg transition-all duration-200">
               <div className="px-4 py-3 border-b border-gray-200">
                 <span className="text-sm font-medium text-gray-700">Existing projects</span>
               </div>
@@ -209,24 +209,7 @@ function DashboardPage() {
             </div>
 
             {/* Resources Section */}
-            <div className="grid grid-cols-2 gap-3 md:gap-4">
-              <button
-                onClick={() => {}}
-                className="group p-3 md:p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 text-left"
-              >
-                <div className="flex items-center gap-2 md:gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors flex-shrink-0">
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd"/>
-                    </svg>
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="text-sm font-medium text-gray-900 truncate">[PLACEHOLDER]</h4>
-                    <p className="text-xs text-gray-500 truncate">Coming soon</p>
-                  </div>
-                </div>
-              </button>
-
+            <div className="flex flex-col gap-3 md:gap-4">
               <a
                 href="https://cherrytree.beehiiv.com/"
                 target="_blank"
@@ -235,14 +218,14 @@ function DashboardPage() {
               >
                 <div className="flex items-center gap-2 md:gap-3">
                   <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors flex-shrink-0">
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-blue-900">
                       <path fillRule="evenodd" d="M2 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 002 2H4a2 2 0 01-2-2V5zm3 1h6v4H5V6zm6 6H5v2h6v-2z" clipRule="evenodd"/>
                       <path d="M15 7h1a2 2 0 012 2v5.5a1.5 1.5 0 01-3 0V7z"/>
                     </svg>
                   </div>
                   <div className="min-w-0">
                     <h4 className="text-sm font-medium text-gray-900 truncate">Newsletter</h4>
-                    <p className="text-xs text-gray-500 truncate">Cofounder tips</p>
+                    <p className="text-xs text-gray-500">placeholder placeholder placheoldrlr placholedre placeholder placeholder placeholder placheoldrlr placholedre placeholder</p>
                   </div>
                 </div>
               </a>
@@ -253,14 +236,14 @@ function DashboardPage() {
               >
                 <div className="flex items-center gap-2 md:gap-3">
                   <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors flex-shrink-0">
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-blue-900">
                       <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
                       <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
                     </svg>
                   </div>
                   <div className="min-w-0">
                     <h4 className="text-sm font-medium text-gray-900 truncate">Contact</h4>
-                    <p className="text-xs text-gray-500 truncate">Get in touch</p>
+                    <p className="text-xs text-gray-500">placeholder placeholder placheoldrlr placholedre placeholder placeholder placeholder placheoldrlr placholedre placeholder</p>
                   </div>
                 </div>
               </button>
@@ -273,13 +256,13 @@ function DashboardPage() {
               >
                 <div className="flex items-center gap-2 md:gap-3">
                   <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors flex-shrink-0">
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-blue-900">
                       <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
                     </svg>
                   </div>
                   <div className="min-w-0">
                     <h4 className="text-sm font-medium text-gray-900 truncate">Pricing</h4>
-                    <p className="text-xs text-gray-500 truncate">View plans</p>
+                    <p className="text-xs text-gray-500">placeholder placeholder placheoldrlr placholedre placeholder placeholder placeholder placheoldrlr placholedre placeholder</p>
                   </div>
                 </div>
               </a>
