@@ -478,14 +478,8 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                 // Set flag to prevent ProtectedRoute from intercepting
                 sessionStorage.setItem('isLoggingOut', 'true');
 
-                const isProduction = window.location.hostname.includes('cherrytree.app');
-                const targetUrl = isProduction ? 'https://cherrytree.app' : 'http://localhost:3000';
-
-                // Sign out (will trigger React re-renders but flag prevents redirect)
+                // Sign out (Clerk Dashboard handles redirect)
                 signOut().catch(err => console.error('Error signing out:', err));
-
-                // Then redirect (page will unload and clear sessionStorage)
-                window.location.replace(targetUrl);
               }
             }}
             className="w-full text-gray-700 px-4 py-2.5 rounded text-sm font-medium hover:bg-gray-200 transition flex items-center justify-start gap-2"

@@ -12,6 +12,7 @@ import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
+import AcceptInvitePage from './pages/AcceptInvitePage';
 import SurveyPage from './pages/SurveyPage';
 import PreviewPage from './pages/PreviewPage';
 
@@ -30,6 +31,7 @@ function App() {
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/login/*" element={<LoginPage />} />
         <Route path="/signup/*" element={<SignUpPage />} />
+        <Route path="/accept-invite" element={<AcceptInvitePage />} />
 
         {/* Protected Routes */}
         <Route

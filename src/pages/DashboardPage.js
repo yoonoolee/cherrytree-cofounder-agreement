@@ -126,7 +126,6 @@ function DashboardPage() {
         <div className="flex items-center gap-4">
           {/* UserButton - Clerk's built-in user menu with sign-out */}
           <UserButton
-            afterSignOutUrl="/"
             appearance={{
               elements: {
                 avatarBox: 'w-8 h-8'

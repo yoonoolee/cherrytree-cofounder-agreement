@@ -783,64 +783,16 @@ exports.deleteAccount = onCall({
 });
 
 // ============================================================================
-// ORGANIZATION MEMBER MANAGEMENT
+// ORGANIZATION MANAGEMENT (imported from organizations.js)
 // ============================================================================
 
-// Remove a member from an organization using Clerk backend API
-exports.removeOrganizationMember = onCall({
-  ...FUNCTION_CONFIG,
-  secrets: [CLERK_SECRET_KEY],
-  invoker: 'public',
-}, async (request) => {
-  try {
-    const { sessionToken, userId, organizationId } = request.data;
+const {
+  createOrganizationInvitation,
+  removeOrganizationMember
+} = require('./organizations');
 
-    if (!sessionToken) {
-      throw new HttpsError('invalid-argument', 'Session token is required');
-    }
-
-    if (!userId) {
-      throw new HttpsError('invalid-argument', 'User ID is required');
-    }
-
-    if (!organizationId) {
-      throw new HttpsError('invalid-argument', 'Organization ID is required');
-    }
-
-    // Verify Clerk session token and get requesting user's ID
-    const { userId: requestingUserId } = await verifyClerkToken(sessionToken);
-
-    // Get Clerk client
-    const clerk = getClerk();
-
-    // Verify requesting user is admin of the organization
-    const requestingMembership = await clerk.organizations.getOrganizationMembership({
-      organizationId,
-      userId: requestingUserId
-    });
-
-    if (requestingMembership.role !== 'org:admin') {
-      throw new HttpsError('permission-denied', 'Only admins can remove members');
-    }
-
-    // Remove the member using Clerk's backend API
-    await clerk.organizations.deleteOrganizationMembership({
-      organizationId,
-      userId
-    });
-
-    return {
-      success: true,
-      message: 'Member removed successfully'
-    };
-  } catch (error) {
-    console.error('Error removing organization member:', error);
-    if (error instanceof HttpsError) {
-      throw error;
-    }
-    throw new HttpsError('internal', `Failed to remove member: ${error.message}`);
-  }
-});
+exports.createOrganizationInvitation = createOrganizationInvitation;
+exports.removeOrganizationMember = removeOrganizationMember;
 
 // ============================================================================
 // CLERK WEBHOOKS

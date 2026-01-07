@@ -133,14 +133,8 @@ function SurveyNavigation({
     // Set flag to prevent ProtectedRoute from intercepting
     sessionStorage.setItem('isLoggingOut', 'true');
 
-    const isProduction = window.location.hostname.includes('cherrytree.app');
-    const targetUrl = isProduction ? 'https://cherrytree.app' : 'http://localhost:3000';
-
-    // Sign out (will trigger React re-renders but flag prevents redirect)
+    // Sign out (Clerk Dashboard handles redirect)
     signOut().catch(err => console.error('Error signing out:', err));
-
-    // Then redirect (page will unload and clear sessionStorage)
-    window.location.replace(targetUrl);
   };
 
   return (

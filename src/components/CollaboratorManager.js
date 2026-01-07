@@ -14,6 +14,7 @@ function CollaboratorManager({ project }) {
       infinite: true,
       keepPreviousData: true
     }
+    // Note: Non-admins will get 403 on invitations, but it's handled gracefully
   });
   const { getToken } = useAuth();
 
@@ -54,20 +55,28 @@ function CollaboratorManager({ project }) {
     setInviting(true);
 
     try {
-      // Invite member to organization
-      await organization.inviteMember({
+      // Get Clerk session token
+      const sessionToken = await getToken({ template: 'firebase' });
+
+      // Call backend function to create organization invitation with custom redirect
+      const createInvitation = httpsCallable(functions, 'createOrganizationInvitation');
+      await createInvitation({
+        sessionToken,
         emailAddress: email,
+        organizationId: organization.id,
         role: 'org:member'
       });
+
       setSuccess('An invitation has been sent if the email exists. Please ask them to check their spam folder if they don\'t see it in their inbox.');
       setEmail('');
-      // Refresh the invitations list
+      // Refresh both lists
+      await memberships?.revalidate?.();
       await invitations?.revalidate?.();
       // Clear success message after 10 seconds
       setTimeout(() => setSuccess(''), 10000);
     } catch (err) {
       console.error('Invite error:', err);
-      setError(err.errors?.[0]?.message || 'Failed to send invitation');
+      setError(err.message || 'Failed to send invitation');
     } finally {
       setInviting(false);
     }
@@ -102,7 +111,6 @@ function CollaboratorManager({ project }) {
         await invitations?.revalidate?.();
       }
     } catch (err) {
-      // Silently handle errors - the UI will still update via revalidate
       console.error('Error revoking invitation:', err);
     }
   };
@@ -142,7 +150,7 @@ function CollaboratorManager({ project }) {
       )}
 
       {/* Members List */}
-      {(memberships?.data?.length > 0 || invitations?.data?.length > 0) && (
+      {(memberships?.data?.length > 0 || (isAdmin && invitations?.data?.length > 0)) && (
         <div>
           <h4 className="text-sm font-semibold text-gray-900 mb-3">Members</h4>
           <div className="space-y-2">
@@ -170,8 +178,8 @@ function CollaboratorManager({ project }) {
               </div>
             ))}
 
-            {/* Pending Invitations */}
-            {invitations?.data?.map((invitation) => (
+            {/* Pending Invitations - Only shown to admins */}
+            {isAdmin && invitations?.data?.map((invitation) => (
               <div key={invitation.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900">{invitation.emailAddress}</p>
@@ -181,14 +189,12 @@ function CollaboratorManager({ project }) {
                     <span className="text-yellow-700 font-medium">Pending</span>
                   </p>
                 </div>
-                {isAdmin && (
-                  <button
-                    onClick={() => handleRevokeInvitation(invitation.id)}
-                    className="text-sm text-red-600 hover:text-red-800"
-                  >
-                    Remove
-                  </button>
-                )}
+                <button
+                  onClick={() => handleRevokeInvitation(invitation.id)}
+                  className="text-sm text-red-600 hover:text-red-800"
+                >
+                  Remove
+                </button>
               </div>
             ))}
           </div>

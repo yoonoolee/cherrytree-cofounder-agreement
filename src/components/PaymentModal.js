@@ -74,8 +74,8 @@ function PaymentModal({ onClose, onSuccess }) {
       // Create Stripe checkout session
       const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
 
-      // Use environment-specific app URL
-      const baseUrl = process.env.REACT_APP_APP_URL || window.location.origin;
+      // Always use current domain for redirects (works for localhost, dev, and prod)
+      const baseUrl = window.location.origin;
 
       const result = await createCheckoutSession({
         sessionToken,
