@@ -28,6 +28,8 @@ function CollaboratorManager({ project }) {
   const [inviting, setInviting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [removingUserId, setRemovingUserId] = useState(null);
+  const [revokingInvitationId, setRevokingInvitationId] = useState(null);
 
   // If project doesn't have a Clerk organization, show message
   if (!project.clerkOrgId) {
@@ -86,6 +88,7 @@ function CollaboratorManager({ project }) {
   };
 
   const handleRemoveMember = async (userId) => {
+    setRemovingUserId(userId);
     try {
       // Get Clerk session token
       const sessionToken = await getToken({ template: 'firebase' });
@@ -102,10 +105,12 @@ function CollaboratorManager({ project }) {
     } finally {
       // Always refresh the list to show current state
       await memberships?.revalidate?.();
+      setRemovingUserId(null);
     }
   };
 
   const handleRevokeInvitation = async (invitationId) => {
+    setRevokingInvitationId(invitationId);
     try {
       const invitation = invitations?.data?.find(inv => inv.id === invitationId);
       if (invitation) {
@@ -115,6 +120,8 @@ function CollaboratorManager({ project }) {
       }
     } catch (err) {
       console.error('Error revoking invitation:', err);
+    } finally {
+      setRevokingInvitationId(null);
     }
   };
 
@@ -173,9 +180,10 @@ function CollaboratorManager({ project }) {
                 {isAdmin && membership.role !== 'org:admin' && (
                   <button
                     onClick={() => handleRemoveMember(membership.publicUserData.userId)}
-                    className="text-sm text-red-600 hover:text-red-800"
+                    disabled={removingUserId === membership.publicUserData.userId}
+                    className="text-sm text-red-600 hover:text-red-800 disabled:text-gray-400 disabled:cursor-not-allowed"
                   >
-                    Remove
+                    {removingUserId === membership.publicUserData.userId ? 'Removing...' : 'Remove'}
                   </button>
                 )}
               </div>
@@ -194,9 +202,10 @@ function CollaboratorManager({ project }) {
                 </div>
                 <button
                   onClick={() => handleRevokeInvitation(invitation.id)}
-                  className="text-sm text-red-600 hover:text-red-800"
+                  disabled={revokingInvitationId === invitation.id}
+                  className="text-sm text-red-600 hover:text-red-800 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
-                  Remove
+                  {revokingInvitationId === invitation.id ? 'Removing...' : 'Remove'}
                 </button>
               </div>
             ))}
