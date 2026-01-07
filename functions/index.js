@@ -793,42 +793,40 @@ exports.removeOrganizationMember = onCall({
   invoker: 'public',
 }, async (request) => {
   try {
-    const { sessionToken, membershipId, organizationId } = request.data;
+    const { sessionToken, userId, organizationId } = request.data;
 
     if (!sessionToken) {
       throw new HttpsError('invalid-argument', 'Session token is required');
     }
 
-    if (!membershipId) {
-      throw new HttpsError('invalid-argument', 'Membership ID is required');
+    if (!userId) {
+      throw new HttpsError('invalid-argument', 'User ID is required');
     }
 
     if (!organizationId) {
       throw new HttpsError('invalid-argument', 'Organization ID is required');
     }
 
-    // Verify Clerk session token (ensures user is authenticated)
-    await verifyClerkToken(sessionToken);
+    // Verify Clerk session token and get requesting user's ID
+    const { userId: requestingUserId } = await verifyClerkToken(sessionToken);
 
     // Get Clerk client
     const clerk = getClerk();
 
-    // Fetch all memberships to find the userId for this membershipId
-    const { data: memberships } = await clerk.organizations.getOrganizationMembershipList({
-      organizationId
+    // Verify requesting user is admin of the organization
+    const requestingMembership = await clerk.organizations.getOrganizationMembership({
+      organizationId,
+      userId: requestingUserId
     });
 
-    // Find the membership by ID
-    const membership = memberships.find(m => m.id === membershipId);
-
-    if (!membership) {
-      throw new HttpsError('not-found', 'Membership not found');
+    if (requestingMembership.role !== 'org:admin') {
+      throw new HttpsError('permission-denied', 'Only admins can remove members');
     }
 
-    // Remove the member using Clerk's backend API with organizationId and userId
+    // Remove the member using Clerk's backend API
     await clerk.organizations.deleteOrganizationMembership({
       organizationId,
-      userId: membership.publicUserData.userId
+      userId
     });
 
     return {

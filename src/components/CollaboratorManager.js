@@ -73,7 +73,7 @@ function CollaboratorManager({ project }) {
     }
   };
 
-  const handleRemoveMember = async (membershipId) => {
+  const handleRemoveMember = async (userId) => {
     try {
       // Get Clerk session token
       const sessionToken = await getToken({ template: 'firebase' });
@@ -82,7 +82,7 @@ function CollaboratorManager({ project }) {
       const removeOrganizationMember = httpsCallable(functions, 'removeOrganizationMember');
       await removeOrganizationMember({
         sessionToken,
-        membershipId,
+        userId,
         organizationId: organization.id
       });
     } catch (err) {
@@ -161,7 +161,7 @@ function CollaboratorManager({ project }) {
                 </div>
                 {isAdmin && membership.role !== 'org:admin' && (
                   <button
-                    onClick={() => handleRemoveMember(membership.id)}
+                    onClick={() => handleRemoveMember(membership.publicUserData.userId)}
                     className="text-sm text-red-600 hover:text-red-800"
                   >
                     Remove
