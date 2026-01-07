@@ -220,14 +220,14 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
 
   if (!project) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#ffffff' }}>
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-gray-600">Loading preview...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: '#ffffff' }}>
+    <div className="min-h-screen flex bg-white">
       {/* Top Header */}
       <div className="fixed top-0 left-0 right-0 h-16 bg-white flex items-center justify-between px-6 gap-4" style={{ zIndex: 50 }}>
         {/* Cherrytree Logo */}

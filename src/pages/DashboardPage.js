@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { useOrganizationList, UserButton } from '@clerk/clerk-react';
-import { db } from '../firebase';
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import PaymentModal from '../components/PaymentModal';
+import { useProjects } from '../hooks/useProjects';
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -14,95 +13,29 @@ function DashboardPage() {
       infinite: true
     }
   });
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [displayedTagline, setDisplayedTagline] = useState('');
-  const fullTagline = 'Great companies start with great company.';
 
-  // Helper variables for Clerk user data
-  const userId = currentUser?.id;
-  const userEmail = currentUser?.primaryEmailAddress?.emailAddress;
+  // Constants
+  const FULL_TAGLINE = 'Great companies start with great company.';
+  const TYPING_SPEED_MS = 38; // Speed of typing animation
+
+  // Fetch projects using custom hook
+  const { projects, loading } = useProjects(currentUser, userMemberships, orgsLoaded);
 
   useEffect(() => {
     let currentIndex = 0;
     const intervalId = setInterval(() => {
-      if (currentIndex <= fullTagline.length) {
-        setDisplayedTagline(fullTagline.slice(0, currentIndex));
+      if (currentIndex <= FULL_TAGLINE.length) {
+        setDisplayedTagline(FULL_TAGLINE.slice(0, currentIndex));
         currentIndex++;
       } else {
         clearInterval(intervalId);
       }
-    }, 38);
+    }, TYPING_SPEED_MS);
 
     return () => clearInterval(intervalId);
   }, []);
-
-  useEffect(() => {
-    const fetchProjects = async () => {
-      if (!currentUser || !orgsLoaded) return;
-
-      try {
-        const allProjects = [];
-
-        // Get organization IDs from Clerk user memberships
-        const orgIds = userMemberships?.data?.map(membership => membership.organization.id) || [];
-
-        if (orgIds.length > 0) {
-          // Fetch projects for each organization
-          const projectsRef = collection(db, 'projects');
-
-          // Query projects by Clerk Organization IDs
-          for (const orgId of orgIds) {
-            const orgQuery = query(
-              projectsRef,
-              where('clerkOrgId', '==', orgId),
-              limit(100)
-            );
-            const orgSnapshot = await getDocs(orgQuery);
-
-            orgSnapshot.docs.forEach(doc => {
-              if (!allProjects.find(p => p.id === doc.id)) {
-                allProjects.push({ id: doc.id, ...doc.data() });
-              }
-            });
-          }
-        }
-
-        // Fallback: Also fetch projects without clerkOrgId (legacy projects)
-        const projectsRef = collection(db, 'projects');
-        const ownedQuery = query(
-          projectsRef,
-          where('ownerId', '==', userId),
-          limit(100)
-        );
-        const ownedSnapshot = await getDocs(ownedQuery);
-
-        ownedSnapshot.docs.forEach(doc => {
-          if (!allProjects.find(p => p.id === doc.id)) {
-            allProjects.push({ id: doc.id, ...doc.data() });
-          }
-        });
-
-        // Sort by lastOpened
-        allProjects.sort((a, b) => {
-          const aTime = a.lastOpened?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
-          const bTime = b.lastOpened?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
-          return bTime - aTime;
-        });
-
-        setProjects(allProjects);
-      } catch (error) {
-        console.error('Error fetching projects:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (!authLoading && orgsLoaded) {
-      fetchProjects();
-    }
-  }, [currentUser?.id, authLoading, orgsLoaded, userMemberships?.data?.length, userId]);
 
   const handlePaymentSuccess = (newProjectId) => {
     setShowPaymentModal(false);

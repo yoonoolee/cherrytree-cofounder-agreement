@@ -6,6 +6,11 @@ import { useAuth } from '@clerk/clerk-react';
 import { PRICING_PLANS } from '../constants/pricing';
 import ProWaitlistForm from './ProWaitlistForm';
 
+// Constants
+const WIGGLE_DURATION_MS = 500; // Duration of wiggle animation for validation errors
+const PROJECT_NAME_MIN_LENGTH = 2; // Minimum characters for project/company name
+const PROJECT_NAME_MAX_LENGTH = 100; // Maximum characters for project/company name
+
 // Filter to only Starter and Pro for payment modal
 const PLANS = PRICING_PLANS.filter(plan => plan.key === 'starter' || plan.key === 'pro').reduce((acc, plan) => {
   acc[plan.key] = plan;
@@ -29,19 +34,19 @@ function PaymentModal({ onClose, onSuccess }) {
     // Validate project name
     if (!trimmedName) {
       setIsWiggling(true);
-      setTimeout(() => setIsWiggling(false), 500);
+      setTimeout(() => setIsWiggling(false), WIGGLE_DURATION_MS);
       return;
     }
 
-    if (trimmedName.length < 2) {
-      setError('Company name must be at least 2 characters');
+    if (trimmedName.length < PROJECT_NAME_MIN_LENGTH) {
+      setError(`Company name must be at least ${PROJECT_NAME_MIN_LENGTH} characters`);
       setIsWiggling(true);
-      setTimeout(() => setIsWiggling(false), 500);
+      setTimeout(() => setIsWiggling(false), WIGGLE_DURATION_MS);
       return;
     }
 
-    if (trimmedName.length > 100) {
-      setError('Company name must be less than 100 characters');
+    if (trimmedName.length > PROJECT_NAME_MAX_LENGTH) {
+      setError(`Company name must be less than ${PROJECT_NAME_MAX_LENGTH} characters`);
       return;
     }
 

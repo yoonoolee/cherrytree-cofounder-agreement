@@ -2,6 +2,10 @@ import { useState, useRef, useCallback } from 'react';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
+// Constants
+const AUTO_SAVE_DELAY_MS = 2000; // Debounce delay before saving (2 seconds)
+const SAVE_COMPLETION_DELAY_MS = 500; // Delay before marking save as complete
+
 /**
  * Custom hook for auto-saving form data to Firestore
  * Handles debouncing, "Other" field merging, and save status tracking
@@ -113,7 +117,7 @@ export function useAutoSave(projectId, project, currentUser) {
     } finally {
       setTimeout(() => {
         isSavingRef.current = false;
-      }, 500);
+      }, SAVE_COMPLETION_DELAY_MS);
     }
   }, [project, projectId, currentUser]);
 
@@ -145,7 +149,7 @@ export function useAutoSave(projectId, project, currentUser) {
 
         saveTimeoutRef.current = setTimeout(() => {
           saveFormData(newFormData);
-        }, 2000);
+        }, AUTO_SAVE_DELAY_MS);
 
         return newFormData;
       });

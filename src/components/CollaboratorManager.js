@@ -4,6 +4,9 @@ import { useAuth } from '@clerk/clerk-react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase';
 
+// Constants
+const SUCCESS_MESSAGE_DURATION_MS = 10000; // How long to display success message (10 seconds)
+
 function CollaboratorManager({ project }) {
   const { organization, memberships, invitations, membership } = useOrganization({
     memberships: {
@@ -72,8 +75,8 @@ function CollaboratorManager({ project }) {
       // Refresh both lists
       await memberships?.revalidate?.();
       await invitations?.revalidate?.();
-      // Clear success message after 10 seconds
-      setTimeout(() => setSuccess(''), 10000);
+      // Clear success message after configured duration
+      setTimeout(() => setSuccess(''), SUCCESS_MESSAGE_DURATION_MS);
     } catch (err) {
       console.error('Invite error:', err);
       setError(err.message || 'Failed to send invitation');

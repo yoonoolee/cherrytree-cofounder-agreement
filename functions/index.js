@@ -41,6 +41,10 @@ const FUNCTION_CONFIG = {
   serviceAccount: `cloud-functions@${process.env.GCLOUD_PROJECT}.iam.gserviceaccount.com`,
 };
 
+// Validation constants
+const EMAIL_MAX_LENGTH = 254; // RFC 5321 maximum email length
+const PROJECT_NAME_MIN_LENGTH = 2; // Minimum characters for project/company name
+
 // ============================================================================
 // INPUT VALIDATION & SANITIZATION HELPERS
 // Note: Authentication helpers (verifyClerkToken, getClerk) are in auth-helpers.js
@@ -91,7 +95,7 @@ function isValidEmail(email) {
   if (typeof email !== 'string') return false;
 
   // Basic validation using validator.js
-  return validator.isEmail(email) && email.length <= 254;
+  return validator.isEmail(email) && email.length <= EMAIL_MAX_LENGTH;
 }
 
 /**
@@ -378,7 +382,7 @@ exports.createCheckoutSession = onCall({
 
   // Validate and sanitize project name
   const sanitizedProjectName = sanitizeInput(projectName, 100);
-  if (!sanitizedProjectName || sanitizedProjectName.length < 2) {
+  if (!sanitizedProjectName || sanitizedProjectName.length < PROJECT_NAME_MIN_LENGTH) {
     throw new HttpsError('invalid-argument', 'Invalid project name');
   }
 

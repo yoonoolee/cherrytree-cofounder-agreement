@@ -456,14 +456,14 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   // Show loading spinner while waiting for project data
   if (!project) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#ffffff' }}>
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-gray-600">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: '#ffffff' }}>
+    <div className="min-h-screen flex bg-white">
 
       {/* Welcome Popup */}
       {showWelcomePopup && (
@@ -963,23 +963,11 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               onChange={(e) => handleSearch(e.target.value)}
               onFocus={(e) => {
                 if (searchQuery) setShowSearchResults(true);
-                e.target.style.backgroundColor = '#E5E7EB';
               }}
               onBlur={(e) => {
-                e.target.style.backgroundColor = '#F3F4F6';
                 setTimeout(() => setShowSearchResults(false), 200);
               }}
-              className="w-full text-sm transition text-gray-500 placeholder-gray-500"
-              style={{
-                backgroundColor: '#F3F4F6',
-                borderRadius: '0.5rem',
-                border: 'none',
-                paddingLeft: '2.5rem',
-                paddingRight: '1rem',
-                paddingTop: '0.5rem',
-                paddingBottom: '0.5rem',
-                outline: 'none'
-              }}
+              className="w-full text-sm transition text-gray-500 placeholder-gray-500 bg-gray-100 focus:bg-gray-200 rounded-lg border-none pl-10 pr-4 py-2 outline-none"
             />
           </div>
 
@@ -1165,7 +1153,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto md:ml-[270px]" style={{ marginTop: '64px', backgroundColor: '#ffffff' }}>
+      <div className="flex-1 overflow-y-auto md:ml-[270px] mt-16 bg-white">
         <div className="max-w-5xl mx-auto pt-6 px-4 md:px-6 md:pr-12 pb-20" key={currentSection}>
           {/* Content Container */}
           <div className="px-4 md:px-20 pt-8 pb-8">

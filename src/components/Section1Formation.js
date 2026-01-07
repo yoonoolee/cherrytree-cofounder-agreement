@@ -3,6 +3,9 @@ import { US_STATES, INDUSTRIES } from './surveyConstants';
 import CustomSelect from './CustomSelect';
 import Tooltip from './Tooltip';
 
+// Constants
+const ADDRESS_SEARCH_MIN_LENGTH = 3; // Minimum characters before triggering address autocomplete
+
 function Section1Formation({ formData, handleChange, isReadOnly, showValidation }) {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -160,7 +163,7 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
   const handleInputChange = async (value) => {
     setInputValue(value);
 
-    if (!value || value.length < 3) {
+    if (!value || value.length < ADDRESS_SEARCH_MIN_LENGTH) {
       setSuggestions([]);
       setShowSuggestions(false);
       setHighlightedIndex(0);
@@ -395,7 +398,7 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
                 onKeyDown={handleAddressKeyDown}
                 disabled={isReadOnly}
                 autoComplete="chrome-off"
-                onFocus={() => !isReadOnly && inputValue.length >= 3 && setShowSuggestions(true)}
+                onFocus={() => !isReadOnly && inputValue.length >= ADDRESS_SEARCH_MIN_LENGTH && setShowSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                 placeholder="Start typing address..."
