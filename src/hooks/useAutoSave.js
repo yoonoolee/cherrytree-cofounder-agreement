@@ -97,11 +97,6 @@ export function useAutoSave(projectId, project, currentUser) {
         lastEditedBy: currentUser?.primaryEmailAddress?.emailAddress
       };
 
-      // Sync project name with company name
-      if (cleanedData.companyName && cleanedData.companyName !== project.name) {
-        updateData.name = cleanedData.companyName;
-      }
-
       // Reset approvals only if there are actual changes
       if (changedFields.length > 0 && project.requiresApprovals) {
         updateData.approvals = {};
@@ -123,11 +118,10 @@ export function useAutoSave(projectId, project, currentUser) {
 
   /**
    * Handle form field changes with debounced auto-save
-   * @param {object} formData - Current form data
    * @param {function} setFormData - Form data setter
    * @param {function} calculateFullMailingAddress - Address calculator function
    */
-  const createChangeHandler = (formData, setFormData, calculateFullMailingAddress) => {
+  const createChangeHandler = useCallback((setFormData, calculateFullMailingAddress) => {
     return (field, value) => {
       setFormData(prevFormData => {
         const newFormData = {
@@ -154,7 +148,7 @@ export function useAutoSave(projectId, project, currentUser) {
         return newFormData;
       });
     };
-  };
+  }, [saveFormData]);
 
   return {
     saveStatus,

@@ -16,7 +16,8 @@ function Section2Cofounders({ formData, handleChange, isReadOnly, showValidation
         handleChange('cofounderCount', calculatedCofounderCount.toString());
       }
 
-      // Initialize cofounders array if needed
+      // Initialize cofounders array ONLY if length doesn't match
+      // Don't reinitialize if it already has the correct length (preserves user input)
       if (cofounders.length !== calculatedCofounderCount) {
         const newCofounders = Array.from({ length: calculatedCofounderCount }, (_, i) => {
           return cofounders[i] || {
@@ -30,7 +31,7 @@ function Section2Cofounders({ formData, handleChange, isReadOnly, showValidation
         handleChange('cofounders', newCofounders);
       }
     }
-  }, [calculatedCofounderCount]);
+  }, [calculatedCofounderCount, formData.cofounderCount, cofounders.length, handleChange]);
 
   const handleCofounderChange = (index, field, value) => {
     const newCofounders = [...cofounders];

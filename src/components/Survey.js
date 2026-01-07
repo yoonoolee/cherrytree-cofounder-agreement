@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLoadScript } from '@react-google-maps/api';
 import { db } from '../firebase';
@@ -58,7 +58,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // Helper function to calculate fullMailingAddress
-  const calculateFullMailingAddress = (addressData) => {
+  const calculateFullMailingAddress = useCallback((addressData) => {
     const { mailingStreet, mailingStreet2, mailingCity, mailingState, mailingZip } = addressData;
 
     let fullAddress = '';
@@ -72,7 +72,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
       }
     }
     return fullAddress;
-  };
+  }, []);
 
   // Custom hooks for managing survey state and logic
   // Note: isSavingRef needs to be created first for useProjectSync
@@ -88,7 +88,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   const { calculateProgress, isSectionCompleted, isOtherFieldValid, isOtherArrayFieldValid } = useValidation(formData, project);
 
   // Create the handleChange function using the hook
-  const handleChange = createChangeHandler(formData, setFormData, calculateFullMailingAddress);
+  const handleChange = createChangeHandler(setFormData, calculateFullMailingAddress);
 
   // Set initial section when project changes - always start at Formation & Purpose
   useEffect(() => {

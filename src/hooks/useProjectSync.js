@@ -149,7 +149,7 @@ export function useProjectSync(projectId, isSavingRef, calculateFullMailingAddre
     );
 
     return unsubscribe;
-  }, [projectId, isSavingRef, calculateFullMailingAddress, lastSaved]);
+  }, [projectId, isSavingRef, calculateFullMailingAddress]);
 
   return {
     project,

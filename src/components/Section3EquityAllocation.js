@@ -17,12 +17,13 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
     const index = allCollaborators.indexOf(email);
     // Get cofounder at that index
     const cofounder = formData.cofounders?.[index];
-    // Return first name if it exists, otherwise return email
+    // Return first name if it exists, otherwise return fallback
     if (cofounder?.fullName && cofounder.fullName.trim() !== '') {
       const firstName = cofounder.fullName.trim().split(' ')[0];
       return firstName;
     }
-    return email;
+    // Convert index to letter (0 -> A, 1 -> B, etc.)
+    return `Cofounder ${String.fromCharCode(65 + index)}`;
   };
 
   // Initialize equity percentages, acknowledgments, and calculator data if not present

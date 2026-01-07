@@ -101,9 +101,9 @@
 /* Header cells matching: px-4 py-3 text-left text-sm font-medium text-gray-900 border-r border-gray-200 */
 .Spreadsheet th,
 .Spreadsheet thead .Spreadsheet__cell {
-  padding: 0.75rem 1rem !important;
+  padding: 0.5rem 0.5rem !important;
   text-align: left !important;
-  font-size: 1rem !important;
+  font-size: 0.875rem !important;
   font-weight: 600 !important;
   color: #6B7280 !important;
   background-color: #ffffff !important;
@@ -112,8 +112,9 @@
   border-top: none !important;
   border-left: none !important;
   line-height: 1.5 !important;
-  pointer-events: none !important;
   cursor: default !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
   position: sticky !important;
   top: 0 !important;
   z-index: 20 !important;
@@ -127,7 +128,7 @@
 /* Body cells matching: px-4 py-3 text-sm border-r border-gray-200 */
 .Spreadsheet tbody .Spreadsheet__cell,
 .Spreadsheet td {
-  padding: 0.75rem 1rem !important;
+  padding: 0.5rem 0.5rem !important;
   font-size: 0.875rem !important;
   color: #374151 !important;
   background-color: #ffffff !important;
@@ -149,6 +150,14 @@
 .Spreadsheet tbody tr:last-child .Spreadsheet__cell,
 .Spreadsheet tbody tr:last-child td {
   border-bottom: 0 !important;
+}
+
+/* Apply max-width only to columns 2+ (importance and cofounder columns) */
+.Spreadsheet th:nth-child(n+2),
+.Spreadsheet thead .Spreadsheet__cell:nth-child(n+2),
+.Spreadsheet tbody .Spreadsheet__cell:nth-child(n+2),
+.Spreadsheet td:nth-child(n+2) {
+  max-width: 120px !important;
 }
 
 /* Ensure consistent row height */
@@ -222,11 +231,13 @@
   font-weight: 500 !important;
   color: #111827 !important;
   background-color: #ffffff !important;
-  pointer-events: none !important;
   cursor: default !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
   position: sticky !important;
   left: 0 !important;
   z-index: 10 !important;
+  min-width: 150px !important;
 }
 
 /* First header cell - needs both sticky top and left */
@@ -238,6 +249,7 @@
   left: 0 !important;
   top: 0 !important;
   z-index: 30 !important;
+  min-width: 150px !important;
 }
 
 /* Header cell styling using className */
@@ -248,8 +260,9 @@
   font-weight: 600 !important;
   color: #6B7280 !important;
   background-color: #ffffff !important;
-  pointer-events: none !important;
   cursor: default !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
   position: -webkit-sticky !important;
   position: sticky !important;
   top: 0 !important;
@@ -284,8 +297,9 @@ td.category-cell {
   font-weight: 500 !important;
   color: #111827 !important;
   background-color: #ffffff !important;
-  pointer-events: none !important;
   cursor: default !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
 }
 
 /* Separator cell styling - completely non-interactive */
@@ -294,10 +308,9 @@ td.category-cell {
 .Spreadsheet tbody td.separator-cell,
 .Spreadsheet tbody .Spreadsheet__cell.separator-cell,
 td.separator-cell {
-  pointer-events: none !important;
   cursor: default !important;
-  user-select: none !important;
-  -webkit-user-select: none !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
   background-color: #f3f4f6 !important;
 }
 
@@ -394,8 +407,7 @@ td.separator-cell {
   .Spreadsheet tbody td:first-child,
   .Spreadsheet th:first-child,
   .Spreadsheet thead .Spreadsheet__cell:first-child {
-    min-width: 100px !important;
-    max-width: 130px !important;
+    min-width: 120px !important;
     font-size: 0.7rem !important;
   }
 

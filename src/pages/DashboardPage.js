@@ -73,58 +73,35 @@ function DashboardPage() {
         {/* Greeting */}
         <div className="mb-6 md:mb-10">
           <h1 className="text-2xl md:text-4xl font-light text-gray-900">
-            Hello, {currentUser?.firstName || 'there'}
+            Welcome{currentUser?.firstName ? `, ${currentUser.firstName}` : ''}!
           </h1>
-          <p className="text-sm md:text-lg mt-2" style={{ color: '#6B7280' }}>{displayedTagline}</p>
+          <p className="text-sm md:text-lg mt-2 text-gray-500">{displayedTagline}</p>
         </div>
 
         {/* Two Column Layout - stacks on mobile */}
         <div className="flex flex-col md:flex-row gap-4 md:gap-8">
-          {/* Left - Create New */}
-          <div className="w-full md:flex-1">
-            <button
-              onClick={() => setShowPaymentModal(true)}
-              className="group w-full h-full p-6 md:p-8 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 min-h-[432px] md:min-h-[468px] flex items-center justify-center"
-            >
-              <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center mb-4 transition-colors">
-                  <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
-                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
-                  </svg>
-                </div>
-                <h3 className="font-medium text-gray-900 mb-1">Create a new Cofounder Agreement</h3>
-                <p className="text-sm text-gray-500">One agreement per company.</p>
-              </div>
-            </button>
-          </div>
-
-          {/* Right - Projects + Resources */}
+          {/* Left - Projects List */}
           <div className="w-full md:flex-1 flex flex-col gap-4">
             {/* Projects List */}
-            <div className="bg-white rounded-lg border border-gray-200 min-h-[200px] md:min-h-[220px] max-h-[200px] md:max-h-[220px] flex flex-col hover:border-gray-300 hover:shadow-lg transition-all duration-200">
-              <div className="px-4 py-3 border-b border-gray-200">
-                <span className="text-sm font-medium text-gray-700">Existing projects</span>
-              </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col">
+              <h2 className="text-base font-semibold text-gray-900 mb-3">My cofounder agreements</h2>
 
               {projects.length > 0 ? (
-                <div className="divide-y divide-gray-100 flex-1 overflow-y-auto">
+                <div className="flex flex-col gap-2">
                   {projects.map((project) => (
                     <button
                       key={project.id}
                       onClick={() => navigate(`/survey/${project.id}`)}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-50 transition flex items-center"
+                      className="w-full text-left p-2.5 bg-white rounded-lg border border-gray-200 hover:border-gray-400 hover:shadow-sm transition-all duration-200"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center flex-shrink-0">
-                          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded bg-gray-100 flex items-center justify-center flex-shrink-0">
+                          <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" className="text-gray-500">
                             <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/>
                           </svg>
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-medium text-gray-900 truncate">
-                            {project.name || 'Untitled Project'}
-                          </p>
-                          <p className="text-xs text-gray-500 truncate">
                             {project.name || 'Untitled Project'}
                           </p>
                         </div>
@@ -133,12 +110,31 @@ function DashboardPage() {
                   ))}
                 </div>
               ) : (
-                <div className="px-4 py-8 text-center text-sm text-gray-500 flex-1 flex items-center justify-center">
+                <div className="px-4 py-4 text-center text-sm text-gray-500 flex-1 flex items-center justify-center">
                   No projects found
                 </div>
               )}
 
             </div>
+          </div>
+
+          {/* Right - Create New + Resources */}
+          <div className="w-full md:flex-1 flex flex-col gap-4">
+            {/* Create New Button */}
+            <button
+              onClick={() => setShowPaymentModal(true)}
+              className="group w-full p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 flex items-center justify-center"
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center mb-3 transition-colors">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
+                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
+                  </svg>
+                </div>
+                <h3 className="text-sm font-medium text-gray-900 mb-1">Create a new Cofounder Agreement</h3>
+                <p className="text-xs text-gray-500">One agreement per company.</p>
+              </div>
+            </button>
 
             {/* Resources Section */}
             <div className="flex flex-col gap-3 md:gap-4">
