@@ -5,11 +5,7 @@
  */
 
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
-const { defineSecret } = require('firebase-functions/params');
-const { createClerkClient, verifyToken: clerkVerifyToken } = require('@clerk/backend');
-
-// Load secrets
-const CLERK_SECRET_KEY = defineSecret('CLERK_SECRET_KEY');
+const { getClerk, verifyClerkToken, CLERK_SECRET_KEY } = require('./auth-helpers');
 
 // Shared Cloud Functions configuration
 const FUNCTION_CONFIG = {
@@ -17,64 +13,8 @@ const FUNCTION_CONFIG = {
   serviceAccount: `cloud-functions@${process.env.GCLOUD_PROJECT}.iam.gserviceaccount.com`,
 };
 
-// Lazy-load Clerk instance
-let clerkInstance = null;
-const getClerk = () => {
-  if (!clerkInstance) {
-    clerkInstance = createClerkClient({ secretKey: CLERK_SECRET_KEY.value() });
-  }
-  return clerkInstance;
-};
-
-/**
- * Verify Clerk session token and return user data
- */
-async function verifyClerkToken(sessionToken) {
-  if (!sessionToken || typeof sessionToken !== 'string') {
-    throw new HttpsError('unauthenticated', 'Missing or invalid session token');
-  }
-
-  try {
-    const clerk = getClerk();
-
-    // Verify the session token
-    const payload = await clerkVerifyToken(sessionToken, {
-      secretKey: CLERK_SECRET_KEY.value()
-    });
-
-    if (!payload || !payload.sub) {
-      throw new HttpsError('unauthenticated', 'Invalid session');
-    }
-
-    const userId = payload.sub;
-
-    // Get user details
-    const user = await clerk.users.getUser(userId);
-
-    if (!user) {
-      throw new HttpsError('unauthenticated', 'User not found');
-    }
-
-    const primaryEmail = user.emailAddresses.find(
-      email => email.id === user.primaryEmailAddressId
-    );
-
-    if (!primaryEmail) {
-      throw new HttpsError('unauthenticated', 'User email not found');
-    }
-
-    return {
-      userId: user.id,
-      email: primaryEmail.emailAddress,
-    };
-  } catch (error) {
-    console.error('Clerk token verification error:', error);
-    if (error instanceof HttpsError) {
-      throw error;
-    }
-    throw new HttpsError('unauthenticated', 'Authentication failed');
-  }
-}
+// Note: Authentication helpers (verifyClerkToken, getClerk, CLERK_SECRET_KEY)
+// are imported from auth-helpers.js
 
 // ============================================================================
 // CREATE ORGANIZATION INVITATION
@@ -86,7 +26,9 @@ async function verifyClerkToken(sessionToken) {
  */
 exports.createOrganizationInvitation = onCall({
   ...FUNCTION_CONFIG,
-  secrets: [CLERK_SECRET_KEY]
+  secrets: [CLERK_SECRET_KEY],
+  invoker: 'public',
+  consumeAppCheckToken: true
 }, async (request) => {
   const { sessionToken, emailAddress, organizationId, role } = request.data;
 
@@ -161,6 +103,7 @@ exports.removeOrganizationMember = onCall({
   ...FUNCTION_CONFIG,
   secrets: [CLERK_SECRET_KEY],
   invoker: 'public',
+  consumeAppCheckToken: true
 }, async (request) => {
   try {
     const { sessionToken, userId, organizationId } = request.data;

@@ -18,8 +18,9 @@ const axios = require('axios');
 const { defineString } = require('firebase-functions/params');
 const Stripe = require('stripe');
 const crypto = require('crypto');
-const { createClerkClient, verifyToken: clerkVerifyToken } = require('@clerk/backend');
 const { Webhook } = require('svix');
+const validator = require('validator');
+const { getClerk, verifyClerkToken, CLERK_SECRET_KEY } = require('./auth-helpers');
 
 initializeApp();
 const db = getFirestore();
@@ -30,17 +31,9 @@ const { defineSecret } = require('firebase-functions/params');
 const MAKE_WEBHOOK_URL = defineSecret('MAKE_WEBHOOK_URL');
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');
-const CLERK_SECRET_KEY = defineSecret('CLERK_SECRET_KEY');
 const CLERK_WEBHOOK_SECRET = defineSecret('CLERK_WEBHOOK_SECRET');
 
-// Lazy-load Clerk instance
-let clerkInstance = null;
-const getClerk = () => {
-  if (!clerkInstance) {
-    clerkInstance = createClerkClient({ secretKey: CLERK_SECRET_KEY.value() });
-  }
-  return clerkInstance;
-};
+// Note: CLERK_SECRET_KEY and getClerk() are imported from auth-helpers.js
 
 // Shared Cloud Functions configuration
 const FUNCTION_CONFIG = {
@@ -49,68 +42,13 @@ const FUNCTION_CONFIG = {
 };
 
 // ============================================================================
-// CLERK AUTHENTICATION HELPERS
-// ============================================================================
-
-/**
- * Verify Clerk session token and return user data
- * @param {string} sessionToken - Clerk session token from client
- * @returns {Promise<{userId: string, email: string}>} - User ID and email
- * @throws {HttpsError} - If token is invalid or verification fails
- */
-async function verifyClerkToken(sessionToken) {
-  if (!sessionToken || typeof sessionToken !== 'string') {
-    throw new HttpsError('unauthenticated', 'Missing or invalid session token');
-  }
-
-  try {
-    const clerk = getClerk();
-
-    // Verify the session token using standalone JWT verification (no network call)
-    const payload = await clerkVerifyToken(sessionToken, {
-      secretKey: CLERK_SECRET_KEY.value()
-    });
-
-    if (!payload || !payload.sub) {
-      throw new HttpsError('unauthenticated', 'Invalid session');
-    }
-
-    const userId = payload.sub;
-
-    // Get user details
-    const user = await clerk.users.getUser(userId);
-
-    if (!user) {
-      throw new HttpsError('unauthenticated', 'User not found');
-    }
-
-    const primaryEmail = user.emailAddresses.find(
-      email => email.id === user.primaryEmailAddressId
-    );
-
-    if (!primaryEmail) {
-      throw new HttpsError('unauthenticated', 'User email not found');
-    }
-
-    return {
-      userId: user.id,
-      email: primaryEmail.emailAddress,
-    };
-  } catch (error) {
-    console.error('Clerk token verification error:', error);
-    if (error instanceof HttpsError) {
-      throw error;
-    }
-    throw new HttpsError('unauthenticated', 'Failed to verify authentication token');
-  }
-}
-
-// ============================================================================
 // INPUT VALIDATION & SANITIZATION HELPERS
+// Note: Authentication helpers (verifyClerkToken, getClerk) are in auth-helpers.js
 // ============================================================================
 
 /**
  * Sanitize user input to prevent XSS and injection attacks
+ * Used for project names, descriptions, and other user-generated text content
  * @param {string} input - The input to sanitize
  * @param {number} maxLength - Maximum allowed length
  * @returns {string} - Sanitized input
@@ -120,23 +58,68 @@ function sanitizeInput(input, maxLength = 100) {
     return '';
   }
 
-  return input
-    .replace(/[<>]/g, '') // Remove HTML tags
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+=/gi, '') // Remove event handlers
-    .trim()
-    .substring(0, maxLength);
+  // Trim and enforce length limit
+  let sanitized = input.trim().substring(0, maxLength);
+
+  // Use validator.js to escape HTML entities (converts < to &lt;, etc.)
+  sanitized = validator.escape(sanitized);
+
+  // Additional security layers
+  sanitized = sanitized
+    // Remove null bytes
+    .replace(/\0/g, '')
+    // Remove javascript: protocol (all variants including obfuscated)
+    .replace(/j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*:/gi, '')
+    // Remove data: protocol (can be used for XSS)
+    .replace(/data:/gi, '')
+    // Remove vbscript: protocol
+    .replace(/vbscript:/gi, '')
+    // Remove event handlers (onclick, onerror, etc.)
+    .replace(/on\w+\s*=/gi, '');
+
+  return sanitized.trim();
 }
 
 /**
- * Validate email format
+ * Validate email format - Basic check for early feedback
+ * Note: Clerk handles full email validation. This is just for early user feedback
+ * before making API calls to Clerk.
  * @param {string} email - Email to validate
- * @returns {boolean} - Whether email is valid
+ * @returns {boolean} - Whether email has basic valid format
  */
 function isValidEmail(email) {
   if (typeof email !== 'string') return false;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email) && email.length <= 254;
+
+  // Basic validation using validator.js
+  return validator.isEmail(email) && email.length <= 254;
+}
+
+/**
+ * Validate URL and ensure it's HTTPS from a trusted domain
+ * CRITICAL: Prevents malicious URLs from being stored (e.g., PDF URLs from webhooks)
+ * Uses exact hostname matching for maximum security
+ * @param {string} url - URL to validate
+ * @param {string[]} allowedDomains - List of exact allowed hostnames
+ * @returns {boolean} - Whether URL is valid and from trusted domain
+ */
+function isValidTrustedUrl(url, allowedDomains) {
+  if (typeof url !== 'string') return false;
+
+  try {
+    const parsedUrl = new URL(url);
+
+    // Must be HTTPS
+    if (parsedUrl.protocol !== 'https:') {
+      return false;
+    }
+
+    // Check if hostname exactly matches any allowed domain
+    const hostname = parsedUrl.hostname.toLowerCase();
+    return allowedDomains.some(domain => domain.toLowerCase() === hostname);
+  } catch (error) {
+    // Invalid URL format
+    return false;
+  }
 }
 
 // ============================================================================
@@ -216,34 +199,26 @@ exports.submitSurvey = onCall({
     // Update project with PDF URL (with validation)
     if (response.data && response.data.pdfUrl) {
       // Validate PDF URL to prevent malicious URLs
-      try {
-        const pdfUrl = new URL(response.data.pdfUrl);
-        // Only allow HTTPS URLs from trusted domains
-        if (pdfUrl.protocol !== 'https:') {
-          throw new Error('PDF URL must use HTTPS');
-        }
-        // Allowlist common cloud storage providers
-        const allowedDomains = [
-          'drive.google.com',
-          'storage.googleapis.com',
-          'firebasestorage.googleapis.com',
-          's3.amazonaws.com',
-          'dropbox.com',
-          'onedrive.live.com'
-        ];
-        const isAllowed = allowedDomains.some(domain => pdfUrl.hostname.includes(domain));
-        if (!isAllowed) {
-          throw new Error('PDF URL from untrusted domain');
-        }
+      // Exact hostname matching - add specific subdomains as needed
+      const allowedDomains = [
+        'drive.google.com',
+        'storage.googleapis.com',
+        'firebasestorage.googleapis.com',
+        's3.amazonaws.com',
+        'www.dropbox.com',
+        'dropbox.com',
+        'onedrive.live.com'
+      ];
 
-        await projectRef.update({
-          pdfUrl: response.data.pdfUrl,
-          pdfGeneratedAt: FieldValue.serverTimestamp()
-        });
-      } catch (urlError) {
-        console.error('Invalid PDF URL from Make.com:', urlError);
-        throw new HttpsError('internal', 'Invalid PDF URL received');
+      if (!isValidTrustedUrl(response.data.pdfUrl, allowedDomains)) {
+        console.error('Invalid or untrusted PDF URL from Make.com:', response.data.pdfUrl);
+        throw new HttpsError('internal', 'Invalid PDF URL received from external service');
       }
+
+      await projectRef.update({
+        pdfUrl: response.data.pdfUrl,
+        pdfGeneratedAt: FieldValue.serverTimestamp()
+      });
     }
 
     return {
@@ -338,34 +313,26 @@ exports.generatePreviewPDF = onCall({
     // Save preview PDF URL (with validation)
     if (response.data && response.data.pdfUrl) {
       // Validate PDF URL to prevent malicious URLs
-      try {
-        const pdfUrl = new URL(response.data.pdfUrl);
-        // Only allow HTTPS URLs from trusted domains
-        if (pdfUrl.protocol !== 'https:') {
-          throw new Error('PDF URL must use HTTPS');
-        }
-        // Allowlist common cloud storage providers
-        const allowedDomains = [
-          'drive.google.com',
-          'storage.googleapis.com',
-          'firebasestorage.googleapis.com',
-          's3.amazonaws.com',
-          'dropbox.com',
-          'onedrive.live.com'
-        ];
-        const isAllowed = allowedDomains.some(domain => pdfUrl.hostname.includes(domain));
-        if (!isAllowed) {
-          throw new Error('PDF URL from untrusted domain');
-        }
+      // Exact hostname matching - add specific subdomains as needed
+      const allowedDomains = [
+        'drive.google.com',
+        'storage.googleapis.com',
+        'firebasestorage.googleapis.com',
+        's3.amazonaws.com',
+        'www.dropbox.com',
+        'dropbox.com',
+        'onedrive.live.com'
+      ];
 
-        await projectRef.update({
-          previewPdfUrl: response.data.pdfUrl,
-          previewPdfGeneratedAt: FieldValue.serverTimestamp()
-        });
-      } catch (urlError) {
-        console.error('Invalid PDF URL from Make.com:', urlError);
-        throw new HttpsError('internal', 'Invalid PDF URL received');
+      if (!isValidTrustedUrl(response.data.pdfUrl, allowedDomains)) {
+        console.error('Invalid or untrusted PDF URL from Make.com:', response.data.pdfUrl);
+        throw new HttpsError('internal', 'Invalid PDF URL received from external service');
       }
+
+      await projectRef.update({
+        previewPdfUrl: response.data.pdfUrl,
+        previewPdfGeneratedAt: FieldValue.serverTimestamp()
+      });
     }
 
     return {
@@ -617,6 +584,7 @@ exports.getFirebaseToken = onCall({
   ...FUNCTION_CONFIG,
   secrets: [CLERK_SECRET_KEY],
   invoker: 'public',
+  consumeAppCheckToken: true
 }, async (request) => {
   try {
     const { sessionToken } = request.data;
@@ -653,6 +621,7 @@ exports.deleteAccount = onCall({
   ...FUNCTION_CONFIG,
   secrets: [CLERK_SECRET_KEY],
   invoker: 'public',
+  consumeAppCheckToken: true
 }, async (request) => {
   try {
     const { sessionToken } = request.data;

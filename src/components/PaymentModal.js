@@ -45,8 +45,17 @@ function PaymentModal({ onClose, onSuccess }) {
       return;
     }
 
-    // Prevent script injection attempts
-    if (/<|>|javascript:|on\w+=/i.test(trimmedName)) {
+    // Prevent script injection and malicious patterns
+    // Note: Server-side sanitization is the real protection, this is just early feedback
+    const dangerousPatterns = [
+      /<|>/,           // HTML tags
+      /javascript:/i,  // javascript: protocol
+      /data:/i,        // data: protocol
+      /vbscript:/i,    // vbscript: protocol
+      /on\w+=/i        // event handlers (onclick, onerror, etc.)
+    ];
+
+    if (dangerousPatterns.some(pattern => pattern.test(trimmedName))) {
       setError('Company name contains invalid characters');
       return;
     }
