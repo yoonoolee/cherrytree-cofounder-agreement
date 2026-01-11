@@ -259,7 +259,7 @@ function DashboardPage() {
         </div>
 
         {/* Your Projects */}
-        <h2 className="text-xl font-medium text-gray-900 mb-4 max-w-4xl mx-auto">Your projects</h2>
+        <h2 className="text-xl font-normal text-gray-900 mb-4 max-w-4xl mx-auto">Your Projects</h2>
 
         {/* Projects Grid */}
         <div className="flex flex-col md:flex-row gap-4 md:gap-3 max-w-4xl mx-auto">
@@ -291,7 +291,7 @@ function DashboardPage() {
                 <button
                   key={project.id}
                   onClick={() => navigate(`/survey/${project.id}`)}
-                  className="w-full md:flex-1 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 overflow-hidden"
+                  className="w-full md:flex-1 md:min-w-0 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 overflow-hidden"
                 >
                   <div className="p-6">
                     <h2 className="text-base font-semibold text-gray-900 mb-2 text-left">
@@ -337,7 +337,7 @@ function DashboardPage() {
           {/* Create New Button */}
           <button
             onClick={() => setShowPaymentModal(true)}
-            className="group w-full md:flex-1 p-6 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 flex items-center justify-center"
+            className="group w-full md:flex-1 md:min-w-0 p-6 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 flex items-center justify-center"
           >
             <div className="flex flex-col items-center text-center">
               <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center mb-4 transition-colors">
@@ -352,7 +352,7 @@ function DashboardPage() {
         </div>
 
         {/* Resources Section - Bottom */}
-        <h2 className="text-xl font-medium text-gray-900 mb-4 mt-8 md:mt-12 max-w-4xl mx-auto">Resources</h2>
+        <h2 className="text-xl font-normal text-gray-900 mb-4 mt-8 md:mt-12 max-w-4xl mx-auto">Resources</h2>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto">
             <a
