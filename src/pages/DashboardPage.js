@@ -204,18 +204,29 @@ function DashboardPage() {
   const { projects, loading } = useProjects(currentUser, userMemberships, orgsLoaded);
 
   useEffect(() => {
-    let currentIndex = 0;
-    const intervalId = setInterval(() => {
-      if (currentIndex <= FULL_TAGLINE.length) {
-        setDisplayedTagline(FULL_TAGLINE.slice(0, currentIndex));
-        currentIndex++;
-      } else {
-        clearInterval(intervalId);
-      }
-    }, TYPING_SPEED_MS);
+    // Only start animation after page is fully loaded
+    if (authLoading || loading) return;
 
-    return () => clearInterval(intervalId);
-  }, []);
+    let currentIndex = 0;
+    let intervalId;
+
+    // Delay the animation start by 500ms after loading completes
+    const timeoutId = setTimeout(() => {
+      intervalId = setInterval(() => {
+        if (currentIndex <= FULL_TAGLINE.length) {
+          setDisplayedTagline(FULL_TAGLINE.slice(0, currentIndex));
+          currentIndex++;
+        } else {
+          clearInterval(intervalId);
+        }
+      }, TYPING_SPEED_MS);
+    }, 500);
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [authLoading, loading]);
 
   const handlePaymentSuccess = (newProjectId) => {
     setShowPaymentModal(false);
@@ -234,7 +245,9 @@ function DashboardPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between">
-        <img src="/images/cherrytree-logo.png" alt="Cherrytree" className="h-6" />
+        <button onClick={() => navigate('/')} className="cursor-pointer">
+          <img src="/images/cherrytree-logo.png" alt="Cherrytree" className="h-6" />
+        </button>
 
         <div className="flex items-center gap-4">
           {/* UserButton - Clerk's built-in user menu with sign-out */}
@@ -259,7 +272,7 @@ function DashboardPage() {
         </div>
 
         {/* Your Projects */}
-        <h2 className="text-xl font-normal text-gray-900 mb-4 max-w-4xl mx-auto">Your Projects</h2>
+        <h2 className="text-lg md:text-xl font-normal text-gray-900 mb-4 max-w-4xl mx-auto">Your Projects</h2>
 
         {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3 max-w-4xl mx-auto">
@@ -303,6 +316,8 @@ function DashboardPage() {
                     : `${cofounderNames.slice(0, -1).join(', ')}, and ${cofounderNames[cofounderNames.length - 1]}`;
                   agreementText = `Cofounder Agreement between ${namesList}`;
                 }
+              } else if (currentUser?.firstName) {
+                agreementText = `Cofounder Agreement for ${currentUser.firstName}`;
               }
 
               return (
@@ -311,16 +326,16 @@ function DashboardPage() {
                   onClick={() => navigate(`/survey/${project.id}`)}
                   className="w-full bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 overflow-hidden"
                 >
-                  <div className="p-6">
+                  <div className="py-6 sm:py-8 px-4 sm:px-6">
                     <h2 className="text-base font-semibold text-gray-900 mb-2 text-left">
                       {project.name || 'Untitled Project'}
                     </h2>
-                    <p className="text-sm text-gray-500 text-left mb-6">
+                    <p className="text-sm text-gray-500 text-left mb-4">
                       {agreementText}
                     </p>
                   </div>
                   {/* Progress Bar */}
-                  <div className="px-6 pb-6">
+                  <div className="px-4 sm:px-6 pb-6 sm:pb-8">
                     <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
                       <span>Progress</span>
                       <span>{progress}%</span>
@@ -331,10 +346,8 @@ function DashboardPage() {
                         style={{ width: `${progress}%` }}
                       />
                     </div>
-                    {/* Divider */}
-                    <div className="border-t border-gray-200 my-3"></div>
                     {/* Status and Last Edited */}
-                    <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center justify-between text-xs text-gray-500 mt-4">
                       <span>
                         {progress < 100 && (
                           <span className="text-blue-600 bg-blue-50 px-2 py-1 rounded">In progress</span>
@@ -347,7 +360,7 @@ function DashboardPage() {
               );
             })
           ) : (
-            <div className="w-full bg-white rounded-lg border border-gray-200 p-8 text-center">
+            <div className="w-full bg-white rounded-lg border border-gray-200 p-6 sm:p-8 text-center">
               <p className="text-sm text-gray-500">No projects found</p>
             </div>
           )}
@@ -355,10 +368,10 @@ function DashboardPage() {
           {/* Create New Button */}
           <button
             onClick={() => setShowPaymentModal(true)}
-            className="group w-full p-6 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 flex items-center justify-center"
+            className="group w-full py-6 sm:py-8 px-4 sm:px-6 bg-white rounded-lg border-2 border-dotted border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 flex items-center justify-center"
           >
             <div className="flex flex-col items-center text-center">
-              <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center mb-4 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center mb-3 sm:mb-4 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
                   <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
                 </svg>
@@ -370,7 +383,7 @@ function DashboardPage() {
         </div>
 
         {/* Resources Section - Bottom */}
-        <h2 className="text-xl font-normal text-gray-900 mb-4 mt-8 md:mt-12 max-w-4xl mx-auto">Resources</h2>
+        <h2 className="text-lg md:text-xl font-normal text-gray-900 mb-4 mt-8 md:mt-12 max-w-4xl mx-auto">Resources</h2>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto">
             <a
@@ -385,7 +398,7 @@ function DashboardPage() {
                 </svg>
               </div>
               <h4 className="text-xs font-medium text-gray-900 mb-1">Pricing</h4>
-              <p className="text-xs text-gray-500">placeholder placeholder.</p>
+              <p className="text-xs text-gray-500">Compare plans</p>
             </a>
 
             <a
@@ -401,7 +414,7 @@ function DashboardPage() {
                 </svg>
               </div>
               <h4 className="text-xs font-medium text-gray-900 mb-1">Newsletter</h4>
-              <p className="text-xs text-gray-500">placeholder placeholder.</p>
+              <p className="text-xs text-gray-500">Weekly stories</p>
             </a>
 
             <button
@@ -415,7 +428,7 @@ function DashboardPage() {
                 </svg>
               </div>
               <h4 className="text-xs font-medium text-gray-900 mb-1">Contact</h4>
-              <p className="text-xs text-gray-500">placeholder placeholder.</p>
+              <p className="text-xs text-gray-500">Get in touch</p>
             </button>
 
             <div className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 p-3 flex flex-col items-center justify-center text-center">
@@ -425,7 +438,7 @@ function DashboardPage() {
                 </svg>
               </div>
               <h4 className="text-xs font-medium text-gray-900 mb-1">Placeholder</h4>
-              <p className="text-xs text-gray-500">Coming soon.</p>
+              <p className="text-xs text-gray-500">Coming soon</p>
             </div>
         </div>
       </div>
