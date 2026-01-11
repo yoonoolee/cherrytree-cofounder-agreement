@@ -51,9 +51,9 @@ function PricingCard({
       {/* Features List */}
       <ul className="space-y-3 flex-grow">
         {plan.features.map((feature, idx) => (
-          <li key={idx} className="flex items-center gap-2">
-            <span className="text-[#716B6B]">✓</span>
-            <span className="text-gray-700">{feature}</span>
+          <li key={idx} className="flex items-start gap-2">
+            <span className="text-[#716B6B] flex-shrink-0 mt-0.5">✓</span>
+            <span className="text-gray-700 text-sm sm:text-base">{feature}</span>
           </li>
         ))}
       </ul>

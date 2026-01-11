@@ -182,11 +182,11 @@ function PaymentModal({ onClose, onSuccess }) {
                     <p className="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-3">
                       {plan.price}
                     </p>
-                    <ul className="space-y-1">
+                    <ul className="space-y-1.5">
                       {plan.features.map((feature, idx) => (
-                        <li key={idx} className="text-xs text-gray-600 flex items-center">
-                          <span className="mr-1">✓</span>
-                          <span>{feature}</span>
+                        <li key={idx} className="text-xs text-gray-600 flex items-start">
+                          <span className="mr-1.5 flex-shrink-0 mt-0.5">✓</span>
+                          <span className="leading-tight">{feature}</span>
                         </li>
                       ))}
                     </ul>
