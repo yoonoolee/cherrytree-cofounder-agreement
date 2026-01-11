@@ -262,14 +262,14 @@ function DashboardPage() {
         <h2 className="text-xl font-normal text-gray-900 mb-4 max-w-4xl mx-auto">Your Projects</h2>
 
         {/* Projects Grid */}
-        <div className="flex flex-col md:flex-row gap-4 md:gap-3 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3 max-w-4xl mx-auto">
           {/* Projects */}
           {projects.length > 0 ? (
             projects.map((project) => {
               const progress = calculateProjectProgress(project);
 
               // Calculate time since last edit
-              const lastEditTime = project.updatedAt || project.lastOpened || project.createdAt;
+              const lastEditTime = project.updatedAt || project.createdAt;
               let timeAgo = '';
               if (lastEditTime) {
                 const now = new Date();
@@ -287,18 +287,36 @@ function DashboardPage() {
                 }
               }
 
+              // Get cofounder first names
+              const cofounders = project.surveyData?.cofounders || [];
+              const cofounderNames = cofounders
+                .map(cf => cf.fullName?.split(' ')[0])
+                .filter(Boolean);
+
+              let agreementText = 'Cofounder Agreement';
+              if (cofounderNames.length > 0) {
+                if (cofounderNames.length === 1) {
+                  agreementText = `Cofounder Agreement for ${cofounderNames[0]}`;
+                } else {
+                  const namesList = cofounderNames.length === 2
+                    ? `${cofounderNames[0]} and ${cofounderNames[1]}`
+                    : `${cofounderNames.slice(0, -1).join(', ')}, and ${cofounderNames[cofounderNames.length - 1]}`;
+                  agreementText = `Cofounder Agreement between ${namesList}`;
+                }
+              }
+
               return (
                 <button
                   key={project.id}
                   onClick={() => navigate(`/survey/${project.id}`)}
-                  className="w-full md:flex-1 md:min-w-0 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 overflow-hidden"
+                  className="w-full bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 overflow-hidden"
                 >
                   <div className="p-6">
                     <h2 className="text-base font-semibold text-gray-900 mb-2 text-left">
                       {project.name || 'Untitled Project'}
                     </h2>
                     <p className="text-sm text-gray-500 text-left mb-6">
-                      Cofounder Agreement
+                      {agreementText}
                     </p>
                   </div>
                   {/* Progress Bar */}
@@ -319,7 +337,7 @@ function DashboardPage() {
                     <div className="flex items-center justify-between text-xs text-gray-500">
                       <span>
                         {progress < 100 && (
-                          <span className="text-blue-600">In progress</span>
+                          <span className="text-blue-600 bg-blue-50 px-2 py-1 rounded">In progress</span>
                         )}
                       </span>
                       {timeAgo && <span>Last edited {timeAgo}</span>}
@@ -329,7 +347,7 @@ function DashboardPage() {
               );
             })
           ) : (
-            <div className="w-full md:flex-1 bg-white rounded-lg border border-gray-200 p-8 text-center">
+            <div className="w-full bg-white rounded-lg border border-gray-200 p-8 text-center">
               <p className="text-sm text-gray-500">No projects found</p>
             </div>
           )}
@@ -337,7 +355,7 @@ function DashboardPage() {
           {/* Create New Button */}
           <button
             onClick={() => setShowPaymentModal(true)}
-            className="group w-full md:flex-1 md:min-w-0 p-6 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 flex items-center justify-center"
+            className="group w-full p-6 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 flex items-center justify-center"
           >
             <div className="flex flex-col items-center text-center">
               <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center mb-4 transition-colors">
@@ -362,7 +380,7 @@ function DashboardPage() {
               className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 p-3 flex flex-col items-center justify-center text-center"
             >
               <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors mb-1.5">
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-blue-900">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-blue-600">
                   <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
                 </svg>
               </div>
@@ -377,7 +395,7 @@ function DashboardPage() {
               className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 p-3 flex flex-col items-center justify-center text-center"
             >
               <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors mb-1.5">
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-blue-900">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-blue-600">
                   <path fillRule="evenodd" d="M2 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 002 2H4a2 2 0 01-2-2V5zm3 1h6v4H5V6zm6 6H5v2h6v-2z" clipRule="evenodd"/>
                   <path d="M15 7h1a2 2 0 012 2v5.5a1.5 1.5 0 01-3 0V7z"/>
                 </svg>
@@ -391,7 +409,7 @@ function DashboardPage() {
               className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 p-3 flex flex-col items-center justify-center text-center"
             >
               <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors mb-1.5">
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-blue-900">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-blue-600">
                   <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
                   <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
                 </svg>
@@ -402,7 +420,7 @@ function DashboardPage() {
 
             <div className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 p-3 flex flex-col items-center justify-center text-center">
               <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors mb-1.5">
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-blue-900">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-blue-600">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"/>
                 </svg>
               </div>
