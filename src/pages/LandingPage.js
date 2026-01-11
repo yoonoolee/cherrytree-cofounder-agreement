@@ -463,9 +463,11 @@ function LandingPage() {
       price: '$200',
       description: 'For individuals to get started',
       features: [
-        'Real-time collaboration',
-        'Instant agreement from survey',
-        'Unlimited collaborators'
+        'Expert-designed guided survey',
+        'Comprehensive agreements',
+        'Proprietary equity calculator',
+        'Best practices and tips',
+        'Up to 5 collaborators'
       ]
     },
     {
