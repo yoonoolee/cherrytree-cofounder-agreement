@@ -140,34 +140,34 @@ function DashboardPage() {
 
         {/* Resources Section - Bottom */}
         <div className="mt-8 md:mt-12 flex justify-center">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl w-full">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-xl w-full">
             <a
               href="https://cherrytree.beehiiv.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 p-6 flex flex-col items-center justify-center text-center aspect-square"
+              className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 p-4 flex flex-col items-center justify-center text-center aspect-square"
             >
-              <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors mb-3">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-blue-900">
+              <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors mb-2">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-blue-900">
                   <path fillRule="evenodd" d="M2 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 002 2H4a2 2 0 01-2-2V5zm3 1h6v4H5V6zm6 6H5v2h6v-2z" clipRule="evenodd"/>
                   <path d="M15 7h1a2 2 0 012 2v5.5a1.5 1.5 0 01-3 0V7z"/>
                 </svg>
               </div>
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Newsletter</h4>
+              <h4 className="text-xs font-medium text-gray-900 mb-1">Newsletter</h4>
               <p className="text-xs text-gray-500">placeholder placeholder.</p>
             </a>
 
             <button
               onClick={() => window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })}
-              className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 p-6 flex flex-col items-center justify-center text-center aspect-square"
+              className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 p-4 flex flex-col items-center justify-center text-center aspect-square"
             >
-              <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors mb-3">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-blue-900">
+              <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors mb-2">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-blue-900">
                   <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
                   <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
                 </svg>
               </div>
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Contact</h4>
+              <h4 className="text-xs font-medium text-gray-900 mb-1">Contact</h4>
               <p className="text-xs text-gray-500">placeholder placeholder.</p>
             </button>
 
@@ -175,14 +175,14 @@ function DashboardPage() {
               href="https://www.cherrytree.app/pricing"
               target="_blank"
               rel="noopener noreferrer"
-              className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 p-6 flex flex-col items-center justify-center text-center aspect-square"
+              className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 p-4 flex flex-col items-center justify-center text-center aspect-square"
             >
-              <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors mb-3">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-blue-900">
+              <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors mb-2">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className="text-blue-900">
                   <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
                 </svg>
               </div>
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Pricing</h4>
+              <h4 className="text-xs font-medium text-gray-900 mb-1">Pricing</h4>
               <p className="text-xs text-gray-500">placeholder placeholder.</p>
             </a>
           </div>
