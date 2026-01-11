@@ -139,8 +139,8 @@ function DashboardPage() {
         </div>
 
         {/* Resources Section - Bottom */}
-        <div className="mt-8 md:mt-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-8 md:mt-12 flex justify-center">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl w-full">
             <a
               href="https://cherrytree.beehiiv.com/"
               target="_blank"
