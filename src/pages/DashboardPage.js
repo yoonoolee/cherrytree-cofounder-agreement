@@ -4,6 +4,7 @@ import { useUser } from '../contexts/UserContext';
 import { useOrganizationList, UserButton } from '@clerk/clerk-react';
 import PaymentModal from '../components/PaymentModal';
 import { useProjects } from '../hooks/useProjects';
+import { useValidation } from '../hooks/useValidation';
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -22,6 +23,13 @@ function DashboardPage() {
 
   // Fetch projects using custom hook
   const { projects, loading } = useProjects(currentUser, userMemberships, orgsLoaded);
+
+  // Helper function to calculate progress for a project
+  const calculateProjectProgress = (project) => {
+    const formData = project.surveyData || {};
+    const { calculateProgress } = useValidation(formData, project);
+    return calculateProgress();
+  };
 
   useEffect(() => {
     let currentIndex = 0;
@@ -78,64 +86,63 @@ function DashboardPage() {
           <p className="text-sm md:text-lg mt-2 text-gray-500">{displayedTagline}</p>
         </div>
 
-        {/* Two Column Layout - stacks on mobile */}
+        {/* Projects Grid */}
         <div className="flex flex-col md:flex-row gap-4 md:gap-8">
-          {/* Left - Projects List */}
-          <div className="w-full md:flex-1 flex flex-col gap-4">
-            {/* Projects List */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col">
-              <h2 className="text-base font-semibold text-gray-900 mb-3">My cofounder agreements</h2>
-
-              {projects.length > 0 ? (
-                <div className="flex flex-col gap-2">
-                  {projects.map((project) => (
-                    <button
-                      key={project.id}
-                      onClick={() => navigate(`/survey/${project.id}`)}
-                      className="w-full text-left p-2.5 bg-white rounded-lg border border-gray-200 hover:border-gray-400 hover:shadow-sm transition-all duration-200"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded bg-gray-100 flex items-center justify-center flex-shrink-0">
-                          <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" className="text-gray-500">
-                            <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/>
-                          </svg>
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {project.name || 'Untitled Project'}
-                          </p>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="px-4 py-4 text-center text-sm text-gray-500 flex-1 flex items-center justify-center">
-                  No projects found
-                </div>
-              )}
-
+          {/* Projects */}
+          {projects.length > 0 ? (
+            projects.map((project) => {
+              const progress = calculateProjectProgress(project);
+              return (
+                <button
+                  key={project.id}
+                  onClick={() => navigate(`/survey/${project.id}`)}
+                  className="w-full md:flex-1 bg-white rounded-lg border border-gray-200 hover:border-gray-400 hover:shadow-sm transition-all duration-200 overflow-hidden"
+                >
+                  <div className="p-4">
+                    <h2 className="text-base font-semibold text-gray-900 mb-2 text-left">
+                      {project.name || 'Untitled Project'}
+                    </h2>
+                    <p className="text-sm text-gray-500 text-left mb-4">
+                      Cofounder Agreement
+                    </p>
+                  </div>
+                  {/* Progress Bar */}
+                  <div className="px-4 pb-4">
+                    <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                      <span>Progress</span>
+                      <span>{progress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+                </button>
+              );
+            })
+          ) : (
+            <div className="w-full md:flex-1 bg-white rounded-lg border border-gray-200 p-8 text-center">
+              <p className="text-sm text-gray-500">No projects found</p>
             </div>
-          </div>
+          )}
 
-          {/* Right - Create New */}
-          <div className="w-full md:flex-1 flex flex-col gap-4">
-            {/* Create New Button */}
-            <button
-              onClick={() => setShowPaymentModal(true)}
-              className="group w-full p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 flex items-center justify-center"
-            >
-              <div className="flex flex-col items-center text-center">
-                <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center mb-3 transition-colors">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
-                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
-                  </svg>
-                </div>
-                <h3 className="text-sm font-medium text-gray-900 mb-1">Create a new Cofounder Agreement</h3>
-                <p className="text-xs text-gray-500">One agreement per company.</p>
+          {/* Create New Button */}
+          <button
+            onClick={() => setShowPaymentModal(true)}
+            className="group w-full md:flex-1 p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 flex items-center justify-center"
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center mb-3 transition-colors">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
+                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
+                </svg>
               </div>
-            </button>
-          </div>
+              <h3 className="text-sm font-medium text-gray-900 mb-1">Create a new Cofounder Agreement</h3>
+              <p className="text-xs text-gray-500">One agreement per company.</p>
+            </div>
+          </button>
         </div>
 
         {/* Resources Section - Bottom */}
