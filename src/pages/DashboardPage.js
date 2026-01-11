@@ -264,6 +264,26 @@ function DashboardPage() {
           {projects.length > 0 ? (
             projects.map((project) => {
               const progress = calculateProjectProgress(project);
+
+              // Calculate time since last edit
+              const lastEditTime = project.updatedAt || project.lastOpened || project.createdAt;
+              let timeAgo = '';
+              if (lastEditTime) {
+                const now = new Date();
+                const lastEdit = lastEditTime.toDate ? lastEditTime.toDate() : new Date(lastEditTime);
+                const hoursAgo = Math.floor((now - lastEdit) / (1000 * 60 * 60));
+
+                if (hoursAgo < 1) {
+                  const minutesAgo = Math.floor((now - lastEdit) / (1000 * 60));
+                  timeAgo = minutesAgo < 1 ? 'just now' : `${minutesAgo}m ago`;
+                } else if (hoursAgo < 24) {
+                  timeAgo = `${hoursAgo}h ago`;
+                } else {
+                  const daysAgo = Math.floor(hoursAgo / 24);
+                  timeAgo = `${daysAgo}d ago`;
+                }
+              }
+
               return (
                 <button
                   key={project.id}
@@ -284,11 +304,20 @@ function DashboardPage() {
                       <span>Progress</span>
                       <span>{progress}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
                       <div
                         className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       />
+                    </div>
+                    {/* Status and Last Edited */}
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>
+                        {progress < 100 && (
+                          <span className="text-blue-600">In progress</span>
+                        )}
+                      </span>
+                      {timeAgo && <span>Last edited {timeAgo}</span>}
                     </div>
                   </div>
                 </button>
