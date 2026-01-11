@@ -4,7 +4,186 @@ import { useUser } from '../contexts/UserContext';
 import { useOrganizationList, UserButton } from '@clerk/clerk-react';
 import PaymentModal from '../components/PaymentModal';
 import { useProjects } from '../hooks/useProjects';
-import { useValidation } from '../hooks/useValidation';
+
+// Simplified progress calculation function
+const calculateProjectProgress = (project) => {
+  const formData = project.surveyData || {};
+
+  // Helper to check if "Other" field is valid
+  const isOtherFieldValid = (value, otherValue) => {
+    if (value === 'Other') {
+      return otherValue && otherValue.trim() !== '';
+    }
+    return !!value;
+  };
+
+  // Helper to check if array with "Other" is valid
+  const isOtherArrayFieldValid = (array, otherValue) => {
+    if (!array || array.length === 0) return false;
+    if (array.includes('Other')) {
+      return otherValue && otherValue.trim() !== '';
+    }
+    return true;
+  };
+
+  let totalRequired = 0;
+  let completed = 0;
+
+  // Get all collaborators
+  const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
+
+  // Section 1: Formation & Purpose (9 fields)
+  if (formData.companyName) completed++;
+  totalRequired++;
+  if (isOtherFieldValid(formData.entityType, formData.entityTypeOther)) completed++;
+  totalRequired++;
+  if (formData.registeredState) completed++;
+  totalRequired++;
+  if (formData.mailingStreet) completed++;
+  totalRequired++;
+  if (formData.mailingCity) completed++;
+  totalRequired++;
+  if (formData.mailingState) completed++;
+  totalRequired++;
+  if (formData.mailingZip) completed++;
+  totalRequired++;
+  if (formData.companyDescription) completed++;
+  totalRequired++;
+  if (isOtherArrayFieldValid(formData.industries, formData.industryOther)) completed++;
+  totalRequired++;
+
+  // Section 2: Cofounder Info
+  if (formData.cofounderCount) completed++;
+  totalRequired++;
+  if (formData.cofounders && formData.cofounders.length > 0) {
+    const allCofoundersFilled = formData.cofounders.every(cf =>
+      cf.fullName && cf.title && cf.email && cf.roles && cf.roles.length > 0
+    );
+    if (allCofoundersFilled) completed++;
+    totalRequired++;
+  }
+
+  // Section 3: Equity Allocation
+  if (formData.finalEquityPercentages && Object.keys(formData.finalEquityPercentages).length > 0) {
+    const allPercentagesFilled = allCollaborators.every(email =>
+      formData.finalEquityPercentages[email] && formData.finalEquityPercentages[email] !== ''
+    );
+    if (allPercentagesFilled) completed++;
+    totalRequired++;
+
+    const totalEquity = allCollaborators.reduce((sum, email) =>
+      sum + (parseFloat(formData.finalEquityPercentages[email]) || 0), 0
+    );
+    if (Math.abs(totalEquity - 100) <= 0.01) completed++;
+    totalRequired++;
+  }
+  const allAcknowledgedEquityAllocation = allCollaborators.length > 0 &&
+    allCollaborators.every(email => formData.acknowledgeEquityAllocation?.[email]);
+  if (allAcknowledgedEquityAllocation) completed++;
+  totalRequired++;
+
+  // Section 4: Decision-Making (5 fields)
+  if (isOtherArrayFieldValid(formData.majorDecisions, formData.majorDecisionsOther)) completed++;
+  totalRequired++;
+  if (formData.equityVotingPower) completed++;
+  totalRequired++;
+  if (isOtherFieldValid(formData.tieResolution, formData.tieResolutionOther)) completed++;
+  totalRequired++;
+  const allAcknowledgedTieResolution = allCollaborators.length > 0 &&
+    allCollaborators.every(email => formData.acknowledgeTieResolution?.[email]);
+  if (allAcknowledgedTieResolution) completed++;
+  totalRequired++;
+  if (formData.includeShotgunClause) completed++;
+  totalRequired++;
+  if (formData.includeShotgunClause === 'Yes') {
+    const allAcknowledgedShotgunClause = allCollaborators.length > 0 &&
+      allCollaborators.every(email => formData.acknowledgeShotgunClause?.[email]);
+    if (allAcknowledgedShotgunClause) completed++;
+    totalRequired++;
+  }
+
+  // Section 5: Equity & Vesting (8 fields)
+  if (formData.vestingStartDate) completed++;
+  totalRequired++;
+  if (isOtherFieldValid(formData.vestingSchedule, formData.vestingScheduleOther)) completed++;
+  totalRequired++;
+  if (formData.cliffPercentage) completed++;
+  totalRequired++;
+  if (formData.accelerationTrigger) completed++;
+  totalRequired++;
+  if (formData.sharesSellNoticeDays) completed++;
+  totalRequired++;
+  if (formData.sharesBuybackDays) completed++;
+  totalRequired++;
+  const allAcknowledgedForfeiture = allCollaborators.length > 0 &&
+    allCollaborators.every(email => formData.acknowledgeForfeiture?.[email]);
+  if (allAcknowledgedForfeiture) completed++;
+  totalRequired++;
+  if (formData.vestedSharesDisposal) completed++;
+  totalRequired++;
+
+  // Section 6: IP & Ownership (2 fields)
+  if (formData.hasPreExistingIP) completed++;
+  totalRequired++;
+  const allAcknowledgedIPOwnership = allCollaborators.length > 0 &&
+    allCollaborators.every(email => formData.acknowledgeIPOwnership?.[email]);
+  if (allAcknowledgedIPOwnership) completed++;
+  totalRequired++;
+
+  // Section 7: Compensation (2 fields)
+  if (formData.takingCompensation) completed++;
+  totalRequired++;
+  if (formData.spendingLimit) completed++;
+  totalRequired++;
+
+  // Section 8: Performance (4 fields)
+  if (formData.performanceConsequences && formData.performanceConsequences.length > 0) completed++;
+  totalRequired++;
+  if (formData.remedyPeriodDays) completed++;
+  totalRequired++;
+  if (isOtherArrayFieldValid(formData.terminationWithCause, formData.terminationWithCauseOther)) completed++;
+  totalRequired++;
+  if (formData.voluntaryNoticeDays) completed++;
+  totalRequired++;
+
+  // Section 9: Non-Competition (3 fields)
+  const allAcknowledgedConfidentiality = allCollaborators.length > 0 &&
+    allCollaborators.every(email => formData.acknowledgeConfidentiality?.[email]);
+  if (allAcknowledgedConfidentiality) completed++;
+  totalRequired++;
+  if (isOtherFieldValid(formData.nonCompeteDuration, formData.nonCompeteDurationOther)) completed++;
+  totalRequired++;
+  if (isOtherFieldValid(formData.nonSolicitDuration, formData.nonSolicitDurationOther)) completed++;
+  totalRequired++;
+
+  // Section 10: Final Details (7 fields)
+  if (isOtherFieldValid(formData.disputeResolution, formData.disputeResolutionOther)) completed++;
+  totalRequired++;
+  if (formData.governingLaw) completed++;
+  totalRequired++;
+  if (isOtherFieldValid(formData.amendmentProcess, formData.amendmentProcessOther)) completed++;
+  totalRequired++;
+  if (formData.reviewFrequencyMonths) completed++;
+  totalRequired++;
+  const allAcknowledgedPeriodicReview = allCollaborators.length > 0 &&
+    allCollaborators.every(email => formData.acknowledgePeriodicReview?.[email]);
+  if (allAcknowledgedPeriodicReview) completed++;
+  totalRequired++;
+  const allAcknowledgedAmendmentReviewRequest = allCollaborators.length > 0 &&
+    allCollaborators.every(email => formData.acknowledgeAmendmentReviewRequest?.[email]);
+  if (allAcknowledgedAmendmentReviewRequest) completed++;
+  totalRequired++;
+  const allAcknowledgedEntireAgreement = allCollaborators.length > 0 &&
+    allCollaborators.every(email => formData.acknowledgeEntireAgreement?.[email]);
+  if (allAcknowledgedEntireAgreement) completed++;
+  totalRequired++;
+  const allAcknowledgedSeverability = allCollaborators.length > 0 &&
+    allCollaborators.every(email => formData.acknowledgeSeverability?.[email]);
+  if (allAcknowledgedSeverability) completed++;
+  totalRequired++;
+
+  return totalRequired > 0 ? Math.round((completed / totalRequired) * 100) : 0;
+};
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -23,13 +202,6 @@ function DashboardPage() {
 
   // Fetch projects using custom hook
   const { projects, loading } = useProjects(currentUser, userMemberships, orgsLoaded);
-
-  // Helper function to calculate progress for a project
-  const calculateProjectProgress = (project) => {
-    const formData = project.surveyData || {};
-    const { calculateProgress } = useValidation(formData, project);
-    return calculateProgress();
-  };
 
   useEffect(() => {
     let currentIndex = 0;
