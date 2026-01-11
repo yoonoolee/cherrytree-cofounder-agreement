@@ -45,6 +45,9 @@ const FUNCTION_CONFIG = {
 const EMAIL_MAX_LENGTH = 254; // RFC 5321 maximum email length
 const PROJECT_NAME_MIN_LENGTH = 2; // Minimum characters for project/company name
 
+// Survey versioning
+const CURRENT_SURVEY_VERSION = '1.0.0';
+
 // ============================================================================
 // INPUT VALIDATION & SANITIZATION HELPERS
 // Note: Authentication helpers (verifyClerkToken, getClerk) are in auth-helpers.js
@@ -530,6 +533,7 @@ exports.stripeWebhook = onRequest({
                 [userId]: false
               },
               requiresApprovals: true,
+              surveyVersion: CURRENT_SURVEY_VERSION,
               surveyData: {
                 companyName: sanitizedProjectName
               },
