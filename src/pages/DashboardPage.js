@@ -194,7 +194,7 @@ function DashboardPage() {
     }
   });
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [displayedTagline, setDisplayedTagline] = useState('');
+  const [displayedTagline, setDisplayedTagline] = useState('\u00A0'); // Non-breaking space to reserve height
 
   // Constants
   const FULL_TAGLINE = 'Great companies start with great company.';
