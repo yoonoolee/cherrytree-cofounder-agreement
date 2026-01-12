@@ -16,7 +16,7 @@ function PricingCard({
           ? ''
           : 'border border-gray-400'
       }`}
-      style={plan.featured ? { border: '3px solid #0056D6' } : {}}
+      style={plan.featured ? { border: '3px solid #0056D6', boxShadow: '0 0 20px rgba(0, 86, 214, 0.3)' } : {}}
     >
       {/* Current Plan Badge */}
       {isCurrentPlan && (

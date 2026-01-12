@@ -1206,7 +1206,21 @@ function LandingPage() {
                 >
                   <h3 className="feature-title">{feature.title}</h3>
                   <p className={`feature-description ${activeFeature === i ? 'active' : ''}`}>
-                    {feature.description}
+                    {i === 0 ? (
+                      <>
+                        Generate a <span style={{ backgroundColor: '#E6F0FF', color: '#0056D6', padding: '2px 6px', borderRadius: '4px' }}>ready-to-use, fully customized</span> document in minutes and start building your partnership with confidence.
+                      </>
+                    ) : i === 1 ? (
+                      <>
+                        Use our <span style={{ backgroundColor: '#E6F0FF', color: '#0056D6', padding: '2px 6px', borderRadius: '4px' }}>proprietary equity calculator</span> to determine ownership. Instant, precise splits so everyone knows their stake.
+                      </>
+                    ) : i === 2 ? (
+                      <>
+                        Cofounder coaches and attorneys ready to help. We are here to guide you <span style={{ backgroundColor: '#E6F0FF', color: '#0056D6', padding: '2px 6px', borderRadius: '4px' }}>every step of the way</span>.
+                      </>
+                    ) : (
+                      feature.description
+                    )}
                   </p>
                   {/* Mobile animation container */}
                   <div className="mobile-visual">
@@ -2195,7 +2209,7 @@ function LandingPage() {
                     ? ''
                     : 'border border-gray-400'
                 }`}
-                style={plan.featured ? { border: '3px solid #0056D6' } : {}}
+                style={plan.featured ? { border: '3px solid #0056D6', boxShadow: '0 0 20px rgba(0, 86, 214, 0.3)' } : {}}
               >
                 <h3 className="text-lg md:text-xl font-normal mb-2 text-[#716B6B]">{plan.name}</h3>
                 <div className="text-3xl md:text-4xl font-bold mb-2">{plan.price}</div>
