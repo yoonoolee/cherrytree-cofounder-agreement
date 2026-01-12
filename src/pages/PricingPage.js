@@ -249,7 +249,7 @@ function PricingPage() {
           {/* FAQ Section */}
           <div className="mt-48 pb-24">
             <h2 className="font-heading text-[46px] font-normal text-center mb-16">
-              FAQs<span style={{ marginLeft: '0.05em' }}>.</span>
+              FAQs<span style={{ marginLeft: '0.05em', color: '#0056D6' }}>.</span>
             </h2>
 
             <div className="max-w-3xl mx-auto">

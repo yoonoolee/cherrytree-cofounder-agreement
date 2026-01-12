@@ -87,7 +87,7 @@ input[type="checkbox"] {
 input[type="radio"] {
   width: 0.75rem !important;
   height: 0.75rem !important;
-  accent-color: #000000 !important;
+  accent-color: #0056D6 !important;
 }
 
 /* Style text inputs with underline instead of box */

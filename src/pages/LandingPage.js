@@ -347,7 +347,7 @@ function LandingPage() {
     timers.push(setTimeout(() => setShowCalendar(true), 1200 + companyName.length * 100 + 3200));
 
     // Select date after calendar appears (increased delay)
-    const dateText = 'January 15, 2025';
+    const dateText = 'January 8, 2025';
     timers.push(setTimeout(() => setSelectedDate(dateText), 1200 + companyName.length * 100 + 5000));
 
     // Type date in the agreement
@@ -783,7 +783,8 @@ function LandingPage() {
                                 readOnly
                                 style={{
                                   marginRight: '12px',
-                                  cursor: 'pointer'
+                                  cursor: 'pointer',
+                                  accentColor: '#0000FF'
                                 }}
                               />
                               <span style={{
@@ -884,7 +885,7 @@ function LandingPage() {
                               {/* Date cells */}
                               {[...Array(31)].map((_, idx) => {
                                 const date = idx + 1;
-                                const isSelected = date === 15 && selectedDate;
+                                const isSelected = date === 8 && selectedDate;
                                 return (
                                   <div
                                     key={date}
@@ -895,7 +896,7 @@ function LandingPage() {
                                       fontSize: '14px',
                                       fontWeight: isSelected ? 600 : 400,
                                       color: isSelected ? '#ffffff' : '#0f1419',
-                                      background: isSelected ? '#0f1419' : 'transparent',
+                                      background: isSelected ? '#0056D6' : 'transparent',
                                       cursor: 'pointer',
                                       transition: 'all 0.15s ease',
                                       fontFamily: 'Inter, system-ui, sans-serif',
@@ -1115,13 +1116,13 @@ function LandingPage() {
                       {index === 1 && (
                         /* Step 2: Collab animation */
                         <div className="p-4 h-full relative flex flex-col justify-center">
-                          <div className="step2-cursor-black absolute w-3 h-3 z-20">
-                            <svg viewBox="0 0 24 24" fill="black" className="w-3 h-3">
+                          <div className="step2-cursor-black absolute z-20" style={{ width: '18px', height: '18px' }}>
+                            <svg viewBox="0 0 24 24" fill="#0056D6" style={{ width: '18px', height: '18px' }}>
                               <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
                             </svg>
                           </div>
-                          <div className="step2-cursor-white absolute w-3 h-3 z-20">
-                            <svg viewBox="0 0 24 24" fill="white" stroke="black" strokeWidth="1.5" className="w-3 h-3">
+                          <div className="step2-cursor-white absolute z-20" style={{ width: '18px', height: '18px' }}>
+                            <svg viewBox="0 0 24 24" fill="white" stroke="black" strokeWidth="1.5" style={{ width: '18px', height: '18px' }}>
                               <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
                             </svg>
                           </div>
@@ -1168,7 +1169,7 @@ function LandingPage() {
                               <div className="h-1 bg-gray-200 rounded w-full"></div>
                             </div>
                             {/* Scanner line */}
-                            <div className="step3-scanner absolute left-2 right-2 h-0.5 bg-gray-300" style={{ boxShadow: '0 0 6px 1px rgba(209, 213, 219, 0.5)' }}></div>
+                            <div className="step3-scanner absolute left-2 right-2 h-0.5" style={{ backgroundColor: '#0056D6', boxShadow: '0 0 6px 1px rgba(0, 86, 214, 0.5)' }}></div>
                           </div>
                         </div>
                       )}
@@ -1332,7 +1333,7 @@ function LandingPage() {
                               <path
                                 className={`signature-path ${contractCardsVisible ? 'signature-draw' : ''}`}
                                 d="M 5 35 C 10 20, 15 15, 20 25 C 25 35, 30 40, 35 30 C 40 20, 42 15, 48 20 C 54 25, 56 35, 62 28 C 68 21, 70 18, 78 22 C 86 26, 88 32, 95 25 C 102 18, 105 15, 112 20 C 119 25, 122 30, 130 22 L 135 18"
-                                stroke="#9ca3af"
+                                stroke="#0056D6"
                                 strokeWidth="2"
                                 fill="none"
                                 strokeLinecap="round"
@@ -1782,7 +1783,7 @@ function LandingPage() {
                       <path
                         className={`signature-path ${contractCardsVisible ? 'signature-draw' : ''}`}
                         d="M 5 35 C 10 20, 15 15, 20 25 C 25 35, 30 40, 35 30 C 40 20, 42 15, 48 20 C 54 25, 56 35, 62 28 C 68 21, 70 18, 78 22 C 86 26, 88 32, 95 25 C 102 18, 105 15, 112 20 C 119 25, 122 30, 130 22 L 135 18"
-                        stroke="#9ca3af"
+                        stroke="#0056D6"
                         strokeWidth="2"
                         fill="none"
                         strokeLinecap="round"
@@ -2025,7 +2026,7 @@ function LandingPage() {
                       boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
                       '--icon-delay': '0s'
                     }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c8590" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0056D6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="2" y="4" width="20" height="16" rx="2"/>
                       <path d="M22 7l-10 7L2 7"/>
                     </svg>
@@ -2045,7 +2046,7 @@ function LandingPage() {
                       boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
                       '--icon-delay': '0.15s'
                     }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c8590" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0056D6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                     </svg>
                   </div>
@@ -2064,7 +2065,7 @@ function LandingPage() {
                       boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
                       '--icon-delay': '0.3s'
                     }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c8590" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0056D6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                     </svg>
                   </div>
@@ -2191,9 +2192,10 @@ function LandingPage() {
                 key={i}
                 className={`bg-white p-6 md:p-8 rounded-lg flex flex-col ${
                   plan.featured
-                    ? 'ring-2 ring-gray-700'
+                    ? ''
                     : 'border border-gray-400'
                 }`}
+                style={plan.featured ? { border: '3px solid #0056D6' } : {}}
               >
                 <h3 className="text-lg md:text-xl font-normal mb-2 text-[#716B6B]">{plan.name}</h3>
                 <div className="text-3xl md:text-4xl font-bold mb-2">{plan.price}</div>
@@ -2239,7 +2241,7 @@ function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row gap-8 md:gap-20 lg:gap-80 items-start md:justify-center md:ml-32">
             <div className="flex-shrink-0 w-full md:w-auto text-center md:text-left">
-              <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium">FAQs<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+              <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium">FAQs<span style={{ marginLeft: '0.05em', color: '#0056D6' }}>.</span></h2>
             </div>
             <div className="flex-1 max-w-[700px] w-full">
               {faqs.map((faq, i) => (

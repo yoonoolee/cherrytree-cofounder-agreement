@@ -13,9 +13,10 @@ function PricingCard({
     <div
       className={`bg-white p-8 rounded-lg flex flex-col relative ${
         plan.featured
-          ? 'ring-2 ring-gray-700'
+          ? ''
           : 'border border-gray-400'
       }`}
+      style={plan.featured ? { border: '3px solid #0056D6' } : {}}
     >
       {/* Current Plan Badge */}
       {isCurrentPlan && (
