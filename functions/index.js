@@ -73,6 +73,7 @@ const EDIT_WINDOW_CONFIG = {
 
 /**
  * Calculate edit deadline from a date and the EDIT_WINDOW_CONFIG
+ * Deadline is set to 11:59:59 PM PST (UTC-8) on the final day
  * @param {Date} startDate - The starting date (typically createdAt)
  * @returns {Date} The deadline date
  * @throws {Error} If EDIT_WINDOW_CONFIG has invalid values
@@ -110,7 +111,12 @@ function calculateEditDeadline(startDate) {
       throw new Error(`Unsupported unit: ${unit}. Supported units: years, months, days, hours, minutes`);
   }
 
-  return deadline;
+  // Set to 11:59:59 PM PST (UTC-8) on the deadline day
+  // 11:59:59 PM PST = 7:59:59 AM UTC the next day
+  const year = deadline.getUTCFullYear();
+  const month = deadline.getUTCMonth();
+  const day = deadline.getUTCDate();
+  return new Date(Date.UTC(year, month, day + 1, 7, 59, 59));
 }
 
 // Survey versioning
