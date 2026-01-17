@@ -6,6 +6,7 @@ import ApprovalSection from './ApprovalSection';
 import { SECTIONS } from './surveyConstants';
 import { useUser } from '../contexts/UserContext';
 import { useClerk, useAuth } from '@clerk/clerk-react';
+import { formatDeadline, isAfterEditDeadline } from '../utils/dateUtils';
 
 function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreateProject }) {
   const { currentUser } = useUser();
@@ -556,6 +557,14 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                       : 'Preview - Not yet submitted'
                     }
                   </p>
+                  {!project.submitted && project.editDeadline && (
+                    <p className={`text-sm mt-1 ${isAfterEditDeadline(project.editDeadline) ? 'text-red-600' : 'text-gray-500'}`}>
+                      {isAfterEditDeadline(project.editDeadline)
+                        ? `Edit window expired on ${formatDeadline(project.editDeadline)}`
+                        : `You can continue to edit and regenerate the agreement until ${formatDeadline(project.editDeadline)}`
+                      }
+                    </p>
+                  )}
                 </div>
                 {isReadOnly && project.pdfUrl && (
                   <a
