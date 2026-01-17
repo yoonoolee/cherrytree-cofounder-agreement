@@ -560,7 +560,9 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                   {!project.submitted && project.editDeadline && (
                     <p className={`text-sm mt-1 ${isAfterEditDeadline(project.editDeadline) ? 'text-red-600' : 'text-gray-500'}`}>
                       {isAfterEditDeadline(project.editDeadline)
-                        ? `Edit window expired on ${formatDeadline(project.editDeadline)}`
+                        ? (project.previewPdfGeneratedAt
+                            ? `Edit window expired on ${formatDeadline(project.editDeadline)}`
+                            : 'You will not be able to edit this agreement once it has been generated.')
                         : `You can continue to edit and regenerate the agreement until ${formatDeadline(project.editDeadline)}`
                       }
                     </p>
