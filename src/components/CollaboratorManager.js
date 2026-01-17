@@ -3,6 +3,7 @@ import { useOrganization } from '@clerk/clerk-react';
 import { useAuth } from '@clerk/clerk-react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase';
+import { isAfterEditDeadline } from '../utils/dateUtils';
 
 // Constants
 const SUCCESS_MESSAGE_DURATION_MS = 10000; // How long to display success message (10 seconds)
@@ -23,6 +24,9 @@ function CollaboratorManager({ project }) {
 
   // Check if current user is admin
   const isAdmin = membership?.role === 'org:admin';
+
+  // Check if edit deadline has passed (deadline is calculated once at purchase and stored in Firestore)
+  const isEditWindowExpired = isAfterEditDeadline(project?.editDeadline);
 
   const [email, setEmail] = useState('');
   const [inviting, setInviting] = useState(false);
@@ -148,7 +152,7 @@ function CollaboratorManager({ project }) {
             />
             <button
               type="submit"
-              disabled={inviting}
+              disabled={inviting || isEditWindowExpired}
               className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               {inviting ? 'Sending...' : 'Invite'}
@@ -180,7 +184,7 @@ function CollaboratorManager({ project }) {
                 {isAdmin && membership.role !== 'org:admin' && (
                   <button
                     onClick={() => handleRemoveMember(membership.publicUserData.userId)}
-                    disabled={removingUserId === membership.publicUserData.userId}
+                    disabled={removingUserId === membership.publicUserData.userId || isEditWindowExpired}
                     className="text-sm text-red-600 hover:text-red-800 disabled:text-gray-400 disabled:cursor-not-allowed"
                   >
                     {removingUserId === membership.publicUserData.userId ? 'Removing...' : 'Remove'}
@@ -202,7 +206,7 @@ function CollaboratorManager({ project }) {
                 </div>
                 <button
                   onClick={() => handleRevokeInvitation(invitation.id)}
-                  disabled={revokingInvitationId === invitation.id}
+                  disabled={revokingInvitationId === invitation.id || isEditWindowExpired}
                   className="text-sm text-red-600 hover:text-red-800 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
                   {revokingInvitationId === invitation.id ? 'Removing...' : 'Remove'}

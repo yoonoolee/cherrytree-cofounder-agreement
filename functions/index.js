@@ -36,14 +36,82 @@ const CLERK_WEBHOOK_SECRET = defineSecret('CLERK_WEBHOOK_SECRET');
 // Note: CLERK_SECRET_KEY and getClerk() are imported from auth-helpers.js
 
 // Shared Cloud Functions configuration
+// Optimized for free tier: 256MB memory
 const FUNCTION_CONFIG = {
   region: 'us-west2',
+  memory: '256MiB',
   serviceAccount: `cloud-functions@${process.env.GCLOUD_PROJECT}.iam.gserviceaccount.com`,
 };
 
 // Validation constants
 const EMAIL_MAX_LENGTH = 254; // RFC 5321 maximum email length
 const PROJECT_NAME_MIN_LENGTH = 2; // Minimum characters for project/company name
+
+/**
+ * EDIT WINDOW CONFIGURATION
+ *
+ * IMPORTANT: This is the ONLY place where edit window duration is defined.
+ * Change this single config to modify the edit window for ALL FUTURE projects.
+ *
+ * Users have this duration from PURCHASE DATE to edit their agreement.
+ *
+ * Examples:
+ * - { amount: 6, unit: 'months' }  // Production (current)
+ * - { amount: 1, unit: 'days' }    // Testing
+ * - { amount: 1, unit: 'years' }   // 1 year window
+ * - { amount: 2, unit: 'hours' }   // Quick testing
+ *
+ * Supported units: 'months', 'days', 'years', 'hours', 'minutes'
+ *
+ * NOTE: Each project's editDeadline is calculated ONCE at purchase and stored in Firestore.
+ * Existing projects keep their deadline even if you change this config later.
+ */
+const EDIT_WINDOW_CONFIG = {
+  amount: 6,
+  unit: 'months'
+};
+
+/**
+ * Calculate edit deadline from a date and the EDIT_WINDOW_CONFIG
+ * @param {Date} startDate - The starting date (typically createdAt)
+ * @returns {Date} The deadline date
+ * @throws {Error} If EDIT_WINDOW_CONFIG has invalid values
+ */
+function calculateEditDeadline(startDate) {
+  if (!startDate || !(startDate instanceof Date)) {
+    throw new Error('startDate must be a valid Date object');
+  }
+
+  const { amount, unit } = EDIT_WINDOW_CONFIG;
+
+  if (!amount || amount <= 0) {
+    throw new Error('EDIT_WINDOW_CONFIG.amount must be a positive number');
+  }
+
+  const deadline = new Date(startDate);
+
+  switch (unit) {
+    case 'years':
+      deadline.setFullYear(deadline.getFullYear() + amount);
+      break;
+    case 'months':
+      deadline.setMonth(deadline.getMonth() + amount);
+      break;
+    case 'days':
+      deadline.setDate(deadline.getDate() + amount);
+      break;
+    case 'hours':
+      deadline.setHours(deadline.getHours() + amount);
+      break;
+    case 'minutes':
+      deadline.setMinutes(deadline.getMinutes() + amount);
+      break;
+    default:
+      throw new Error(`Unsupported unit: ${unit}. Supported units: years, months, days, hours, minutes`);
+  }
+
+  return deadline;
+}
 
 // Survey versioning
 const CURRENT_SURVEY_VERSION = '1.0.0';
@@ -519,6 +587,12 @@ exports.stripeWebhook = onRequest({
 
             // Create a project for the user with proper structure
             const projectRef = db.collection('projects').doc();
+
+            // Calculate edit deadline based on EDIT_WINDOW_CONFIG
+            // This is calculated ONCE and stored forever - changing config later won't affect existing projects
+            const now = new Date();
+            const editDeadline = calculateEditDeadline(now);
+
             await projectRef.set({
               name: sanitizedProjectName,
               ownerId: userId,
@@ -545,6 +619,7 @@ exports.stripeWebhook = onRequest({
               pdfGeneratedAt: null,
               plan: plan,
               createdAt: FieldValue.serverTimestamp(),
+              editDeadline: editDeadline, // Edit deadline - locked in at purchase time
               lastUpdated: FieldValue.serverTimestamp(),
               lastOpened: FieldValue.serverTimestamp()
             });

@@ -11,6 +11,7 @@ import { SECTIONS, INDUSTRIES, MAJOR_DECISIONS, TERMINATION_CONSEQUENCES, US_STA
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useProjectSync } from '../hooks/useProjectSync';
 import { useValidation } from '../hooks/useValidation';
+import { isAfterEditDeadline } from '../utils/dateUtils';
 import Section1Formation from './Section1Formation';
 import Section2Cofounders from './Section2Cofounders';
 import Section3EquityAllocation from './Section3EquityAllocation';
@@ -183,7 +184,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   // Project sync, auto-save, and validation are now handled by custom hooks
   // See: useProjectSync, useAutoSave, useValidation
 
-  const isReadOnly = project?.submitted;
+  // Check if edit deadline has passed (deadline is calculated once at purchase and stored in Firestore)
+  const isReadOnly = isAfterEditDeadline(project?.editDeadline);
 
   // Find first incomplete section
   const findFirstIncompleteSection = () => {

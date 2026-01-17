@@ -6,15 +6,61 @@
 
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { getClerk, verifyClerkToken, CLERK_SECRET_KEY } = require('./auth-helpers');
+const { getFirestore } = require('firebase-admin/firestore');
 
 // Shared Cloud Functions configuration
+// Optimized for free tier: 256MB memory
 const FUNCTION_CONFIG = {
   region: 'us-west2',
+  memory: '256MiB',
   serviceAccount: `cloud-functions@${process.env.GCLOUD_PROJECT}.iam.gserviceaccount.com`,
 };
 
 // Note: Authentication helpers (verifyClerkToken, getClerk, CLERK_SECRET_KEY)
 // are imported from auth-helpers.js
+
+// ============================================================================
+// EDIT WINDOW VALIDATION
+// ============================================================================
+
+/**
+ * Validate that project's edit window has not expired
+ * @param {string} organizationId - The Clerk organization ID
+ * @returns {Promise<void>} - Throws HttpsError if edit window expired
+ */
+async function validateEditWindow(organizationId) {
+  const db = getFirestore();
+
+  const projectsSnapshot = await db.collection('projects')
+    .where('clerkOrgId', '==', organizationId)
+    .limit(1)
+    .get();
+
+  if (projectsSnapshot.empty) {
+    return;
+  }
+
+  const project = projectsSnapshot.docs[0].data();
+
+  if (!project.editDeadline) {
+    return;
+  }
+
+  const editDeadline = project.editDeadline.toDate();
+
+  if (new Date() > editDeadline) {
+    const formattedDeadline = editDeadline.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    throw new HttpsError(
+      'permission-denied',
+      `Cannot modify collaborators after edit window expired on ${formattedDeadline}`
+    );
+  }
+}
 
 // ============================================================================
 // CREATE ORGANIZATION INVITATION
@@ -63,6 +109,9 @@ exports.createOrganizationInvitation = onCall({
     if (requestingMembership.role !== 'org:admin') {
       throw new HttpsError('permission-denied', 'Only organization admins can invite members');
     }
+
+    // Validate edit window (6 months after first submission)
+    await validateEditWindow(organizationId);
 
     // Get the current domain for redirect URL
     const origin = request.rawRequest.headers.origin || 'http://localhost:3000';
@@ -137,6 +186,9 @@ exports.removeOrganizationMember = onCall({
     if (!requestingMembership || requestingMembership.role !== 'org:admin') {
       throw new HttpsError('permission-denied', 'Only organization admins can remove members');
     }
+
+    // Validate edit window (6 months after first submission)
+    await validateEditWindow(organizationId);
 
     // Prevent admin from removing themselves
     if (requestingUserId === userId) {
