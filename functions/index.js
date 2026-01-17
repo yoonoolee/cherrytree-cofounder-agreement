@@ -902,7 +902,7 @@ exports.clerkWebhook = onRequest({
 
     switch (eventType) {
       case 'user.created': {
-        const { id, email_addresses, first_name, last_name, image_url } = evt.data;
+        const { id, email_addresses, first_name, last_name, image_url, last_sign_in_at, created_at } = evt.data;
         const primaryEmail = email_addresses?.find(e => e.id === evt.data.primary_email_address_id);
 
         if (id && primaryEmail) {
@@ -924,13 +924,16 @@ exports.clerkWebhook = onRequest({
           }
 
           // Create user document in Firestore
+          // Use Clerk timestamps - created_at for both, last_sign_in_at as fallback for lastLoginAt
+          const createdAtDate = created_at ? new Date(created_at) : new Date();
           await db.collection('users').doc(id).set({
             userId: id,
             email: primaryEmail.email_address,
             firstName: first_name || '',
             lastName: last_name || '',
             picture: image_url || null,
-            createdAt: FieldValue.serverTimestamp(),
+            createdAt: createdAtDate,
+            lastLoginAt: last_sign_in_at ? new Date(last_sign_in_at) : createdAtDate,
             deleted: false,
           });
 
@@ -940,7 +943,7 @@ exports.clerkWebhook = onRequest({
       }
 
       case 'user.updated': {
-        const { id, email_addresses, first_name, last_name, image_url } = evt.data;
+        const { id, email_addresses, first_name, last_name, image_url, last_sign_in_at } = evt.data;
         const primaryEmail = email_addresses?.find(e => e.id === evt.data.primary_email_address_id);
 
         if (id && primaryEmail) {
@@ -980,9 +983,7 @@ exports.clerkWebhook = onRequest({
             firstName: first_name || '',
             lastName: last_name || '',
             picture: image_url || null,
-            updatedAt: FieldValue.serverTimestamp(),
-            // Set defaults for new users (won't overwrite existing due to merge)
-            hasCompletedOnboarding: false,
+            lastLoginAt: last_sign_in_at ? new Date(last_sign_in_at) : null,
             deleted: false,
           }, { merge: true });
 

@@ -5,7 +5,7 @@ A SaaS platform that helps startup cofounders create legally sound cofounder agr
 ## Tech Stack
 
 - **Frontend**: React 19, React Router, Tailwind CSS
-- **Backend**: Firebase (Firestore, Cloud Functions, Hosting, Auth)
+- **Backend**: Firebase (Firestore, Cloud Functions, Hosting)
 - **Authentication**: Clerk (handles auth + email invitations)
 - **Payments**: Stripe
 - **External Services**: Make.com (PDF generation), Google Maps API
@@ -36,233 +36,186 @@ A SaaS platform that helps startup cofounders create legally sound cofounder agr
   - `cherrytree-cofounder-agree-dev` (development)
   - `cherrytree-cofounder-agreement` (production)
 
-### Environment Variables
+### Environment Files
 
-This project uses environment-specific configuration files:
-
-- **`.env.development`** - Used when running `npm start` (local development)
-- **`.env.production`** - Used when running `npm run build` (production builds)
-- **`.env.example`** - Template showing all required variables
-
-See [README.env.md](./README.env.md) for detailed environment variable documentation.
+| File | Purpose | Committed to Git |
+|------|---------|------------------|
+| `.env.example` | Template with placeholder values | ✅ Yes |
+| `.env.development` | Dev keys (localhost) | ❌ No |
+| `.env.production` | Prod keys | ❌ No |
+| `.env.local` | Local overrides (optional) | ❌ No |
 
 ### First-Time Setup
 
-1. **Clone the repository**
+1. **Clone and install**
    ```bash
    git clone <repo-url>
    cd cherrytree-cofounder-agreement
-   ```
-
-2. **Install dependencies**
-   ```bash
    npm install
    cd functions && npm install && cd ..
    ```
 
-3. **Set up environment variables**
-   - Copy `.env.example` to `.env.development`
-   - Copy `.env.example` to `.env.production`
-   - Get API keys from team members or set up new ones
+2. **Set up environment variables**
+   ```bash
+   cp .env.example .env.development
+   cp .env.example .env.production
+   ```
+   Then fill in API keys from team members or create new ones.
 
-4. **Login to Firebase**
+3. **Login to Firebase**
    ```bash
    firebase login
-   ```
-
-5. **Select Firebase project**
-   ```bash
-   firebase use dev    # Use dev project for local development
+   firebase use dev
    ```
 
 ---
 
 ## Local Development
 
-### Run Development Server
-
 ```bash
 npm start
 ```
-- Opens [http://localhost:3000](http://localhost:3000)
+- Opens http://localhost:3000
 - Uses `.env.development` configuration
 - Hot reload on file changes
-
-### Build for Production
-
-```bash
-npm run build
-```
-- Builds the app for production to the `build` folder
-- Uses `.env.production` configuration
-- Optimized and minified for deployment
 
 ---
 
 ## Deployment
 
-### Current Environments
+### Environments
 
-| Environment | Firebase Project ID | Domains | Status |
-|-------------|---------------------|---------|--------|
-| **Development** | `cherrytree-cofounder-agree-dev` | localhost:3000 | Testing, development |
-| **Production** | `cherrytree-cofounder-agreement` | cherrytree.app, my.cherrytree.app | Live |
+| Environment | Firebase Project | URL |
+|-------------|------------------|-----|
+| Development | `cherrytree-cofounder-agree-dev` | https://cherrytree-cofounder-agree-dev.web.app |
+| Production | `cherrytree-cofounder-agreement` | https://cherrytree.app / https://my.cherrytree.app |
 
-### Switching Between Environments
+### Deploy Commands
 
 ```bash
-# Switch to dev environment
-firebase use dev
+# Deploy everything to dev
+npm run deploy:dev
 
-# Switch to prod environment
-firebase use prod
+# Deploy everything to prod
+npm run deploy:prod
 
-# Check current environment
-firebase use
+# Deploy specific services
+npm run deploy:hosting:dev      # Frontend only
+npm run deploy:functions:dev    # Backend only
+firebase deploy --only firestore:rules  # Rules only
 ```
 
-### Deploy to Development
+### Switch Environments
 
 ```bash
-# 1. Switch to dev environment
-firebase use dev
-
-# 2. Build the app
-npm run build
-
-# 3. Deploy
-firebase deploy
-
-# OR deploy specific services:
-firebase deploy --only hosting              # Frontend only
-firebase deploy --only functions            # Cloud Functions only
-firebase deploy --only firestore:rules      # Firestore security rules only
-```
-
-### Deploy to Production
-
-⚠️ **IMPORTANT**: Always test in dev first!
-
-```bash
-# 1. Switch to prod environment
-firebase use prod
-
-# 2. Build the app
-npm run build
-
-# 3. Deploy
-firebase deploy
-
-# OR deploy specific services:
-firebase deploy --only hosting
-firebase deploy --only functions
-firebase deploy --only firestore:rules
+firebase use dev    # Switch to dev
+firebase use prod   # Switch to prod
+firebase use        # Check current
 ```
 
 ---
 
-## Firebase Configuration
+## Firebase Secrets
 
-### Secrets Management
+Sensitive keys are stored in Firebase Secret Manager (not in .env files).
 
-Sensitive keys (Stripe secret, Clerk secret, etc.) are stored in Firebase Secret Manager, NOT in .env files.
+### Required Secrets (set for both dev and prod)
 
-**Set a secret:**
+| Secret | Description |
+|--------|-------------|
+| `STRIPE_SECRET_KEY` | Stripe API secret key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `CLERK_SECRET_KEY` | Clerk API secret key |
+| `CLERK_WEBHOOK_SECRET` | Clerk webhook signing secret |
+| `MAKE_WEBHOOK_URL` | Make.com PDF generation webhook |
+
+### Set a Secret
+
 ```bash
-firebase use dev
-firebase functions:secrets:set STRIPE_SECRET_KEY
-
-firebase use prod
-firebase functions:secrets:set STRIPE_SECRET_KEY
+firebase use dev  # or prod
+firebase functions:secrets:set SECRET_NAME
+firebase deploy --only functions
 ```
 
-**View secrets:**
+### View Secrets
+
 ```bash
-firebase functions:secrets:access STRIPE_SECRET_KEY
+firebase functions:secrets:access SECRET_NAME
 ```
 
-**Required secrets** (set separately for dev and prod):
-- `STRIPE_SECRET_KEY`
-- `STRIPE_WEBHOOK_SECRET`
-- `CLERK_SECRET_KEY`
-- `CLERK_WEBHOOK_SECRET`
-- `MAKE_WEBHOOK_URL`
+---
 
-### Webhook Configuration
+## Webhook Configuration
 
 All Cloud Functions are deployed to **us-west2** region.
 
-#### Clerk Webhooks
+### Clerk Webhooks
 
-**Dev Webhook**:
-- **URL**: `https://us-west2-cherrytree-cofounder-agree-dev.cloudfunctions.net/clerkWebhook`
-- **Events**: `user.created`, `user.updated`, `user.deleted`, `organization.created`, `organizationMembership.created`, `organizationMembership.deleted`
+| Environment | URL |
+|-------------|-----|
+| Dev | `https://us-west2-cherrytree-cofounder-agree-dev.cloudfunctions.net/clerkWebhook` |
+| Prod | `https://us-west2-cherrytree-cofounder-agreement.cloudfunctions.net/clerkWebhook` |
 
-**Prod Webhook**:
-- **URL**: `https://us-west2-cherrytree-cofounder-agreement.cloudfunctions.net/clerkWebhook`
-- **Events**: Same as dev
+**Events**: `user.created`, `user.updated`, `user.deleted`, `organization.created`, `organizationMembership.created`, `organizationMembership.deleted`
 
-After configuring each webhook, copy the signing secret and set it:
+### Stripe Webhooks
+
+| Environment | URL |
+|-------------|-----|
+| Dev | `https://us-west2-cherrytree-cofounder-agree-dev.cloudfunctions.net/stripeWebhook` |
+| Prod | `https://us-west2-cherrytree-cofounder-agreement.cloudfunctions.net/stripeWebhook` |
+
+**Events**: `checkout.session.completed`
+
+After configuring webhooks, set the signing secret:
 ```bash
 firebase use dev  # or prod
-echo "whsec_YOUR_SIGNING_SECRET" | firebase functions:secrets:set CLERK_WEBHOOK_SECRET --force --data-file=-
-firebase deploy --only functions:clerkWebhook
-```
-
-#### Stripe Webhooks
-
-**Dev Webhook**:
-- **URL**: `https://us-west2-cherrytree-cofounder-agree-dev.cloudfunctions.net/stripeWebhook`
-- **Events**: `checkout.session.completed`
-
-**Prod Webhook**:
-- **URL**: `https://us-west2-cherrytree-cofounder-agreement.cloudfunctions.net/stripeWebhook`
-- **Events**: `checkout.session.completed`
-
-After configuring each webhook, copy the signing secret and set it:
-```bash
-firebase use dev  # or prod
-echo "whsec_YOUR_SIGNING_SECRET" | firebase functions:secrets:set STRIPE_WEBHOOK_SECRET --force --data-file=-
-firebase deploy --only functions:stripeWebhook,createCheckoutSession
+echo "whsec_..." | firebase functions:secrets:set STRIPE_WEBHOOK_SECRET --force --data-file=-
+firebase deploy --only functions
 ```
 
 ---
 
-## Git Workflow
+## Google Maps API
 
-### Deployment Process
+Google Maps Places API is used for address autocomplete in Section 1.
 
-```bash
-# 1. Make changes locally
-git checkout -b feature/my-feature
+### Setup (Already Configured)
 
-# 2. Test locally
-npm start
+1. GCP Project created with Places API enabled
+2. API key restricted to HTTP referrers and Places API only
+3. Key stored in `.env.development` and `.env.production` as `REACT_APP_GOOGLE_MAPS_API_KEY`
 
-# 3. Commit and push
-git add .
-git commit -m "Add new feature"
-git push origin feature/my-feature
+### Restrictions
 
-# 4. Deploy to dev for testing
-firebase use dev
-npm run build
-firebase deploy
+- **Dev**: `http://localhost:3000/*`
+- **Prod**: Production domain(s)
 
-# 5. Test in dev environment
-# Open https://cherrytree-cofounder-agree-dev.web.app
+### Cost
 
-# 6. Deploy to prod
-firebase use prod
-npm run build
-firebase deploy
+$200/month free tier - normal usage stays well within this.
 
-# 7. Merge to master
+---
+
+## Edit Window Feature
+
+Users have 6 months from purchase date to edit their agreement. The deadline is stored in Firestore as `editDeadline`.
+
+### Configuration
+
+Located in `functions/index.js`:
+```javascript
+const EDIT_WINDOW_CONFIG = {
+  amount: 6,
+  unit: 'months'
+};
 ```
 
-**Note**: Pushing to GitHub does NOT automatically deploy. All deployments are manual.
+### Behavior
 
-**Best Practice**: Always test in dev before deploying to prod.
+- **Within window**: Full editing access
+- **After deadline**: Read-only, cannot modify collaborators
+- **Legacy projects** (no `editDeadline`): Unlimited editing
 
 ---
 
@@ -270,41 +223,28 @@ firebase deploy
 
 ### Important URLs
 
-**Development:**
-- Local: http://localhost:3000
-- Hosted: https://cherrytree-cofounder-agree-dev.web.app
-- Console: https://console.firebase.google.com/project/cherrytree-cofounder-agree-dev
-
-**Production:**
-- Marketing: https://cherrytree.app
-- App: https://my.cherrytree.app
-- Console: https://console.firebase.google.com/project/cherrytree-cofounder-agreement
-
 **External Services:**
 - Stripe: https://dashboard.stripe.com
 - Clerk: https://dashboard.clerk.com
 - Google Cloud: https://console.cloud.google.com
+- Firebase Dev: https://console.firebase.google.com/project/cherrytree-cofounder-agree-dev
+- Firebase Prod: https://console.firebase.google.com/project/cherrytree-cofounder-agreement
 
 ### Common Commands
 
 ```bash
-# Switch environments
-firebase use dev
-firebase use prod
+# Development
+npm start                           # Run local dev server
+npm run build                       # Build for production
 
-# Deploy
-firebase deploy                              # Deploy everything
-firebase deploy --only hosting              # Frontend only
-firebase deploy --only functions            # Functions only
-firebase deploy --only firestore:rules      # Rules only
+# Deployment
+npm run deploy:dev                  # Deploy all to dev
+npm run deploy:prod                 # Deploy all to prod
 
-# View logs
-firebase functions:log
-firebase functions:log --only clerkWebhook
-
-# Manage secrets
-firebase functions:secrets:set SECRET_NAME
-firebase functions:secrets:access SECRET_NAME
+# Firebase
+firebase use dev/prod               # Switch environment
+firebase functions:log              # View function logs
+firebase functions:secrets:set X    # Set secret
 ```
 
 ---
