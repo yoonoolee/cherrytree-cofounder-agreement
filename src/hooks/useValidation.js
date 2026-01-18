@@ -37,8 +37,8 @@ export function useValidation(formData, project) {
     let totalRequired = 0;
     let completed = 0;
 
-    // Get all collaborators
-    const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
+    // Get all collaborator userIds from the project
+    const collaboratorIds = (project?.collaborators || []).map(c => c.userId);
 
     // Section 1: Formation & Purpose
     if (formData.companyName) completed++;
@@ -74,20 +74,20 @@ export function useValidation(formData, project) {
 
     // Section 3: Equity Allocation
     if (formData.finalEquityPercentages && Object.keys(formData.finalEquityPercentages).length > 0) {
-      const allPercentagesFilled = allCollaborators.every(email =>
-        formData.finalEquityPercentages[email] && formData.finalEquityPercentages[email] !== ''
+      const allPercentagesFilled = collaboratorIds.every(userId =>
+        formData.finalEquityPercentages[userId] && formData.finalEquityPercentages[userId] !== ''
       );
       if (allPercentagesFilled) completed++;
       totalRequired++;
 
-      const totalEquity = allCollaborators.reduce((sum, email) =>
-        sum + (parseFloat(formData.finalEquityPercentages[email]) || 0), 0
+      const totalEquity = collaboratorIds.reduce((sum, userId) =>
+        sum + (parseFloat(formData.finalEquityPercentages[userId]) || 0), 0
       );
       if (Math.abs(totalEquity - 100) <= 0.01) completed++;
       totalRequired++;
     }
-    const allAcknowledgedEquityAllocation = allCollaborators.length > 0 &&
-      allCollaborators.every(email => formData.acknowledgeEquityAllocation?.[email]);
+    const allAcknowledgedEquityAllocation = collaboratorIds.length > 0 &&
+      collaboratorIds.every(userId => formData.acknowledgeEquityAllocation?.[userId]);
     if (allAcknowledgedEquityAllocation) completed++;
     totalRequired++;
 
@@ -99,15 +99,15 @@ export function useValidation(formData, project) {
     if (isOtherFieldValid(formData.tieResolution, formData.tieResolutionOther)) completed++;
     totalRequired++;
     // Check if all collaborators have acknowledged tie resolution
-    const allAcknowledgedTieResolution = allCollaborators.length > 0 &&
-      allCollaborators.every(email => formData.acknowledgeTieResolution?.[email]);
+    const allAcknowledgedTieResolution = collaboratorIds.length > 0 &&
+      collaboratorIds.every(userId => formData.acknowledgeTieResolution?.[userId]);
     if (allAcknowledgedTieResolution) completed++;
     totalRequired++;
     if (formData.includeShotgunClause) completed++;
     totalRequired++;
     if (formData.includeShotgunClause === 'Yes') {
-      const allAcknowledgedShotgunClause = allCollaborators.length > 0 &&
-        allCollaborators.every(email => formData.acknowledgeShotgunClause?.[email]);
+      const allAcknowledgedShotgunClause = collaboratorIds.length > 0 &&
+        collaboratorIds.every(userId => formData.acknowledgeShotgunClause?.[userId]);
       if (allAcknowledgedShotgunClause) completed++;
       totalRequired++;
     }
@@ -126,8 +126,8 @@ export function useValidation(formData, project) {
     if (formData.sharesBuybackDays) completed++;
     totalRequired++;
     // Check if all collaborators have acknowledged forfeiture
-    const allAcknowledgedForfeiture = allCollaborators.length > 0 &&
-      allCollaborators.every(email => formData.acknowledgeForfeiture?.[email]);
+    const allAcknowledgedForfeiture = collaboratorIds.length > 0 &&
+      collaboratorIds.every(userId => formData.acknowledgeForfeiture?.[userId]);
     if (allAcknowledgedForfeiture) completed++;
     totalRequired++;
     if (formData.vestedSharesDisposal) completed++;
@@ -137,8 +137,8 @@ export function useValidation(formData, project) {
     if (formData.hasPreExistingIP) completed++;
     totalRequired++;
     // Check if all collaborators have acknowledged IP ownership
-    const allAcknowledgedIPOwnership = allCollaborators.length > 0 &&
-      allCollaborators.every(email => formData.acknowledgeIPOwnership?.[email]);
+    const allAcknowledgedIPOwnership = collaboratorIds.length > 0 &&
+      collaboratorIds.every(userId => formData.acknowledgeIPOwnership?.[userId]);
     if (allAcknowledgedIPOwnership) completed++;
     totalRequired++;
 
@@ -160,8 +160,8 @@ export function useValidation(formData, project) {
 
     // Section 9: Non-Competition (Confidentiality, Non-Competition & Non-Solicitation)
     // Check if all collaborators have acknowledged confidentiality
-    const allAcknowledgedConfidentiality = allCollaborators.length > 0 &&
-      allCollaborators.every(email => formData.acknowledgeConfidentiality?.[email]);
+    const allAcknowledgedConfidentiality = collaboratorIds.length > 0 &&
+      collaboratorIds.every(userId => formData.acknowledgeConfidentiality?.[userId]);
     if (allAcknowledgedConfidentiality) completed++;
     totalRequired++;
     if (isOtherFieldValid(formData.nonCompeteDuration, formData.nonCompeteDurationOther)) completed++;
@@ -179,23 +179,23 @@ export function useValidation(formData, project) {
     if (formData.reviewFrequencyMonths) completed++;
     totalRequired++;
     // Check if all collaborators have acknowledged periodic review
-    const allAcknowledgedPeriodicReview = allCollaborators.length > 0 &&
-      allCollaborators.every(email => formData.acknowledgePeriodicReview?.[email]);
+    const allAcknowledgedPeriodicReview = collaboratorIds.length > 0 &&
+      collaboratorIds.every(userId => formData.acknowledgePeriodicReview?.[userId]);
     if (allAcknowledgedPeriodicReview) completed++;
     totalRequired++;
     // Check if all collaborators have acknowledged amendment review request
-    const allAcknowledgedAmendmentReviewRequest = allCollaborators.length > 0 &&
-      allCollaborators.every(email => formData.acknowledgeAmendmentReviewRequest?.[email]);
+    const allAcknowledgedAmendmentReviewRequest = collaboratorIds.length > 0 &&
+      collaboratorIds.every(userId => formData.acknowledgeAmendmentReviewRequest?.[userId]);
     if (allAcknowledgedAmendmentReviewRequest) completed++;
     totalRequired++;
     // Check if all collaborators have acknowledged entire agreement
-    const allAcknowledgedEntireAgreement = allCollaborators.length > 0 &&
-      allCollaborators.every(email => formData.acknowledgeEntireAgreement?.[email]);
+    const allAcknowledgedEntireAgreement = collaboratorIds.length > 0 &&
+      collaboratorIds.every(userId => formData.acknowledgeEntireAgreement?.[userId]);
     if (allAcknowledgedEntireAgreement) completed++;
     totalRequired++;
     // Check if all collaborators have acknowledged severability
-    const allAcknowledgedSeverability = allCollaborators.length > 0 &&
-      allCollaborators.every(email => formData.acknowledgeSeverability?.[email]);
+    const allAcknowledgedSeverability = collaboratorIds.length > 0 &&
+      collaboratorIds.every(userId => formData.acknowledgeSeverability?.[userId]);
     if (allAcknowledgedSeverability) completed++;
     totalRequired++;
 
@@ -208,7 +208,8 @@ export function useValidation(formData, project) {
    * @returns {boolean} - Whether the section is complete
    */
   const isSectionCompleted = (sectionId) => {
-    const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
+    // Get all collaborator userIds from the project
+    const collaboratorIds = (project?.collaborators || []).map(c => c.userId);
 
     switch(sectionId) {
       case 1: // Formation & Purpose
@@ -233,25 +234,25 @@ export function useValidation(formData, project) {
 
       case 3: // Equity Allocation
         // Check that all equity percentages are filled
-        const allPercentagesFilled = allCollaborators.every(email =>
-          formData.finalEquityPercentages?.[email] && formData.finalEquityPercentages[email] !== ''
+        const allPercentagesFilled = collaboratorIds.every(userId =>
+          formData.finalEquityPercentages?.[userId] && formData.finalEquityPercentages[userId] !== ''
         );
         if (!allPercentagesFilled) return false;
 
         // Check that total equity equals 100%
-        const totalEquity = allCollaborators.reduce((sum, email) =>
-          sum + (parseFloat(formData.finalEquityPercentages?.[email]) || 0), 0
+        const totalEquity = collaboratorIds.reduce((sum, userId) =>
+          sum + (parseFloat(formData.finalEquityPercentages?.[userId]) || 0), 0
         );
         if (Math.abs(totalEquity - 100) > 0.01) return false;
 
         // Check that all collaborators have acknowledged
-        const allAcknowledgedEquityAllocation = allCollaborators.length > 0 &&
-          allCollaborators.every(email => formData.acknowledgeEquityAllocation?.[email]);
+        const allAcknowledgedEquityAllocation = collaboratorIds.length > 0 &&
+          collaboratorIds.every(userId => formData.acknowledgeEquityAllocation?.[userId]);
         return allAcknowledgedEquityAllocation;
 
       case 4: // Vesting Schedule
-        const allAcknowledgedForfeiture = allCollaborators.length > 0 &&
-          allCollaborators.every(email => formData.acknowledgeForfeiture?.[email]);
+        const allAcknowledgedForfeiture = collaboratorIds.length > 0 &&
+          collaboratorIds.every(userId => formData.acknowledgeForfeiture?.[userId]);
         return formData.vestingStartDate &&
                isOtherFieldValid(formData.vestingSchedule, formData.vestingScheduleOther) &&
                formData.cliffPercentage && formData.accelerationTrigger &&
@@ -259,11 +260,11 @@ export function useValidation(formData, project) {
                allAcknowledgedForfeiture && formData.vestedSharesDisposal;
 
       case 5: // Decision-Making
-        const allAcknowledgedTieResolution = allCollaborators.length > 0 &&
-          allCollaborators.every(email => formData.acknowledgeTieResolution?.[email]);
+        const allAcknowledgedTieResolution = collaboratorIds.length > 0 &&
+          collaboratorIds.every(userId => formData.acknowledgeTieResolution?.[userId]);
         const allAcknowledgedShotgunClause = formData.includeShotgunClause === 'Yes' ? (
-          allCollaborators.length > 0 &&
-          allCollaborators.every(email => formData.acknowledgeShotgunClause?.[email])
+          collaboratorIds.length > 0 &&
+          collaboratorIds.every(userId => formData.acknowledgeShotgunClause?.[userId])
         ) : true;
         return isOtherArrayFieldValid(formData.majorDecisions, formData.majorDecisionsOther) &&
                formData.equityVotingPower &&
@@ -272,8 +273,8 @@ export function useValidation(formData, project) {
                formData.includeShotgunClause && allAcknowledgedShotgunClause;
 
       case 6: // IP & Ownership
-        const allAcknowledgedIPOwnership = allCollaborators.length > 0 &&
-          allCollaborators.every(email => formData.acknowledgeIPOwnership?.[email]);
+        const allAcknowledgedIPOwnership = collaboratorIds.length > 0 &&
+          collaboratorIds.every(userId => formData.acknowledgeIPOwnership?.[userId]);
         return formData.hasPreExistingIP && allAcknowledgedIPOwnership;
 
       case 7: // Compensation
@@ -286,21 +287,21 @@ export function useValidation(formData, project) {
                formData.voluntaryNoticeDays;
 
       case 9: // Non-Competition (Confidentiality, Non-Competition & Non-Solicitation)
-        const allAcknowledgedConfidentiality = allCollaborators.length > 0 &&
-          allCollaborators.every(email => formData.acknowledgeConfidentiality?.[email]);
+        const allAcknowledgedConfidentiality = collaboratorIds.length > 0 &&
+          collaboratorIds.every(userId => formData.acknowledgeConfidentiality?.[userId]);
         return allAcknowledgedConfidentiality &&
                isOtherFieldValid(formData.nonCompeteDuration, formData.nonCompeteDurationOther) &&
                isOtherFieldValid(formData.nonSolicitDuration, formData.nonSolicitDurationOther);
 
       case 10: // Final Details
-        const allAcknowledgedPeriodicReview = allCollaborators.length > 0 &&
-          allCollaborators.every(email => formData.acknowledgePeriodicReview?.[email]);
-        const allAcknowledgedAmendmentReviewRequest = allCollaborators.length > 0 &&
-          allCollaborators.every(email => formData.acknowledgeAmendmentReviewRequest?.[email]);
-        const allAcknowledgedEntireAgreement = allCollaborators.length > 0 &&
-          allCollaborators.every(email => formData.acknowledgeEntireAgreement?.[email]);
-        const allAcknowledgedSeverability = allCollaborators.length > 0 &&
-          allCollaborators.every(email => formData.acknowledgeSeverability?.[email]);
+        const allAcknowledgedPeriodicReview = collaboratorIds.length > 0 &&
+          collaboratorIds.every(userId => formData.acknowledgePeriodicReview?.[userId]);
+        const allAcknowledgedAmendmentReviewRequest = collaboratorIds.length > 0 &&
+          collaboratorIds.every(userId => formData.acknowledgeAmendmentReviewRequest?.[userId]);
+        const allAcknowledgedEntireAgreement = collaboratorIds.length > 0 &&
+          collaboratorIds.every(userId => formData.acknowledgeEntireAgreement?.[userId]);
+        const allAcknowledgedSeverability = collaboratorIds.length > 0 &&
+          collaboratorIds.every(userId => formData.acknowledgeSeverability?.[userId]);
         return isOtherFieldValid(formData.disputeResolution, formData.disputeResolutionOther) &&
                formData.governingLaw &&
                isOtherFieldValid(formData.amendmentProcess, formData.amendmentProcessOther) &&

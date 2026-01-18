@@ -2,9 +2,8 @@ import React from 'react';
 import { ROLES } from './surveyConstants';
 
 function Section2Cofounders({ formData, handleChange, isReadOnly, showValidation, project }) {
-  // Calculate number of cofounders from collaborators (owner + collaborators)
-  const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
-  const calculatedCofounderCount = allCollaborators.length;
+  // Get cofounder count from collaborators array
+  const calculatedCofounderCount = (project?.collaborators || []).length;
 
   const cofounders = formData.cofounders || [];
 

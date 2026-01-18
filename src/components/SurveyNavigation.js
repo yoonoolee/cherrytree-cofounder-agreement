@@ -5,7 +5,7 @@ import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import PaymentModal from './PaymentModal';
 import UpgradeModal from './UpgradeModal';
 import { useUser } from '../contexts/UserContext';
-import { useClerk } from '@clerk/clerk-react';
+import { useClerk, useOrganizationList } from '@clerk/clerk-react';
 
 // Constants
 const MAX_PROJECTS_PER_QUERY = 100; // Maximum projects to fetch per query
@@ -27,6 +27,7 @@ function SurveyNavigation({
   const navigate = useNavigate();
   const { currentUser } = useUser();
   const { signOut } = useClerk();
+  const { organizationList, isLoaded: orgsLoaded } = useOrganizationList();
   const [fetchedProjects, setFetchedProjects] = useState([]);
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -38,59 +39,49 @@ function SurveyNavigation({
 
   // Fetch all projects for the current user (only if not provided)
   useEffect(() => {
-    if (providedProjects !== null) return; // Skip if projects are provided
+    if (providedProjects !== null) return;
 
     const fetchProjects = async () => {
-      const user = currentUser;
-      if (!user) return;
+      if (!currentUser || !orgsLoaded) return;
 
       try {
-        const projectsRef = collection(db, 'projects');
+        const allProjects = [];
+        const orgIds = organizationList?.map(org => org.organization.id) || [];
 
-        // Query 1: Projects where user is the owner
-        const ownedQuery = query(
-          projectsRef,
-          where('ownerId', '==', user.id),
-          limit(MAX_PROJECTS_PER_QUERY)
-        );
-        const ownedSnapshot = await getDocs(ownedQuery);
+        if (orgIds.length > 0) {
+          const projectsRef = collection(db, 'projects');
 
-        // Query 2: Projects where user is a collaborator
-        const collaboratorQuery = query(
-          projectsRef,
-          where('collaboratorIds', 'array-contains', user.id),
-          limit(MAX_PROJECTS_PER_QUERY)
-        );
-        const collaboratorSnapshot = await getDocs(collaboratorQuery);
+          for (const orgId of orgIds) {
+            const orgQuery = query(
+              projectsRef,
+              where('clerkOrgId', '==', orgId),
+              limit(MAX_PROJECTS_PER_QUERY)
+            );
+            const snapshot = await getDocs(orgQuery);
 
-        // Merge and deduplicate projects
-        const projectsMap = new Map();
-
-        ownedSnapshot.docs.forEach(doc => {
-          projectsMap.set(doc.id, { id: doc.id, ...doc.data() });
-        });
-
-        collaboratorSnapshot.docs.forEach(doc => {
-          if (!projectsMap.has(doc.id)) {
-            projectsMap.set(doc.id, { id: doc.id, ...doc.data() });
+            snapshot.docs.forEach(doc => {
+              if (!allProjects.find(p => p.id === doc.id)) {
+                allProjects.push({ id: doc.id, ...doc.data() });
+              }
+            });
           }
-        });
+        }
 
-        // Convert to array and sort by lastOpened
-        const projects = Array.from(projectsMap.values()).sort((a, b) => {
+        // Sort by lastOpened (most recent first)
+        allProjects.sort((a, b) => {
           const aTime = a.lastOpened?.toMillis?.() || 0;
           const bTime = b.lastOpened?.toMillis?.() || 0;
           return bTime - aTime;
         });
 
-        setFetchedProjects(projects);
+        setFetchedProjects(allProjects);
       } catch (error) {
         console.error('Error fetching projects:', error);
       }
     };
 
     fetchProjects();
-  }, [projectId, providedProjects]);
+  }, [currentUser, orgsLoaded, organizationList, providedProjects]);
 
   // Close dropdown when clicking outside
   useEffect(() => {

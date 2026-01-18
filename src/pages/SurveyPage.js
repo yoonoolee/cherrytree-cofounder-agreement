@@ -62,58 +62,49 @@ function SurveyPage() {
     updateLastOpened();
   }, [projectId]);
 
-  // Fetch all projects for the current user (both owned and collaborated)
+  // Fetch all projects for the current user via their org memberships
   useEffect(() => {
     const fetchProjects = async () => {
-      if (!currentUser) return;
+      if (!currentUser || !isLoaded) return;
 
       try {
-        const projectsRef = collection(db, 'projects');
+        const allProjects = [];
+        const orgIds = organizationList?.map(org => org.organization.id) || [];
 
-        // Query 1: Projects where user is the owner
-        const ownedQuery = query(
-          projectsRef,
-          where('ownerId', '==', currentUser.id),
-          limit(100)
-        );
-        const ownedSnapshot = await getDocs(ownedQuery);
+        if (orgIds.length > 0) {
+          const projectsRef = collection(db, 'projects');
 
-        // Query 2: Projects where user is a collaborator
-        const collaboratorQuery = query(
-          projectsRef,
-          where('collaboratorIds', 'array-contains', currentUser.id),
-          limit(100)
-        );
-        const collaboratorSnapshot = await getDocs(collaboratorQuery);
+          for (const orgId of orgIds) {
+            const orgQuery = query(
+              projectsRef,
+              where('clerkOrgId', '==', orgId),
+              limit(100)
+            );
+            const snapshot = await getDocs(orgQuery);
 
-        // Merge and deduplicate projects
-        const projectsMap = new Map();
-
-        ownedSnapshot.docs.forEach(doc => {
-          projectsMap.set(doc.id, { id: doc.id, ...doc.data() });
-        });
-
-        collaboratorSnapshot.docs.forEach(doc => {
-          if (!projectsMap.has(doc.id)) {
-            projectsMap.set(doc.id, { id: doc.id, ...doc.data() });
+            snapshot.docs.forEach(doc => {
+              if (!allProjects.find(p => p.id === doc.id)) {
+                allProjects.push({ id: doc.id, ...doc.data() });
+              }
+            });
           }
-        });
+        }
 
-        // Convert to array and sort by lastOpened
-        const projects = Array.from(projectsMap.values()).sort((a, b) => {
+        // Sort by lastOpened (most recent first)
+        allProjects.sort((a, b) => {
           const aTime = a.lastOpened?.toMillis?.() || 0;
           const bTime = b.lastOpened?.toMillis?.() || 0;
           return bTime - aTime;
         });
 
-        setAllProjects(projects);
+        setAllProjects(allProjects);
       } catch (error) {
         console.error('Error fetching projects:', error);
       }
     };
 
     fetchProjects();
-  }, [projectId, currentUser]);
+  }, [projectId, currentUser, isLoaded, organizationList]);
 
   const handlePreview = () => {
     navigate(`/preview/${projectId}`);

@@ -50,14 +50,13 @@ const getInitialFormData = () => ({
   accelerationTrigger: '',
   sharesSellNoticeDays: '',
   sharesBuybackDays: '',
-  acknowledgeForfeiture: false,
+  acknowledgeForfeiture: {},
   vestedSharesDisposal: '',
 
   // Section 6: IP & Ownership
   hasPreExistingIP: '',
-  preExistingIPList: '',
-  acknowledgeIPAssignment: false,
-  acknowledgeIPOwnership: false,
+  acknowledgeIPAssignment: {},
+  acknowledgeIPOwnership: {},
 
   // Section 7: Compensation & Expenses
   takingCompensation: '',
@@ -72,7 +71,7 @@ const getInitialFormData = () => ({
   voluntaryNoticeDays: '',
 
   // Section 9: Non-Competition
-  acknowledgeConfidentiality: false,
+  acknowledgeConfidentiality: {},
   nonCompeteDuration: '',
   nonCompeteDurationOther: '',
   nonSolicitDuration: '',

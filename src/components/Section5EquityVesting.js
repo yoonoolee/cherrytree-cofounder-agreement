@@ -1,9 +1,12 @@
 import React from 'react';
 import { useUser } from '../contexts/UserContext';
+import { useCollaborators } from '../hooks/useCollaborators';
 import Tooltip from './Tooltip';
 
 function Section5EquityVesting({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
+  const { collaboratorIds, getEmailFromUserId, isAdmin } = useCollaborators(project);
+
   return (
     <div>
       <h2 className="text-3xl font-medium text-gray-800 mb-6">Vesting Schedule</h2>
@@ -278,8 +281,7 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             {(() => {
-              const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
-              const allAcknowledged = allCollaborators.length > 0 && allCollaborators.every(email => formData.acknowledgeForfeiture?.[email]);
+              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeForfeiture?.[userId]);
               return (
                 <>
                   You acknowledge that if a cofounder dies, becomes permanently disabled, or is otherwise incapacitated, their unvested shares are automatically forfeited and returned to the company.
@@ -292,30 +294,30 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
           <div className="space-y-2">
             {(() => {
               // Deduplicate collaborators list
-              const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
               const approvals = formData.acknowledgeForfeiture || {};
-              const currentUserEmail = currentUser?.primaryEmailAddress?.emailAddress;
+              const currentUserId = currentUser?.id;
 
-              return allCollaborators.map((email, index) => {
-                const isApproved = approvals[email] || false;
-                const isCurrentUser = email === currentUserEmail;
+              return collaboratorIds.map((userId) => {
+                const isApproved = approvals[userId] || false;
+                const isCurrentUser = userId === currentUserId;
+                const userEmail = getEmailFromUserId(userId);
 
                 return (
-                  <label key={index} className="flex items-center">
+                  <label key={userId} className="flex items-center">
                     <input
                       type="checkbox"
                       checked={isApproved}
                       onChange={(e) => {
-                        const newApprovals = { ...approvals, [email]: e.target.checked };
+                        const newApprovals = { ...approvals, [userId]: e.target.checked };
                         handleChange('acknowledgeForfeiture', newApprovals);
                       }}
                       disabled={isReadOnly || !isCurrentUser}
                       className="mr-3"
                     />
                     <span className="text-gray-700">
-                      {email}
-                      {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-                      
+                      {userEmail}
+                      {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
+
                     </span>
                   </label>
                 );

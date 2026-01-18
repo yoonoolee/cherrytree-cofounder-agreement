@@ -35,13 +35,37 @@ function CollaboratorManager({ project }) {
   const [removingUserId, setRemovingUserId] = useState(null);
   const [revokingInvitationId, setRevokingInvitationId] = useState(null);
 
-  // If project doesn't have a Clerk organization, show message
+  // If project doesn't have a Clerk organization, show error
   if (!project.clerkOrgId) {
+    const supportEmailSubject = encodeURIComponent('[URGENT] Production Support Request - No Organization ID');
+    const supportEmailBody = encodeURIComponent(
+      `Hi Cherrytree Support,\n\n` +
+      `I'm encountering an error with my project.\n\n` +
+      `--- Debug Info ---\n` +
+      `Project ID: ${project?.id || 'Unknown'}\n` +
+      `Project Name: ${project?.name || 'Unknown'}\n` +
+      `Admin User ID: ${project?.admin || 'Unknown'}\n` +
+      `Created At: ${project?.createdAt?.toDate?.()?.toISOString() || 'Unknown'}\n` +
+      `Current User ID: ${membership?.publicUserData?.userId || 'Unknown'}\n` +
+      `Current User Email: ${membership?.publicUserData?.identifier || 'Unknown'}\n` +
+      `Error: Missing clerkOrgId\n` +
+      `Timestamp: ${new Date().toISOString()}\n` +
+      `------------------\n\n` +
+      `Please help me resolve this issue.\n\n` +
+      `Thank you.`
+    );
+
     return (
       <div className="text-center py-8">
-        <p className="text-sm text-gray-600 mb-2">
-          This is a legacy project. Please create a new project to use the member management features.
+        <p className="text-sm text-gray-600 mb-4">
+          Something went wrong. Please contact support.
         </p>
+        <a
+          href={`mailto:hello@cherrytree.app?subject=${supportEmailSubject}&body=${supportEmailBody}`}
+          className="inline-block px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+        >
+          Contact Support
+        </a>
       </div>
     );
   }

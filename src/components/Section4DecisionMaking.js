@@ -2,10 +2,12 @@ import React from 'react';
 import { MAJOR_DECISIONS } from './surveyConstants';
 import CustomSelect from './CustomSelect';
 import { useUser } from '../contexts/UserContext';
+import { useCollaborators } from '../hooks/useCollaborators';
 import Tooltip from './Tooltip';
 
 function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
+  const { collaboratorIds, getEmailFromUserId, isAdmin } = useCollaborators(project);
 
   return (
     <div>
@@ -144,8 +146,7 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
             <div className="conditional-section">
               <p className="text-gray-700 mb-4">
                 {(() => {
-                  const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
-                  const allAcknowledged = allCollaborators.length > 0 && allCollaborators.every(email => formData.acknowledgeTieResolution?.[email]);
+                  const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeTieResolution?.[userId]);
                   return (
                     <>
                       In the event of a deadlock, the Cofounders agree to first seek resolution through informal negotiation for a period of 30 days. If unresolved, the deadlock shall be resolved by {formData.tieResolution === 'Other' ? formData.tieResolutionOther : formData.tieResolution}.
@@ -156,29 +157,29 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
               </p>
               <div className="space-y-2 mt-3 pl-4">
                 {(() => {
-                  const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
                   const approvals = formData.acknowledgeTieResolution || {};
-                  const currentUserEmail = currentUser?.primaryEmailAddress?.emailAddress;
+                  const currentUserId = currentUser?.id;
 
-                  return allCollaborators.map((email, index) => {
-                    const isApproved = approvals[email] || false;
-                    const isCurrentUser = email === currentUserEmail;
+                  return collaboratorIds.map((userId) => {
+                    const isApproved = approvals[userId] || false;
+                    const isCurrentUser = userId === currentUserId;
+                    const userEmail = getEmailFromUserId(userId);
 
                     return (
-                      <label key={index} className="flex items-center">
+                      <label key={userId} className="flex items-center">
                         <input
                           type="checkbox"
                           checked={isApproved}
                           onChange={(e) => {
-                            const newApprovals = { ...approvals, [email]: e.target.checked };
+                            const newApprovals = { ...approvals, [userId]: e.target.checked };
                             handleChange('acknowledgeTieResolution', newApprovals);
                           }}
                           disabled={isReadOnly || !isCurrentUser}
                           className="mr-3"
                         />
                         <span className="text-gray-700">
-                          {email}
-                          {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
+                          {userEmail}
+                          {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
                         </span>
                       </label>
                     );
@@ -222,8 +223,7 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
             <div className="conditional-section">
               <p className="text-gray-700 mb-4">
                 {(() => {
-                  const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
-                  const allAcknowledged = allCollaborators.length > 0 && allCollaborators.every(email => formData.acknowledgeShotgunClause?.[email]);
+                  const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeShotgunClause?.[userId]);
                   return (
                     <>
                       I acknowledge that no partial buy/sell is allowed and payment is due in cash within 60 days of acceptance.
@@ -234,29 +234,29 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
               </p>
               <div className="space-y-2 mt-3 pl-4">
                 {(() => {
-                  const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
                   const approvals = formData.acknowledgeShotgunClause || {};
-                  const currentUserEmail = currentUser?.primaryEmailAddress?.emailAddress;
+                  const currentUserId = currentUser?.id;
 
-                  return allCollaborators.map((email, index) => {
-                    const isApproved = approvals[email] || false;
-                    const isCurrentUser = email === currentUserEmail;
+                  return collaboratorIds.map((userId) => {
+                    const isApproved = approvals[userId] || false;
+                    const isCurrentUser = userId === currentUserId;
+                    const userEmail = getEmailFromUserId(userId);
 
                     return (
-                      <label key={index} className="flex items-center">
+                      <label key={userId} className="flex items-center">
                         <input
                           type="checkbox"
                           checked={isApproved}
                           onChange={(e) => {
-                            const newApprovals = { ...approvals, [email]: e.target.checked };
+                            const newApprovals = { ...approvals, [userId]: e.target.checked };
                             handleChange('acknowledgeShotgunClause', newApprovals);
                           }}
                           disabled={isReadOnly || !isCurrentUser}
                           className="mr-3"
                         />
                         <span className="text-gray-700">
-                          {email}
-                          {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
+                          {userEmail}
+                          {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
                         </span>
                       </label>
                     );

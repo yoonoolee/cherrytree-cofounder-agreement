@@ -3,10 +3,10 @@ import Spreadsheet from 'react-spreadsheet';
 import './EquityCalculator.css';
 
 function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftChange, onSubmit, isReadOnly, hasSubmitted, submissionError, lastSubmittedAt, wiggle }) {
-  // Function to get cofounder name from email
-  const getCofounderName = (email) => {
+  // Function to get cofounder name from userId
+  const getCofounderName = (userId) => {
     // Find index of this collaborator
-    const index = cofounders.indexOf(email);
+    const index = cofounders.indexOf(userId);
     // Get cofounder at that index
     const cofounder = cofounderData?.[index];
     // Return first name if it exists, otherwise return fallback
@@ -20,7 +20,7 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
 
   // Memoize cofounder names to detect actual changes
   const cofounderNames = useMemo(() => {
-    return cofounders.map(email => getCofounderName(email)).join('|');
+    return cofounders.map(userId => getCofounderName(userId)).join('|');
   }, [cofounders, cofounderData]);
 
   // Helper function to convert nested arrays to Firebase-compatible object structure
@@ -115,8 +115,8 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
         return [
           { value: 'Category', readOnly: true, className: 'header-cell' },
           { value: 'Importance', readOnly: true, className: 'header-cell' },
-          ...cofounders.map((email) => ({
-            value: getCofounderName(email),
+          ...cofounders.map((userId) => ({
+            value: getCofounderName(userId),
             readOnly: true,
             className: 'header-cell'
           }))
@@ -224,9 +224,9 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
 
       // Convert to percentages and round to 3 decimal places
       const equityPercentages = {};
-      Object.keys(cofounderScores).forEach(email => {
-        const percentage = (cofounderScores[email] / totalScore) * 100;
-        equityPercentages[email] = Math.round(percentage * 1000) / 1000;
+      Object.keys(cofounderScores).forEach(userId => {
+        const percentage = (cofounderScores[userId] / totalScore) * 100;
+        equityPercentages[userId] = Math.round(percentage * 1000) / 1000;
       });
 
       return equityPercentages;
@@ -262,14 +262,14 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
       <div className="w-full max-w-3xl mx-auto">
         {/* Stacked Progress Bar */}
         <div className="w-full h-7 bg-gray-200 rounded-lg flex relative overflow-hidden" style={{ border: '1px solid #000000' }}>
-          {entries.map(([email, percentage], index) => {
+          {entries.map(([userId, percentage], index) => {
             if (percentage === 0) return null;
 
             const color = colors[index % colors.length];
 
             return (
               <div
-                key={email}
+                key={userId}
                 className="transition-all duration-300 flex items-center justify-center relative"
                 style={{
                   width: `${percentage}%`,
@@ -296,17 +296,17 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
 
         {/* Legend */}
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 justify-center">
-          {entries.map(([email, percentage], index) => {
+          {entries.map(([userId, percentage], index) => {
             const color = colors[index % colors.length];
 
             return (
-              <div key={email} className="flex items-center gap-2">
+              <div key={userId} className="flex items-center gap-2">
                 <div
                   className="w-3 h-3 rounded-sm"
                   style={{ backgroundColor: color.bg, border: '1px solid #000000' }}
                 />
                 <span className="text-sm text-gray-700">
-                  {getCofounderName(email)}
+                  {getCofounderName(userId)}
                 </span>
               </div>
             );

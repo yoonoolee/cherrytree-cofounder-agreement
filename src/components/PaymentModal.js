@@ -8,7 +8,7 @@ import ProWaitlistForm from './ProWaitlistForm';
 
 // Constants
 const WIGGLE_DURATION_MS = 500; // Duration of wiggle animation for validation errors
-const PROJECT_NAME_MIN_LENGTH = 2; // Minimum characters for project/company name
+const PROJECT_NAME_MIN_LENGTH = 1; // Minimum characters for project/company name
 const PROJECT_NAME_MAX_LENGTH = 100; // Maximum characters for project/company name
 
 // Filter to only Starter and Pro for payment modal

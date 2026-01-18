@@ -29,8 +29,8 @@ const calculateProjectProgress = (project) => {
   let totalRequired = 0;
   let completed = 0;
 
-  // Get all collaborators
-  const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
+  // Get all collaborator userIds from the project
+  const collaboratorIds = (project?.collaborators || []).map(c => c.userId);
 
   // Section 1: Formation & Purpose (9 fields)
   if (formData.companyName) completed++;
@@ -65,20 +65,20 @@ const calculateProjectProgress = (project) => {
 
   // Section 3: Equity Allocation
   if (formData.finalEquityPercentages && Object.keys(formData.finalEquityPercentages).length > 0) {
-    const allPercentagesFilled = allCollaborators.every(email =>
-      formData.finalEquityPercentages[email] && formData.finalEquityPercentages[email] !== ''
+    const allPercentagesFilled = collaboratorIds.every(userId =>
+      formData.finalEquityPercentages[userId] && formData.finalEquityPercentages[userId] !== ''
     );
     if (allPercentagesFilled) completed++;
     totalRequired++;
 
-    const totalEquity = allCollaborators.reduce((sum, email) =>
-      sum + (parseFloat(formData.finalEquityPercentages[email]) || 0), 0
+    const totalEquity = collaboratorIds.reduce((sum, userId) =>
+      sum + (parseFloat(formData.finalEquityPercentages[userId]) || 0), 0
     );
     if (Math.abs(totalEquity - 100) <= 0.01) completed++;
     totalRequired++;
   }
-  const allAcknowledgedEquityAllocation = allCollaborators.length > 0 &&
-    allCollaborators.every(email => formData.acknowledgeEquityAllocation?.[email]);
+  const allAcknowledgedEquityAllocation = collaboratorIds.length > 0 &&
+    collaboratorIds.every(userId => formData.acknowledgeEquityAllocation?.[userId]);
   if (allAcknowledgedEquityAllocation) completed++;
   totalRequired++;
 
@@ -89,15 +89,15 @@ const calculateProjectProgress = (project) => {
   totalRequired++;
   if (isOtherFieldValid(formData.tieResolution, formData.tieResolutionOther)) completed++;
   totalRequired++;
-  const allAcknowledgedTieResolution = allCollaborators.length > 0 &&
-    allCollaborators.every(email => formData.acknowledgeTieResolution?.[email]);
+  const allAcknowledgedTieResolution = collaboratorIds.length > 0 &&
+    collaboratorIds.every(userId => formData.acknowledgeTieResolution?.[userId]);
   if (allAcknowledgedTieResolution) completed++;
   totalRequired++;
   if (formData.includeShotgunClause) completed++;
   totalRequired++;
   if (formData.includeShotgunClause === 'Yes') {
-    const allAcknowledgedShotgunClause = allCollaborators.length > 0 &&
-      allCollaborators.every(email => formData.acknowledgeShotgunClause?.[email]);
+    const allAcknowledgedShotgunClause = collaboratorIds.length > 0 &&
+      collaboratorIds.every(userId => formData.acknowledgeShotgunClause?.[userId]);
     if (allAcknowledgedShotgunClause) completed++;
     totalRequired++;
   }
@@ -115,8 +115,8 @@ const calculateProjectProgress = (project) => {
   totalRequired++;
   if (formData.sharesBuybackDays) completed++;
   totalRequired++;
-  const allAcknowledgedForfeiture = allCollaborators.length > 0 &&
-    allCollaborators.every(email => formData.acknowledgeForfeiture?.[email]);
+  const allAcknowledgedForfeiture = collaboratorIds.length > 0 &&
+    collaboratorIds.every(userId => formData.acknowledgeForfeiture?.[userId]);
   if (allAcknowledgedForfeiture) completed++;
   totalRequired++;
   if (formData.vestedSharesDisposal) completed++;
@@ -125,8 +125,8 @@ const calculateProjectProgress = (project) => {
   // Section 6: IP & Ownership (2 fields)
   if (formData.hasPreExistingIP) completed++;
   totalRequired++;
-  const allAcknowledgedIPOwnership = allCollaborators.length > 0 &&
-    allCollaborators.every(email => formData.acknowledgeIPOwnership?.[email]);
+  const allAcknowledgedIPOwnership = collaboratorIds.length > 0 &&
+    collaboratorIds.every(userId => formData.acknowledgeIPOwnership?.[userId]);
   if (allAcknowledgedIPOwnership) completed++;
   totalRequired++;
 
@@ -147,8 +147,8 @@ const calculateProjectProgress = (project) => {
   totalRequired++;
 
   // Section 9: Non-Competition (3 fields)
-  const allAcknowledgedConfidentiality = allCollaborators.length > 0 &&
-    allCollaborators.every(email => formData.acknowledgeConfidentiality?.[email]);
+  const allAcknowledgedConfidentiality = collaboratorIds.length > 0 &&
+    collaboratorIds.every(userId => formData.acknowledgeConfidentiality?.[userId]);
   if (allAcknowledgedConfidentiality) completed++;
   totalRequired++;
   if (isOtherFieldValid(formData.nonCompeteDuration, formData.nonCompeteDurationOther)) completed++;
@@ -165,20 +165,20 @@ const calculateProjectProgress = (project) => {
   totalRequired++;
   if (formData.reviewFrequencyMonths) completed++;
   totalRequired++;
-  const allAcknowledgedPeriodicReview = allCollaborators.length > 0 &&
-    allCollaborators.every(email => formData.acknowledgePeriodicReview?.[email]);
+  const allAcknowledgedPeriodicReview = collaboratorIds.length > 0 &&
+    collaboratorIds.every(userId => formData.acknowledgePeriodicReview?.[userId]);
   if (allAcknowledgedPeriodicReview) completed++;
   totalRequired++;
-  const allAcknowledgedAmendmentReviewRequest = allCollaborators.length > 0 &&
-    allCollaborators.every(email => formData.acknowledgeAmendmentReviewRequest?.[email]);
+  const allAcknowledgedAmendmentReviewRequest = collaboratorIds.length > 0 &&
+    collaboratorIds.every(userId => formData.acknowledgeAmendmentReviewRequest?.[userId]);
   if (allAcknowledgedAmendmentReviewRequest) completed++;
   totalRequired++;
-  const allAcknowledgedEntireAgreement = allCollaborators.length > 0 &&
-    allCollaborators.every(email => formData.acknowledgeEntireAgreement?.[email]);
+  const allAcknowledgedEntireAgreement = collaboratorIds.length > 0 &&
+    collaboratorIds.every(userId => formData.acknowledgeEntireAgreement?.[userId]);
   if (allAcknowledgedEntireAgreement) completed++;
   totalRequired++;
-  const allAcknowledgedSeverability = allCollaborators.length > 0 &&
-    allCollaborators.every(email => formData.acknowledgeSeverability?.[email]);
+  const allAcknowledgedSeverability = collaboratorIds.length > 0 &&
+    collaboratorIds.every(userId => formData.acknowledgeSeverability?.[userId]);
   if (allAcknowledgedSeverability) completed++;
   totalRequired++;
 

@@ -1,9 +1,11 @@
 import React from 'react';
 import { useUser } from '../contexts/UserContext';
+import { useCollaborators } from '../hooks/useCollaborators';
 import Tooltip from './Tooltip';
 
 function Section6IP({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
+  const { collaboratorIds, getEmailFromUserId, isAdmin } = useCollaborators(project);
 
   return (
     <div>
@@ -55,8 +57,7 @@ function Section6IP({ formData, handleChange, isReadOnly, project, showValidatio
           <div>
             <label className="block text-base font-medium text-gray-900 mb-2">
               {(() => {
-                const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
-                const allAcknowledged = allCollaborators.length > 0 && allCollaborators.every(email => formData.acknowledgeIPAssignment?.[email]);
+                const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeIPAssignment?.[userId]);
                 return (
                   <>
                     Any pre-existing IP can be assigned to the company via a written agreement if the cofounders agree:
@@ -67,30 +68,29 @@ function Section6IP({ formData, handleChange, isReadOnly, project, showValidatio
             </label>
             <div className="space-y-2">
               {(() => {
-                const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
                 const approvals = formData.acknowledgeIPAssignment || {};
-                const currentUserEmail = currentUser?.primaryEmailAddress?.emailAddress;
+                const currentUserId = currentUser?.id;
 
-                return allCollaborators.map((email, index) => {
-                  const isApproved = approvals[email] || false;
-                  const isCurrentUser = email === currentUserEmail;
+                return collaboratorIds.map((userId) => {
+                  const isApproved = approvals[userId] || false;
+                  const isCurrentUser = userId === currentUserId;
+                  const userEmail = getEmailFromUserId(userId);
 
                   return (
-                    <label key={index} className="flex items-center">
+                    <label key={userId} className="flex items-center">
                       <input
                         type="checkbox"
                         checked={isApproved}
                         onChange={(e) => {
-                          const newApprovals = { ...approvals, [email]: e.target.checked };
+                          const newApprovals = { ...approvals, [userId]: e.target.checked };
                           handleChange('acknowledgeIPAssignment', newApprovals);
                         }}
                         disabled={isReadOnly || !isCurrentUser}
                         className="mr-3"
                       />
                       <span className="text-gray-700">
-                        {email}
-                        {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-
+                        {userEmail}
+                        {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
                       </span>
                     </label>
                   );
@@ -104,8 +104,7 @@ function Section6IP({ formData, handleChange, isReadOnly, project, showValidatio
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             {(() => {
-              const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
-              const allAcknowledged = allCollaborators.length > 0 && allCollaborators.every(email => formData.acknowledgeIPOwnership?.[email]);
+              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeIPOwnership?.[userId]);
               return (
                 <>
                   Each Cofounder agrees that all inventions, discoveries, designs, developments, improvements, processes, works of authorship, trade secrets, and other intellectual property (collectively, "IP") conceived, created, developed, or reduced to practice by the Cofounder, either alone or with others, in the course of their work for the Company or using the Company's resources, shall be the sole and exclusive property of the Company.
@@ -116,29 +115,29 @@ function Section6IP({ formData, handleChange, isReadOnly, project, showValidatio
           </label>
           <div className="space-y-2">
             {(() => {
-              const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
               const approvals = formData.acknowledgeIPOwnership || {};
-              const currentUserEmail = currentUser?.primaryEmailAddress?.emailAddress;
+              const currentUserId = currentUser?.id;
 
-              return allCollaborators.map((email, index) => {
-                const isApproved = approvals[email] || false;
-                const isCurrentUser = email === currentUserEmail;
+              return collaboratorIds.map((userId) => {
+                const isApproved = approvals[userId] || false;
+                const isCurrentUser = userId === currentUserId;
+                const userEmail = getEmailFromUserId(userId);
 
                 return (
-                  <label key={index} className="flex items-center">
+                  <label key={userId} className="flex items-center">
                     <input
                       type="checkbox"
                       checked={isApproved}
                       onChange={(e) => {
-                        const newApprovals = { ...approvals, [email]: e.target.checked };
+                        const newApprovals = { ...approvals, [userId]: e.target.checked };
                         handleChange('acknowledgeIPOwnership', newApprovals);
                       }}
                       disabled={isReadOnly || !isCurrentUser}
                       className="mr-3"
                     />
                     <span className="text-gray-700">
-                      {email}
-                      {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
+                      {userEmail}
+                      {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
                     </span>
                   </label>
                 );

@@ -232,11 +232,11 @@ exports.submitSurvey = onCall({
 
     const projectData = projectDoc.data();
 
-    // Check if user is the owner (using Clerk user ID)
-    if (projectData.ownerId !== userId) {
+    // Check if user is the admin
+    if (projectData.admin !== userId) {
       throw new HttpsError(
         'permission-denied',
-        'Only the project owner can submit'
+        'Only the project admin can submit'
       );
     }
 
@@ -345,9 +345,7 @@ exports.generatePreviewPDF = onCall({
     const projectData = projectDoc.data();
 
     // Check if user has access to this project (using Clerk user ID)
-    const hasAccess =
-      projectData.ownerId === userId ||
-      (projectData.collaboratorIds || []).includes(userId);
+    const hasAccess = projectData.collaborators?.some(c => c.userId === userId);
 
     if (!hasAccess) {
       throw new HttpsError('permission-denied', 'No access to this project');
@@ -601,13 +599,11 @@ exports.stripeWebhook = onRequest({
 
             await projectRef.set({
               name: sanitizedProjectName,
-              ownerId: userId,
-              ownerEmail: userEmail,
-              collaborators: [userEmail],
-              collaboratorIds: [userId],
-              clerkOrgId: clerkOrgId, // Store Clerk Organization ID
+              admin: userId,
+              collaborators: [{ userId: userId, email: userEmail }],
+              clerkOrgId: clerkOrgId,
               approvals: {
-                [userEmail]: true
+                [userId]: false
               },
               onboardingCompleted: {
                 [userId]: false
@@ -615,7 +611,17 @@ exports.stripeWebhook = onRequest({
               requiresApprovals: true,
               surveyVersion: CURRENT_SURVEY_VERSION,
               surveyData: {
-                companyName: sanitizedProjectName
+                // Initialize acknowledgement fields with owner's userId
+                acknowledgeEquityAllocation: { [userId]: false },
+                acknowledgeTieResolution: { [userId]: false },
+                acknowledgeShotgunClause: { [userId]: false },
+                acknowledgeForfeiture: { [userId]: false },
+                acknowledgeIPOwnership: { [userId]: false },
+                acknowledgeConfidentiality: { [userId]: false },
+                acknowledgePeriodicReview: { [userId]: false },
+                acknowledgeAmendmentReviewRequest: { [userId]: false },
+                acknowledgeEntireAgreement: { [userId]: false },
+                acknowledgeSeverability: { [userId]: false }
               },
               activeUsers: [],
               submitted: false,
@@ -728,32 +734,29 @@ exports.deleteAccount = onCall({
     const pseudoId = `deleted_user_${userId.substring(0, 8)}`;
     const pseudoEmail = `${pseudoId}@cherrytree.internal`;
 
-    // Get all projects owned by this user
+    // Get all projects where this user is admin
     const projectsSnapshot = await db.collection('projects')
-      .where('ownerId', '==', userId)
+      .where('admin', '==', userId)
       .get();
 
     const clerk = getClerk();
     const transferredProjects = [];
     const archivedProjects = [];
 
-    // Handle each project
+    // Handle each project where user is admin
     for (const projectDoc of projectsSnapshot.docs) {
       const project = projectDoc.data();
 
-      // Get other collaborators (excluding the owner)
-      const otherCollaborators = project.collaboratorIds?.filter(id => id !== userId) || [];
+      // Get other collaborators (excluding the admin being deleted)
+      const otherCollaborators = project.collaborators?.filter(c => c.userId !== userId) || [];
 
       if (otherCollaborators.length > 0) {
-        // Transfer ownership to first collaborator
-        const newOwnerId = otherCollaborators[0];
-        const newOwnerEmail = project.collaborators?.find(e => e !== project.ownerEmail) || '';
+        // Transfer admin to first remaining collaborator
+        const newAdmin = otherCollaborators[0];
 
         await projectDoc.ref.update({
-          ownerId: newOwnerId,
-          ownerEmail: newOwnerEmail,
-          collaboratorIds: otherCollaborators,
-          collaborators: project.collaborators?.filter(e => e !== project.ownerEmail) || [],
+          admin: newAdmin.userId,
+          collaborators: otherCollaborators,
           transferredFrom: userId,
           transferredAt: FieldValue.serverTimestamp()
         });
@@ -763,10 +766,10 @@ exports.deleteAccount = onCall({
           try {
             await clerk.organizations.updateOrganizationMembership({
               organizationId: project.clerkOrgId,
-              userId: newOwnerId,
+              userId: newAdmin.userId,
               role: 'admin'
             });
-            console.log(`Clerk org ${project.clerkOrgId} transferred to ${newOwnerId}`);
+            console.log(`Clerk org ${project.clerkOrgId} transferred to ${newAdmin.userId}`);
           } catch (clerkError) {
             console.error('Error updating Clerk org ownership:', clerkError);
           }
@@ -774,17 +777,17 @@ exports.deleteAccount = onCall({
 
         transferredProjects.push({
           name: project.name,
-          transferredTo: newOwnerEmail
+          transferredTo: newAdmin.email
         });
 
-        console.log(`Project "${project.name}" transferred to ${newOwnerEmail}`);
+        console.log(`Project "${project.name}" transferred to ${newAdmin.email}`);
       } else {
-        // No collaborators - pseudonymize and archive the project
+        // No other collaborators - pseudonymize and archive the project
         await projectDoc.ref.update({
-          ownerEmail: pseudoEmail,
-          collaborators: [pseudoEmail],
+          admin: pseudoId,
+          collaborators: [{ userId: pseudoId, email: pseudoEmail }],
           archived: true,
-          archivedReason: 'owner_deleted',
+          archivedReason: 'admin_deleted',
           archivedAt: FieldValue.serverTimestamp()
         });
 
@@ -1038,7 +1041,7 @@ exports.clerkWebhook = onRequest({
 
         console.log(`User ${userId} (${userEmail}) joined org ${orgId}`);
 
-        // Find project with this Clerk org ID and add user to collaboratorIds and collaborators
+        // Find project with this Clerk org ID and add user to collaborators
         try {
           const projectsSnapshot = await db.collection('projects')
             .where('clerkOrgId', '==', orgId)
@@ -1047,12 +1050,29 @@ exports.clerkWebhook = onRequest({
 
           if (!projectsSnapshot.empty) {
             const projectDoc = projectsSnapshot.docs[0];
-            await projectDoc.ref.update({
-              collaboratorIds: FieldValue.arrayUnion(userId),
-              collaborators: FieldValue.arrayUnion(userEmail), // Also add email for legacy compatibility
-              lastUpdated: FieldValue.serverTimestamp()
-            });
-            console.log(`Added user ${userId} (${userEmail}) to project ${projectDoc.id} collaborators`);
+            const projectData = projectDoc.data();
+
+            // Get current collaborators
+            const collaborators = projectData.collaborators || [];
+
+            // Check if user already exists
+            const userExists = collaborators.some(c => c.userId === userId);
+
+            if (!userExists) {
+              // Add new collaborator
+              collaborators.push({ userId: userId, email: userEmail });
+
+              // Initialize their approval status
+              const approvals = projectData.approvals || {};
+              approvals[userId] = false;
+
+              await projectDoc.ref.update({
+                collaborators: collaborators,
+                approvals: approvals,
+                lastUpdated: FieldValue.serverTimestamp()
+              });
+              console.log(`Added user ${userId} (${userEmail}) to project ${projectDoc.id}`);
+            }
           }
         } catch (error) {
           console.error('Error adding collaborator to project:', error);
@@ -1068,7 +1088,7 @@ exports.clerkWebhook = onRequest({
 
         console.log(`User ${userId} (${userEmail}) left org ${orgId}`);
 
-        // Find project with this Clerk org ID and remove user from collaboratorIds and collaborators
+        // Find project with this Clerk org ID and remove user from collaborators
         try {
           const projectsSnapshot = await db.collection('projects')
             .where('clerkOrgId', '==', orgId)
@@ -1077,9 +1097,21 @@ exports.clerkWebhook = onRequest({
 
           if (!projectsSnapshot.empty) {
             const projectDoc = projectsSnapshot.docs[0];
+            const projectData = projectDoc.data();
+
+            // Get current collaborators
+            const collaborators = projectData.collaborators || [];
+
+            // Remove collaborator with matching userId
+            const updatedCollaborators = collaborators.filter(c => c.userId !== userId);
+
+            // Remove their approval status
+            const approvals = projectData.approvals || {};
+            delete approvals[userId];
+
             await projectDoc.ref.update({
-              collaboratorIds: FieldValue.arrayRemove(userId),
-              collaborators: FieldValue.arrayRemove(userEmail), // Also remove email for legacy compatibility
+              collaborators: updatedCollaborators,
+              approvals: approvals,
               lastUpdated: FieldValue.serverTimestamp()
             });
             console.log(`Removed user ${userId} (${userEmail}) from project ${projectDoc.id} collaborators`);

@@ -3,9 +3,9 @@ import CustomSelect from './CustomSelect';
 
 function Section7Compensation({ formData, handleChange, isReadOnly, showValidation, project }) {
   const compensations = formData.compensations || [];
-  // Count all collaborators including the owner
-  const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
-  const canAddMore = compensations.length < allCollaborators.length;
+  // Count all collaborators
+  const collaboratorCount = (project?.collaborators || []).length;
+  const canAddMore = compensations.length < collaboratorCount;
 
   const handleAddCompensation = () => {
     if (!canAddMore) return;

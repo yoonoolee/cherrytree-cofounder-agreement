@@ -2,39 +2,35 @@ import React from 'react';
 import { db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
+import { useCollaborators } from '../hooks/useCollaborators';
 
 function ApprovalSection({ project, projectId }) {
   const { currentUser, loading } = useUser();
-  const currentUserEmail = currentUser?.email;
-  const isOwner = project.ownerEmail === currentUserEmail;
+  const { collaborators, collaboratorIds, getEmailFromUserId, isAdmin } = useCollaborators(project);
+  const currentUserId = currentUser?.id;
+  const currentUserIsAdmin = isAdmin(currentUserId);
 
   // Don't render until auth state is loaded
   if (loading) {
     return null;
   }
-  
-  // Get all collaborators (including owner for display purposes)
-  const allCollaborators = project.collaborators || [];
+
   const approvals = project.approvals || {};
-  
-  // For counting, exclude owner
-  const nonOwnerCollaborators = allCollaborators.filter(
-    email => email !== project.ownerEmail
-  );
-  
-  const approvedCount = nonOwnerCollaborators.filter(email => approvals[email] === true).length;
-  const totalRequired = nonOwnerCollaborators.length;
+
+  // Count approvals (everyone must approve, including admin)
+  const approvedCount = collaboratorIds.filter(userId => approvals[userId] === true).length;
+  const totalRequired = collaboratorIds.length;
   const allApproved = totalRequired === 0 || approvedCount === totalRequired;
 
   const handleToggleApproval = async () => {
     try {
       const projectRef = doc(db, 'projects', projectId);
-      const newStatus = !approvals[currentUserEmail];
+      const newStatus = !approvals[currentUserId];
 
       // Create a new approvals object with the updated status
       const updatedApprovals = {
         ...approvals,
-        [currentUserEmail]: newStatus
+        [currentUserId]: newStatus
       };
 
       await updateDoc(projectRef, {
@@ -50,8 +46,8 @@ function ApprovalSection({ project, projectId }) {
     return null;
   }
 
-  // If no non-owner collaborators, don't show approval section
-  if (nonOwnerCollaborators.length === 0) {
+  // If only one collaborator (just the admin), don't show approval section
+  if (collaboratorIds.length <= 1) {
     return (
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
         <p className="text-sm text-gray-600">
@@ -77,12 +73,13 @@ function ApprovalSection({ project, projectId }) {
       )}
       
       <div className="space-y-3 mb-4">
-        {allCollaborators.map((email) => {
-          const isThisOwner = email === project.ownerEmail;
-          const isCurrentUser = email === currentUserEmail;
-          
+        {collaboratorIds.map((userId) => {
+          const email = getEmailFromUserId(userId);
+          const isThisAdmin = isAdmin(userId);
+          const isCurrentUser = userId === currentUserId;
+
           return (
-            <div key={email} className="flex items-center justify-between bg-white rounded-lg p-3">
+            <div key={userId} className="flex items-center justify-between bg-white rounded-lg p-3">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
                   <span className="text-red-950 font-medium text-sm">
@@ -94,19 +91,15 @@ function ApprovalSection({ project, projectId }) {
                     {email}
                   </span>
                   <div className="flex gap-2">
-                    {isThisOwner && (
-                      <span className="text-xs text-gray-500">(Owner)</span>
+                    {isThisAdmin && (
+                      <span className="text-xs text-gray-500">(Admin)</span>
                     )}
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-2">
-                {isThisOwner ? (
-                  <span className="text-red-950 font-medium flex items-center gap-1">
-                    ✓ Owner
-                  </span>
-                ) : approvals[email] ? (
+                {approvals[userId] ? (
                   <span className="text-green-600 font-medium flex items-center gap-1">
                     ✓ Approved
                   </span>
@@ -121,31 +114,29 @@ function ApprovalSection({ project, projectId }) {
         })}
       </div>
 
-      {!isOwner && (
-        <button
-          onClick={handleToggleApproval}
-          className={`w-full py-3 rounded-lg font-semibold transition ${
-            approvals[currentUserEmail]
-              ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              : 'bg-green-600 text-white hover:bg-green-700'
-          }`}
-        >
-          {approvals[currentUserEmail] ? 'Revoke My Approval' : 'Approve Survey'}
-        </button>
-      )}
+      <button
+        onClick={handleToggleApproval}
+        className={`w-full py-3 rounded-lg font-semibold transition ${
+          approvals[currentUserId]
+            ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            : 'bg-green-600 text-white hover:bg-green-700'
+        }`}
+      >
+        {approvals[currentUserId] ? 'Revoke My Approval' : 'Approve Survey'}
+      </button>
 
-      {isOwner && !allApproved && (
+      {currentUserIsAdmin && !allApproved && (
         <div className="bg-black border border-black rounded-lg p-3 mt-4">
           <p className="text-sm text-white">
-            ⚠️ You cannot submit until all collaborators approve ({approvedCount}/{totalRequired} approved)
+            ⚠️ You cannot submit until everyone approves ({approvedCount}/{totalRequired} approved)
           </p>
         </div>
       )}
 
-      {isOwner && allApproved && totalRequired > 0 && (
+      {currentUserIsAdmin && allApproved && totalRequired > 0 && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
           <p className="text-sm text-green-800">
-            ✓ All collaborators have approved! You can now submit.
+            ✓ Everyone has approved! You can now submit.
           </p>
         </div>
       )}

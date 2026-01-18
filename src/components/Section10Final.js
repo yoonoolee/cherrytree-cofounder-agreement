@@ -1,10 +1,12 @@
 import React from 'react';
 import { US_STATES } from './surveyConstants';
 import { useUser } from '../contexts/UserContext';
+import { useCollaborators } from '../hooks/useCollaborators';
 import CustomSelect from './CustomSelect';
 
 function Section10Final({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
+  const { collaboratorIds, getEmailFromUserId, isAdmin } = useCollaborators(project);
 
   return (
     <div>
@@ -112,8 +114,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
         <div className="">
           <p className="text-gray-700 mb-4">
             {(() => {
-              const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
-              const allAcknowledged = allCollaborators.length > 0 && allCollaborators.every(email => formData.acknowledgePeriodicReview?.[email]);
+              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgePeriodicReview?.[userId]);
               return (
                 <>
                   Each Cofounder acknowledges that this Agreement shall be reviewed every {formData.reviewFrequencyMonths ? `${formData.reviewFrequencyMonths} month${formData.reviewFrequencyMonths !== '1' ? 's' : ''}` : '[frequency not specified]'} to ensure it remains current and effective.
@@ -125,29 +126,29 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
           <div className="space-y-2 mt-3 pl-4">
 
             {(() => {
-              const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
               const approvals = formData.acknowledgePeriodicReview || {};
-              const currentUserEmail = currentUser?.primaryEmailAddress?.emailAddress;
+              const currentUserId = currentUser?.id;
 
-              return allCollaborators.map((email, index) => {
-                const isApproved = approvals[email] || false;
-                const isCurrentUser = email === currentUserEmail;
+              return collaboratorIds.map((userId) => {
+                const isApproved = approvals[userId] || false;
+                const isCurrentUser = userId === currentUserId;
+                const userEmail = getEmailFromUserId(userId);
 
                 return (
-                  <label key={index} className="flex items-center">
+                  <label key={userId} className="flex items-center">
                     <input
                       type="checkbox"
                       checked={isApproved}
                       onChange={(e) => {
-                        const newApprovals = { ...approvals, [email]: e.target.checked };
+                        const newApprovals = { ...approvals, [userId]: e.target.checked };
                         handleChange('acknowledgePeriodicReview', newApprovals);
                       }}
                       disabled={isReadOnly || !isCurrentUser}
                       className="mr-3"
                     />
                     <span className="text-gray-700">
-                      {email}
-                      {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
+                      {userEmail}
+                      {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
 
                     </span>
                   </label>
@@ -161,8 +162,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
         <div className="">
           <p className="text-gray-700 mb-4">
             {(() => {
-              const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
-              const allAcknowledged = allCollaborators.length > 0 && allCollaborators.every(email => formData.acknowledgeAmendmentReviewRequest?.[email]);
+              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeAmendmentReviewRequest?.[userId]);
               return (
                 <>
                   Any Cofounder may request a review of this Agreement in the event of material changes in circumstances affecting the Company or the Cofounder's role. Any amendments proposed pursuant to such review shall become effective only if approved and executed in writing according to the amendment process set forth in this Agreement.
@@ -174,29 +174,29 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
           <div className="space-y-2 mt-3 pl-4">
 
             {(() => {
-              const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
               const approvals = formData.acknowledgeAmendmentReviewRequest || {};
-              const currentUserEmail = currentUser?.primaryEmailAddress?.emailAddress;
+              const currentUserId = currentUser?.id;
 
-              return allCollaborators.map((email, index) => {
-                const isApproved = approvals[email] || false;
-                const isCurrentUser = email === currentUserEmail;
+              return collaboratorIds.map((userId) => {
+                const isApproved = approvals[userId] || false;
+                const isCurrentUser = userId === currentUserId;
+                const userEmail = getEmailFromUserId(userId);
 
                 return (
-                  <label key={index} className="flex items-center">
+                  <label key={userId} className="flex items-center">
                     <input
                       type="checkbox"
                       checked={isApproved}
                       onChange={(e) => {
-                        const newApprovals = { ...approvals, [email]: e.target.checked };
+                        const newApprovals = { ...approvals, [userId]: e.target.checked };
                         handleChange('acknowledgeAmendmentReviewRequest', newApprovals);
                       }}
                       disabled={isReadOnly || !isCurrentUser}
                       className="mr-3"
                     />
                     <span className="text-gray-700">
-                      {email}
-                      {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
+                      {userEmail}
+                      {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
 
                     </span>
                   </label>
@@ -210,8 +210,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
         <div className="">
           <p className="text-gray-700 mb-4">
             {(() => {
-              const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
-              const allAcknowledged = allCollaborators.length > 0 && allCollaborators.every(email => formData.acknowledgeEntireAgreement?.[email]);
+              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeEntireAgreement?.[userId]);
               return (
                 <>
                   Each Cofounder acknowledges that this Agreement constitutes the entire agreement between the Cofounders regarding the subject matter hereof and supersedes all prior agreements, understandings, negotiations, and discussions, whether oral or written.
@@ -223,29 +222,29 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
           <div className="space-y-2 mt-3 pl-4">
 
             {(() => {
-              const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
               const approvals = formData.acknowledgeEntireAgreement || {};
-              const currentUserEmail = currentUser?.primaryEmailAddress?.emailAddress;
+              const currentUserId = currentUser?.id;
 
-              return allCollaborators.map((email, index) => {
-                const isApproved = approvals[email] || false;
-                const isCurrentUser = email === currentUserEmail;
+              return collaboratorIds.map((userId) => {
+                const isApproved = approvals[userId] || false;
+                const isCurrentUser = userId === currentUserId;
+                const userEmail = getEmailFromUserId(userId);
 
                 return (
-                  <label key={index} className="flex items-center">
+                  <label key={userId} className="flex items-center">
                     <input
                       type="checkbox"
                       checked={isApproved}
                       onChange={(e) => {
-                        const newApprovals = { ...approvals, [email]: e.target.checked };
+                        const newApprovals = { ...approvals, [userId]: e.target.checked };
                         handleChange('acknowledgeEntireAgreement', newApprovals);
                       }}
                       disabled={isReadOnly || !isCurrentUser}
                       className="mr-3"
                     />
                     <span className="text-gray-700">
-                      {email}
-                      {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
+                      {userEmail}
+                      {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
                       
                     </span>
                   </label>
@@ -259,8 +258,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
         <div className="">
           <p className="text-gray-700 mb-4">
             {(() => {
-              const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
-              const allAcknowledged = allCollaborators.length > 0 && allCollaborators.every(email => formData.acknowledgeSeverability?.[email]);
+              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeSeverability?.[userId]);
               return (
                 <>
                   Each Cofounder acknowledges that if any provision of this Agreement is held to be invalid or unenforceable, the remaining provisions shall continue in full force and effect.
@@ -272,29 +270,29 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
           <div className="space-y-2 mt-3 pl-4">
 
             {(() => {
-              const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
               const approvals = formData.acknowledgeSeverability || {};
-              const currentUserEmail = currentUser?.primaryEmailAddress?.emailAddress;
+              const currentUserId = currentUser?.id;
 
-              return allCollaborators.map((email, index) => {
-                const isApproved = approvals[email] || false;
-                const isCurrentUser = email === currentUserEmail;
+              return collaboratorIds.map((userId) => {
+                const isApproved = approvals[userId] || false;
+                const isCurrentUser = userId === currentUserId;
+                const userEmail = getEmailFromUserId(userId);
 
                 return (
-                  <label key={index} className="flex items-center">
+                  <label key={userId} className="flex items-center">
                     <input
                       type="checkbox"
                       checked={isApproved}
                       onChange={(e) => {
-                        const newApprovals = { ...approvals, [email]: e.target.checked };
+                        const newApprovals = { ...approvals, [userId]: e.target.checked };
                         handleChange('acknowledgeSeverability', newApprovals);
                       }}
                       disabled={isReadOnly || !isCurrentUser}
                       className="mr-3"
                     />
                     <span className="text-gray-700">
-                      {email}
-                      {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
+                      {userEmail}
+                      {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
                       
                     </span>
                   </label>

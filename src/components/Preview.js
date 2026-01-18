@@ -150,7 +150,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
     const fetchSubmitterName = async () => {
       if (project?.submittedBy) {
         try {
-          const userDoc = await getDoc(doc(db, 'users', project.ownerId));
+          const userDoc = await getDoc(doc(db, 'users', project.submittedBy));
           if (userDoc.exists()) {
             const userData = userDoc.data();
             const fullName = [userData.firstName, userData.lastName].filter(Boolean).join(' ');
@@ -169,15 +169,13 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
   const checkAllApproved = () => {
     if (!project.requiresApprovals) return true;
 
-    const allCollaborators = (project.collaborators || []).filter(
-      email => email !== project.ownerEmail
-    );
-
-    if (allCollaborators.length === 0) return true;
+    const collaborators = project.collaborators || [];
+    if (collaborators.length === 0) return true;
 
     const approvals = project.approvals || {};
 
-    return allCollaborators.every(email => approvals[email] === true);
+    // Everyone must approve (including admin)
+    return collaborators.every(c => approvals[c.userId] === true);
   };
 
   const handleSubmit = async () => {
@@ -210,7 +208,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
     }
   };
 
-  const isOwner = project?.ownerEmail === currentUser?.primaryEmailAddress?.emailAddress;
+  const isAdmin = project?.admin === currentUser?.id;
   const isReadOnly = project?.submitted;
 
   // Create sections array with the 11th section
@@ -631,7 +629,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
               {/* Submit Button (Owner Only) */}
               {!isReadOnly && (
                 <div className="mt-8 pt-6 border-t border-gray-200">
-                  {isOwner ? (
+                  {isAdmin ? (
                     <div>
                       {submitError && (
                         <p className="text-xs text-red-950 mb-4">{submitError}</p>

@@ -1,9 +1,11 @@
 import React from 'react';
 import { useUser } from '../contexts/UserContext';
+import { useCollaborators } from '../hooks/useCollaborators';
 import Tooltip from './Tooltip';
 
 function Section9NonCompete({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
+  const { collaboratorIds, getEmailFromUserId, isAdmin } = useCollaborators(project);
 
   return (
     <div>
@@ -18,8 +20,7 @@ function Section9NonCompete({ formData, handleChange, isReadOnly, project, showV
         <div className="">
           <p className="text-gray-700 mb-4">
             {(() => {
-              const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
-              const allAcknowledged = allCollaborators.length > 0 && allCollaborators.every(email => formData.acknowledgeConfidentiality?.[email]);
+              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeConfidentiality?.[userId]);
               return (
                 <>
                   Each Cofounder agrees to hold all Confidential Information in strict confidence and not to disclose any Confidential Information to any third party without the Company's prior written consent.
@@ -29,32 +30,30 @@ function Section9NonCompete({ formData, handleChange, isReadOnly, project, showV
             })()}
           </p>
           <div className="space-y-2 mt-3 pl-4">
-
             {(() => {
-              const allCollaborators = [...new Set([project?.ownerEmail, ...(project?.collaborators || [])])].filter(Boolean);
               const approvals = formData.acknowledgeConfidentiality || {};
-              const currentUserEmail = currentUser?.primaryEmailAddress?.emailAddress;
+              const currentUserId = currentUser?.id;
 
-              return allCollaborators.map((email, index) => {
-                const isApproved = approvals[email] || false;
-                const isCurrentUser = email === currentUserEmail;
+              return collaboratorIds.map((userId) => {
+                const isApproved = approvals[userId] || false;
+                const isCurrentUser = userId === currentUserId;
+                const userEmail = getEmailFromUserId(userId);
 
                 return (
-                  <label key={index} className="flex items-center">
+                  <label key={userId} className="flex items-center">
                     <input
                       type="checkbox"
                       checked={isApproved}
                       onChange={(e) => {
-                        const newApprovals = { ...approvals, [email]: e.target.checked };
+                        const newApprovals = { ...approvals, [userId]: e.target.checked };
                         handleChange('acknowledgeConfidentiality', newApprovals);
                       }}
                       disabled={isReadOnly || !isCurrentUser}
                       className="mr-3"
                     />
                     <span className="text-gray-700">
-                      {email}
-                      {email === project?.ownerEmail && <span className="ml-2 text-xs text-gray-500">(Owner)</span>}
-                      
+                      {userEmail}
+                      {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
                     </span>
                   </label>
                 );

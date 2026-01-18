@@ -441,7 +441,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               Access Denied
             </h3>
             <p className="text-sm text-gray-600 mb-6">
-              You don't have permission to access this project. Please contact the project owner if you believe this is an error.
+              You do not have permission to access this project. Please contact the project owner to grant you access. If this is an error, please contact hello@cherrytree.app for support.
             </p>
             <button
               onClick={() => navigate('/dashboard')}
