@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 /**
  * Hook to fetch all projects for a user via their Clerk organization memberships
+ * orgId === projectId (Clerk org ID is the Firestore document ID)
  */
 export function useProjects(currentUser, userMemberships, orgsLoaded) {
   const [projects, setProjects] = useState([]);
@@ -17,24 +18,17 @@ export function useProjects(currentUser, userMemberships, orgsLoaded) {
         const allProjects = [];
         const orgIds = userMemberships?.data?.map(m => m.organization.id) || [];
 
-        if (orgIds.length > 0) {
-          const projectsRef = collection(db, 'projects');
+        // Fetch projects directly by ID (orgId === projectId)
+        const projectPromises = orgIds.map(orgId =>
+          getDoc(doc(db, 'projects', orgId))
+        );
+        const projectDocs = await Promise.all(projectPromises);
 
-          for (const orgId of orgIds) {
-            const orgQuery = query(
-              projectsRef,
-              where('clerkOrgId', '==', orgId),
-              limit(100)
-            );
-            const snapshot = await getDocs(orgQuery);
-
-            snapshot.docs.forEach(doc => {
-              if (!allProjects.find(p => p.id === doc.id)) {
-                allProjects.push({ id: doc.id, ...doc.data() });
-              }
-            });
+        projectDocs.forEach(projectDoc => {
+          if (projectDoc.exists()) {
+            allProjects.push({ id: projectDoc.id, ...projectDoc.data() });
           }
-        }
+        });
 
         // Sort by lastOpened (most recent first)
         allProjects.sort((a, b) => {

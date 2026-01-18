@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import PaymentModal from './PaymentModal';
 import UpgradeModal from './UpgradeModal';
 import { useUser } from '../contexts/UserContext';
 import { useClerk, useOrganizationList } from '@clerk/clerk-react';
 
-// Constants
-const MAX_PROJECTS_PER_QUERY = 100; // Maximum projects to fetch per query
 
 function SurveyNavigation({
   displayTitle, // What to show in the header (user name or project name)
@@ -38,6 +36,7 @@ function SurveyNavigation({
   const allProjects = providedProjects !== null ? providedProjects : fetchedProjects;
 
   // Fetch all projects for the current user (only if not provided)
+  // orgId === projectId (Clerk org ID is the Firestore document ID)
   useEffect(() => {
     if (providedProjects !== null) return;
 
@@ -45,36 +44,26 @@ function SurveyNavigation({
       if (!currentUser || !orgsLoaded) return;
 
       try {
-        const allProjects = [];
         const orgIds = organizationList?.map(org => org.organization.id) || [];
 
-        if (orgIds.length > 0) {
-          const projectsRef = collection(db, 'projects');
+        // Fetch projects directly by ID (orgId === projectId)
+        const projectPromises = orgIds.map(orgId =>
+          getDoc(doc(db, 'projects', orgId))
+        );
+        const projectDocs = await Promise.all(projectPromises);
 
-          for (const orgId of orgIds) {
-            const orgQuery = query(
-              projectsRef,
-              where('clerkOrgId', '==', orgId),
-              limit(MAX_PROJECTS_PER_QUERY)
-            );
-            const snapshot = await getDocs(orgQuery);
-
-            snapshot.docs.forEach(doc => {
-              if (!allProjects.find(p => p.id === doc.id)) {
-                allProjects.push({ id: doc.id, ...doc.data() });
-              }
-            });
-          }
-        }
+        const projects = projectDocs
+          .filter(projectDoc => projectDoc.exists())
+          .map(projectDoc => ({ id: projectDoc.id, ...projectDoc.data() }));
 
         // Sort by lastOpened (most recent first)
-        allProjects.sort((a, b) => {
+        projects.sort((a, b) => {
           const aTime = a.lastOpened?.toMillis?.() || 0;
           const bTime = b.lastOpened?.toMillis?.() || 0;
           return bTime - aTime;
         });
 
-        setFetchedProjects(allProjects);
+        setFetchedProjects(projects);
       } catch (error) {
         console.error('Error fetching projects:', error);
       }

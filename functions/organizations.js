@@ -31,16 +31,14 @@ const FUNCTION_CONFIG = {
 async function validateEditWindow(organizationId) {
   const db = getFirestore();
 
-  const projectsSnapshot = await db.collection('projects')
-    .where('clerkOrgId', '==', organizationId)
-    .limit(1)
-    .get();
+  // organizationId is the document ID (clerkOrgId === projectId)
+  const projectDoc = await db.collection('projects').doc(organizationId).get();
 
-  if (projectsSnapshot.empty) {
+  if (!projectDoc.exists) {
     return;
   }
 
-  const project = projectsSnapshot.docs[0].data();
+  const project = projectDoc.data();
 
   if (!project.editDeadline) {
     return;

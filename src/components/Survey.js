@@ -151,27 +151,27 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
 
 
-  // Automatically switch to the project's organization
+  // Automatically switch to the project's organization (projectId === clerkOrgId)
   useEffect(() => {
     const switchToProjectOrg = async () => {
       // Wait for Clerk to load organization data
-      if (!orgsLoaded || !project?.clerkOrgId || !setActive || !userMemberships) {
+      if (!orgsLoaded || !projectId || !setActive || !userMemberships) {
         return;
       }
 
       // Check if we're already in the right org
-      if (orgId === project.clerkOrgId) {
+      if (orgId === projectId) {
         return;
       }
 
       // Find the membership for this project's org
       const membership = userMemberships.data?.find(
-        m => m.organization.id === project.clerkOrgId
+        m => m.organization.id === projectId
       );
 
       if (membership) {
         try {
-          await setActive({ organization: project.clerkOrgId });
+          await setActive({ organization: projectId });
         } catch (error) {
           console.error('Error switching organization:', error);
         }
@@ -179,7 +179,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
     };
 
     switchToProjectOrg();
-  }, [project?.clerkOrgId, orgId, setActive, userMemberships, orgsLoaded]);
+  }, [projectId, orgId, setActive, userMemberships, orgsLoaded]);
 
   // Project sync, auto-save, and validation are now handled by custom hooks
   // See: useProjectSync, useAutoSave, useValidation

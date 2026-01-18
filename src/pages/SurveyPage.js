@@ -4,7 +4,7 @@ import { useOrganizationList } from '@clerk/clerk-react';
 import Survey from '../components/Survey';
 import PaymentModal from '../components/PaymentModal';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, orderBy, doc, updateDoc, limit, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
 
 function SurveyPage() {
@@ -15,26 +15,16 @@ function SurveyPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [allProjects, setAllProjects] = useState([]);
 
-  // Set active organization based on project's clerkOrgId
+  // Set active organization based on projectId (projectId === clerkOrgId)
   useEffect(() => {
     const setActiveOrg = async () => {
-      if (!projectId || !isLoaded) return;
+      if (!projectId || !isLoaded || !setActive) return;
 
       try {
-        const projectRef = doc(db, 'projects', projectId);
-        const projectDoc = await getDoc(projectRef);
-
-        if (projectDoc.exists()) {
-          const projectData = projectDoc.data();
-          const clerkOrgId = projectData.clerkOrgId;
-
-          // If project has a Clerk org, set it as active
-          if (clerkOrgId && setActive) {
-            const org = organizationList?.find(o => o.organization.id === clerkOrgId);
-            if (org) {
-              await setActive({ organization: clerkOrgId });
-            }
-          }
+        // projectId is the Clerk org ID, so we can set it directly
+        const org = organizationList?.find(o => o.organization.id === projectId);
+        if (org) {
+          await setActive({ organization: projectId });
         }
       } catch (error) {
         console.error('Error setting active organization:', error);
@@ -63,41 +53,32 @@ function SurveyPage() {
   }, [projectId]);
 
   // Fetch all projects for the current user via their org memberships
+  // orgId === projectId (Clerk org ID is the Firestore document ID)
   useEffect(() => {
     const fetchProjects = async () => {
       if (!currentUser || !isLoaded) return;
 
       try {
-        const allProjects = [];
         const orgIds = organizationList?.map(org => org.organization.id) || [];
 
-        if (orgIds.length > 0) {
-          const projectsRef = collection(db, 'projects');
+        // Fetch projects directly by ID (orgId === projectId)
+        const projectPromises = orgIds.map(orgId =>
+          getDoc(doc(db, 'projects', orgId))
+        );
+        const projectDocs = await Promise.all(projectPromises);
 
-          for (const orgId of orgIds) {
-            const orgQuery = query(
-              projectsRef,
-              where('clerkOrgId', '==', orgId),
-              limit(100)
-            );
-            const snapshot = await getDocs(orgQuery);
-
-            snapshot.docs.forEach(doc => {
-              if (!allProjects.find(p => p.id === doc.id)) {
-                allProjects.push({ id: doc.id, ...doc.data() });
-              }
-            });
-          }
-        }
+        const fetchedProjects = projectDocs
+          .filter(projectDoc => projectDoc.exists())
+          .map(projectDoc => ({ id: projectDoc.id, ...projectDoc.data() }));
 
         // Sort by lastOpened (most recent first)
-        allProjects.sort((a, b) => {
+        fetchedProjects.sort((a, b) => {
           const aTime = a.lastOpened?.toMillis?.() || 0;
           const bTime = b.lastOpened?.toMillis?.() || 0;
           return bTime - aTime;
         });
 
-        setAllProjects(allProjects);
+        setAllProjects(fetchedProjects);
       } catch (error) {
         console.error('Error fetching projects:', error);
       }

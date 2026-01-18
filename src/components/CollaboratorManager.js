@@ -35,9 +35,9 @@ function CollaboratorManager({ project }) {
   const [removingUserId, setRemovingUserId] = useState(null);
   const [revokingInvitationId, setRevokingInvitationId] = useState(null);
 
-  // If project doesn't have a Clerk organization, show error
-  if (!project.clerkOrgId) {
-    const supportEmailSubject = encodeURIComponent('[URGENT] Production Support Request - No Organization ID');
+  // If project doesn't have an ID, show error (project.id === clerkOrgId)
+  if (!project.id) {
+    const supportEmailSubject = encodeURIComponent('[URGENT] Production Support Request - No Project ID');
     const supportEmailBody = encodeURIComponent(
       `Hi Cherrytree Support,\n\n` +
       `I'm encountering an error with my project.\n\n` +
@@ -48,7 +48,7 @@ function CollaboratorManager({ project }) {
       `Created At: ${project?.createdAt?.toDate?.()?.toISOString() || 'Unknown'}\n` +
       `Current User ID: ${membership?.publicUserData?.userId || 'Unknown'}\n` +
       `Current User Email: ${membership?.publicUserData?.identifier || 'Unknown'}\n` +
-      `Error: Missing clerkOrgId\n` +
+      `Error: Missing project ID\n` +
       `Timestamp: ${new Date().toISOString()}\n` +
       `------------------\n\n` +
       `Please help me resolve this issue.\n\n` +
@@ -70,8 +70,8 @@ function CollaboratorManager({ project }) {
     );
   }
 
-  // If the organization context doesn't match this project, show message
-  if (organization?.id !== project.clerkOrgId) {
+  // If the organization context doesn't match this project, show message (project.id === clerkOrgId)
+  if (organization?.id !== project.id) {
     return (
       <div className="text-center py-8">
         <p className="text-sm text-gray-600 mb-2">

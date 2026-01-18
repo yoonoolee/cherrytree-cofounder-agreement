@@ -574,23 +574,17 @@ exports.stripeWebhook = onRequest({
         if (userId && plan && sanitizedProjectName && userEmail) {
           try {
             // Create Clerk Organization for this project
+            // clerkOrgId is used as the Firestore document ID (single source of truth)
             const clerk = getClerk();
-            let clerkOrgId = null;
+            const organization = await clerk.organizations.createOrganization({
+              name: sanitizedProjectName,
+              createdBy: userId,
+            });
+            const clerkOrgId = organization.id;
+            console.log(`Clerk Organization created: ${clerkOrgId} for project: ${sanitizedProjectName}`);
 
-            try {
-              const organization = await clerk.organizations.createOrganization({
-                name: sanitizedProjectName,
-                createdBy: userId,
-              });
-              clerkOrgId = organization.id;
-              console.log(`Clerk Organization created: ${clerkOrgId} for project: ${sanitizedProjectName}`);
-            } catch (clerkError) {
-              console.error('Error creating Clerk Organization:', clerkError);
-              // Continue creating project even if org creation fails
-            }
-
-            // Create a project for the user with proper structure
-            const projectRef = db.collection('projects').doc();
+            // Use clerkOrgId as the Firestore document ID
+            const projectRef = db.collection('projects').doc(clerkOrgId);
 
             // Calculate edit deadline based on EDIT_WINDOW_CONFIG
             // This is calculated ONCE and stored forever - changing config later won't affect existing projects
@@ -601,7 +595,6 @@ exports.stripeWebhook = onRequest({
               name: sanitizedProjectName,
               admin: userId,
               collaborators: [{ userId: userId, email: userEmail }],
-              clerkOrgId: clerkOrgId,
               approvals: {
                 [userId]: false
               },
@@ -761,18 +754,16 @@ exports.deleteAccount = onCall({
           transferredAt: FieldValue.serverTimestamp()
         });
 
-        // Transfer Clerk organization ownership if it exists
-        if (project.clerkOrgId) {
-          try {
-            await clerk.organizations.updateOrganizationMembership({
-              organizationId: project.clerkOrgId,
-              userId: newAdmin.userId,
-              role: 'admin'
-            });
-            console.log(`Clerk org ${project.clerkOrgId} transferred to ${newAdmin.userId}`);
-          } catch (clerkError) {
-            console.error('Error updating Clerk org ownership:', clerkError);
-          }
+        // Transfer Clerk organization ownership (projectDoc.id === clerkOrgId)
+        try {
+          await clerk.organizations.updateOrganizationMembership({
+            organizationId: projectDoc.id,
+            userId: newAdmin.userId,
+            role: 'admin'
+          });
+          console.log(`Clerk org ${projectDoc.id} transferred to ${newAdmin.userId}`);
+        } catch (clerkError) {
+          console.error('Error updating Clerk org ownership:', clerkError);
         }
 
         transferredProjects.push({
@@ -791,14 +782,12 @@ exports.deleteAccount = onCall({
           archivedAt: FieldValue.serverTimestamp()
         });
 
-        // Delete Clerk organization (no members left)
-        if (project.clerkOrgId) {
-          try {
-            await clerk.organizations.deleteOrganization(project.clerkOrgId);
-            console.log(`Clerk org ${project.clerkOrgId} deleted (no collaborators)`);
-          } catch (clerkError) {
-            console.error('Error deleting Clerk org:', clerkError);
-          }
+        // Delete Clerk organization (no members left, projectDoc.id === clerkOrgId)
+        try {
+          await clerk.organizations.deleteOrganization(projectDoc.id);
+          console.log(`Clerk org ${projectDoc.id} deleted (no collaborators)`);
+        } catch (clerkError) {
+          console.error('Error deleting Clerk org:', clerkError);
         }
 
         archivedProjects.push(project.name);
@@ -1041,15 +1030,11 @@ exports.clerkWebhook = onRequest({
 
         console.log(`User ${userId} (${userEmail}) joined org ${orgId}`);
 
-        // Find project with this Clerk org ID and add user to collaborators
+        // Get project directly by ID (orgId === projectId)
         try {
-          const projectsSnapshot = await db.collection('projects')
-            .where('clerkOrgId', '==', orgId)
-            .limit(1)
-            .get();
+          const projectDoc = await db.collection('projects').doc(orgId).get();
 
-          if (!projectsSnapshot.empty) {
-            const projectDoc = projectsSnapshot.docs[0];
+          if (projectDoc.exists) {
             const projectData = projectDoc.data();
 
             // Get current collaborators
@@ -1088,15 +1073,11 @@ exports.clerkWebhook = onRequest({
 
         console.log(`User ${userId} (${userEmail}) left org ${orgId}`);
 
-        // Find project with this Clerk org ID and remove user from collaborators
+        // Get project directly by ID (orgId === projectId)
         try {
-          const projectsSnapshot = await db.collection('projects')
-            .where('clerkOrgId', '==', orgId)
-            .limit(1)
-            .get();
+          const projectDoc = await db.collection('projects').doc(orgId).get();
 
-          if (!projectsSnapshot.empty) {
-            const projectDoc = projectsSnapshot.docs[0];
+          if (projectDoc.exists) {
             const projectData = projectDoc.data();
 
             // Get current collaborators
