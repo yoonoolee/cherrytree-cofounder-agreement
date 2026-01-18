@@ -468,7 +468,8 @@ function LandingPage() {
         'Proprietary equity calculator',
         'Best practices and tips',
         'Up to 5 collaborators'
-      ]
+      ],
+      featured: true
     },
     {
       name: 'Pro',
@@ -478,8 +479,7 @@ function LandingPage() {
         'Attorney review',
         'Cofounder coaching',
         'Priority support'
-      ],
-      featured: true
+      ]
     },
     {
       name: 'Enterprise',
@@ -492,6 +492,42 @@ function LandingPage() {
       ]
     }
   ];
+
+  const allLogos = [
+    { src: '/images/yc-logo.png', alt: 'Y Combinator', scale: 1 },
+    { src: '/images/hubble-logo.png', alt: 'Hubble', scale: 1.1 },
+    { src: '/images/a16z-logo.jpg', alt: 'a16z', scale: 1.1 },
+    { src: '/images/berkeley-logo.png', alt: 'Berkeley', scale: 1.43 },
+    { src: '/images/stanford-logo.png', alt: 'Stanford', scale: 1 },
+    { src: '/images/sequoia-logo.png', alt: 'Sequoia', scale: 0.9 },
+    { src: '/images/startupgrind-logo.png', alt: 'Startup Grind', scale: 1 }
+  ];
+
+  const [logos, setLogos] = useState([...allLogos]);
+  const [isFading, setIsFading] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsFading(true);
+
+      setTimeout(() => {
+        setLogos(prev => {
+          const shuffled = [...prev];
+          for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+          }
+          return shuffled;
+        });
+
+        setTimeout(() => {
+          setIsFading(false);
+        }, 200);
+      }, 500);
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const faqs = [
     {
@@ -2204,12 +2240,15 @@ function LandingPage() {
             {pricingPlans.map((plan, i) => (
               <div
                 key={i}
-                className={`bg-white p-6 md:p-8 rounded-lg flex flex-col ${
+                className={`bg-white p-6 md:p-8 rounded-lg flex flex-col transition-transform border border-gray-300 ${
                   plan.featured
-                    ? ''
-                    : 'border border-gray-400'
+                    ? 'transform scale-105'
+                    : ''
                 }`}
-                style={plan.featured ? { border: '3px solid #0056D6', boxShadow: '0 0 20px rgba(0, 86, 214, 0.3)' } : {}}
+                style={plan.featured ? {
+                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1)',
+                  transform: 'translateY(-10px) scale(1.05)'
+                } : {}}
               >
                 <h3 className="text-lg md:text-xl font-normal mb-2 text-[#716B6B]">{plan.name}</h3>
                 <div className="text-3xl md:text-4xl font-bold mb-2">{plan.price}</div>
@@ -2246,6 +2285,29 @@ function LandingPage() {
                 </ul>
               </div>
             ))}
+          </div>
+
+          {/* Logo Grid */}
+          <div className="mt-16 max-w-7xl mx-auto">
+            <div className="flex flex-wrap justify-between items-center gap-y-6">
+              {logos.map((logo, i) => (
+                <div
+                  key={`${logo.alt}-${i}`}
+                  className="flex items-center justify-center w-20 md:w-24 transition-opacity duration-500"
+                  style={{
+                    opacity: isFading ? 0 : 1,
+                    transitionDelay: isFading ? '0ms' : `${i * 200}ms`
+                  }}
+                >
+                  <img
+                    src={logo.src}
+                    alt={logo.alt}
+                    className="max-h-7 md:max-h-8 w-auto"
+                    style={{ transform: `scale(${logo.scale * 1.1})` }}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -2333,6 +2395,29 @@ function LandingPage() {
           animation: none !important;
           opacity: 1 !important;
           transform: none !important;
+        }
+
+        .logo-flip {
+          animation: logoChange 0.6s ease-in-out;
+        }
+
+        @keyframes logoChange {
+          0% {
+            transform: translateY(0);
+            opacity: 1;
+          }
+          50% {
+            transform: translateY(-8px);
+            opacity: 0;
+          }
+          51% {
+            transform: translateY(8px);
+            opacity: 0;
+          }
+          100% {
+            transform: translateY(0);
+            opacity: 1;
+          }
         }
 
         .logo-scroller {

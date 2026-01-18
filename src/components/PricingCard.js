@@ -11,12 +11,15 @@ function PricingCard({
 
   return (
     <div
-      className={`bg-white p-8 rounded-lg flex flex-col relative ${
+      className={`bg-white p-8 rounded-lg flex flex-col relative transition-transform border border-gray-300 ${
         plan.featured
-          ? ''
-          : 'border border-gray-400'
+          ? 'transform scale-105'
+          : ''
       }`}
-      style={plan.featured ? { border: '3px solid #0056D6', boxShadow: '0 0 20px rgba(0, 86, 214, 0.3)' } : {}}
+      style={plan.featured ? {
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1)',
+        transform: 'translateY(-10px) scale(1.05)'
+      } : {}}
     >
       {/* Current Plan Badge */}
       {isCurrentPlan && (

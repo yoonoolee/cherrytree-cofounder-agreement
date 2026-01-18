@@ -12,6 +12,42 @@ function PricingPage() {
   useScrollAnimation();
   const [openFaq, setOpenFaq] = useState(null);
 
+  const allLogos = [
+    { src: '/images/yc-logo.png', alt: 'Y Combinator', scale: 1 },
+    { src: '/images/hubble-logo.png', alt: 'Hubble', scale: 1.1 },
+    { src: '/images/a16z-logo.jpg', alt: 'a16z', scale: 1.1 },
+    { src: '/images/berkeley-logo.png', alt: 'Berkeley', scale: 1.43 },
+    { src: '/images/stanford-logo.png', alt: 'Stanford', scale: 1 },
+    { src: '/images/sequoia-logo.png', alt: 'Sequoia', scale: 0.9 },
+    { src: '/images/startupgrind-logo.png', alt: 'Startup Grind', scale: 1 }
+  ];
+
+  const [logos, setLogos] = useState([...allLogos]);
+  const [isFading, setIsFading] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsFading(true);
+
+      setTimeout(() => {
+        setLogos(prev => {
+          const shuffled = [...prev];
+          for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+          }
+          return shuffled;
+        });
+
+        setTimeout(() => {
+          setIsFading(false);
+        }, 200);
+      }, 500);
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   // SEO meta tags
   usePageMeta({
     title: 'Pricing - Cherrytree | Starter $200, Pro $800',
@@ -121,6 +157,29 @@ function PricingPage() {
                 }}
               />
             ))}
+          </div>
+
+          {/* Logo Grid */}
+          <div className="mt-16 max-w-7xl mx-auto">
+            <div className="flex flex-wrap justify-between items-center gap-y-6">
+              {logos.map((logo, i) => (
+                <div
+                  key={`${logo.alt}-${i}`}
+                  className="flex items-center justify-center w-20 md:w-24 transition-opacity duration-500"
+                  style={{
+                    opacity: isFading ? 0 : 1,
+                    transitionDelay: isFading ? '0ms' : `${i * 100}ms`
+                  }}
+                >
+                  <img
+                    src={logo.src}
+                    alt={logo.alt}
+                    className="max-h-7 md:max-h-8 w-auto"
+                    style={{ transform: `scale(${logo.scale * 1.1})` }}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Feature Comparison Table */}
@@ -277,6 +336,87 @@ function PricingPage() {
       </section>
 
       <Footer />
+
+      <style>{`
+        .logo-flip {
+          animation: logoChange 0.6s ease-in-out;
+        }
+
+        @keyframes logoChange {
+          0% {
+            transform: translateY(0);
+            opacity: 1;
+          }
+          50% {
+            transform: translateY(-8px);
+            opacity: 0;
+          }
+          51% {
+            transform: translateY(8px);
+            opacity: 0;
+          }
+          100% {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+
+        .logo-scroller {
+          position: relative;
+          overflow: hidden;
+          width: 100%;
+          background: #fff;
+          -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+          mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+          padding: 20px 0;
+        }
+
+        .logo-track {
+          display: flex;
+          width: fit-content;
+          animation: scroll 30s linear infinite;
+          will-change: transform;
+        }
+
+        .logo-box {
+          flex: 0 0 auto;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 200px;
+        }
+
+        .logo-box img {
+          max-height: 36px;
+          max-width: 120px;
+          object-fit: contain;
+        }
+
+        @keyframes scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(calc(-200px * 7)); }
+        }
+
+        @media (max-width: 768px) {
+          .logo-box {
+            width: 160px;
+          }
+
+          .logo-box img {
+            max-height: 28px;
+            max-width: 100px;
+          }
+
+          .logo-track {
+            animation: scrollMobile 20s linear infinite;
+          }
+
+          @keyframes scrollMobile {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(-160px * 7)); }
+          }
+        }
+      `}</style>
     </div>
   );
 }

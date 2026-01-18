@@ -12,7 +12,8 @@ export const PRICING_PLANS = [
       'Proprietary equity calculator',
       'Best practices and tips',
       'Up to 5 collaborators'
-    ]
+    ],
+    featured: true
   },
   {
     name: 'Pro',
@@ -25,8 +26,7 @@ export const PRICING_PLANS = [
       'Attorney review',
       'Cofounder coaching',
       'Priority support'
-    ],
-    featured: true
+    ]
   },
   {
     name: 'Enterprise',
