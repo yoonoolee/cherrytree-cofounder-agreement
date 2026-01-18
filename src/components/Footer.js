@@ -33,9 +33,9 @@ function Footer() {
   }, []);
 
   return (
-    <footer className="relative bg-white text-black pt-16 pb-20 mt-auto">
+    <footer className="relative bg-white text-black pt-12 md:pt-16 pb-16 md:pb-20 mt-auto">
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="footer-content flex flex-col md:flex-row justify-between gap-12 px-3">
+        <div className="footer-content flex flex-col md:flex-row justify-between gap-8 md:gap-12 px-4 md:px-6">
           {/* Left side - Logo and copyright */}
           <div className="footer-cascade-1 text-left">
             <div className="mb-4">
@@ -49,7 +49,7 @@ function Footer() {
           </div>
 
           {/* Right side - Three columns */}
-          <div className="grid grid-cols-3 gap-6 md:gap-16 w-full md:w-auto justify-items-start text-left">
+          <div className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-16 w-full md:w-auto justify-items-start text-left">
             <div className="footer-cascade-2 text-left">
               <h4 className="text-black text-sm mb-4 uppercase text-left">Product</h4>
               <ul className="space-y-4 text-sm text-left">

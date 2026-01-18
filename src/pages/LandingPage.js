@@ -2391,7 +2391,7 @@ function LandingPage() {
 
       {/* Final CTA */}
       <section className="scroll-section-full py-16 md:py-24 px-4 md:px-6 bg-white">
-        <div className="max-w-5xl mx-auto bg-[#1a1a1a] rounded-2xl py-[4.4rem] md:py-[6.6rem] px-6 md:px-12 relative overflow-hidden" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 2.5px, transparent 2.5px), radial-gradient(rgba(255,255,255,0.04) 2.5px, transparent 2.5px)', backgroundSize: '16px 16px', backgroundPosition: '0 0, 8px 8px' }}>
+        <div className="max-w-6xl mx-auto bg-[#1a1a1a] rounded-xl md:rounded-2xl py-12 sm:py-16 md:py-[7.6rem] px-4 sm:px-6 md:px-12 relative overflow-hidden" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 2.4px, transparent 2.4px), radial-gradient(rgba(255,255,255,0.04) 2.4px, transparent 2.4px)', backgroundSize: '15px 15px', backgroundPosition: '0 0, 7.5px 7.5px' }}>
           <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 60%)' }}></div>
           <div className="headline-container">
             <h1 className="typing-title font-heading text-white">

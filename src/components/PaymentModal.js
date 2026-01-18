@@ -202,7 +202,7 @@ function PaymentModal({ onClose, onSuccess }) {
                 <div key={key} className="relative">
                   {/* Coming Soon Badge for Pro */}
                   {isProPlan && (
-                    <div className="absolute -top-2 -right-2 bg-black text-white text-xs font-semibold px-3 py-1 rounded-full z-10">
+                    <div className="absolute -top-2 -right-2 text-white text-xs font-semibold px-3 py-1 rounded-full z-10" style={{ backgroundColor: '#0056D6' }}>
                       Coming Soon
                     </div>
                   )}

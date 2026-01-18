@@ -265,17 +265,28 @@ function DashboardPage() {
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-12">
         {/* Greeting */}
         <div className="mb-8 md:mb-14 text-center">
-          <h1 className="text-2xl md:text-4xl font-light text-gray-900">
+          <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl font-medium text-gray-900">
             Welcome{currentUser?.firstName ? `, ${currentUser.firstName}` : ''}!
           </h1>
           <p className="text-sm md:text-lg mt-2 text-gray-500">{displayedTagline}</p>
         </div>
 
         {/* Your Projects */}
-        <h2 className="text-lg md:text-xl font-normal text-gray-900 mb-4 max-w-4xl mx-auto">Your Projects</h2>
+        <h2 className={`text-lg md:text-xl font-normal text-gray-900 mb-4 mx-auto ${
+          projects.length === 0 ? 'max-w-md' :
+          projects.length === 1 ? 'max-w-2xl' :
+          projects.length === 2 ? 'max-w-4xl' :
+          'max-w-5xl'
+        }`}>Your Projects</h2>
 
         {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3 max-w-4xl mx-auto">
+        <div className={`grid grid-cols-1 gap-4 md:gap-3 mx-auto ${
+          projects.length === 0 ? 'md:grid-cols-1 max-w-md' :
+          projects.length === 1 ? 'md:grid-cols-2 max-w-2xl' :
+          projects.length === 2 ? 'md:grid-cols-3 max-w-4xl' :
+          projects.length === 3 ? 'md:grid-cols-4 max-w-5xl' :
+          'md:grid-cols-4 max-w-5xl'
+        }`}>
           {/* Projects */}
           {projects.length > 0 ? (
             projects.map((project) => {

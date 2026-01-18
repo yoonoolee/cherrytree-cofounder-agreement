@@ -43,13 +43,13 @@ function AttorneyPage() {
       <Header />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-8 px-6">
+      <section className="pt-24 md:pt-32 pb-6 md:pb-8 px-4 md:px-6">
         <div className="max-w-7xl mx-auto text-center">
           <div className="hero-content">
-            <h1 className="font-heading text-[56px] font-normal mb-6">
+            <h1 className="font-heading text-3xl sm:text-4xl md:text-[56px] font-normal mb-4 md:mb-6">
               Attorney<span style={{ marginLeft: '0.05em' }}>.</span>
             </h1>
-            <p className="text-[16px] font-normal" style={{ color: '#716B6B' }}>
+            <p className="text-sm md:text-[16px] font-normal" style={{ color: '#716B6B' }}>
               Coming soon... This is only for Pro members.
             </p>
           </div>
