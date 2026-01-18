@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 function PricingCard({
   plan,
@@ -8,17 +8,41 @@ function PricingCard({
   showCurrentBadge = false
 }) {
   const isCurrentPlan = showCurrentBadge && currentPlan && currentPlan.toLowerCase() === plan.name.toLowerCase();
+  const [isAnimated, setIsAnimated] = useState(false);
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    if (!plan.featured) return;
+
+    const handleScroll = () => {
+      if (!cardRef.current) return;
+      const rect = cardRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      // Show when card is 80% into viewport, hide when scrolled out
+      if (rect.top < windowHeight * 0.8 && rect.bottom > 0) {
+        setIsAnimated(true);
+      } else {
+        setIsAnimated(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Check initial state
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [plan.featured]);
 
   return (
     <div
-      className={`bg-white p-8 rounded-lg flex flex-col relative transition-transform border border-gray-300 ${
+      ref={cardRef}
+      className={`bg-white p-8 rounded-lg flex flex-col relative border border-gray-300 ${
         plan.featured
-          ? 'transform scale-105'
+          ? isAnimated ? 'pricing-card-bounce-in' : ''
           : ''
       }`}
-      style={plan.featured ? {
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1)',
-        transform: 'translateY(-10px) scale(1.05)'
+      style={plan.featured && !isAnimated ? {
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
       } : {}}
     >
       {/* Current Plan Badge */}

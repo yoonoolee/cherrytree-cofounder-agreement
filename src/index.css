@@ -508,6 +508,26 @@ select:disabled {
   }
 }
 
+/* Pricing card animation - ends with 3D raised state */
+.pricing-card-bounce-in {
+  animation: pricingCardBounceIn 0.5s ease-out forwards;
+}
+
+@keyframes pricingCardBounceIn {
+  0% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+  70% {
+    transform: translateY(-12px) scale(1.06);
+    box-shadow: 0 22px 44px rgba(0, 0, 0, 0.16), 0 12px 24px rgba(0, 0, 0, 0.12);
+  }
+  100% {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+}
+
 /* Scroll-triggered section - no animation, just triggers for children */
 .scroll-section {
   opacity: 1;

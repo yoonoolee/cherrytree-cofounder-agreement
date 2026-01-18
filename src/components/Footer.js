@@ -33,10 +33,7 @@ function Footer() {
   }, []);
 
   return (
-    <footer className="relative bg-black text-white pt-24 pb-20 mt-auto">
-      {/* Rounded top border */}
-      <div className="absolute top-0 left-0 right-0 h-12 bg-white rounded-b-[48px]"></div>
-
+    <footer className="relative bg-white text-black pt-16 pb-20 mt-auto">
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="footer-content flex flex-col md:flex-row justify-between gap-12 px-3">
           {/* Left side - Logo and copyright */}
@@ -45,16 +42,16 @@ function Footer() {
               <img
                 src="/images/cherrytree-logo.png"
                 alt="Cherrytree"
-                style={{ height: '32px', width: 'auto', filter: 'invert(1)' }}
+                style={{ height: '32px', width: 'auto' }}
               />
             </div>
-            <p className="text-gray-400 text-sm">© {new Date().getFullYear()} Cherrytree</p>
+            <p className="text-gray-500 text-sm">© {new Date().getFullYear()} Cherrytree</p>
           </div>
 
           {/* Right side - Three columns */}
           <div className="grid grid-cols-3 gap-6 md:gap-16 w-full md:w-auto justify-items-start text-left">
             <div className="footer-cascade-2 text-left">
-              <h4 className="text-white text-sm mb-4 uppercase text-left">Product</h4>
+              <h4 className="text-black text-sm mb-4 uppercase text-left">Product</h4>
               <ul className="space-y-4 text-sm text-left">
                 <li className="text-left"><button onClick={() => {
                   const isProduction = window.location.hostname.includes('cherrytree.app');
@@ -63,27 +60,27 @@ function Footer() {
                   } else {
                     navigate('/dashboard', { replace: true });
                   }
-                }} className="text-gray-400 hover:text-white transition nav-link-underline text-left">Contract Creator</button></li>
-                <li className="text-left"><button onClick={() => navigate('/equity-calculator')} className="text-gray-400 hover:text-white transition nav-link-underline text-left">Equity Calculator</button></li>
-                <li className="text-left"><button onClick={() => navigate('/pricing')} className="text-gray-400 hover:text-white transition nav-link-underline text-left">Pricing</button></li>
+                }} className="text-gray-500 hover:text-black transition nav-link-underline text-left">Contract Creator</button></li>
+                <li className="text-left"><button onClick={() => navigate('/equity-calculator')} className="text-gray-500 hover:text-black transition nav-link-underline text-left">Equity Calculator</button></li>
+                <li className="text-left"><button onClick={() => navigate('/pricing')} className="text-gray-500 hover:text-black transition nav-link-underline text-left">Pricing</button></li>
               </ul>
             </div>
 
             <div className="footer-cascade-3 text-left">
-              <h4 className="text-white text-sm mb-4 uppercase text-left">Resources</h4>
+              <h4 className="text-black text-sm mb-4 uppercase text-left">Resources</h4>
               <ul className="space-y-4 text-sm text-left">
-                <li className="text-left"><a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition nav-link-underline">Newsletter</a></li>
-                <li className="text-left"><a href="https://app.hubble.social/timhe" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition nav-link-underline">Coaching</a></li>
-                <li className="text-left"><button onClick={() => navigate('/attorney')} className="text-gray-400 hover:text-white transition nav-link-underline text-left">Attorney</button></li>
+                <li className="text-left"><a href="https://cherrytree.beehiiv.com/" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-black transition nav-link-underline">Newsletter</a></li>
+                <li className="text-left"><a href="https://app.hubble.social/timhe" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-black transition nav-link-underline">Coaching</a></li>
+                <li className="text-left"><button onClick={() => navigate('/attorney')} className="text-gray-500 hover:text-black transition nav-link-underline text-left">Attorney</button></li>
               </ul>
             </div>
 
             <div className="footer-cascade-4 text-left">
-              <h4 className="text-white text-sm mb-4 uppercase text-left">Company</h4>
+              <h4 className="text-black text-sm mb-4 uppercase text-left">Company</h4>
               <ul className="space-y-4 text-sm text-left">
-                <li className="text-left"><button onClick={() => navigate('/privacy')} className="text-gray-400 hover:text-white transition nav-link-underline text-left">Privacy</button></li>
-                <li className="text-left"><button onClick={() => navigate('/terms')} className="text-gray-400 hover:text-white transition nav-link-underline text-left">Terms</button></li>
-                <li className="text-left"><button onClick={() => window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })} className="text-gray-400 hover:text-white transition nav-link-underline text-left">Contact</button></li>
+                <li className="text-left"><button onClick={() => navigate('/privacy')} className="text-gray-500 hover:text-black transition nav-link-underline text-left">Privacy</button></li>
+                <li className="text-left"><button onClick={() => navigate('/terms')} className="text-gray-500 hover:text-black transition nav-link-underline text-left">Terms</button></li>
+                <li className="text-left"><button onClick={() => window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })} className="text-gray-500 hover:text-black transition nav-link-underline text-left">Contact</button></li>
               </ul>
             </div>
           </div>
