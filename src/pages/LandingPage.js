@@ -209,26 +209,45 @@ function LandingPage() {
   }, [activeFeature, featuresInView, expertGuidanceAnimationCycle]);
 
   // Typing animation for "and"
+  const andTimeoutsRef = useRef([]);
   useEffect(() => {
+    // Clear any existing timeouts
+    andTimeoutsRef.current.forEach(id => clearTimeout(id));
+    andTimeoutsRef.current = [];
+
+    let isMounted = true;
+
+    const addTimeout = (fn, delay) => {
+      const id = setTimeout(fn, delay);
+      andTimeoutsRef.current.push(id);
+      return id;
+    };
+
     const typeLoop = () => {
       let index = 0;
       const type = () => {
+        if (!isMounted) return;
         if (index < andText.length) {
           index++;
           setTypedAnd(andText.slice(0, index));
-          setTimeout(type, 200);
+          addTimeout(type, 200);
         } else {
-          setTimeout(() => {
+          addTimeout(() => {
+            if (!isMounted) return;
             setTypedAnd('');
-            setTimeout(typeLoop, 200);
-          }, 1000);
+            addTimeout(typeLoop, 200);
+          }, 1750);
         }
       };
       type();
     };
 
-    const initialTimeout = setTimeout(typeLoop, 50);
-    return () => clearTimeout(initialTimeout);
+    addTimeout(typeLoop, 50);
+    return () => {
+      isMounted = false;
+      andTimeoutsRef.current.forEach(id => clearTimeout(id));
+      andTimeoutsRef.current = [];
+    };
   }, []);
 
   // Typewriter effect for "today" with loop
@@ -2251,8 +2270,10 @@ function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="scroll-section py-16 md:py-24 px-4 md:px-6">
-        <div className="max-w-6xl mx-auto">
+      <section id="pricing" className="scroll-section py-16 md:py-24 px-4 md:px-6 relative" style={{ backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+        <div className="max-w-6xl mx-auto relative">
           <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium text-center mb-3 md:mb-4">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
           <p className="text-center text-sm md:text-base mb-12 md:mb-16 font-normal px-4" style={{ color: '#716B6B' }}>
             Choose the plan that's right for your team.{' '}
@@ -2370,7 +2391,7 @@ function LandingPage() {
 
       {/* Final CTA */}
       <section className="scroll-section-full py-16 md:py-24 px-4 md:px-6 bg-white">
-        <div className="max-w-5xl mx-auto bg-[#1a1a1a] rounded-2xl py-16 md:py-24 px-6 md:px-12 relative overflow-hidden" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 2.5px, transparent 2.5px), radial-gradient(rgba(255,255,255,0.04) 2.5px, transparent 2.5px)', backgroundSize: '16px 16px', backgroundPosition: '0 0, 8px 8px' }}>
+        <div className="max-w-5xl mx-auto bg-[#1a1a1a] rounded-2xl py-[4.4rem] md:py-[6.6rem] px-6 md:px-12 relative overflow-hidden" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 2.5px, transparent 2.5px), radial-gradient(rgba(255,255,255,0.04) 2.5px, transparent 2.5px)', backgroundSize: '16px 16px', backgroundPosition: '0 0, 8px 8px' }}>
           <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 60%)' }}></div>
           <div className="headline-container">
             <h1 className="typing-title font-heading text-white">
