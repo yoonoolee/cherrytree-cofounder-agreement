@@ -344,8 +344,18 @@ function EquityCalculatorPage() {
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
 
-      <section className="pt-32 pb-48 px-6">
-        <div className="max-w-4xl mx-auto">
+      <section className="pt-32 pb-48 px-6 relative" style={{ backgroundImage: 'radial-gradient(#d1d5db 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
+        <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-white to-transparent pointer-events-none z-10"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-white to-transparent pointer-events-none z-10"></div>
+        <div className="max-w-xl mx-auto relative">
+          <div
+            className="rounded-lg p-6 md:p-12"
+            style={{
+              background: '#fcfcfc',
+              border: '1px solid rgba(0, 0, 0, 0.1)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
+            }}
+          >
           <div className="hero-content section-visible text-center mb-16">
             <h1 className="font-heading text-[56px] font-normal mb-6">
               Equity Calculator<span style={{ marginLeft: '0.05em' }}>.</span>
@@ -527,6 +537,7 @@ function EquityCalculatorPage() {
               )}
             </div>
           )}
+          </div>
         </div>
       </section>
 

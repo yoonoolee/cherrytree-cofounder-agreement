@@ -42,6 +42,8 @@ function LandingPage() {
   const [selectedDate, setSelectedDate] = useState('');
   const [typedDate, setTypedDate] = useState('');
   const [showCalendar, setShowCalendar] = useState(false);
+  const [pricingCardAnimated, setPricingCardAnimated] = useState(false);
+  const pricingCardRef = useRef(null);
   const fullText = 'with great company.';
   const andText = 'and';
   const todayText = 'today.';
@@ -271,6 +273,27 @@ function LandingPage() {
     window.addEventListener('scroll', handleScroll);
     // Delay initial check to ensure cards are rendered
     setTimeout(handleScroll, 100);
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Pricing card animation - triggers every time on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!pricingCardRef.current) return;
+      const rect = pricingCardRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      // Show when card is 80% into viewport, hide when scrolled out
+      if (rect.top < windowHeight * 0.8 && rect.bottom > 0) {
+        setPricingCardAnimated(true);
+      } else {
+        setPricingCardAnimated(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Check initial state
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -568,7 +591,7 @@ function LandingPage() {
       <section className="px-4 md:px-6 pt-20 md:pt-32 lg:pt-40 pb-8 md:pb-14">
         <div className="max-w-6xl mx-auto text-center">
           <div className="hero-content">
-            <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-normal text-gray-900 mb-4 md:mb-6 min-h-[100px] sm:min-h-[120px] md:min-h-[140px]">
+            <h1 className="font-heading text-[2.475rem] sm:text-[3.3rem] md:text-[4.125rem] lg:text-[4.95rem] font-normal text-gray-900 mb-4 md:mb-6 min-h-[110px] sm:min-h-[132px] md:min-h-[154px]">
               Great companies start
               <br />
               <em className="italic">{typedText || '\u00A0'}</em>
@@ -620,7 +643,7 @@ function LandingPage() {
           </div>
 
           {/* Tilted Card */}
-          <div className="mt-2 md:mt-4" style={{ perspective: '1000px' }}>
+          <div className="mt-8 md:mt-12" style={{ perspective: '1000px' }}>
             <div
               className="tilty-card mx-auto"
               style={{
@@ -1092,8 +1115,9 @@ function LandingPage() {
       </section>
 
       {/* Process Section - Combined heading + cards */}
-      <section className="scroll-section scroll-section-early process-section px-4 md:px-6 pt-20 md:pt-32 lg:pt-36 pb-16 md:pb-24 lg:pb-30">
-        <div className="max-w-7xl mx-auto">
+      <section className="scroll-section scroll-section-early process-section px-4 md:px-6 pt-20 md:pt-32 lg:pt-36 pb-16 md:pb-24 lg:pb-30 relative" style={{ backgroundImage: 'radial-gradient(#d1d5db 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto relative">
           <div className="mx-auto" style={{ maxWidth: '720px' }}>
             {/* Heading */}
             <div className="max-w-6xl mx-auto text-center mb-8 md:mb-10">
@@ -1225,6 +1249,7 @@ function LandingPage() {
             </div>
           </div>
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
       </section>
 
       {/* Features Section */}
@@ -1383,7 +1408,7 @@ function LandingPage() {
                               <path
                                 className={`signature-path ${contractCardsVisible ? 'signature-draw' : ''}`}
                                 d="M 5 35 C 10 20, 15 15, 20 25 C 25 35, 30 40, 35 30 C 40 20, 42 15, 48 20 C 54 25, 56 35, 62 28 C 68 21, 70 18, 78 22 C 86 26, 88 32, 95 25 C 102 18, 105 15, 112 20 C 119 25, 122 30, 130 22 L 135 18"
-                                stroke="#0056D6"
+                                stroke="#7c8590"
                                 strokeWidth="2"
                                 fill="none"
                                 strokeLinecap="round"
@@ -1833,7 +1858,7 @@ function LandingPage() {
                       <path
                         className={`signature-path ${contractCardsVisible ? 'signature-draw' : ''}`}
                         d="M 5 35 C 10 20, 15 15, 20 25 C 25 35, 30 40, 35 30 C 40 20, 42 15, 48 20 C 54 25, 56 35, 62 28 C 68 21, 70 18, 78 22 C 86 26, 88 32, 95 25 C 102 18, 105 15, 112 20 C 119 25, 122 30, 130 22 L 135 18"
-                        stroke="#0056D6"
+                        stroke="#7c8590"
                         strokeWidth="2"
                         fill="none"
                         strokeLinecap="round"
@@ -2076,7 +2101,7 @@ function LandingPage() {
                       boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
                       '--icon-delay': '0s'
                     }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0056D6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c8590" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="2" y="4" width="20" height="16" rx="2"/>
                       <path d="M22 7l-10 7L2 7"/>
                     </svg>
@@ -2096,7 +2121,7 @@ function LandingPage() {
                       boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
                       '--icon-delay': '0.15s'
                     }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0056D6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c8590" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                     </svg>
                   </div>
@@ -2115,7 +2140,7 @@ function LandingPage() {
                       boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
                       '--icon-delay': '0.3s'
                     }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0056D6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c8590" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                     </svg>
                   </div>
@@ -2240,14 +2265,14 @@ function LandingPage() {
             {pricingPlans.map((plan, i) => (
               <div
                 key={i}
-                className={`bg-white p-6 md:p-8 rounded-lg flex flex-col transition-transform border border-gray-300 ${
+                ref={plan.featured ? pricingCardRef : null}
+                className={`bg-white p-6 md:p-8 rounded-lg flex flex-col border border-gray-300 ${
                   plan.featured
-                    ? 'transform scale-105'
+                    ? pricingCardAnimated ? 'pricing-card-bounce-in' : ''
                     : ''
                 }`}
-                style={plan.featured ? {
-                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1)',
-                  transform: 'translateY(-10px) scale(1.05)'
+                style={plan.featured && !pricingCardAnimated ? {
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
                 } : {}}
               >
                 <h3 className="text-lg md:text-xl font-normal mb-2 text-[#716B6B]">{plan.name}</h3>
@@ -2344,36 +2369,39 @@ function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="scroll-section-full py-16 md:py-24 px-4 md:px-6 bg-white text-gray-900">
-        <div className="headline-container">
-          <h1 className="typing-title font-heading">
-            <span className="first-line">Protect your piece of the pie</span>
-            <span className="second-line">
-              <span className="typing-container">
-                <em className="typing-and">{typedAnd || '\u00A0'}</em>
-              </span> your peace of mind.
-            </span>
-          </h1>
-        </div>
-        <div className="max-w-4xl mx-auto text-center mt-12 md:mt-16">
-          <div className="flex flex-col items-center gap-3">
-            <button
-              onClick={() => {
-                // Navigate directly to app domain to avoid double redirect
-                const isProduction = window.location.hostname.includes('cherrytree.app');
-                if (isProduction) {
-                  window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
-                } else {
-                  navigate('/dashboard', { replace: true });
-                }
-              }}
-              className="button-shimmer bg-[#000000] text-white px-8 md:px-16 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-[#1a1a1a] transition"
-            >
-              Get started
-            </button>
-            <p className="text-xs md:text-sm text-gray-600">
-              or <a href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer" className="text-black underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
-            </p>
+      <section className="scroll-section-full py-16 md:py-24 px-4 md:px-6 bg-white">
+        <div className="max-w-5xl mx-auto bg-[#1a1a1a] rounded-2xl py-16 md:py-24 px-6 md:px-12 relative overflow-hidden" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 2.5px, transparent 2.5px), radial-gradient(rgba(255,255,255,0.04) 2.5px, transparent 2.5px)', backgroundSize: '16px 16px', backgroundPosition: '0 0, 8px 8px' }}>
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 60%)' }}></div>
+          <div className="headline-container">
+            <h1 className="typing-title font-heading text-white">
+              <span className="first-line">Protect your piece of the pie</span>
+              <span className="second-line">
+                <span className="typing-container">
+                  <em className="typing-and">{typedAnd || '\u00A0'}</em>
+                </span> your peace of mind.
+              </span>
+            </h1>
+          </div>
+          <div className="max-w-4xl mx-auto text-center mt-12 md:mt-16">
+            <div className="flex flex-col items-center gap-3">
+              <button
+                onClick={() => {
+                  // Navigate directly to app domain to avoid double redirect
+                  const isProduction = window.location.hostname.includes('cherrytree.app');
+                  if (isProduction) {
+                    window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
+                  } else {
+                    navigate('/dashboard', { replace: true });
+                  }
+                }}
+                className="button-shimmer bg-white text-[#1a1a1a] px-8 md:px-16 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-gray-100 transition"
+              >
+                Get started
+              </button>
+              <p className="text-xs md:text-sm text-gray-300">
+                or <a href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer" className="text-white underline hover:text-gray-200 font-semibold">Book a Free Consultation</a>
+              </p>
+            </div>
           </div>
         </div>
       </section>
