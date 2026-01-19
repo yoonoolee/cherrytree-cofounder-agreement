@@ -46,6 +46,7 @@ function LandingPage() {
   const pricingCardRef = useRef(null);
   const [ctaShinePos, setCtaShinePos] = useState({ x: 0, y: 0, active: false });
   const ctaCardRef = useRef(null);
+  const [ctaCardTilt, setCtaCardTilt] = useState(15);
   const fullText = 'with great company.';
   const andText = 'and';
   const todayText = 'today.';
@@ -341,6 +342,28 @@ function LandingPage() {
     handleTiltScroll(); // Call once on mount
 
     return () => window.removeEventListener('scroll', handleTiltScroll);
+  }, []);
+
+  // CTA card tilt scroll effect
+  useEffect(() => {
+    const handleCtaTiltScroll = () => {
+      if (!ctaCardRef.current) return;
+
+      const rect = ctaCardRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      // Calculate how far the card has scrolled into view
+      const scrollProgress = Math.max(0, Math.min(1, (windowHeight - rect.top) / (windowHeight * 0.7)));
+
+      // Interpolate tilt from 15deg to 0deg based on scroll progress
+      const tiltValue = 15 * (1 - scrollProgress);
+      setCtaCardTilt(tiltValue);
+    };
+
+    window.addEventListener('scroll', handleCtaTiltScroll);
+    handleCtaTiltScroll();
+
+    return () => window.removeEventListener('scroll', handleCtaTiltScroll);
   }, []);
 
   // Section1 animation with typing and selection
@@ -2395,8 +2418,15 @@ function LandingPage() {
       <section className="scroll-section-full py-16 md:py-24 px-4 md:px-6 bg-white">
         <div
           ref={ctaCardRef}
-          className="max-w-6xl mx-auto bg-[#1a1a1a] rounded-xl md:rounded-2xl py-12 sm:py-16 md:py-[7.6rem] px-4 sm:px-6 md:px-12 relative overflow-hidden"
-          style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 2.4px, transparent 2.4px), radial-gradient(rgba(255,255,255,0.04) 2.4px, transparent 2.4px)', backgroundSize: '15px 15px', backgroundPosition: '0 0, 7.5px 7.5px' }}
+          className="max-w-6xl mx-auto bg-[#1a1a1a] rounded-xl md:rounded-2xl py-[3.63rem] sm:py-[4.84rem] md:py-[9.2rem] px-4 sm:px-6 md:px-12 relative overflow-hidden"
+          style={{
+            backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 2.4px, transparent 2.4px), radial-gradient(rgba(255,255,255,0.04) 2.4px, transparent 2.4px)',
+            backgroundSize: '15px 15px',
+            backgroundPosition: '0 0, 7.5px 7.5px',
+            transform: `perspective(1000px) rotateX(${ctaCardTilt}deg)`,
+            transformOrigin: 'center bottom',
+            transition: 'transform 0.1s ease-out'
+          }}
           onMouseMove={(e) => {
             if (!ctaCardRef.current) return;
             const rect = ctaCardRef.current.getBoundingClientRect();

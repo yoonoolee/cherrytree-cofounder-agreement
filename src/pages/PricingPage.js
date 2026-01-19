@@ -306,12 +306,21 @@ function PricingPage() {
           </div>
 
           {/* FAQ Section */}
-          <div className="mt-48 pb-24">
-            <h2 className="font-heading text-[46px] font-normal text-center mb-16">
+          <div className="mt-48 pb-24 relative">
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage: 'radial-gradient(#d1d5db 1px, transparent 1px)',
+                backgroundSize: '20px 20px',
+                maskImage: 'radial-gradient(ellipse at center, black 60%, transparent 90%)',
+                WebkitMaskImage: 'radial-gradient(ellipse at center, black 60%, transparent 90%)'
+              }}
+            />
+            <h2 className="font-heading text-[46px] font-normal text-center mb-16 relative">
               FAQs<span style={{ marginLeft: '0.05em', color: '#0056D6' }}>.</span>
             </h2>
 
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-3xl mx-auto relative bg-white">
               {faqs.map((faq, i) => (
                 <div key={i} className="accordion-item border-b border-gray-300">
                   <button
