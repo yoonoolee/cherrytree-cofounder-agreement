@@ -44,6 +44,8 @@ function LandingPage() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [pricingCardAnimated, setPricingCardAnimated] = useState(false);
   const pricingCardRef = useRef(null);
+  const [ctaShinePos, setCtaShinePos] = useState({ x: 0, y: 0, active: false });
+  const ctaCardRef = useRef(null);
   const fullText = 'with great company.';
   const andText = 'and';
   const todayText = 'today.';
@@ -2391,8 +2393,30 @@ function LandingPage() {
 
       {/* Final CTA */}
       <section className="scroll-section-full py-16 md:py-24 px-4 md:px-6 bg-white">
-        <div className="max-w-6xl mx-auto bg-[#1a1a1a] rounded-xl md:rounded-2xl py-12 sm:py-16 md:py-[7.6rem] px-4 sm:px-6 md:px-12 relative overflow-hidden" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 2.4px, transparent 2.4px), radial-gradient(rgba(255,255,255,0.04) 2.4px, transparent 2.4px)', backgroundSize: '15px 15px', backgroundPosition: '0 0, 7.5px 7.5px' }}>
+        <div
+          ref={ctaCardRef}
+          className="max-w-6xl mx-auto bg-[#1a1a1a] rounded-xl md:rounded-2xl py-12 sm:py-16 md:py-[7.6rem] px-4 sm:px-6 md:px-12 relative overflow-hidden"
+          style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 2.4px, transparent 2.4px), radial-gradient(rgba(255,255,255,0.04) 2.4px, transparent 2.4px)', backgroundSize: '15px 15px', backgroundPosition: '0 0, 7.5px 7.5px' }}
+          onMouseMove={(e) => {
+            if (!ctaCardRef.current) return;
+            const rect = ctaCardRef.current.getBoundingClientRect();
+            setCtaShinePos({ x: e.clientX - rect.left, y: e.clientY - rect.top, active: true });
+          }}
+          onMouseLeave={() => setCtaShinePos(prev => ({ ...prev, active: false }))}
+        >
           <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 60%)' }}></div>
+          <div
+            className="absolute pointer-events-none transition-opacity duration-500"
+            style={{
+              left: ctaShinePos.x - 250,
+              top: ctaShinePos.y - 250,
+              width: 500,
+              height: 500,
+              background: 'radial-gradient(ellipse, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.02) 50%, transparent 80%)',
+              filter: 'blur(20px)',
+              opacity: ctaShinePos.active ? 1 : 0
+            }}
+          />
           <div className="headline-container">
             <h1 className="typing-title font-heading text-white">
               <span className="first-line">Protect your piece of the pie</span>
@@ -2415,7 +2439,7 @@ function LandingPage() {
                     navigate('/dashboard', { replace: true });
                   }
                 }}
-                className="button-shimmer bg-white text-[#1a1a1a] px-8 md:px-16 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-gray-100 transition"
+                className="button-shimmer-dark bg-white text-[#1a1a1a] px-8 md:px-16 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-gray-100 transition"
               >
                 Get started
               </button>

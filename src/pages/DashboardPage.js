@@ -272,21 +272,10 @@ function DashboardPage() {
         </div>
 
         {/* Your Projects */}
-        <h2 className={`text-lg md:text-xl font-normal text-gray-900 mb-4 mx-auto ${
-          projects.length === 0 ? 'max-w-md' :
-          projects.length === 1 ? 'max-w-2xl' :
-          projects.length === 2 ? 'max-w-4xl' :
-          'max-w-5xl'
-        }`}>Your Projects</h2>
+        <h2 className="text-lg md:text-xl font-normal text-gray-900 mb-4 mx-auto max-w-4xl">Your Projects</h2>
 
         {/* Projects Grid */}
-        <div className={`grid grid-cols-1 gap-4 md:gap-3 mx-auto ${
-          projects.length === 0 ? 'md:grid-cols-1 max-w-md' :
-          projects.length === 1 ? 'md:grid-cols-2 max-w-2xl' :
-          projects.length === 2 ? 'md:grid-cols-3 max-w-4xl' :
-          projects.length === 3 ? 'md:grid-cols-4 max-w-5xl' :
-          'md:grid-cols-4 max-w-5xl'
-        }`}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-3 mx-auto max-w-4xl" style={{ gridAutoRows: 'minmax(252px, auto)' }}>
           {/* Projects */}
           {projects.length > 0 ? (
             projects.map((project) => {
@@ -335,9 +324,9 @@ function DashboardPage() {
                 <button
                   key={project.id}
                   onClick={() => navigate(`/survey/${project.id}`)}
-                  className="w-full bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 overflow-hidden"
+                  className="w-full h-full bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col"
                 >
-                  <div className="py-6 sm:py-8 px-4 sm:px-6">
+                  <div className="py-6 sm:py-8 px-4 sm:px-6 flex-grow">
                     <h2 className="text-base font-semibold text-gray-900 mb-2 text-left">
                       {project.name || 'Untitled Project'}
                     </h2>
@@ -346,7 +335,7 @@ function DashboardPage() {
                     </p>
                   </div>
                   {/* Progress Bar */}
-                  <div className="px-4 sm:px-6 pb-6 sm:pb-8">
+                  <div className="px-4 sm:px-6 pb-6 sm:pb-8 mt-auto">
                     <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
                       <span>Progress</span>
                       <span>{progress}%</span>
@@ -371,7 +360,7 @@ function DashboardPage() {
               );
             })
           ) : (
-            <div className="w-full bg-white rounded-lg border border-gray-200 p-6 sm:p-8 text-center">
+            <div className="w-full h-full bg-white rounded-lg border border-gray-200 p-6 sm:p-8 flex items-center justify-center">
               <p className="text-sm text-gray-500">No projects found</p>
             </div>
           )}
@@ -379,7 +368,7 @@ function DashboardPage() {
           {/* Create New Button */}
           <button
             onClick={() => setShowPaymentModal(true)}
-            className="group w-full py-6 sm:py-8 px-4 sm:px-6 bg-white rounded-lg border-2 border-dotted border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 flex items-center justify-center"
+            className="group w-full h-full py-6 sm:py-8 px-4 sm:px-6 bg-white rounded-lg border-2 border-dotted border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 flex items-center justify-center"
           >
             <div className="flex flex-col items-center text-center">
               <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center mb-3 sm:mb-4 transition-colors">
