@@ -6,7 +6,7 @@ import { useCollaborators } from '../hooks/useCollaborators';
 
 function ApprovalSection({ project, projectId }) {
   const { currentUser, loading } = useUser();
-  const { collaborators, collaboratorIds, getEmailFromUserId, isAdmin } = useCollaborators(project);
+  const { collaboratorIds, getDisplayName, isAdmin } = useCollaborators(project);
   const currentUserId = currentUser?.id;
   const currentUserIsAdmin = isAdmin(currentUserId);
 
@@ -74,7 +74,7 @@ function ApprovalSection({ project, projectId }) {
       
       <div className="space-y-3 mb-4">
         {collaboratorIds.map((userId) => {
-          const email = getEmailFromUserId(userId);
+          const displayName = getDisplayName(userId);
           const isThisAdmin = isAdmin(userId);
           const isCurrentUser = userId === currentUserId;
 
@@ -83,18 +83,16 @@ function ApprovalSection({ project, projectId }) {
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
                   <span className="text-red-950 font-medium text-sm">
-                    {email.charAt(0).toUpperCase()}
+                    {displayName.charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-700">
-                    {email}
+                    {displayName}
                   </span>
-                  <div className="flex gap-2">
-                    {isThisAdmin && (
-                      <span className="text-xs text-gray-500">(Admin)</span>
-                    )}
-                  </div>
+                  {isThisAdmin && (
+                    <span className="text-xs text-gray-500 ml-2">(Admin)</span>
+                  )}
                 </div>
               </div>
 

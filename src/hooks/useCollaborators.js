@@ -1,37 +1,51 @@
 import { useMemo } from 'react';
 
-/**
- * Hook to access collaborator data from a project
- *
- * Data structure:
- * - project.admin: userId of the admin
- * - project.collaborators: [{userId, email}, {userId, email}, ...]
- */
 export function useCollaborators(project) {
-  const collaborators = useMemo(() => {
-    return project?.collaborators || [];
+  const collaboratorsMap = useMemo(() => {
+    return project?.collaborators || {};
   }, [project?.collaborators]);
 
-  const collaboratorIds = useMemo(() => {
-    return collaborators.map(c => c.userId);
-  }, [collaborators]);
+  const collaborators = useMemo(() => {
+    return Object.entries(collaboratorsMap).map(([userId, data]) => ({
+      userId,
+      ...data
+    }));
+  }, [collaboratorsMap]);
 
-  const getEmailFromUserId = useMemo(() => {
-    return (userId) => collaborators.find(c => c.userId === userId)?.email || '';
-  }, [collaborators]);
+  const collaboratorIds = useMemo(() => {
+    return Object.keys(collaboratorsMap);
+  }, [collaboratorsMap]);
+
+  const cofounders = project?.surveyData?.cofounders || [];
+
+  const getCofounderLabel = (index) => `Cofounder ${String.fromCharCode(65 + index)}`;
+
+  const getDisplayName = useMemo(() => {
+    return (userId) => {
+      const index = Object.keys(collaboratorsMap).indexOf(userId);
+      if (index === -1) return '';
+      const name = cofounders[index]?.fullName?.trim();
+      return name || getCofounderLabel(index);
+    };
+  }, [collaboratorsMap, cofounders]);
 
   const isAdmin = useMemo(() => {
     return (userId) => project?.admin === userId;
   }, [project?.admin]);
 
   const getAdmin = useMemo(() => {
-    return () => collaborators.find(c => c.userId === project?.admin);
-  }, [collaborators, project?.admin]);
+    return () => {
+      const adminId = project?.admin;
+      if (!adminId || !collaboratorsMap[adminId]) return null;
+      return { userId: adminId, ...collaboratorsMap[adminId] };
+    };
+  }, [collaboratorsMap, project?.admin]);
 
   return {
     collaborators,
+    collaboratorsMap,
     collaboratorIds,
-    getEmailFromUserId,
+    getDisplayName,
     isAdmin,
     getAdmin
   };

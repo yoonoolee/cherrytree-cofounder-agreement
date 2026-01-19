@@ -4,7 +4,7 @@ import CustomSelect from './CustomSelect';
 function Section7Compensation({ formData, handleChange, isReadOnly, showValidation, project }) {
   const compensations = formData.compensations || [];
   // Count all collaborators
-  const collaboratorCount = (project?.collaborators || []).length;
+  const collaboratorCount = Object.keys(project?.collaborators || {}).length;
   const canAddMore = compensations.length < collaboratorCount;
 
   const handleAddCompensation = () => {

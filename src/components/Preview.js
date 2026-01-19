@@ -66,9 +66,9 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
         const data = doc.data();
         setProject(data);
 
-        // If project is submitted, use the final PDF URL
-        if (data.submitted && data.pdfUrl) {
-          setPdfUrl(data.pdfUrl);
+        // If project is submitted, use the latest PDF URL
+        if (data.submitted && data.latestPdfUrl) {
+          setPdfUrl(data.latestPdfUrl);
         } else if (data.previewPdfUrl) {
           // Otherwise use preview PDF URL if available
           setPdfUrl(data.previewPdfUrl);
@@ -145,12 +145,13 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
     }
   }, [project]);
 
-  // Fetch submitter name from user profile
+  // Fetch submitter name from user profile (from latest pdfAgreement)
   useEffect(() => {
     const fetchSubmitterName = async () => {
-      if (project?.submittedBy) {
+      const latestAgreement = project?.pdfAgreements?.[project.pdfAgreements.length - 1];
+      if (latestAgreement?.generatedBy) {
         try {
-          const userDoc = await getDoc(doc(db, 'users', project.submittedBy));
+          const userDoc = await getDoc(doc(db, 'users', latestAgreement.generatedBy));
           if (userDoc.exists()) {
             const userData = userDoc.data();
             const fullName = [userData.firstName, userData.lastName].filter(Boolean).join(' ');
@@ -167,15 +168,14 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
   }, [project]);
 
   const checkAllApproved = () => {
-    if (!project.requiresApprovals) return true;
-
-    const collaborators = project.collaborators || [];
-    if (collaborators.length === 0) return true;
+    const collaborators = project.collaborators || {};
+    const collaboratorIds = Object.keys(collaborators);
+    if (collaboratorIds.length === 0) return true;
 
     const approvals = project.approvals || {};
 
     // Everyone must approve (including admin)
-    return collaborators.every(c => approvals[c.userId] === true);
+    return collaboratorIds.every(userId => approvals[userId] === true);
   };
 
   const handleSubmit = async () => {
@@ -190,7 +190,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
       return;
     }
 
-    if (project.requiresApprovals && !checkAllApproved()) {
+    if (!checkAllApproved()) {
       setSubmitError('All collaborators must approve before you can submit');
       return;
     }
@@ -566,9 +566,9 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                     </p>
                   )}
                 </div>
-                {isReadOnly && project.pdfUrl && (
+                {isReadOnly && project.latestPdfUrl && (
                   <a
-                    href={project.pdfUrl}
+                    href={project.latestPdfUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-black text-white px-6 py-2 rounded font-medium hover:bg-gray-800 transition"
@@ -620,7 +620,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
               )}
 
               {/* Approval Section */}
-              {!isReadOnly && project.requiresApprovals && (
+              {!isReadOnly && (
                 <div className="mt-8 pt-6 border-t border-gray-200">
                   <ApprovalSection project={project} projectId={projectId} />
                 </div>
@@ -636,10 +636,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                       )}
                       <button
                         onClick={handleSubmit}
-                        disabled={
-                          isSubmitting ||
-                          (project.requiresApprovals && !checkAllApproved())
-                        }
+                        disabled={isSubmitting || !checkAllApproved()}
                         className="bg-black text-white px-8 py-3 rounded font-medium hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isSubmitting ? (
@@ -663,7 +660,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                           Once submitted, you cannot edit the survey
                         </p>
                       )}
-                      {project.requiresApprovals && !checkAllApproved() && (
+                      {!checkAllApproved() && (
                         <p className="text-sm text-gray-600 mt-3">
                           Waiting for all collaborators to approve
                         </p>

@@ -247,9 +247,7 @@ exports.submitSurvey = onCall({
 
     // Mark as submitted
     await projectRef.update({
-      submitted: true,
-      submittedAt: FieldValue.serverTimestamp(),
-      submittedBy: userId
+      submitted: true
     });
 
     // Prepare data for Make.com
@@ -296,9 +294,14 @@ exports.submitSurvey = onCall({
         throw new HttpsError('internal', 'Invalid PDF URL received from external service');
       }
 
+      const generatedAt = new Date();
       await projectRef.update({
-        pdfUrl: response.data.pdfUrl,
-        pdfGeneratedAt: FieldValue.serverTimestamp()
+        pdfAgreements: FieldValue.arrayUnion({
+          url: response.data.pdfUrl,
+          generatedAt: generatedAt,
+          generatedBy: userId
+        }),
+        latestPdfUrl: response.data.pdfUrl
       });
     }
 
@@ -344,8 +347,9 @@ exports.generatePreviewPDF = onCall({
 
     const projectData = projectDoc.data();
 
-    // Check if user has access to this project (using Clerk user ID)
-    const hasAccess = projectData.collaborators?.some(c => c.userId === userId);
+    // Check if user has access to this project (active collaborator with endAt: null)
+    const collaborator = projectData.collaborators?.[userId];
+    const hasAccess = collaborator?.history?.some(h => h.endAt === null);
 
     if (!hasAccess) {
       throw new HttpsError('permission-denied', 'No access to this project');
@@ -573,6 +577,22 @@ exports.stripeWebhook = onRequest({
 
         if (userId && plan && sanitizedProjectName && userEmail) {
           try {
+            // Fetch receipt URL and payment timestamp from the charge
+            let receiptUrl = null;
+            let purchasedAt = null;
+            if (session.payment_intent) {
+              try {
+                const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent);
+                if (paymentIntent.latest_charge) {
+                  const charge = await stripe.charges.retrieve(paymentIntent.latest_charge);
+                  receiptUrl = charge.receipt_url;
+                  purchasedAt = new Date(charge.created * 1000); // Unix timestamp to JS Date
+                }
+              } catch (receiptError) {
+                console.error('Error fetching charge details:', receiptError);
+              }
+            }
+
             // Create Clerk Organization for this project
             // clerkOrgId is used as the Firestore document ID (single source of truth)
             const clerk = getClerk();
@@ -594,14 +614,19 @@ exports.stripeWebhook = onRequest({
             await projectRef.set({
               name: sanitizedProjectName,
               admin: userId,
-              collaborators: [{ userId: userId, email: userEmail }],
+              collaborators: {
+                [userId]: {
+                  role: 'admin',
+                  isActive: true,
+                  history: [{ startAt: new Date(), endAt: null }]
+                }
+              },
               approvals: {
                 [userId]: false
               },
               onboardingCompleted: {
                 [userId]: false
               },
-              requiresApprovals: true,
               surveyVersion: CURRENT_SURVEY_VERSION,
               surveyData: {
                 // Initialize acknowledgement fields with owner's userId
@@ -616,13 +641,19 @@ exports.stripeWebhook = onRequest({
                 acknowledgeEntireAgreement: { [userId]: false },
                 acknowledgeSeverability: { [userId]: false }
               },
-              activeUsers: [],
               submitted: false,
-              submittedAt: null,
-              submittedBy: null,
-              pdfUrl: null,
-              pdfGeneratedAt: null,
+              pdfAgreements: [],
+              latestPdfUrl: null,
               plan: plan,
+              // Payment info
+              stripeCustomerId: session.customer,
+              stripeCheckoutSessionId: session.id,
+              stripePaymentIntentId: session.payment_intent,
+              amountPaidCents: session.amount_total,
+              currency: session.currency,
+              receiptUrl: receiptUrl,
+              purchasedAt: purchasedAt || FieldValue.serverTimestamp(), // From charge.created, fallback to now
+              // Timestamps
               createdAt: FieldValue.serverTimestamp(),
               editDeadline: editDeadline, // Edit deadline - locked in at purchase time
               lastUpdated: FieldValue.serverTimestamp(),
@@ -740,16 +771,32 @@ exports.deleteAccount = onCall({
     for (const projectDoc of projectsSnapshot.docs) {
       const project = projectDoc.data();
 
-      // Get other collaborators (excluding the admin being deleted)
-      const otherCollaborators = project.collaborators?.filter(c => c.userId !== userId) || [];
+      // Get collaborators map and find active members (excluding the admin being deleted)
+      const collaborators = project.collaborators || {};
+      const activeCollaboratorIds = Object.keys(collaborators).filter(id => {
+        if (id === userId) return false;
+        const history = collaborators[id].history || [];
+        return history.some(h => h.endAt === null);
+      });
 
-      if (otherCollaborators.length > 0) {
-        // Transfer admin to first remaining collaborator
-        const newAdmin = otherCollaborators[0];
+      if (activeCollaboratorIds.length > 0) {
+        // Transfer admin to first remaining active collaborator
+        const newAdminId = activeCollaboratorIds[0];
+        const newAdminData = collaborators[newAdminId];
+
+        // Mark deleted user as inactive
+        if (collaborators[userId]) {
+          const currentEntry = collaborators[userId].history?.find(h => h.endAt === null);
+          if (currentEntry) currentEntry.endAt = new Date();
+          collaborators[userId].isActive = false;
+        }
+
+        // Update new admin's role
+        collaborators[newAdminId].role = 'admin';
 
         await projectDoc.ref.update({
-          admin: newAdmin.userId,
-          collaborators: otherCollaborators,
+          admin: newAdminId,
+          collaborators: collaborators,
           transferredFrom: userId,
           transferredAt: FieldValue.serverTimestamp()
         });
@@ -758,25 +805,33 @@ exports.deleteAccount = onCall({
         try {
           await clerk.organizations.updateOrganizationMembership({
             organizationId: projectDoc.id,
-            userId: newAdmin.userId,
+            userId: newAdminId,
             role: 'admin'
           });
-          console.log(`Clerk org ${projectDoc.id} transferred to ${newAdmin.userId}`);
+          console.log(`Clerk org ${projectDoc.id} transferred to ${newAdminId}`);
         } catch (clerkError) {
           console.error('Error updating Clerk org ownership:', clerkError);
         }
 
         transferredProjects.push({
           name: project.name,
-          transferredTo: newAdmin.email
+          transferredTo: newAdminId
         });
 
-        console.log(`Project "${project.name}" transferred to ${newAdmin.email}`);
+        console.log(`Project "${project.name}" transferred to ${newAdminId}`);
       } else {
         // No other collaborators - pseudonymize and archive the project
+        const pseudoCollaborators = {
+          [pseudoId]: {
+            role: 'admin',
+            isActive: true,
+            history: [{ startAt: new Date(), endAt: null }]
+          }
+        };
+
         await projectDoc.ref.update({
           admin: pseudoId,
-          collaborators: [{ userId: pseudoId, email: pseudoEmail }],
+          collaborators: pseudoCollaborators,
           archived: true,
           archivedReason: 'admin_deleted',
           archivedAt: FieldValue.serverTimestamp()
@@ -792,6 +847,30 @@ exports.deleteAccount = onCall({
 
         archivedProjects.push(project.name);
         console.log(`Project "${project.name}" archived and pseudonymized`);
+      }
+    }
+
+    // Update history endAt for all other projects where user is a collaborator
+    const allProjectsSnapshot = await db.collection('projects')
+      .where(`collaborators.${userId}`, '!=', null)
+      .get();
+
+    for (const projectDoc of allProjectsSnapshot.docs) {
+      const project = projectDoc.data();
+      if (project.admin === userId) continue; // Already handled above
+
+      const collaborators = project.collaborators || {};
+      if (collaborators[userId]) {
+        const currentEntry = collaborators[userId].history?.find(h => h.endAt === null);
+        if (currentEntry) {
+          currentEntry.endAt = new Date();
+        }
+        collaborators[userId].isActive = false;
+        await projectDoc.ref.update({
+          collaborators: collaborators,
+          lastUpdated: FieldValue.serverTimestamp()
+        });
+        console.log(`Marked user ${userId} as left in project ${projectDoc.id}`);
       }
     }
 
@@ -1025,39 +1104,40 @@ exports.clerkWebhook = onRequest({
       case 'organizationMembership.created': {
         const { organization, public_user_data } = evt.data;
         const userId = public_user_data.user_id;
-        const userEmail = public_user_data.identifier; // Email address
+        const userEmail = public_user_data.identifier;
         const orgId = organization.id;
 
         console.log(`User ${userId} (${userEmail}) joined org ${orgId}`);
 
-        // Get project directly by ID (orgId === projectId)
         try {
           const projectDoc = await db.collection('projects').doc(orgId).get();
 
           if (projectDoc.exists) {
             const projectData = projectDoc.data();
+            const collaborators = projectData.collaborators || {};
+            const approvals = projectData.approvals || {};
 
-            // Get current collaborators
-            const collaborators = projectData.collaborators || [];
-
-            // Check if user already exists
-            const userExists = collaborators.some(c => c.userId === userId);
-
-            if (!userExists) {
-              // Add new collaborator
-              collaborators.push({ userId: userId, email: userEmail });
-
-              // Initialize their approval status
-              const approvals = projectData.approvals || {};
-              approvals[userId] = false;
-
-              await projectDoc.ref.update({
-                collaborators: collaborators,
-                approvals: approvals,
-                lastUpdated: FieldValue.serverTimestamp()
-              });
-              console.log(`Added user ${userId} (${userEmail}) to project ${projectDoc.id}`);
+            if (collaborators[userId]) {
+              // User rejoining - add new history entry and set active
+              collaborators[userId].history.push({ startAt: new Date(), endAt: null });
+              collaborators[userId].isActive = true;
+            } else {
+              // New collaborator
+              collaborators[userId] = {
+                role: 'collaborator',
+                isActive: true,
+                history: [{ startAt: new Date(), endAt: null }]
+              };
             }
+
+            approvals[userId] = false;
+
+            await projectDoc.ref.update({
+              collaborators: collaborators,
+              approvals: approvals,
+              lastUpdated: FieldValue.serverTimestamp()
+            });
+            console.log(`Added user ${userId} (${userEmail}) to project ${projectDoc.id}`);
           }
         } catch (error) {
           console.error('Error adding collaborator to project:', error);
@@ -1068,34 +1148,37 @@ exports.clerkWebhook = onRequest({
       case 'organizationMembership.deleted': {
         const { organization, public_user_data } = evt.data;
         const userId = public_user_data.user_id;
-        const userEmail = public_user_data.identifier; // Email address
+        const userEmail = public_user_data.identifier;
         const orgId = organization.id;
 
         console.log(`User ${userId} (${userEmail}) left org ${orgId}`);
 
-        // Get project directly by ID (orgId === projectId)
         try {
           const projectDoc = await db.collection('projects').doc(orgId).get();
 
           if (projectDoc.exists) {
             const projectData = projectDoc.data();
-
-            // Get current collaborators
-            const collaborators = projectData.collaborators || [];
-
-            // Remove collaborator with matching userId
-            const updatedCollaborators = collaborators.filter(c => c.userId !== userId);
-
-            // Remove their approval status
+            const collaborators = projectData.collaborators || {};
             const approvals = projectData.approvals || {};
+
+            // Update history and set inactive
+            if (collaborators[userId]) {
+              const history = collaborators[userId].history || [];
+              const currentEntry = history.find(h => h.endAt === null);
+              if (currentEntry) {
+                currentEntry.endAt = new Date();
+              }
+              collaborators[userId].isActive = false;
+            }
+
             delete approvals[userId];
 
             await projectDoc.ref.update({
-              collaborators: updatedCollaborators,
+              collaborators: collaborators,
               approvals: approvals,
               lastUpdated: FieldValue.serverTimestamp()
             });
-            console.log(`Removed user ${userId} (${userEmail}) from project ${projectDoc.id} collaborators`);
+            console.log(`Marked user ${userId} (${userEmail}) as left in project ${projectDoc.id}`);
           }
         } catch (error) {
           console.error('Error removing collaborator from project:', error);

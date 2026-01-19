@@ -8,7 +8,7 @@ import './Section3EquityAllocation.css';
 const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnly, showValidation, project, onViewModeChange }, ref) => {
   const { currentUser } = useUser();
   const visualBarsRef = useRef(null);
-  const { collaborators, collaboratorIds, getEmailFromUserId, isAdmin } = useCollaborators(project);
+  const { collaboratorIds, isAdmin } = useCollaborators(project);
 
   const currentUserId = currentUser?.id;
 

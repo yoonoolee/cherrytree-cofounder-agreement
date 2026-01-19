@@ -47,6 +47,23 @@ Currently using test mode keys in production. Before accepting real payments:
 
 ## Medium Priority
 
+### PDF Storage & ID Tracking
+Currently PDFs are stored in Google Drive via Make.com and we only store the URL in `pdfAgreements`.
+
+**Add PDF ID to pdfAgreements:**
+- Extract Google Drive file ID from URL (format: `/file/d/FILE_ID/` or `?id=FILE_ID`)
+- Store `id` field alongside `url`, `generatedAt`, `generatedBy` in each pdfAgreement entry
+- Useful for tracking/referencing specific PDFs without relying on full URL
+
+**Consider migrating PDF storage to Firebase Storage / Google Cloud Storage:**
+- Pros: Full control, native to Firebase, better security rules, no external dependency on Make.com's Drive
+- Cons: Need to update Make.com integration, slightly less convenient for manual browsing
+- Cost is negligible (~$0.026/GB/month, free tier covers ~10,000 PDFs)
+- Google Drive URLs are ID-based so moving folders won't break links, but moving to different storage would
+- Firebase Console → Storage for browsing files (less user-friendly than Drive but works fine)
+
+---
+
 ### Update firebase-functions Package
 The deploy shows a warning about outdated firebase-functions. Update when ready to handle breaking changes:
 

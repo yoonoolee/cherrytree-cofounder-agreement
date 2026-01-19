@@ -6,7 +6,7 @@ import CustomSelect from './CustomSelect';
 
 function Section10Final({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
-  const { collaboratorIds, getEmailFromUserId, isAdmin } = useCollaborators(project);
+  const { collaboratorIds, getDisplayName, isAdmin } = useCollaborators(project);
 
   return (
     <div>
@@ -132,7 +132,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
               return collaboratorIds.map((userId) => {
                 const isApproved = approvals[userId] || false;
                 const isCurrentUser = userId === currentUserId;
-                const userEmail = getEmailFromUserId(userId);
+                const displayName = getDisplayName(userId);
 
                 return (
                   <label key={userId} className="flex items-center">
@@ -147,7 +147,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
                       className="mr-3"
                     />
                     <span className="text-gray-700">
-                      {userEmail}
+                      {displayName}
                       {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
 
                     </span>
@@ -180,7 +180,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
               return collaboratorIds.map((userId) => {
                 const isApproved = approvals[userId] || false;
                 const isCurrentUser = userId === currentUserId;
-                const userEmail = getEmailFromUserId(userId);
+                const displayName = getDisplayName(userId);
 
                 return (
                   <label key={userId} className="flex items-center">
@@ -195,7 +195,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
                       className="mr-3"
                     />
                     <span className="text-gray-700">
-                      {userEmail}
+                      {displayName}
                       {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
 
                     </span>
@@ -228,7 +228,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
               return collaboratorIds.map((userId) => {
                 const isApproved = approvals[userId] || false;
                 const isCurrentUser = userId === currentUserId;
-                const userEmail = getEmailFromUserId(userId);
+                const displayName = getDisplayName(userId);
 
                 return (
                   <label key={userId} className="flex items-center">
@@ -243,7 +243,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
                       className="mr-3"
                     />
                     <span className="text-gray-700">
-                      {userEmail}
+                      {displayName}
                       {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
                       
                     </span>
@@ -276,7 +276,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
               return collaboratorIds.map((userId) => {
                 const isApproved = approvals[userId] || false;
                 const isCurrentUser = userId === currentUserId;
-                const userEmail = getEmailFromUserId(userId);
+                const displayName = getDisplayName(userId);
 
                 return (
                   <label key={userId} className="flex items-center">
@@ -291,7 +291,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
                       className="mr-3"
                     />
                     <span className="text-gray-700">
-                      {userEmail}
+                      {displayName}
                       {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
                       
                     </span>

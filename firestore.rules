@@ -2,59 +2,44 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if user is authenticated
     function isSignedIn() {
       return request.auth != null;
     }
 
     // Users collection
     match /users/{userId} {
-      // Users can read and write their own document
       allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
     // Projects collection
     match /projects/{projectId} {
-      // Helper function to check if user is owner or collaborator
-      function isOwnerOrCollaborator() {
-        return resource.data.ownerEmail == request.auth.token.email ||
-               request.auth.token.email in resource.data.get('collaborators', []) ||
-               resource.data.ownerId == request.auth.uid ||
-               request.auth.uid in resource.data.get('collaboratorIds', []);
+      // Check if user is admin or active collaborator
+      function isAdminOrCollaborator() {
+        return resource.data.admin == request.auth.uid ||
+               resource.data.collaborators[request.auth.uid] != null;
       }
 
-      // Projects are created via Stripe webhook (server-side), not client-side
-      // So we don't allow direct client creation
+      // Projects are created via Stripe webhook (server-side)
       allow create: if false;
 
-      // Allow reading documents only if user is owner or collaborator
-      // This filters individual gets AND documents returned in list queries
-      allow read: if isSignedIn() && (
-        resource.data.ownerId == request.auth.uid ||
-        request.auth.uid in resource.data.get('collaboratorIds', [])
-      );
+      // Allow read if user is admin or collaborator
+      allow read: if isSignedIn() && isAdminOrCollaborator();
 
-      // Allow list queries only for authenticated users with reasonable limits
-      // Individual documents in results are still filtered by the read rule above
-      allow list: if isSignedIn() &&
-                     request.query.limit <= 100;
+      // Allow list queries for authenticated users
+      allow list: if isSignedIn() && request.query.limit <= 100;
 
-      // Owner and collaborators can update, but cannot change ownership
+      // Admin and collaborators can update, but cannot change admin
       allow update: if isSignedIn() &&
-                      isOwnerOrCollaborator() &&
-                      // Prevent changing the owner
-                      request.resource.data.ownerEmail == resource.data.ownerEmail &&
-                      request.resource.data.ownerId == resource.data.ownerId;
+                      isAdminOrCollaborator() &&
+                      request.resource.data.admin == resource.data.admin;
 
-      // Only owner can delete
+      // Only admin can delete
       allow delete: if isSignedIn() &&
-                      resource.data.ownerEmail == request.auth.token.email;
+                      resource.data.admin == request.auth.uid;
     }
 
     // Pro waitlist collection
     match /proWaitlist/{docId} {
-      // Anyone can add to waitlist (no auth required for better UX)
-      // But cannot read, update, or delete (privacy)
       allow create: if true;
       allow read, update, delete: if false;
     }

@@ -97,8 +97,8 @@ export function useAutoSave(projectId, project, currentUser) {
         lastEditedBy: currentUser?.primaryEmailAddress?.emailAddress
       };
 
-      // Reset approvals only if there are actual changes
-      if (changedFields.length > 0 && project.requiresApprovals) {
+      // Reset approvals if there are actual changes
+      if (changedFields.length > 0) {
         updateData.approvals = {};
       }
 

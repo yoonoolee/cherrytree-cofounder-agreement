@@ -30,7 +30,7 @@ const calculateProjectProgress = (project) => {
   let completed = 0;
 
   // Get all collaborator userIds from the project
-  const collaboratorIds = (project?.collaborators || []).map(c => c.userId);
+  const collaboratorIds = Object.keys(project?.collaborators || {});
 
   // Section 1: Formation & Purpose (9 fields)
   if (formData.companyName) completed++;

@@ -38,7 +38,7 @@ export function useValidation(formData, project) {
     let completed = 0;
 
     // Get all collaborator userIds from the project
-    const collaboratorIds = (project?.collaborators || []).map(c => c.userId);
+    const collaboratorIds = Object.keys(project?.collaborators || {});
 
     // Section 1: Formation & Purpose
     if (formData.companyName) completed++;
@@ -209,7 +209,7 @@ export function useValidation(formData, project) {
    */
   const isSectionCompleted = (sectionId) => {
     // Get all collaborator userIds from the project
-    const collaboratorIds = (project?.collaborators || []).map(c => c.userId);
+    const collaboratorIds = Object.keys(project?.collaborators || {});
 
     switch(sectionId) {
       case 1: // Formation & Purpose
