@@ -96,7 +96,7 @@ export function useValidation(formData, project) {
     totalRequired++;
     if (formData.equityVotingPower) completed++;
     totalRequired++;
-    if (isOtherFieldValid(formData.tieResolution, formData.tieResolutionOther)) completed++;
+    if (formData.tieResolution) completed++;
     totalRequired++;
     // Check if all collaborators have acknowledged tie resolution
     const allAcknowledgedTieResolution = collaboratorIds.length > 0 &&
@@ -268,7 +268,7 @@ export function useValidation(formData, project) {
         ) : true;
         return isOtherArrayFieldValid(formData.majorDecisions, formData.majorDecisionsOther) &&
                formData.equityVotingPower &&
-               isOtherFieldValid(formData.tieResolution, formData.tieResolutionOther) &&
+               formData.tieResolution &&
                allAcknowledgedTieResolution &&
                formData.includeShotgunClause && allAcknowledgedShotgunClause;
 

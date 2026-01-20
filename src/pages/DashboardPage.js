@@ -87,7 +87,7 @@ const calculateProjectProgress = (project) => {
   totalRequired++;
   if (formData.equityVotingPower) completed++;
   totalRequired++;
-  if (isOtherFieldValid(formData.tieResolution, formData.tieResolutionOther)) completed++;
+  if (formData.tieResolution) completed++;
   totalRequired++;
   const allAcknowledgedTieResolution = collaboratorIds.length > 0 &&
     collaboratorIds.every(userId => formData.acknowledgeTieResolution?.[userId]);

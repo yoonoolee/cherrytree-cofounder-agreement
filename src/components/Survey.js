@@ -5,7 +5,7 @@ import { db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useAuth } from '@clerk/clerk-react';
-import { SECTIONS, INDUSTRIES, MAJOR_DECISIONS, TERMINATION_CONSEQUENCES, US_STATES } from '../config/surveySchema';
+import { SECTIONS, INDUSTRIES, MAJOR_DECISIONS, PERFORMANCE_CONSEQUENCES, US_STATES } from '../config/surveySchema';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useProjectSync } from '../hooks/useProjectSync';
 import { useValidation } from '../hooks/useValidation';
@@ -330,7 +330,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         "How many days is the notice period if a Cofounder wishes to voluntarily leave?"
       ],
       answers: [
-        ...TERMINATION_CONSEQUENCES,
+        ...PERFORMANCE_CONSEQUENCES,
         "Breach of fiduciary duty", "Criminal conviction", "Fraud or dishonesty", "Material breach of agreement", "Gross negligence", "Willful misconduct"
       ]
     },

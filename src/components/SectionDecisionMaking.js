@@ -145,7 +145,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                   const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeTieResolution?.[userId]);
                   return (
                     <>
-                      In the event of a deadlock, the Cofounders agree to first seek resolution through informal negotiation for a period of 30 days. If unresolved, the deadlock shall be resolved by {formData.tieResolution === 'Other' ? formData.tieResolutionOther : formData.tieResolution}.
+                      In the event of a deadlock, the Cofounders agree to first seek resolution through informal negotiation for a period of 30 days. If unresolved, the deadlock shall be resolved by {formData.tieResolution}.
                       {showValidation && !allAcknowledged && <span className="text-red-700 ml-0.5">*</span>}
                     </>
                   );

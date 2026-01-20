@@ -149,13 +149,6 @@ export const PERFORMANCE_CONSEQUENCES = [
   'Termination'
 ];
 
-export const TERMINATION_CONSEQUENCES = [
-  'Formal warning and performance plan',
-  'Reduction or dilution of unvested equity',
-  'Role reassignment or demotion',
-  'Temporary suspension of voting rights'
-];
-
 export const TERMINATION_WITH_CAUSE_OPTIONS = [
   'Fraud, embezzlement, or theft',
   'Breach of fiduciary duty',
@@ -251,7 +244,6 @@ export const SURVEY_FIELDS = {
   majorDecisionsOther: { default: '', type: 'string' },
   equityVotingPower: { default: '', type: 'string' },
   tieResolution: { default: '', type: 'string', options: TIE_RESOLUTION_OPTIONS },
-  tieResolutionOther: { default: '', type: 'string' },
   acknowledgeTieResolution: { default: {}, type: 'object' },
   includeShotgunClause: { default: '', type: 'string' },
   acknowledgeShotgunClause: { default: {}, type: 'object' },
