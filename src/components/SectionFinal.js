@@ -3,6 +3,7 @@ import { US_STATES, DISPUTE_RESOLUTION_OPTIONS, AMENDMENT_PROCESS_OPTIONS } from
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
 import CustomSelect from './CustomSelect';
+import { FIELDS } from '../config/surveySchema';
 
 function SectionFinal({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
@@ -21,7 +22,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             How should disputes among cofounders be resolved?
-            {showValidation && !formData.disputeResolution && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.DISPUTE_RESOLUTION] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
           </label>
           <div className="space-y-2">
             {DISPUTE_RESOLUTION_OPTIONS.map((option) => (
@@ -30,10 +31,10 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
                   type="radio"
                   name="disputeResolution"
                   value={option}
-                  checked={formData.disputeResolution === option}
+                  checked={formData[FIELDS.DISPUTE_RESOLUTION] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('disputeResolution', formData.disputeResolution === option ? '' : option);
+                      handleChange('disputeResolution', formData[FIELDS.DISPUTE_RESOLUTION] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -45,10 +46,10 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
             ))}
           </div>
 
-          {formData.disputeResolution === 'Other' && (
+          {formData[FIELDS.DISPUTE_RESOLUTION] === 'Other' && (
             <input
               type="text"
-              value={formData.disputeResolutionOther || ''}
+              value={formData[FIELDS.DISPUTE_RESOLUTION_OTHER] || ''}
               onChange={(e) => handleChange('disputeResolutionOther', e.target.value)}
               disabled={isReadOnly}
               className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
@@ -61,10 +62,10 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
         <div style={{ overflow: 'visible', position: 'relative', zIndex: 100, marginBottom: '3rem' }}>
           <label className="block text-base font-medium text-gray-900 mb-2">
             Which state's laws will govern this agreement?
-            {showValidation && !formData.governingLaw && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.GOVERNING_LAW] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
           </label>
           <CustomSelect
-            value={formData.governingLaw || ''}
+            value={formData[FIELDS.GOVERNING_LAW] || ''}
             onChange={(value) => handleChange('governingLaw', value)}
             options={US_STATES.map(state => ({
               value: state.label,
@@ -79,7 +80,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             How can this agreement be amended or modified?
-            {showValidation && !formData.amendmentProcess && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.AMENDMENT_PROCESS] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
           </label>
           <div className="space-y-2">
             {AMENDMENT_PROCESS_OPTIONS.map((option) => (
@@ -88,10 +89,10 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
                   type="radio"
                   name="amendmentProcess"
                   value={option}
-                  checked={formData.amendmentProcess === option}
+                  checked={formData[FIELDS.AMENDMENT_PROCESS] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('amendmentProcess', formData.amendmentProcess === option ? '' : option);
+                      handleChange('amendmentProcess', formData[FIELDS.AMENDMENT_PROCESS] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -103,10 +104,10 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
             ))}
           </div>
 
-          {formData.amendmentProcess === 'Other' && (
+          {formData[FIELDS.AMENDMENT_PROCESS] === 'Other' && (
             <input
               type="text"
-              value={formData.amendmentProcessOther || ''}
+              value={formData[FIELDS.AMENDMENT_PROCESS_OTHER] || ''}
               onChange={(e) => handleChange('amendmentProcessOther', e.target.value)}
               disabled={isReadOnly}
               className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
@@ -119,12 +120,12 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             How often (in months) should this agreement be reviewed by the cofounders?
-            {showValidation && !formData.reviewFrequencyMonths && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.REVIEW_FREQUENCY_MONTHS] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
           </label>
           <input
             type="number"
             min="0"
-            value={formData.reviewFrequencyMonths || ''}
+            value={formData[FIELDS.REVIEW_FREQUENCY_MONTHS] || ''}
             onChange={(e) => {
               const value = e.target.value;
               if (value === '' || (parseInt(value) >= 0 && !value.includes('-'))) {
@@ -150,10 +151,10 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
         <div className="">
           <p className="text-gray-700 mb-4">
             {(() => {
-              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgePeriodicReview?.[userId]);
+              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW]?.[userId]);
               return (
                 <>
-                  Each Cofounder acknowledges that this Agreement shall be reviewed every {formData.reviewFrequencyMonths ? `${formData.reviewFrequencyMonths} month${formData.reviewFrequencyMonths !== '1' ? 's' : ''}` : '[frequency not specified]'} to ensure it remains current and effective.
+                  Each Cofounder acknowledges that this Agreement shall be reviewed every {formData[FIELDS.REVIEW_FREQUENCY_MONTHS] ? `${formData[FIELDS.REVIEW_FREQUENCY_MONTHS]} month${formData[FIELDS.REVIEW_FREQUENCY_MONTHS] !== '1' ? 's' : ''}` : '[frequency not specified]'} to ensure it remains current and effective.
                   {showValidation && !allAcknowledged && <span className="text-red-700 ml-0.5 validation-error">*</span>}
                 </>
               );
@@ -162,7 +163,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
           <div className="space-y-2 mt-3 pl-4">
 
             {(() => {
-              const approvals = formData.acknowledgePeriodicReview || {};
+              const approvals = formData[FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW] || {};
               const currentUserId = currentUser?.id;
 
               return collaboratorIds.map((userId) => {
@@ -198,7 +199,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
         <div className="">
           <p className="text-gray-700 mb-4">
             {(() => {
-              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeAmendmentReviewRequest?.[userId]);
+              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST]?.[userId]);
               return (
                 <>
                   Any Cofounder may request a review of this Agreement in the event of material changes in circumstances affecting the Company or the Cofounder's role. Any amendments proposed pursuant to such review shall become effective only if approved and executed in writing according to the amendment process set forth in this Agreement.
@@ -210,7 +211,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
           <div className="space-y-2 mt-3 pl-4">
 
             {(() => {
-              const approvals = formData.acknowledgeAmendmentReviewRequest || {};
+              const approvals = formData[FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST] || {};
               const currentUserId = currentUser?.id;
 
               return collaboratorIds.map((userId) => {
@@ -246,7 +247,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
         <div className="">
           <p className="text-gray-700 mb-4">
             {(() => {
-              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeEntireAgreement?.[userId]);
+              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT]?.[userId]);
               return (
                 <>
                   Each Cofounder acknowledges that this Agreement constitutes the entire agreement between the Cofounders regarding the subject matter hereof and supersedes all prior agreements, understandings, negotiations, and discussions, whether oral or written.
@@ -258,7 +259,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
           <div className="space-y-2 mt-3 pl-4">
 
             {(() => {
-              const approvals = formData.acknowledgeEntireAgreement || {};
+              const approvals = formData[FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT] || {};
               const currentUserId = currentUser?.id;
 
               return collaboratorIds.map((userId) => {
@@ -294,7 +295,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
         <div className="">
           <p className="text-gray-700 mb-4">
             {(() => {
-              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeSeverability?.[userId]);
+              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_SEVERABILITY]?.[userId]);
               return (
                 <>
                   Each Cofounder acknowledges that if any provision of this Agreement is held to be invalid or unenforceable, the remaining provisions shall continue in full force and effect.
@@ -306,7 +307,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
           <div className="space-y-2 mt-3 pl-4">
 
             {(() => {
-              const approvals = formData.acknowledgeSeverability || {};
+              const approvals = formData[FIELDS.ACKNOWLEDGE_SEVERABILITY] || {};
               const currentUserId = currentUser?.id;
 
               return collaboratorIds.map((userId) => {

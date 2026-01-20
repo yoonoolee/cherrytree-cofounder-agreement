@@ -1,6 +1,7 @@
 import React from 'react';
 import { PERFORMANCE_CONSEQUENCES, TERMINATION_WITH_CAUSE_OPTIONS } from '../config/surveySchema';
 import Tooltip from './Tooltip';
+import { FIELDS } from '../config/surveySchema';
 
 function SectionPerformance({ formData, handleChange, isReadOnly, showValidation }) {
   return (
@@ -19,7 +20,7 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What happens if a cofounder fails to meet their agreed-upon obligations?
-            {showValidation && (!formData.performanceConsequences || formData.performanceConsequences.length === 0) && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && (!formData[FIELDS.PERFORMANCE_CONSEQUENCES] || formData[FIELDS.PERFORMANCE_CONSEQUENCES].length === 0) && <span className="text-red-700 ml-0.5 validation-error">*</span>}
             <Tooltip text="These measures are intended for serious, ongoing failures to meet material obligations, not for minor issues or temporary setbacks." />
           </label>
           <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
@@ -28,9 +29,9 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
               <label key={option} className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={(formData.performanceConsequences || []).includes(option)}
+                  checked={(formData[FIELDS.PERFORMANCE_CONSEQUENCES] || []).includes(option)}
                   onChange={(e) => {
-                    const current = formData.performanceConsequences || [];
+                    const current = formData[FIELDS.PERFORMANCE_CONSEQUENCES] || [];
                     const newList = e.target.checked
                       ? [...current, option]
                       : current.filter(item => item !== option);
@@ -49,14 +50,14 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             How many days does a cofounder have to fix the issue after receiving written notice before termination can occur?
-            {showValidation && !formData.remedyPeriodDays && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.REMEDY_PERIOD_DAYS] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
             <Tooltip text="This period allows cofounders to address issues in good faith before more serious action is taken." />
           </label>
           <input
             type="number"
             step="1"
             min="0"
-            value={formData.remedyPeriodDays || ''}
+            value={formData[FIELDS.REMEDY_PERIOD_DAYS] || ''}
             onChange={(e) => {
               const value = e.target.value;
               // Only allow integers (no decimals) and no negatives
@@ -84,7 +85,7 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             Which of the following constitutes termination "with cause"?
-            {showValidation && (!formData.terminationWithCause || formData.terminationWithCause.length === 0) && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && (!formData[FIELDS.TERMINATION_WITH_CAUSE] || formData[FIELDS.TERMINATION_WITH_CAUSE].length === 0) && <span className="text-red-700 ml-0.5 validation-error">*</span>}
             <Tooltip text="Basically, what kind of bad behavior gets you booted." />
           </label>
           <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
@@ -93,9 +94,9 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
               <label key={option} className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={(formData.terminationWithCause || []).includes(option)}
+                  checked={(formData[FIELDS.TERMINATION_WITH_CAUSE] || []).includes(option)}
                   onChange={(e) => {
-                    const current = formData.terminationWithCause || [];
+                    const current = formData[FIELDS.TERMINATION_WITH_CAUSE] || [];
                     const newList = e.target.checked
                       ? [...current, option]
                       : current.filter(item => item !== option);
@@ -109,11 +110,11 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
             ))}
           </div>
 
-          {(formData.terminationWithCause || []).includes('Other') && (
+          {(formData[FIELDS.TERMINATION_WITH_CAUSE] || []).includes('Other') && (
             <div className="conditional-section">
               <input
                 type="text"
-                value={formData.terminationWithCauseOther || ''}
+                value={formData[FIELDS.TERMINATION_WITH_CAUSE_OTHER] || ''}
                 onChange={(e) => handleChange('terminationWithCauseOther', e.target.value)}
                 disabled={isReadOnly}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
@@ -127,11 +128,11 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             How many days is the notice period if a Cofounder wishes to voluntarily leave?
-            {showValidation && !formData.voluntaryNoticeDays && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.VOLUNTARY_NOTICE_DAYS] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
           </label>
           <input
             type="number"
-            value={formData.voluntaryNoticeDays || ''}
+            value={formData[FIELDS.VOLUNTARY_NOTICE_DAYS] || ''}
             onChange={(e) => handleChange('voluntaryNoticeDays', e.target.value)}
             disabled={isReadOnly}
             className="w-full bg-transparent border-none border-b-2 border-gray-300 py-3 text-gray-700 focus:outline-none focus:border-black disabled:opacity-60 disabled:cursor-not-allowed"

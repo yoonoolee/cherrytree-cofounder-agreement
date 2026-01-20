@@ -22,6 +22,7 @@ import SectionNonCompete from './SectionNonCompete';
 import SectionFinal from './SectionFinal';
 import CollaboratorManager from './CollaboratorManager';
 import SurveyNavigation from './SurveyNavigation';
+import { FIELDS } from '../config/surveySchema';
 
 const libraries = ['places'];
 
@@ -579,7 +580,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                       animation: typeEmail 6s steps(1) infinite;
                     }
 
-                    .email-caret {
+                    [FIELDS.COFOUNDER_EMAIL]-caret {
                       animation: caretBlinkEmail 6s step-end infinite;
                     }
 

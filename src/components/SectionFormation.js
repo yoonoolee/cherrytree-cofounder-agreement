@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { US_STATES, INDUSTRIES, ENTITY_TYPES } from '../config/surveySchema';
 import CustomSelect from './CustomSelect';
 import Tooltip from './Tooltip';
+import { FIELDS } from '../config/surveySchema';
 
 // Constants
 const ADDRESS_SEARCH_MIN_LENGTH = 3; // Minimum characters before triggering address autocomplete
@@ -71,7 +72,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
   };
 
   const handleRegisteredStateBlur = () => {
-    const value = formData.registeredState;
+    const value = formData[FIELDS.REGISTERED_STATE];
     if (value) {
       const isExactMatch = US_STATES.some(state =>
         state.label.toLowerCase() === value.toLowerCase()
@@ -122,7 +123,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
   };
 
   const handleMailingStateBlur = () => {
-    const value = formData.mailingState;
+    const value = formData[FIELDS.MAILING_STATE];
     if (value) {
       const isExactMatch = US_STATES.some(state =>
         state.label.toLowerCase() === value.toLowerCase()
@@ -140,11 +141,11 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
 
   useEffect(() => {
     // Only sync formData to inputValue on initial mount
-    if (isInitialMount.current && formData.mailingStreet) {
-      setInputValue(formData.mailingStreet);
+    if (isInitialMount.current && formData[FIELDS.MAILING_STREET]) {
+      setInputValue(formData[FIELDS.MAILING_STREET]);
       isInitialMount.current = false;
     }
-  }, [formData.mailingStreet]);
+  }, [formData[FIELDS.MAILING_STREET]]);
 
   useEffect(() => {
     const initAutocomplete = async () => {
@@ -296,12 +297,12 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What's your company's name?
-            {showValidation && !formData.companyName && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && !formData[FIELDS.COMPANY_NAME] && <span className="text-red-700 ml-0.5">*</span>}
             <Tooltip text="Make sure it's good, your company might go big one day." />
           </label>
           <input
             type="text"
-            value={formData.companyName || ''}
+            value={formData[FIELDS.COMPANY_NAME] || ''}
             onChange={(e) => handleChange('companyName', e.target.value)}
             disabled={isReadOnly}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
@@ -313,7 +314,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What is your company's current or intended legal structure?
-            {showValidation && !formData.entityType && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && !formData[FIELDS.ENTITY_TYPE] && <span className="text-red-700 ml-0.5">*</span>}
             <Tooltip text="This defines how your company is structured for ownership, taxes, and decision-making. If you plan to raise venture capital, a C-Corp is usually preferred." />
           </label>
           <div className="space-y-2">
@@ -323,10 +324,10 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                   type="radio"
                   name="entityType"
                   value={type}
-                  checked={formData.entityType === type}
+                  checked={formData[FIELDS.ENTITY_TYPE] === type}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('entityType', formData.entityType === type ? '' : type);
+                      handleChange('entityType', formData[FIELDS.ENTITY_TYPE] === type ? '' : type);
                     }
                   }}
                   onChange={() => {}}
@@ -338,10 +339,10 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
             ))}
           </div>
 
-          {formData.entityType === 'Other' && (
+          {formData[FIELDS.ENTITY_TYPE] === 'Other' && (
             <input
               type="text"
-              value={formData.entityTypeOther || ''}
+              value={formData[FIELDS.ENTITY_TYPE_OTHER] || ''}
               onChange={(e) => handleChange('entityTypeOther', e.target.value)}
               disabled={isReadOnly}
               className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
@@ -354,11 +355,11 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         <div style={{ overflow: 'visible', position: 'relative', zIndex: 100, marginBottom: '3rem' }}>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What state will your company be registered in?
-            {showValidation && !formData.registeredState && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && !formData[FIELDS.REGISTERED_STATE] && <span className="text-red-700 ml-0.5">*</span>}
             <Tooltip text="Delaware is a popular choice for many startups because its laws and courts are well established. Just be aware you may have additional fees or filings if your business is based elsewhere." />
           </label>
           <CustomSelect
-            value={formData.registeredState || ''}
+            value={formData[FIELDS.REGISTERED_STATE] || ''}
             onChange={(value) => handleChange('registeredState', value)}
             options={US_STATES.map(state => ({
               value: state.label,
@@ -373,7 +374,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         <div>
           <label className="block text-base font-medium text-gray-900 mb-3">
             What's your company mailing address?
-            {showValidation && (!formData.mailingStreet || !formData.mailingCity || !formData.mailingState || !formData.mailingZip) && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && (!formData[FIELDS.MAILING_STREET] || !formData[FIELDS.MAILING_CITY] || !formData[FIELDS.MAILING_STATE] || !formData[FIELDS.MAILING_ZIP]) && <span className="text-red-700 ml-0.5">*</span>}
           </label>
 
           <div className="space-y-3">
@@ -438,7 +439,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
               </label>
               <input
                 type="text"
-                value={formData.mailingStreet2 || ''}
+                value={formData[FIELDS.MAILING_STREET2] || ''}
                 onChange={(e) => handleChange('mailingStreet2', e.target.value)}
                 disabled={isReadOnly}
                 autoComplete="chrome-off"
@@ -455,7 +456,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                 </label>
                 <input
                   type="text"
-                  value={formData.mailingCity || ''}
+                  value={formData[FIELDS.MAILING_CITY] || ''}
                   onChange={(e) => handleChange('mailingCity', e.target.value)}
                   disabled={isReadOnly}
                   autoComplete="chrome-off"
@@ -473,7 +474,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                   State
                 </label>
                 <CustomSelect
-                  value={formData.mailingState || ''}
+                  value={formData[FIELDS.MAILING_STATE] || ''}
                   onChange={(value) => handleChange('mailingState', value)}
                   options={US_STATES.map(state => ({
                     value: state.label,
@@ -481,7 +482,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                   }))}
                   placeholder="Select state"
                   disabled={isReadOnly}
-                  displayValue={formData.mailingState ? US_STATES.find(s => s.label === formData.mailingState)?.value : ''}
+                  displayValue={formData[FIELDS.MAILING_STATE] ? US_STATES.find(s => s.label === formData[FIELDS.MAILING_STATE])?.value : ''}
                 />
               </div>
             </div>
@@ -493,7 +494,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                 </label>
                 <input
                   type="text"
-                  value={formData.mailingZip || ''}
+                  value={formData[FIELDS.MAILING_ZIP] || ''}
                   onChange={(e) => {
                     const value = e.target.value.replace(/[^\d-]/g, '');
                     handleChange('mailingZip', value);
@@ -517,12 +518,12 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             Can you describe your company in 1 line?
-            {showValidation && !formData.companyDescription && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && !formData[FIELDS.COMPANY_DESCRIPTION] && <span className="text-red-700 ml-0.5">*</span>}
             <Tooltip text="Describe what you do in plain language. No buzzwords needed." />
           </label>
           <input
             type="text"
-            value={formData.companyDescription || ''}
+            value={formData[FIELDS.COMPANY_DESCRIPTION] || ''}
             onChange={(e) => handleChange('companyDescription', e.target.value)}
             disabled={isReadOnly}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
@@ -534,7 +535,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What industry is it in?
-            {showValidation && (!formData.industries || formData.industries.length === 0) && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && (!formData[FIELDS.INDUSTRIES] || formData[FIELDS.INDUSTRIES].length === 0) && <span className="text-red-700 ml-0.5">*</span>}
             <Tooltip text="Pick the industry that best describes what you currently do. Aspirations to conquer all markets can wait." />
           </label>
           <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
@@ -543,9 +544,9 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
               <label key={industry} className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={(formData.industries || []).includes(industry)}
+                  checked={(formData[FIELDS.INDUSTRIES] || []).includes(industry)}
                   onChange={(e) => {
-                    const currentIndustries = formData.industries || [];
+                    const currentIndustries = formData[FIELDS.INDUSTRIES] || [];
                     const newIndustries = e.target.checked
                       ? [...currentIndustries, industry]
                       : currentIndustries.filter(i => i !== industry);
@@ -559,11 +560,11 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
             ))}
           </div>
 
-          {(formData.industries || []).includes('Other') && (
+          {(formData[FIELDS.INDUSTRIES] || []).includes('Other') && (
             <div className="conditional-section">
               <input
                 type="text"
-                value={formData.industryOther || ''}
+                value={formData[FIELDS.INDUSTRY_OTHER] || ''}
                 onChange={(e) => handleChange('industryOther', e.target.value)}
                 disabled={isReadOnly}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"

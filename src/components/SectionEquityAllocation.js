@@ -4,6 +4,7 @@ import Spreadsheet from 'react-spreadsheet';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
 import './Section3EquityAllocation.css';
+import { FIELDS } from '../config/surveySchema';
 
 const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly, showValidation, project, onViewModeChange }, ref) => {
   const { currentUser } = useUser();
@@ -17,10 +18,10 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
     // Find index of this collaborator
     const index = collaboratorIds.indexOf(userId);
     // Get cofounder at that index
-    const cofounder = formData.cofounders?.[index];
+    const cofounder = formData[FIELDS.COFOUNDERS]?.[index];
     // Return first name if it exists, otherwise return fallback
-    if (cofounder?.fullName && cofounder.fullName.trim() !== '') {
-      const firstName = cofounder.fullName.trim().split(' ')[0];
+    if (cofounder?[FIELDS.COFOUNDER_FULL_NAME] && cofounder[FIELDS.COFOUNDER_FULL_NAME].trim() !== '') {
+      const firstName = cofounder[FIELDS.COFOUNDER_FULL_NAME].trim().split(' ')[0];
       return firstName;
     }
     // Convert index to letter (0 -> A, 1 -> B, etc.)
@@ -69,7 +70,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
     let needsUpdate = false;
     const updates = {};
 
-    if (!formData.finalEquityPercentages) {
+    if (!formData[FIELDS.FINAL_EQUITY_PERCENTAGES]) {
       const initialPercentages = {};
       collaboratorIds.forEach(userId => {
         initialPercentages[userId] = '';
@@ -77,15 +78,15 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
       updates.finalEquityPercentages = initialPercentages;
       needsUpdate = true;
     }
-    if (!formData.acknowledgeEquityAllocation) {
+    if (!formData[FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION]) {
       updates.acknowledgeEquityAllocation = {};
       needsUpdate = true;
     }
-    if (!formData.equityCalculatorDraft) {
+    if (!formData[FIELDS.EQUITY_CALCULATOR_DRAFT]) {
       updates.equityCalculatorDraft = {};
       needsUpdate = true;
     }
-    if (!formData.equityCalculatorSubmitted) {
+    if (!formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED]) {
       updates.equityCalculatorSubmitted = {};
       needsUpdate = true;
     }
@@ -101,7 +102,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
 
   const handleEquityChange = (userId, value) => {
     const newPercentages = {
-      ...(formData.finalEquityPercentages || {}),
+      ...(formData[FIELDS.FINAL_EQUITY_PERCENTAGES] || {}),
       [userId]: value
     };
     handleChange('finalEquityPercentages', newPercentages);
@@ -112,7 +113,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
 
   const handleAcknowledgmentChange = (userId, checked) => {
     const newAcknowledgments = {
-      ...(formData.acknowledgeEquityAllocation || {}),
+      ...(formData[FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION] || {}),
       [userId]: checked
     };
     handleChange('acknowledgeEquityAllocation', newAcknowledgments);
@@ -126,7 +127,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
     }
 
     const newDrafts = {
-      ...(formData.equityCalculatorDraft || {}),
+      ...(formData[FIELDS.EQUITY_CALCULATOR_DRAFT] || {}),
       [currentUserId]: draftData
     };
     handleChange('equityCalculatorDraft', newDrafts);
@@ -171,7 +172,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
 
   // Handle submit - copy draft to submitted
   const handleSubmit = () => {
-    const userDraft = formData.equityCalculatorDraft?.[currentUserId];
+    const userDraft = formData[FIELDS.EQUITY_CALCULATOR_DRAFT]?.[currentUserId];
 
     // If no data, wiggle the spreadsheet instead of showing error
     if (!userDraft) {
@@ -191,7 +192,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
     setSubmissionError('');
 
     const newSubmitted = {
-      ...(formData.equityCalculatorSubmitted || {}),
+      ...(formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED] || {}),
       [currentUserId]: {
         data: userDraft,
         submittedAt: new Date().toISOString()
@@ -223,7 +224,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
     if (hasSubmitted && viewMode === 'edit') {
       changeView('results');
     }
-  }, [formData.equityCalculatorSubmitted]);
+  }, [formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED]]);
 
   // Notify parent when viewMode changes
   React.useEffect(() => {
@@ -233,10 +234,10 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
   }, [viewMode, onViewModeChange]);
 
   // Check if current user has submitted
-  const hasSubmitted = !!formData.equityCalculatorSubmitted?.[currentUserId];
+  const hasSubmitted = !!formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED]?.[currentUserId];
 
   const totalEquity = collaboratorIds.reduce((sum, userId) => {
-    return sum + (parseFloat(formData.finalEquityPercentages?.[userId]) || 0);
+    return sum + (parseFloat(formData[FIELDS.FINAL_EQUITY_PERCENTAGES]?.[userId]) || 0);
   }, 0);
 
   // Function to calculate equity percentages from a submitted spreadsheet
@@ -330,13 +331,13 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
 
   // Check if all cofounders have submitted
   const allSubmitted = collaboratorIds.every(userId =>
-    !!formData.equityCalculatorSubmitted?.[userId]
+    !!formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED]?.[userId]
   );
 
   // Calculate equity for each person's submission
   const equityCalculations = {};
   collaboratorIds.forEach(userId => {
-    const submission = formData.equityCalculatorSubmitted?.[userId];
+    const submission = formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED]?.[userId];
     if (submission?.data) {
       equityCalculations[userId] = calculateEquityFromSpreadsheet(submission.data);
     }
@@ -439,14 +440,14 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
               }`} style={{ minHeight: '700px' }}>
                 <EquityCalculator
                   cofounders={collaboratorIds}
-                  cofounderData={formData.cofounders}
-                  userDraftData={formData.equityCalculatorDraft?.[currentUserId]}
+                  cofounderData={formData[FIELDS.COFOUNDERS]}
+                  userDraftData={formData[FIELDS.EQUITY_CALCULATOR_DRAFT]?.[currentUserId]}
                   onDraftChange={handleDraftChange}
                   onSubmit={handleSubmit}
                   isReadOnly={isReadOnly}
                   hasSubmitted={hasSubmitted}
                   submissionError={submissionError}
-                  lastSubmittedAt={hasSubmitted ? formData.equityCalculatorSubmitted[currentUserId].submittedAt : null}
+                  lastSubmittedAt={hasSubmitted ? formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED][currentUserId].submittedAt : null}
                   wiggle={wiggleSpreadsheet}
                 />
               </div>
@@ -471,7 +472,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                   </div>
                   <div className="space-y-4">
                   {collaboratorIds.map(assessorUserId => {
-                    const hasSubmittedAssessment = !!formData.equityCalculatorSubmitted?.[assessorUserId];
+                    const hasSubmittedAssessment = !!formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED]?.[assessorUserId];
                     const calculation = equityCalculations[assessorUserId];
 
                     // Generate greyscale colors evenly spaced from black to white
@@ -586,7 +587,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                   {showIndividualSpreadsheets && (
                     <div className="mt-6 space-y-6 mb-6">
                       {collaboratorIds.map(assessorUserId => {
-                        const submission = formData.equityCalculatorSubmitted?.[assessorUserId];
+                        const submission = formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED]?.[assessorUserId];
 
                         if (!submission?.data) {
                           return (
@@ -826,11 +827,11 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                 <label className="block text-base font-medium text-gray-900 mb-2">
                   {getCofounderName(userId)}
                   {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
-                  {showValidation && !formData.finalEquityPercentages?.[userId] && <span className="text-red-700 ml-0.5">*</span>}
+                  {showValidation && !formData[FIELDS.FINAL_EQUITY_PERCENTAGES]?.[userId] && <span className="text-red-700 ml-0.5">*</span>}
                 </label>
                 <input
                   type="text"
-                  value={formData.finalEquityPercentages?.[userId] ? `${formData.finalEquityPercentages[userId]}%` : ''}
+                  value={formData[FIELDS.FINAL_EQUITY_PERCENTAGES]?.[userId] ? `${formData[FIELDS.FINAL_EQUITY_PERCENTAGES][userId]}%` : ''}
                   onChange={(e) => {
                     const input = e.target;
                     const cursorPos = input.selectionStart;
@@ -908,19 +909,19 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
           <div className="mt-6">
             <p className="text-gray-700 mb-2">
               I acknowledge and accept this equity allocation.
-              {showValidation && !collaboratorIds.every(userId => formData.acknowledgeEquityAllocation?.[userId]) && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+              {showValidation && !collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION]?.[userId]) && <span className="text-red-700 ml-0.5 validation-error">*</span>}
             </p>
             <p className="text-gray-600 text-sm mb-4 italic">
               This equity calculator is for informational and planning purposes only. Using it does not grant, issue, vest, or transfer any equity, securities, or ownership interest of any kind. No equity exists unless and until it is formally approved and issued through proper corporate action (e.g., board approval) and documented via legally binding agreements (such as a stock purchase agreement, option grant, or equity incentive plan). You must complete the required legal and administrative steps for any equity to be valid.
             </p>
             <div className="space-y-2 pl-4">
               {collaboratorIds.map((userId) => {
-                const isApproved = formData.acknowledgeEquityAllocation?.[userId] || false;
+                const isApproved = formData[FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION]?.[userId] || false;
                 const isCurrentUser = userId === currentUserId;
 
                 // Check if all equity percentages are filled and total equals 100%
                 const allPercentagesFilled = collaboratorIds.every(userId =>
-                  formData.finalEquityPercentages?.[userId] && formData.finalEquityPercentages[userId] !== ''
+                  formData[FIELDS.FINAL_EQUITY_PERCENTAGES]?.[userId] && formData[FIELDS.FINAL_EQUITY_PERCENTAGES][userId] !== ''
                 );
                 const equityValid = Math.abs(totalEquity - 100) <= 0.01;
                 const canAcknowledge = allPercentagesFilled && equityValid;

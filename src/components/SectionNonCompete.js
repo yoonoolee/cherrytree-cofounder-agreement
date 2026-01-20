@@ -3,6 +3,7 @@ import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
 import { NON_COMPETE_DURATIONS, NON_SOLICIT_DURATIONS } from '../config/surveySchema';
 import Tooltip from './Tooltip';
+import { FIELDS } from '../config/surveySchema';
 
 function SectionNonCompete({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
@@ -21,7 +22,7 @@ function SectionNonCompete({ formData, handleChange, isReadOnly, project, showVa
         <div className="">
           <p className="text-gray-700 mb-4">
             {(() => {
-              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeConfidentiality?.[userId]);
+              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_CONFIDENTIALITY]?.[userId]);
               return (
                 <>
                   Each Cofounder agrees to hold all Confidential Information in strict confidence and not to disclose any Confidential Information to any third party without the Company's prior written consent.
@@ -32,7 +33,7 @@ function SectionNonCompete({ formData, handleChange, isReadOnly, project, showVa
           </p>
           <div className="space-y-2 mt-3 pl-4">
             {(() => {
-              const approvals = formData.acknowledgeConfidentiality || {};
+              const approvals = formData[FIELDS.ACKNOWLEDGE_CONFIDENTIALITY] || {};
               const currentUserId = currentUser?.id;
 
               return collaboratorIds.map((userId) => {
@@ -67,7 +68,7 @@ function SectionNonCompete({ formData, handleChange, isReadOnly, project, showVa
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             How long should the non-competition obligation last after a cofounder leaves?
-            {showValidation && !formData.nonCompeteDuration && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.NON_COMPETE_DURATION] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
             <Tooltip text="This includes joining or starting a competing company. Note: Non-compete agreements may not be enforceable in certain states (e.g., California)." />
           </label>
           <div className="space-y-2">
@@ -77,10 +78,10 @@ function SectionNonCompete({ formData, handleChange, isReadOnly, project, showVa
                   type="radio"
                   name="nonCompeteDuration"
                   value={option}
-                  checked={formData.nonCompeteDuration === option}
+                  checked={formData[FIELDS.NON_COMPETE_DURATION] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('nonCompeteDuration', formData.nonCompeteDuration === option ? '' : option);
+                      handleChange('nonCompeteDuration', formData[FIELDS.NON_COMPETE_DURATION] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -92,10 +93,10 @@ function SectionNonCompete({ formData, handleChange, isReadOnly, project, showVa
             ))}
           </div>
 
-          {formData.nonCompeteDuration === 'Other' && (
+          {formData[FIELDS.NON_COMPETE_DURATION] === 'Other' && (
             <input
               type="text"
-              value={formData.nonCompeteDurationOther || ''}
+              value={formData[FIELDS.NON_COMPETE_DURATION_OTHER] || ''}
               onChange={(e) => handleChange('nonCompeteDurationOther', e.target.value)}
               disabled={isReadOnly}
               className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
@@ -108,7 +109,7 @@ function SectionNonCompete({ formData, handleChange, isReadOnly, project, showVa
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             How long should the non-solicitation obligation last after a cofounder leaves?
-            {showValidation && !formData.nonSolicitDuration && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.NON_SOLICIT_DURATION] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
             <Tooltip text="Non-solicitation prevents a cofounder who leaves from recruiting the Company's team or clients for a certain period." />
           </label>
           <div className="space-y-2">
@@ -118,10 +119,10 @@ function SectionNonCompete({ formData, handleChange, isReadOnly, project, showVa
                   type="radio"
                   name="nonSolicitDuration"
                   value={option}
-                  checked={formData.nonSolicitDuration === option}
+                  checked={formData[FIELDS.NON_SOLICIT_DURATION] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('nonSolicitDuration', formData.nonSolicitDuration === option ? '' : option);
+                      handleChange('nonSolicitDuration', formData[FIELDS.NON_SOLICIT_DURATION] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -133,10 +134,10 @@ function SectionNonCompete({ formData, handleChange, isReadOnly, project, showVa
             ))}
           </div>
 
-          {formData.nonSolicitDuration === 'Other' && (
+          {formData[FIELDS.NON_SOLICIT_DURATION] === 'Other' && (
             <input
               type="text"
-              value={formData.nonSolicitDurationOther || ''}
+              value={formData[FIELDS.NON_SOLICIT_DURATION_OTHER] || ''}
               onChange={(e) => handleChange('nonSolicitDurationOther', e.target.value)}
               disabled={isReadOnly}
               className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"

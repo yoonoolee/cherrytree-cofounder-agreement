@@ -1,8 +1,9 @@
 import React from 'react';
 import CustomSelect from './CustomSelect';
+import { FIELDS } from '../config/surveySchema';
 
 function SectionCompensation({ formData, handleChange, isReadOnly, showValidation, project }) {
-  const compensations = formData.compensations || [];
+  const compensations = formData[FIELDS.COMPENSATIONS] || [];
   // Count all collaborators
   const collaboratorCount = Object.keys(project?.collaborators || {}).length;
   const canAddMore = compensations.length < collaboratorCount;
@@ -40,7 +41,7 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             Are any cofounders currently taking compensation or salary from the company?
-            {showValidation && !formData.takingCompensation && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.TAKING_COMPENSATION] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
           </label>
           <div className="space-y-2">
             {['Yes', 'No'].map((option) => (
@@ -49,10 +50,10 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
                   type="radio"
                   name="takingCompensation"
                   value={option}
-                  checked={formData.takingCompensation === option}
+                  checked={formData[FIELDS.TAKING_COMPENSATION] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('takingCompensation', formData.takingCompensation === option ? '' : option);
+                      handleChange('takingCompensation', formData[FIELDS.TAKING_COMPENSATION] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -66,7 +67,7 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
         </div>
 
         {/* Compensation Details */}
-        {formData.takingCompensation === 'Yes' && (
+        {formData[FIELDS.TAKING_COMPENSATION] === 'Yes' && (
           <div className="border-l-4 border-gray-300 pl-6 py-4">
             <div className="flex justify-between items-center mb-4">
               <div>
@@ -116,8 +117,8 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
                         <CustomSelect
                           value={comp.who || ''}
                           onChange={(value) => handleCompensationChange(index, 'who', value)}
-                          options={(formData.cofounders || [])
-                            .filter(cf => cf.fullName)
+                          options={(formData[FIELDS.COFOUNDERS] || [])
+                            .filter(cf => cf[FIELDS.COFOUNDER_FULL_NAME])
                             .filter(cofounder => {
                               // Show this cofounder if they're not selected in any OTHER compensation entry
                               const isSelectedElsewhere = compensations.some((c, i) =>
@@ -126,7 +127,7 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
                               return !isSelectedElsewhere;
                             })
                             .map((cofounder) => ({
-                              value: cofounder.fullName,
+                              value: cofounder[FIELDS.COFOUNDER_FULL_NAME],
                               label: cofounder.fullName
                             }))}
                           placeholder="Select a cofounder"
@@ -216,12 +217,12 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What's the spending limit, in USD, before a cofounder needs to check with other cofounders?
-            {showValidation && !formData.spendingLimit && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.SPENDING_LIMIT] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
           </label>
           <input
             type="text"
-            value={formData.spendingLimit ? `$${(() => {
-              const val = formData.spendingLimit;
+            value={formData[FIELDS.SPENDING_LIMIT] ? `$${(() => {
+              const val = formData[FIELDS.SPENDING_LIMIT];
               const parts = val.split('.');
               const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
               return parts.length === 2 ? `${integerPart}.${parts[1]}` : integerPart;

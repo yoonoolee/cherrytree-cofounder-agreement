@@ -7,6 +7,7 @@ import { SECTIONS } from '../config/surveySchema';
 import { useUser } from '../contexts/UserContext';
 import { useClerk, useAuth } from '@clerk/clerk-react';
 import { formatDeadline, isAfterEditDeadline } from '../utils/dateUtils';
+import { FIELDS } from '../config/surveySchema';
 
 function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreateProject }) {
   const { currentUser } = useUser();
