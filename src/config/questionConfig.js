@@ -265,11 +265,13 @@ export const QUESTION_CONFIG = {
 
   [FIELDS.MAJOR_DECISIONS]: {
     section: SECTION_IDS.DECISION_MAKING,
-    question: "What types of decisions should require unanimous or majority approval?",
+    question: "What type of decisions require a discussion between all cofounders?",
     type: INPUT_TYPES.CHECKBOX,
     required: true,
+    helperText: "Select all that apply",
     options: MAJOR_DECISIONS,
     otherField: FIELDS.MAJOR_DECISIONS_OTHER,
+    tooltip: "Which choices should never happen unless everyone's on board. Not office snacks.",
   },
 
   [FIELDS.EQUITY_VOTING_POWER]: {
@@ -277,7 +279,10 @@ export const QUESTION_CONFIG = {
     question: "Should equity ownership reflect voting power?",
     type: INPUT_TYPES.RADIO,
     required: true,
-    options: ['Yes', 'No'],
+    options: [
+      { value: 'yes', label: 'Yes', description: 'Voting weight tied to equity %' },
+      { value: 'no', label: 'No', description: 'All founders have equal vote' }
+    ],
   },
 
   [FIELDS.TIE_RESOLUTION]: {
@@ -291,10 +296,11 @@ export const QUESTION_CONFIG = {
 
   [FIELDS.ACKNOWLEDGE_TIE_RESOLUTION]: {
     section: SECTION_IDS.DECISION_MAKING,
-    question: "Acknowledge tie resolution process",
     type: INPUT_TYPES.ACKNOWLEDGMENT,
     required: true,
     requiresAllCollaborators: true,
+    conditionalOn: { field: FIELDS.TIE_RESOLUTION },
+    acknowledgmentText: (formData) => `In the event of a deadlock, the Cofounders agree to first seek resolution through informal negotiation for a period of 30 days. If unresolved, the deadlock shall be resolved by ${formData[FIELDS.TIE_RESOLUTION]}.`,
   },
 
   [FIELDS.INCLUDE_SHOTGUN_CLAUSE]: {
@@ -303,15 +309,16 @@ export const QUESTION_CONFIG = {
     type: INPUT_TYPES.RADIO,
     required: true,
     options: ['Yes', 'No'],
+    tooltip: "You can essentially offer to buy each other out. You're incentivized to make a reasonable offer because you might be bought out.",
   },
 
   [FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE]: {
     section: SECTION_IDS.DECISION_MAKING,
-    question: "Acknowledge shotgun clause",
     type: INPUT_TYPES.ACKNOWLEDGMENT,
     required: true,
     requiresAllCollaborators: true,
     conditionalOn: { field: FIELDS.INCLUDE_SHOTGUN_CLAUSE, value: 'Yes' },
+    acknowledgmentText: "I acknowledge that no partial buy/sell is allowed and payment is due in cash within 60 days of acceptance.",
   },
 
   // ============================================================================
