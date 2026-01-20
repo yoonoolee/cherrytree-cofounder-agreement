@@ -3,7 +3,7 @@ import { db, functions } from '../firebase';
 import { doc, onSnapshot, getDoc, updateDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import ApprovalSection from './ApprovalSection';
-import { SECTIONS } from './surveyConstants';
+import { SECTIONS } from '../config/surveySchema';
 import { useUser } from '../contexts/UserContext';
 import { useClerk, useAuth } from '@clerk/clerk-react';
 import { formatDeadline, isAfterEditDeadline } from '../utils/dateUtils';
@@ -321,9 +321,9 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
               >
                 {project?.name || 'Loading...'}
               </h2>
-              {project?.plan && (
-                <p className={`text-xs font-medium mb-3 ${project.plan === 'pro' ? 'text-purple-600' : 'text-gray-500'}`}>
-                  {project.plan === 'pro' ? 'Pro' : 'Starter'}
+              {project?.currentPlan && (
+                <p className={`text-xs font-medium mb-3 ${project.currentPlan === 'pro' ? 'text-purple-600' : 'text-gray-500'}`}>
+                  {project.currentPlan === 'pro' ? 'Pro' : 'Starter'}
                 </p>
               )}
             </div>
@@ -447,7 +447,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
             </>
           )}
 
-          {project?.plan !== 'pro' && (
+          {project?.currentPlan !== 'pro' && (
             <button
               onClick={() => {
                 // TODO: Add upgrade functionality

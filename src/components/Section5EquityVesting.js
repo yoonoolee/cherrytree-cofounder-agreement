@@ -1,6 +1,7 @@
 import React from 'react';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
+import { VESTING_SCHEDULES, VESTED_SHARES_DISPOSAL_OPTIONS } from '../config/surveySchema';
 import Tooltip from './Tooltip';
 
 function Section5EquityVesting({ formData, handleChange, isReadOnly, project, showValidation }) {
@@ -47,12 +48,7 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
           </label>
           <p className="text-sm text-gray-500 mb-2">The standard is 4 years with a 1-year cliff</p>
           <div className="space-y-2">
-            {[
-              '4 years with 1-year cliff',
-              '3 years with 1-year cliff',
-              'Immediate',
-              'Other'
-            ].map((option) => (
+            {VESTING_SCHEDULES.map((option) => (
               <label key={option} className="flex items-center">
                 <input
                   type="radio"
@@ -333,11 +329,7 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
             {showValidation && !formData.vestedSharesDisposal && <span className="text-red-700 ml-0.5 validation-error">*</span>}
           </label>
           <div className="space-y-2">
-            {[
-              'The company has the option to repurchase vested shares at Fair Market Value',
-              'The company must repurchase vested shares at Fair Market Value',
-              'Vested shares transfer to the cofounder\'s estate or heirs, without voting or board rights'
-            ].map((option) => (
+            {VESTED_SHARES_DISPOSAL_OPTIONS.map((option) => (
               <label key={option} className="flex items-start">
                 <input
                   type="radio"

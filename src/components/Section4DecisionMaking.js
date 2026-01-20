@@ -1,5 +1,5 @@
 import React from 'react';
-import { MAJOR_DECISIONS } from './surveyConstants';
+import { MAJOR_DECISIONS, TIE_RESOLUTION_OPTIONS } from '../config/surveySchema';
 import CustomSelect from './CustomSelect';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
@@ -117,11 +117,7 @@ function Section4DecisionMaking({ formData, handleChange, isReadOnly, project, s
             {showValidation && !formData.tieResolution && <span className="text-red-700 ml-0.5">*</span>}
           </label>
           <div className="space-y-2">
-            {[
-              'Consult agreed external advisor / board member',
-              'Mediation with a neutral third party',
-              'Final decision authority by domain'
-            ].map((option) => (
+            {TIE_RESOLUTION_OPTIONS.map((option) => (
               <label key={option} className="flex items-center">
                 <input
                   type="radio"

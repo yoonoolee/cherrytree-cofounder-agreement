@@ -123,8 +123,6 @@ exports.createOrganizationInvitation = onCall({
       redirectUrl: redirectUrl,
     });
 
-    console.log(`Organization invitation created for ${emailAddress} to org ${organizationId} with redirect to ${redirectUrl}`);
-
     return {
       success: true,
       invitationId: invitation.id,
@@ -205,8 +203,6 @@ exports.removeOrganizationMember = onCall({
       organizationId,
       userId
     });
-
-    console.log(`Removed user ${userId} from organization ${organizationId} by admin ${requestingUserId}`);
 
     return { success: true };
   } catch (error) {

@@ -8,7 +8,7 @@ const SAVE_COMPLETION_DELAY_MS = 500; // Delay before marking save as complete
 
 /**
  * Custom hook for auto-saving form data to Firestore
- * Handles debouncing, "Other" field merging, and save status tracking
+ * Handles debouncing and save status tracking
  *
  * @param {string} projectId - The project ID
  * @param {object} project - The project object
@@ -23,7 +23,7 @@ export function useAutoSave(projectId, project, currentUser) {
 
   /**
    * Save form data to Firestore
-   * Merges "Other" fields and handles change detection
+   * Keeps "Other" fields separate - merging happens only in cloud functions for PDF generation
    */
   const saveFormData = useCallback(async (dataToSave) => {
     if (!project) return;
@@ -34,65 +34,14 @@ export function useAutoSave(projectId, project, currentUser) {
     try {
       const projectRef = doc(db, 'projects', projectId);
 
-      // Clean and merge "Other" fields before saving
-      const cleanedData = { ...dataToSave };
-
-      // Merge "Other" array fields
-      if (cleanedData.industries?.includes('Other') && cleanedData.industryOther) {
-        cleanedData.industries = cleanedData.industries.map(item =>
-          item === 'Other' ? cleanedData.industryOther : item
-        );
-      }
-      if (cleanedData.majorDecisions?.includes('Other') && cleanedData.majorDecisionsOther) {
-        cleanedData.majorDecisions = cleanedData.majorDecisions.map(item =>
-          item === 'Other' ? cleanedData.majorDecisionsOther : item
-        );
-      }
-      if (cleanedData.terminationWithCause?.includes('Other') && cleanedData.terminationWithCauseOther) {
-        cleanedData.terminationWithCause = cleanedData.terminationWithCause.map(item =>
-          item === 'Other' ? cleanedData.terminationWithCauseOther : item
-        );
-      }
-
-      // Merge "Other" string fields
-      if (cleanedData.entityType === 'Other' && cleanedData.entityTypeOther) {
-        cleanedData.entityType = cleanedData.entityTypeOther;
-      }
-      if (cleanedData.tieResolution === 'Other' && cleanedData.tieResolutionOther) {
-        cleanedData.tieResolution = cleanedData.tieResolutionOther;
-      }
-      if (cleanedData.vestingSchedule === 'Other' && cleanedData.vestingScheduleOther) {
-        cleanedData.vestingSchedule = cleanedData.vestingScheduleOther;
-      }
-      if (cleanedData.nonCompeteDuration === 'Other' && cleanedData.nonCompeteDurationOther) {
-        cleanedData.nonCompeteDuration = cleanedData.nonCompeteDurationOther;
-      }
-      if (cleanedData.nonSolicitDuration === 'Other' && cleanedData.nonSolicitDurationOther) {
-        cleanedData.nonSolicitDuration = cleanedData.nonSolicitDurationOther;
-      }
-      if (cleanedData.disputeResolution === 'Other' && cleanedData.disputeResolutionOther) {
-        cleanedData.disputeResolution = cleanedData.disputeResolutionOther;
-      }
-      if (cleanedData.amendmentProcess === 'Other' && cleanedData.amendmentProcessOther) {
-        cleanedData.amendmentProcess = cleanedData.amendmentProcessOther;
-      }
-
-      // Remove all "*Other" fields after merging
-      const otherFields = [
-        'entityTypeOther', 'industryOther', 'majorDecisionsOther', 'tieResolutionOther', 'vestingScheduleOther',
-        'nonCompeteDurationOther', 'nonSolicitDurationOther', 'terminationWithCauseOther',
-        'disputeResolutionOther', 'amendmentProcessOther'
-      ];
-      otherFields.forEach(field => delete cleanedData[field]);
-
       // Check if there are actual changes
       const oldData = project.surveyData || {};
-      const changedFields = Object.keys(cleanedData).filter(key => {
-        return JSON.stringify(oldData[key]) !== JSON.stringify(cleanedData[key]);
+      const changedFields = Object.keys(dataToSave).filter(key => {
+        return JSON.stringify(oldData[key]) !== JSON.stringify(dataToSave[key]);
       });
 
       const updateData = {
-        surveyData: cleanedData,
+        surveyData: dataToSave,
         lastUpdated: serverTimestamp(),
         lastEditedBy: currentUser?.primaryEmailAddress?.emailAddress
       };

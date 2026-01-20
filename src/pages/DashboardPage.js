@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
-import { useOrganizationList, UserButton } from '@clerk/clerk-react';
+import { UserButton } from '@clerk/clerk-react';
 import PaymentModal from '../components/PaymentModal';
 import { useProjects } from '../hooks/useProjects';
 
@@ -187,12 +187,7 @@ const calculateProjectProgress = (project) => {
 
 function DashboardPage() {
   const navigate = useNavigate();
-  const { currentUser, loading: authLoading } = useUser();
-  const { userMemberships, isLoaded: orgsLoaded } = useOrganizationList({
-    userMemberships: {
-      infinite: true
-    }
-  });
+  const { currentUser, loading: authLoading, userMemberships, orgsLoaded } = useUser();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [displayedTagline, setDisplayedTagline] = useState('\u00A0'); // Non-breaking space to reserve height
 
@@ -200,8 +195,8 @@ function DashboardPage() {
   const FULL_TAGLINE = 'Great companies start with great company.';
   const TYPING_SPEED_MS = 38; // Speed of typing animation
 
-  // Fetch projects using custom hook
-  const { projects, loading } = useProjects(currentUser, userMemberships, orgsLoaded);
+  // Fetch projects using custom hook (waits for Firebase auth via authLoading)
+  const { projects, loading } = useProjects(currentUser, userMemberships, orgsLoaded, authLoading);
 
   useEffect(() => {
     // Only start animation after page is fully loaded

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ROLES } from './surveyConstants';
+import { ROLES } from '../config/surveySchema';
 
 function Section2Cofounders({ formData, handleChange, isReadOnly, showValidation, project }) {
   // Get cofounder count from collaborators map

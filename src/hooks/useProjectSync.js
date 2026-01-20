@@ -1,94 +1,12 @@
 import { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
+import { INITIAL_FORM_DATA } from '../config/surveySchema';
 
 /**
- * Initial blank form data structure
- * Defines all form fields across all survey sections
+ * Get initial form data from survey schema
  */
-const getInitialFormData = () => ({
-  // Section 1: Formation & Purpose
-  companyName: '',
-  entityType: '',
-  entityTypeOther: '',
-  registeredState: '',
-  mailingStreet: '',
-  mailingStreet2: '',
-  mailingCity: '',
-  mailingState: '',
-  mailingZip: '',
-  fullMailingAddress: '',
-  companyDescription: '',
-  industries: [],
-  industryOther: '',
-
-  // Section 2: Cofounder Info
-  cofounderCount: '',
-  cofounders: [],
-
-  // Section 3: Equity Allocation
-  finalEquityPercentages: {},
-  acknowledgeEquityAllocation: {},
-  equityCalculatorDraft: {},
-  equityCalculatorSubmitted: {},
-
-  // Section 4: Decision-Making & Voting
-  majorDecisions: [],
-  majorDecisionsOther: '',
-  equityVotingPower: '',
-  tieResolution: '',
-  tieResolutionOther: '',
-  acknowledgeTieResolution: {},
-  includeShotgunClause: '',
-  acknowledgeShotgunClause: {},
-
-  // Section 5: Equity & Vesting
-  vestingStartDate: '',
-  vestingSchedule: '',
-  vestingScheduleOther: '',
-  cliffPercentage: '',
-  accelerationTrigger: '',
-  sharesSellNoticeDays: '',
-  sharesBuybackDays: '',
-  acknowledgeForfeiture: {},
-  vestedSharesDisposal: '',
-
-  // Section 6: IP & Ownership
-  hasPreExistingIP: '',
-  acknowledgeIPAssignment: {},
-  acknowledgeIPOwnership: {},
-
-  // Section 7: Compensation & Expenses
-  takingCompensation: '',
-  compensations: [],
-  spendingLimit: '',
-
-  // Section 8: Performance
-  performanceConsequences: [],
-  remedyPeriodDays: '',
-  terminationWithCause: [],
-  terminationWithCauseOther: '',
-  voluntaryNoticeDays: '',
-
-  // Section 9: Non-Competition
-  acknowledgeConfidentiality: {},
-  nonCompeteDuration: '',
-  nonCompeteDurationOther: '',
-  nonSolicitDuration: '',
-  nonSolicitDurationOther: '',
-
-  // Section 10: Final Details
-  disputeResolution: '',
-  disputeResolutionOther: '',
-  governingLaw: '',
-  amendmentProcess: '',
-  amendmentProcessOther: '',
-  reviewFrequencyMonths: '',
-  acknowledgePeriodicReview: {},
-  acknowledgeAmendmentReviewRequest: {},
-  acknowledgeEntireAgreement: {},
-  acknowledgeSeverability: {}
-});
+const getInitialFormData = () => ({ ...INITIAL_FORM_DATA });
 
 /**
  * Custom hook for syncing project data from Firestore

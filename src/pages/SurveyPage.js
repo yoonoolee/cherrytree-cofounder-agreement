@@ -1,27 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useOrganizationList } from '@clerk/clerk-react';
 import Survey from '../components/Survey';
 import PaymentModal from '../components/PaymentModal';
 import { db } from '../firebase';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
+import { useProjects } from '../hooks/useProjects';
 
 function SurveyPage() {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const { currentUser } = useUser();
-  const { setActive, organizationList, isLoaded } = useOrganizationList();
+  const { currentUser, loading: authLoading, userMemberships, organizationList, setActive, orgsLoaded } = useUser();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [allProjects, setAllProjects] = useState([]);
+
+  // Use shared useProjects hook instead of duplicate fetching logic
+  const { projects: allProjects } = useProjects(currentUser, userMemberships, orgsLoaded, authLoading);
 
   // Set active organization based on projectId (projectId === clerkOrgId)
   useEffect(() => {
     const setActiveOrg = async () => {
-      if (!projectId || !isLoaded || !setActive) return;
+      if (!projectId || !orgsLoaded || !setActive) return;
 
       try {
-        // projectId is the Clerk org ID, so we can set it directly
         const org = organizationList?.find(o => o.organization.id === projectId);
         if (org) {
           await setActive({ organization: projectId });
@@ -32,7 +32,7 @@ function SurveyPage() {
     };
 
     setActiveOrg();
-  }, [projectId, isLoaded, organizationList, setActive]);
+  }, [projectId, orgsLoaded, organizationList, setActive]);
 
   // Update lastOpened timestamp when project is accessed
   useEffect(() => {
@@ -51,41 +51,6 @@ function SurveyPage() {
 
     updateLastOpened();
   }, [projectId]);
-
-  // Fetch all projects for the current user via their org memberships
-  // orgId === projectId (Clerk org ID is the Firestore document ID)
-  useEffect(() => {
-    const fetchProjects = async () => {
-      if (!currentUser || !isLoaded) return;
-
-      try {
-        const orgIds = organizationList?.map(org => org.organization.id) || [];
-
-        // Fetch projects directly by ID (orgId === projectId)
-        const projectPromises = orgIds.map(orgId =>
-          getDoc(doc(db, 'projects', orgId))
-        );
-        const projectDocs = await Promise.all(projectPromises);
-
-        const fetchedProjects = projectDocs
-          .filter(projectDoc => projectDoc.exists())
-          .map(projectDoc => ({ id: projectDoc.id, ...projectDoc.data() }));
-
-        // Sort by lastOpened (most recent first)
-        fetchedProjects.sort((a, b) => {
-          const aTime = a.lastOpened?.toMillis?.() || 0;
-          const bTime = b.lastOpened?.toMillis?.() || 0;
-          return bTime - aTime;
-        });
-
-        setAllProjects(fetchedProjects);
-      } catch (error) {
-        console.error('Error fetching projects:', error);
-      }
-    };
-
-    fetchProjects();
-  }, [projectId, currentUser, isLoaded, organizationList]);
 
   const handlePreview = () => {
     navigate(`/preview/${projectId}`);

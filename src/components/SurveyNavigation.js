@@ -5,7 +5,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import PaymentModal from './PaymentModal';
 import UpgradeModal from './UpgradeModal';
 import { useUser } from '../contexts/UserContext';
-import { useClerk, useOrganizationList } from '@clerk/clerk-react';
+import { useClerk } from '@clerk/clerk-react';
 
 
 function SurveyNavigation({
@@ -23,9 +23,8 @@ function SurveyNavigation({
   setIsMobileNavOpen = () => {} // Mobile nav setState from parent
 }) {
   const navigate = useNavigate();
-  const { currentUser } = useUser();
+  const { currentUser, organizationList, orgsLoaded } = useUser();
   const { signOut } = useClerk();
-  const { organizationList, isLoaded: orgsLoaded } = useOrganizationList();
   const [fetchedProjects, setFetchedProjects] = useState([]);
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);

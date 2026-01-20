@@ -2,12 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLoadScript } from '@react-google-maps/api';
 import { db } from '../firebase';
-import { doc, updateDoc, onSnapshot, serverTimestamp, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
-import { httpsCallable } from 'firebase/functions';
-import { functions } from '../firebase';
-import { useAuth, useOrganizationList } from '@clerk/clerk-react';
-import { SECTIONS, INDUSTRIES, MAJOR_DECISIONS, TERMINATION_CONSEQUENCES, US_STATES } from './surveyConstants';
+import { useAuth } from '@clerk/clerk-react';
+import { SECTIONS, INDUSTRIES, MAJOR_DECISIONS, TERMINATION_CONSEQUENCES, US_STATES } from '../config/surveySchema';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useProjectSync } from '../hooks/useProjectSync';
 import { useValidation } from '../hooks/useValidation';
@@ -29,13 +27,8 @@ const libraries = ['places'];
 
 function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCreateProject }) {
   const navigate = useNavigate();
-  const { currentUser } = useUser();
+  const { currentUser, setActive, userMemberships, orgsLoaded } = useUser();
   const { getToken, orgId } = useAuth();
-  const { setActive, userMemberships, isLoaded: orgsLoaded } = useOrganizationList({
-    userMemberships: {
-      infinite: true // Enable fetching user memberships
-    }
-  });
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -1031,8 +1024,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         allProjects={allProjects}
         onProjectSwitch={onProjectSwitch}
         onCreateProject={onCreateProject}
-        hideUpgrade={project?.plan === 'pro'}
-        planType={project?.plan}
+        hideUpgrade={project?.currentPlan === 'pro'}
+        planType={project?.currentPlan}
         isMobileNavOpen={isMobileNavOpen}
         setIsMobileNavOpen={setIsMobileNavOpen}
       >

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useUser as useClerkUser, useAuth } from '@clerk/clerk-react';
+import { useUser as useClerkUser, useAuth, useOrganizationList } from '@clerk/clerk-react';
 import { db, auth, functions } from '../firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { signInWithCustomToken, signOut as firebaseSignOut } from 'firebase/auth';
@@ -18,6 +18,12 @@ export const useUser = () => {
 export const UserProvider = ({ children }) => {
   const { user: clerkUser, isLoaded } = useClerkUser();
   const { getToken } = useAuth();
+  const {
+    userMemberships,
+    organizationList,
+    setActive,
+    isLoaded: orgsLoaded
+  } = useOrganizationList({ userMemberships: { infinite: true } });
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [firebaseAuthReady, setFirebaseAuthReady] = useState(false);
@@ -27,16 +33,16 @@ export const UserProvider = ({ children }) => {
     const signInToFirebase = async () => {
       if (isLoaded && clerkUser) {
         try {
-          // Get Clerk session token
+          // Get Clerk session token and exchange for Firebase token via cloud function
           const sessionToken = await getToken();
+          if (!sessionToken) return;
 
-          if (sessionToken) {
-            // Exchange for Firebase custom token
-            const getFirebaseToken = httpsCallable(functions, 'getFirebaseToken');
-            const result = await getFirebaseToken({ sessionToken });
+          const getFirebaseToken = httpsCallable(functions, 'getFirebaseToken');
+          const result = await getFirebaseToken({ sessionToken });
+          const { firebaseToken } = result.data;
 
-            // Sign in to Firebase Auth with custom token
-            await signInWithCustomToken(auth, result.data.firebaseToken);
+          if (firebaseToken) {
+            await signInWithCustomToken(auth, firebaseToken);
             setFirebaseAuthReady(true);
           }
         } catch (error) {
@@ -44,12 +50,11 @@ export const UserProvider = ({ children }) => {
           setFirebaseAuthReady(false);
         }
       } else if (isLoaded && !clerkUser) {
-        // Sign out from Firebase Auth when Clerk user is null
         setFirebaseAuthReady(false);
         try {
           await firebaseSignOut(auth);
         } catch (error) {
-          // Ignore errors if already signed out
+          // Ignore sign out errors
         }
       }
     };
@@ -87,11 +92,18 @@ export const UserProvider = ({ children }) => {
     };
   }, [clerkUser?.id, isLoaded, firebaseAuthReady]);
 
+  const isAuthReady = isLoaded && (!clerkUser || firebaseAuthReady);
+
   const value = {
-    currentUser: clerkUser, // Clerk user (id, emailAddresses, etc.)
-    userProfile, // Firestore data (plan, stripeCustomerId, etc.)
-    loading: !isLoaded || loading,
-    displayName: [userProfile?.firstName, userProfile?.lastName].filter(Boolean).join(' ') || clerkUser?.primaryEmailAddress?.emailAddress?.split('@')[0] || 'User'
+    currentUser: clerkUser,
+    userProfile,
+    loading: !isAuthReady || loading,
+    displayName: [userProfile?.firstName, userProfile?.lastName].filter(Boolean).join(' ') || clerkUser?.primaryEmailAddress?.emailAddress?.split('@')[0] || 'User',
+    // Organization data (fetched once, shared everywhere)
+    userMemberships,
+    organizationList,
+    setActive,
+    orgsLoaded
   };
 
   return (

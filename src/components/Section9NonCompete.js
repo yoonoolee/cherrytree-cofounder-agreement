@@ -1,6 +1,7 @@
 import React from 'react';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
+import { NON_COMPETE_DURATIONS, NON_SOLICIT_DURATIONS } from '../config/surveySchema';
 import Tooltip from './Tooltip';
 
 function Section9NonCompete({ formData, handleChange, isReadOnly, project, showValidation }) {
@@ -70,13 +71,7 @@ function Section9NonCompete({ formData, handleChange, isReadOnly, project, showV
             <Tooltip text="This includes joining or starting a competing company. Note: Non-compete agreements may not be enforceable in certain states (e.g., California)." />
           </label>
           <div className="space-y-2">
-            {[
-              '6 months',
-              '1 year',
-              '2 years',
-              'No non-competition clause',
-              'Other'
-            ].map((option) => (
+            {NON_COMPETE_DURATIONS.map((option) => (
               <label key={option} className="flex items-center">
                 <input
                   type="radio"
@@ -117,13 +112,7 @@ function Section9NonCompete({ formData, handleChange, isReadOnly, project, showV
             <Tooltip text="Non-solicitation prevents a cofounder who leaves from recruiting the Company's team or clients for a certain period." />
           </label>
           <div className="space-y-2">
-            {[
-              '6 months',
-              '1 year',
-              '2 years',
-              'No non-solicitation clause',
-              'Other'
-            ].map((option) => (
+            {NON_SOLICIT_DURATIONS.map((option) => (
               <label key={option} className="flex items-center">
                 <input
                   type="radio"

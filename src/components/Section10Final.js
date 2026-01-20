@@ -1,5 +1,5 @@
 import React from 'react';
-import { US_STATES } from './surveyConstants';
+import { US_STATES, DISPUTE_RESOLUTION_OPTIONS, AMENDMENT_PROCESS_OPTIONS } from '../config/surveySchema';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
 import CustomSelect from './CustomSelect';
@@ -17,6 +17,46 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
       </p>
 
       <div className="space-y-12">
+        {/* Dispute Resolution */}
+        <div>
+          <label className="block text-base font-medium text-gray-900 mb-2">
+            How should disputes among cofounders be resolved?
+            {showValidation && !formData.disputeResolution && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+          </label>
+          <div className="space-y-2">
+            {DISPUTE_RESOLUTION_OPTIONS.map((option) => (
+              <label key={option} className="flex items-center">
+                <input
+                  type="radio"
+                  name="disputeResolution"
+                  value={option}
+                  checked={formData.disputeResolution === option}
+                  onClick={() => {
+                    if (!isReadOnly) {
+                      handleChange('disputeResolution', formData.disputeResolution === option ? '' : option);
+                    }
+                  }}
+                  onChange={() => {}}
+                  disabled={isReadOnly}
+                  className="mr-3"
+                />
+                <span className="text-gray-700">{option}</span>
+              </label>
+            ))}
+          </div>
+
+          {formData.disputeResolution === 'Other' && (
+            <input
+              type="text"
+              value={formData.disputeResolutionOther || ''}
+              onChange={(e) => handleChange('disputeResolutionOther', e.target.value)}
+              disabled={isReadOnly}
+              className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
+              placeholder="Please specify"
+            />
+          )}
+        </div>
+
         {/* Governing Law */}
         <div style={{ overflow: 'visible', position: 'relative', zIndex: 100, marginBottom: '3rem' }}>
           <label className="block text-base font-medium text-gray-900 mb-2">
@@ -42,11 +82,7 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
             {showValidation && !formData.amendmentProcess && <span className="text-red-700 ml-0.5 validation-error">*</span>}
           </label>
           <div className="space-y-2">
-            {[
-              'Unanimous written consent of all cofounders',
-              'Majority vote of cofounders',
-              'Other'
-            ].map((option) => (
+            {AMENDMENT_PROCESS_OPTIONS.map((option) => (
               <label key={option} className="flex items-center">
                 <input
                   type="radio"

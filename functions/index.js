@@ -21,6 +21,7 @@ const crypto = require('crypto');
 const { Webhook } = require('svix');
 const validator = require('validator');
 const { getClerk, verifyClerkToken, CLERK_SECRET_KEY } = require('./auth-helpers');
+const { mergeOtherFields } = require('./surveySchema');
 
 initializeApp();
 const db = getFirestore();
@@ -47,37 +48,23 @@ const FUNCTION_CONFIG = {
 const EMAIL_MAX_LENGTH = 254; // RFC 5321 maximum email length
 const PROJECT_NAME_MIN_LENGTH = 2; // Minimum characters for project/company name
 
-/**
- * EDIT WINDOW CONFIGURATION
- *
- * IMPORTANT: This is the ONLY place where edit window duration is defined.
- * Change this single config to modify the edit window for ALL FUTURE projects.
- *
- * Users have this duration from PURCHASE DATE to edit their agreement.
- *
- * Examples:
- * - { amount: 6, unit: 'months' }  // Production (current)
- * - { amount: 1, unit: 'days' }    // Testing
- * - { amount: 1, unit: 'years' }   // 1 year window
- * - { amount: 2, unit: 'hours' }   // Quick testing
- *
- * Supported units: 'months', 'days', 'years', 'hours', 'minutes'
- *
- * NOTE: Each project's editDeadline is calculated ONCE at purchase and stored in Firestore.
- * Existing projects keep their deadline even if you change this config later.
- */
+// Trusted domains for PDF URLs from Make.com webhook
+const PDF_ALLOWED_DOMAINS = [
+  'drive.google.com',
+  'storage.googleapis.com',
+  'firebasestorage.googleapis.com',
+  's3.amazonaws.com',
+  'www.dropbox.com',
+  'dropbox.com',
+  'onedrive.live.com'
+];
+
+// Edit window duration from purchase date (units: 'months', 'days', 'years', 'hours', 'minutes')
 const EDIT_WINDOW_CONFIG = {
   amount: 6,
   unit: 'months'
 };
 
-/**
- * Calculate edit deadline from a date and the EDIT_WINDOW_CONFIG
- * Deadline is set to 11:59:59 PM PST (UTC-8) on the final day
- * @param {Date} startDate - The starting date (typically createdAt)
- * @returns {Date} The deadline date
- * @throws {Error} If EDIT_WINDOW_CONFIG has invalid values
- */
 function calculateEditDeadline(startDate) {
   if (!startDate || !(startDate instanceof Date)) {
     throw new Error('startDate must be a valid Date object');
@@ -129,7 +116,6 @@ const CURRENT_SURVEY_VERSION = '1.0.0';
 
 /**
  * Sanitize user input to prevent XSS and injection attacks
- * Used for project names, descriptions, and other user-generated text content
  * @param {string} input - The input to sanitize
  * @param {number} maxLength - Maximum allowed length
  * @returns {string} - Sanitized input
@@ -251,23 +237,14 @@ exports.submitSurvey = onCall({
     });
 
     // Prepare data for Make.com
-    // Note: User email removed for privacy - Make.com only needs survey data for PDF generation
+    // Merge "Other" fields before sending - keeps separate in Firestore, merged for PDF
+    const mergedSurveyData = mergeOtherFields(projectData.surveyData || {});
+
     const webhookData = {
       projectId: projectId,
       projectName: projectData.name,
       submittedAt: new Date().toISOString(),
-      data: {
-        companyName: projectData.surveyData?.companyName || '',
-        industry: projectData.surveyData?.industry || '',
-        targetMarket: projectData.surveyData?.targetMarket || '',
-        productDescription: projectData.surveyData?.productDescription || '',
-        keyFeatures: projectData.surveyData?.keyFeatures || '',
-        competitiveAdvantage: projectData.surveyData?.competitiveAdvantage || '',
-        fundingNeeds: projectData.surveyData?.fundingNeeds || '',
-        teamSize: projectData.surveyData?.teamSize || '',
-        timeline: projectData.surveyData?.timeline || '',
-        additionalNotes: projectData.surveyData?.additionalNotes || ''
-      }
+      data: mergedSurveyData
     };
 
     // Send to Make.com
@@ -277,19 +254,7 @@ exports.submitSurvey = onCall({
 
     // Update project with PDF URL (with validation)
     if (response.data && response.data.pdfUrl) {
-      // Validate PDF URL to prevent malicious URLs
-      // Exact hostname matching - add specific subdomains as needed
-      const allowedDomains = [
-        'drive.google.com',
-        'storage.googleapis.com',
-        'firebasestorage.googleapis.com',
-        's3.amazonaws.com',
-        'www.dropbox.com',
-        'dropbox.com',
-        'onedrive.live.com'
-      ];
-
-      if (!isValidTrustedUrl(response.data.pdfUrl, allowedDomains)) {
+      if (!isValidTrustedUrl(response.data.pdfUrl, PDF_ALLOWED_DOMAINS)) {
         console.error('Invalid or untrusted PDF URL from Make.com:', response.data.pdfUrl);
         throw new HttpsError('internal', 'Invalid PDF URL received from external service');
       }
@@ -370,22 +335,14 @@ exports.generatePreviewPDF = onCall({
     }
 
     // Prepare data for Make.com
+    // Merge "Other" fields before sending - keeps separate in Firestore, merged for PDF
+    const mergedSurveyData = mergeOtherFields(projectData.surveyData || {});
+
     const webhookData = {
       projectId: projectId,
       projectName: projectData.name,
       isPreview: true, // Flag to indicate this is a preview
-      data: {
-        companyName: projectData.surveyData?.companyName || '',
-        industry: projectData.surveyData?.industry || '',
-        targetMarket: projectData.surveyData?.targetMarket || '',
-        productDescription: projectData.surveyData?.productDescription || '',
-        keyFeatures: projectData.surveyData?.keyFeatures || '',
-        competitiveAdvantage: projectData.surveyData?.competitiveAdvantage || '',
-        fundingNeeds: projectData.surveyData?.fundingNeeds || '',
-        teamSize: projectData.surveyData?.teamSize || '',
-        timeline: projectData.surveyData?.timeline || '',
-        additionalNotes: projectData.surveyData?.additionalNotes || ''
-      }
+      data: mergedSurveyData
     };
 
     // Send to Make.com
@@ -395,19 +352,7 @@ exports.generatePreviewPDF = onCall({
 
     // Save preview PDF URL (with validation)
     if (response.data && response.data.pdfUrl) {
-      // Validate PDF URL to prevent malicious URLs
-      // Exact hostname matching - add specific subdomains as needed
-      const allowedDomains = [
-        'drive.google.com',
-        'storage.googleapis.com',
-        'firebasestorage.googleapis.com',
-        's3.amazonaws.com',
-        'www.dropbox.com',
-        'dropbox.com',
-        'onedrive.live.com'
-      ];
-
-      if (!isValidTrustedUrl(response.data.pdfUrl, allowedDomains)) {
+      if (!isValidTrustedUrl(response.data.pdfUrl, PDF_ALLOWED_DOMAINS)) {
         console.error('Invalid or untrusted PDF URL from Make.com:', response.data.pdfUrl);
         throw new HttpsError('internal', 'Invalid PDF URL received from external service');
       }
@@ -562,8 +507,6 @@ exports.stripeWebhook = onRequest({
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
-    console.log('Webhook event received:', event.type);
-
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
@@ -601,7 +544,6 @@ exports.stripeWebhook = onRequest({
               createdBy: userId,
             });
             const clerkOrgId = organization.id;
-            console.log(`Clerk Organization created: ${clerkOrgId} for project: ${sanitizedProjectName}`);
 
             // Use clerkOrgId as the Firestore document ID
             const projectRef = db.collection('projects').doc(clerkOrgId);
@@ -644,23 +586,26 @@ exports.stripeWebhook = onRequest({
               submitted: false,
               pdfAgreements: [],
               latestPdfUrl: null,
-              plan: plan,
-              // Payment info
-              stripeCustomerId: session.customer,
-              stripeCheckoutSessionId: session.id,
-              stripePaymentIntentId: session.payment_intent,
-              amountPaidCents: session.amount_total,
-              currency: session.currency,
-              receiptUrl: receiptUrl,
-              purchasedAt: purchasedAt || FieldValue.serverTimestamp(), // From charge.created, fallback to now
+              currentPlan: plan, // Current active plan (for easy access)
+              // Payment history - map keyed by checkout session ID to track initial purchase and upgrades
+              payments: {
+                [session.id]: {
+                  plan: plan,
+                  type: 'initial',
+                  stripeCustomerId: session.customer,
+                  stripePaymentIntentId: session.payment_intent,
+                  amountPaidCents: session.amount_total,
+                  currency: session.currency,
+                  receiptUrl: receiptUrl,
+                  purchasedAt: purchasedAt || new Date()
+                }
+              },
               // Timestamps
               createdAt: FieldValue.serverTimestamp(),
               editDeadline: editDeadline, // Edit deadline - locked in at purchase time
               lastUpdated: FieldValue.serverTimestamp(),
               lastOpened: FieldValue.serverTimestamp()
             });
-
-            console.log(`User ${userId} paid for ${plan}, project created: ${projectRef.id} - ${sanitizedProjectName}`);
           } catch (error) {
             console.error('Error in project creation:', error);
           }
@@ -670,20 +615,10 @@ exports.stripeWebhook = onRequest({
         break;
       }
 
-      case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object;
-        console.log('Payment succeeded:', paymentIntent.id);
-        break;
-      }
-
-      case 'payment_intent.payment_failed': {
-        const paymentIntent = event.data.object;
-        console.log('Payment failed:', paymentIntent.id);
-        break;
-      }
-
+      case 'payment_intent.succeeded':
+      case 'payment_intent.payment_failed':
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        break;
     }
 
     res.json({ received: true });
@@ -752,8 +687,6 @@ exports.deleteAccount = onCall({
     // Verify Clerk session token
     const { userId, email } = await verifyClerkToken(sessionToken);
 
-    console.log(`Account deletion requested for user: ${userId} (${email})`);
-
     // Generate pseudonymized identifier
     const pseudoId = `deleted_user_${userId.substring(0, 8)}`;
     const pseudoEmail = `${pseudoId}@cherrytree.internal`;
@@ -808,7 +741,6 @@ exports.deleteAccount = onCall({
             userId: newAdminId,
             role: 'admin'
           });
-          console.log(`Clerk org ${projectDoc.id} transferred to ${newAdminId}`);
         } catch (clerkError) {
           console.error('Error updating Clerk org ownership:', clerkError);
         }
@@ -817,8 +749,6 @@ exports.deleteAccount = onCall({
           name: project.name,
           transferredTo: newAdminId
         });
-
-        console.log(`Project "${project.name}" transferred to ${newAdminId}`);
       } else {
         // No other collaborators - pseudonymize and archive the project
         const pseudoCollaborators = {
@@ -840,13 +770,11 @@ exports.deleteAccount = onCall({
         // Delete Clerk organization (no members left, projectDoc.id === clerkOrgId)
         try {
           await clerk.organizations.deleteOrganization(projectDoc.id);
-          console.log(`Clerk org ${projectDoc.id} deleted (no collaborators)`);
         } catch (clerkError) {
           console.error('Error deleting Clerk org:', clerkError);
         }
 
         archivedProjects.push(project.name);
-        console.log(`Project "${project.name}" archived and pseudonymized`);
       }
     }
 
@@ -870,7 +798,6 @@ exports.deleteAccount = onCall({
           collaborators: collaborators,
           lastUpdated: FieldValue.serverTimestamp()
         });
-        console.log(`Marked user ${userId} as left in project ${projectDoc.id}`);
       }
     }
 
@@ -881,15 +808,12 @@ exports.deleteAccount = onCall({
       picture: null,
       deleted: true,
       deletedAt: FieldValue.serverTimestamp(),
-      originalEmail: email // Keep for audit trail only
+      originalEmail: email
     });
 
-    console.log(`User document pseudonymized: ${userId}`);
-
-    // Delete user from Clerk (triggers webhook that deletes Firebase Auth)
+    // Delete user from Clerk
     try {
       await clerk.users.deleteUser(userId);
-      console.log(`Clerk user deleted: ${userId}`);
     } catch (clerkError) {
       console.error('Error deleting Clerk user:', clerkError);
       throw new HttpsError('internal', 'Failed to delete user account');
@@ -969,8 +893,6 @@ exports.clerkWebhook = onRequest({
 
     // Handle the webhook event
     const eventType = evt.type;
-    console.log('Clerk webhook event:', eventType);
-
     switch (eventType) {
       case 'user.created': {
         const { id, email_addresses, first_name, last_name, image_url, last_sign_in_at, created_at } = evt.data;
@@ -986,7 +908,6 @@ exports.clerkWebhook = onRequest({
               photoURL: image_url || null,
               emailVerified: primaryEmail.verified || false,
             });
-            console.log(`Firebase Auth user created: ${id}`);
           } catch (authError) {
             // User might already exist if this is a retry
             if (authError.code !== 'auth/uid-already-exists') {
@@ -1007,8 +928,6 @@ exports.clerkWebhook = onRequest({
             lastLoginAt: last_sign_in_at ? new Date(last_sign_in_at) : createdAtDate,
             deleted: false,
           });
-
-          console.log(`User created in Firestore: ${id} (${primaryEmail.email_address})`);
         }
         break;
       }
@@ -1026,9 +945,7 @@ exports.clerkWebhook = onRequest({
               photoURL: image_url || null,
               emailVerified: primaryEmail.verified || false,
             });
-            console.log(`Firebase Auth user updated: ${id}`);
           } catch (authError) {
-            // If user doesn't exist, create them (for existing Clerk users)
             if (authError.code === 'auth/user-not-found') {
               try {
                 await auth.createUser({
@@ -1038,7 +955,6 @@ exports.clerkWebhook = onRequest({
                   photoURL: image_url || null,
                   emailVerified: primaryEmail.verified || false,
                 });
-                console.log(`Firebase Auth user created (from update): ${id}`);
               } catch (createError) {
                 console.error('Error creating Firebase Auth user:', createError);
               }
@@ -1057,8 +973,6 @@ exports.clerkWebhook = onRequest({
             lastLoginAt: last_sign_in_at ? new Date(last_sign_in_at) : null,
             deleted: false,
           }, { merge: true });
-
-          console.log(`User updated in Firestore: ${id}`);
         }
         break;
       }
@@ -1070,7 +984,6 @@ exports.clerkWebhook = onRequest({
           // Delete Firebase Auth user (authentication only)
           try {
             await auth.deleteUser(id);
-            console.log(`Firebase Auth user deleted: ${id}`);
           } catch (authError) {
             console.error('Error deleting Firebase Auth user:', authError);
           }
@@ -1083,9 +996,6 @@ exports.clerkWebhook = onRequest({
                 deleted: true,
                 deletedAt: FieldValue.serverTimestamp()
               });
-              console.log(`User ${id} marked as deleted in Firestore`);
-            } else {
-              console.log(`User ${id} doesn't exist in Firestore, skipping deletion marker`);
             }
           } catch (firestoreError) {
             console.error('Error marking user as deleted in Firestore:', firestoreError);
@@ -1094,20 +1004,13 @@ exports.clerkWebhook = onRequest({
         break;
       }
 
-      case 'organization.created': {
-        const { id, name, created_by } = evt.data;
-        console.log(`Organization created: ${id} (${name}) by ${created_by}`);
-        // Organization data is already in Clerk, no need to duplicate in Firestore
+      case 'organization.created':
         break;
-      }
 
       case 'organizationMembership.created': {
         const { organization, public_user_data } = evt.data;
         const userId = public_user_data.user_id;
-        const userEmail = public_user_data.identifier;
         const orgId = organization.id;
-
-        console.log(`User ${userId} (${userEmail}) joined org ${orgId}`);
 
         try {
           const projectDoc = await db.collection('projects').doc(orgId).get();
@@ -1137,7 +1040,6 @@ exports.clerkWebhook = onRequest({
               approvals: approvals,
               lastUpdated: FieldValue.serverTimestamp()
             });
-            console.log(`Added user ${userId} (${userEmail}) to project ${projectDoc.id}`);
           }
         } catch (error) {
           console.error('Error adding collaborator to project:', error);
@@ -1148,10 +1050,7 @@ exports.clerkWebhook = onRequest({
       case 'organizationMembership.deleted': {
         const { organization, public_user_data } = evt.data;
         const userId = public_user_data.user_id;
-        const userEmail = public_user_data.identifier;
         const orgId = organization.id;
-
-        console.log(`User ${userId} (${userEmail}) left org ${orgId}`);
 
         try {
           const projectDoc = await db.collection('projects').doc(orgId).get();
@@ -1178,7 +1077,6 @@ exports.clerkWebhook = onRequest({
               approvals: approvals,
               lastUpdated: FieldValue.serverTimestamp()
             });
-            console.log(`Marked user ${userId} (${userEmail}) as left in project ${projectDoc.id}`);
           }
         } catch (error) {
           console.error('Error removing collaborator from project:', error);
@@ -1187,7 +1085,7 @@ exports.clerkWebhook = onRequest({
       }
 
       default:
-        console.log(`Unhandled Clerk event type: ${eventType}`);
+        break;
     }
 
     res.json({ received: true });

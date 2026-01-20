@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { US_STATES, INDUSTRIES } from './surveyConstants';
+import { US_STATES, INDUSTRIES, ENTITY_TYPES } from '../config/surveySchema';
 import CustomSelect from './CustomSelect';
 import Tooltip from './Tooltip';
 
@@ -317,7 +317,7 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
             <Tooltip text="This defines how your company is structured for ownership, taxes, and decision-making. If you plan to raise venture capital, a C-Corp is usually preferred." />
           </label>
           <div className="space-y-2">
-            {['C-Corp', 'S-Corp', 'LLC', 'Other'].map((type) => (
+            {ENTITY_TYPES.map((type) => (
               <label key={type} className="flex items-center">
                 <input
                   type="radio"

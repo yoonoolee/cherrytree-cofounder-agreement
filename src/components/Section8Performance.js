@@ -1,4 +1,5 @@
 import React from 'react';
+import { PERFORMANCE_CONSEQUENCES, TERMINATION_WITH_CAUSE_OPTIONS } from '../config/surveySchema';
 import Tooltip from './Tooltip';
 
 function Section8Performance({ formData, handleChange, isReadOnly, showValidation }) {
@@ -23,13 +24,7 @@ function Section8Performance({ formData, handleChange, isReadOnly, showValidatio
           </label>
           <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
           <div className="space-y-2">
-            {[
-              'Formal warning and performance plan',
-              'Temporary suspension of voting rights',
-              'Reduction or dilution of unvested equity',
-              'Role reassignment or demotion',
-              'Termination'
-            ].map((option) => (
+            {PERFORMANCE_CONSEQUENCES.map((option) => (
               <label key={option} className="flex items-center">
                 <input
                   type="checkbox"
@@ -94,14 +89,7 @@ function Section8Performance({ formData, handleChange, isReadOnly, showValidatio
           </label>
           <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
           <div className="space-y-2">
-            {[
-              'Fraud, embezzlement, or theft',
-              'Breach of fiduciary duty',
-              'Willful misconduct or gross negligence',
-              'Material breach of this agreement',
-              'Criminal conviction',
-              'Other'
-            ].map((option) => (
+            {TERMINATION_WITH_CAUSE_OPTIONS.map((option) => (
               <label key={option} className="flex items-center">
                 <input
                   type="checkbox"
