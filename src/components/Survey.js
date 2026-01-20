@@ -5,8 +5,8 @@ import { db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useAuth } from '@clerk/clerk-react';
-import { SECTIONS, INDUSTRIES, MAJOR_DECISIONS, PERFORMANCE_CONSEQUENCES, US_STATES } from '../config/surveySchema';
-import { SECTION_IDS, SECTION_ORDER, SECTIONS as SECTION_CONFIG, getSectionIndex } from '../config/sectionConfig';
+import { INDUSTRIES, MAJOR_DECISIONS, PERFORMANCE_CONSEQUENCES, US_STATES } from '../config/surveySchema';
+import { SECTION_IDS, SECTION_ORDER, SECTIONS as SECTION_CONFIG, getSectionIndex, getNextSection, getPreviousSection, isFirstSection, isLastSection } from '../config/sectionConfig';
 import { QUESTION_CONFIG, getQuestionsBySection } from '../config/questionConfig';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useProjectSync } from '../hooks/useProjectSync';
@@ -38,7 +38,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   });
 
   // UI state
-  const [currentSection, setCurrentSection] = useState(0);
+  const [currentSection, setCurrentSection] = useState(SECTION_IDS.FORMATION);
   const section3Ref = useRef(null);
   const [showCollaborators, setShowCollaborators] = useState(false);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
@@ -89,14 +89,14 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
   // Set initial section when project changes - always start at Formation & Purpose
   useEffect(() => {
-    setCurrentSection(1);
+    setCurrentSection(SECTION_IDS.FORMATION);
     setSection3InResultsView(false);
   }, [projectId]);
 
 
-  // Reset section3InResultsView when leaving section 3
+  // Reset section3InResultsView when leaving equity allocation section
   useEffect(() => {
-    if (currentSection !== 3) {
+    if (currentSection !== SECTION_IDS.EQUITY_ALLOCATION) {
       setSection3InResultsView(false);
     }
   }, [currentSection]);
@@ -185,7 +185,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
 
   // Find first incomplete section
   const findFirstIncompleteSection = () => {
-    for (let sectionId = 1; sectionId <= 10; sectionId++) {
+    for (const sectionId of SECTION_ORDER) {
       if (!isSectionCompleted(sectionId)) {
         return sectionId;
       }
@@ -310,7 +310,9 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
     setShowSearchResults(true);
   };
 
-  const handleSearchResultClick = (sectionId) => {
+  const handleSearchResultClick = (resultId) => {
+    // resultId is the numeric id from SEARCH_DATA, need to convert to sectionId
+    const sectionId = SECTION_ORDER[resultId - 1];
     setCurrentSection(sectionId);
     setSearchQuery('');
     setSearchResults([]);
@@ -960,18 +962,19 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           <div className="px-2 mb-2">
             <span className="text-xs font-medium text-gray-600">Sections</span>
           </div>
-          {SECTIONS.filter(section => section.id !== 0).map((section) => {
-            const isCompleted = isSectionCompleted(section.id);
+          {SECTION_ORDER.map((sectionId, index) => {
+            const sectionConfig = SECTION_CONFIG[sectionId];
+            const isCompleted = isSectionCompleted(sectionId);
             return (
               <button
-                key={section.id}
-                data-section-id={section.id}
+                key={sectionId}
+                data-section-id={sectionId}
                 onClick={() => {
-                  setCurrentSection(section.id);
+                  setCurrentSection(sectionId);
                   setIsMobileNavOpen(false);
                 }}
                 className={`text-left px-2 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between ${
-                  currentSection === section.id
+                  currentSection === sectionId
                     ? 'text-black font-semibold'
                     : 'text-gray-600'
                 }`}
@@ -979,7 +982,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               >
                 <div className="flex items-center gap-2">
                   <span className={`flex items-center justify-center w-6 h-6 ${
-                    currentSection === section.id
+                    currentSection === sectionId
                       ? 'font-medium'
                       : isCompleted
                         ? ''
@@ -989,15 +992,11 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                       <svg width="16" height="16" viewBox="22 22 56 56" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
                         <path d="M70.63,61.53c-.77-5.18-5.27-6.64-10.45-5.86l-.39.06C57.39,47.09,53,42.27,49.53,39.66c3.65.71,6.83.23,9.74-3.08,1.9-2.18,2.83-5.14,5.75-7.53a.46.46,0,0,0-.17-.8c-5.07-1.4-11.84-1.08-15.43,3a13.83,13.83,0,0,0-3.17,6.38,18.48,18.48,0,0,0-4.87-1.73.35.35,0,0,0-.41.3l-.23,1.62a.35.35,0,0,0,.28.4A17.86,17.86,0,0,1,45.74,40c2.49,6.14-2.9,13.55-5.88,17-4.7-1.25-9-.37-10.28,4.33a8.89,8.89,0,1,0,17.15,4.67c1.16-4.26-1.42-7.08-5.4-8.54A37.59,37.59,0,0,0,45,52.51c2.59-4.14,3.57-8,2.91-11.25l.42.3A25.14,25.14,0,0,1,58.47,56c-4.28,1.08-7.25,3.73-6.57,8.31a9.47,9.47,0,1,0,18.73-2.79Z" fill="black" shape-rendering="geometricPrecision"/>
                       </svg>
-                    ) : section.id === 0 ? (
-                      <svg width="16" height="16" viewBox="22 22 56 56" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M70.63,61.53c-.77-5.18-5.27-6.64-10.45-5.86l-.39.06C57.39,47.09,53,42.27,49.53,39.66c3.65.71,6.83.23,9.74-3.08,1.9-2.18,2.83-5.14,5.75-7.53a.46.46,0,0,0-.17-.8c-5.07-1.4-11.84-1.08-15.43,3a13.83,13.83,0,0,0-3.17,6.38,18.48,18.48,0,0,0-4.87-1.73.35.35,0,0,0-.41.3l-.23,1.62a.35.35,0,0,0,.28.4A17.86,17.86,0,0,1,45.74,40c2.49,6.14-2.9,13.55-5.88,17-4.7-1.25-9-.37-10.28,4.33a8.89,8.89,0,1,0,17.15,4.67c1.16-4.26-1.42-7.08-5.4-8.54A37.59,37.59,0,0,0,45,52.51c2.59-4.14,3.57-8,2.91-11.25l.42.3A25.14,25.14,0,0,1,58.47,56c-4.28,1.08-7.25,3.73-6.57,8.31a9.47,9.47,0,1,0,18.73-2.79Z" fill="black" shape-rendering="geometricPrecision"/>
-                      </svg>
                     ) : (
-                      section.id
+                      index + 1
                     )}
                   </span>
-                  <span className="nav-link-underline">{section.name}</span>
+                  <span className="nav-link-underline">{sectionConfig.displayName}</span>
                 </div>
               </button>
             );
@@ -1046,7 +1045,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           {/* Content Container */}
           <div className="px-4 md:px-20 pt-8 pb-8">
           {/* Section Content */}
-          {currentSection === 1 && (
+          {currentSection === SECTION_IDS.FORMATION && (
             <div className="animate-fade-down">
               {isLoaded ? (
                 <SectionFormation
@@ -1062,7 +1061,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               )}
             </div>
           )}
-          {currentSection === 2 && (
+          {currentSection === SECTION_IDS.COFOUNDERS && (
             <div className="animate-fade-down">
               <SectionCofounders
                 formData={formData}
@@ -1073,7 +1072,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               />
             </div>
           )}
-          {currentSection === 3 && (
+          {currentSection === SECTION_IDS.EQUITY_ALLOCATION && (
             <div className="animate-fade-down">
               <SectionEquityAllocation
                 ref={section3Ref}
@@ -1086,7 +1085,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               />
             </div>
           )}
-          {currentSection === 4 && (
+          {currentSection === SECTION_IDS.VESTING && (
             <div className="animate-fade-down">
               <SectionEquityVesting
                 formData={formData}
@@ -1097,7 +1096,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               />
             </div>
           )}
-          {currentSection === 5 && (
+          {currentSection === SECTION_IDS.DECISION_MAKING && (
             <div className="animate-fade-down">
               <SectionDecisionMaking
                 formData={formData}
@@ -1108,7 +1107,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               />
             </div>
           )}
-          {currentSection === 6 && (
+          {currentSection === SECTION_IDS.IP && (
             <div className="animate-fade-down">
               <SectionIP
                 formData={formData}
@@ -1119,7 +1118,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               />
             </div>
           )}
-          {currentSection === 7 && (
+          {currentSection === SECTION_IDS.COMPENSATION && (
             <div className="animate-fade-down">
               <SectionCompensation
                 formData={formData}
@@ -1130,7 +1129,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               />
             </div>
           )}
-          {currentSection === 8 && (
+          {currentSection === SECTION_IDS.PERFORMANCE && (
             <div className="animate-fade-down">
               <SectionPerformance
                 formData={formData}
@@ -1140,7 +1139,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               />
             </div>
           )}
-          {currentSection === 9 && (
+          {currentSection === SECTION_IDS.NON_COMPETITION && (
             <div className="animate-fade-down">
               <SectionNonCompete
                 formData={formData}
@@ -1151,7 +1150,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               />
             </div>
           )}
-          {currentSection === 10 && (
+          {currentSection === SECTION_IDS.GENERAL_PROVISIONS && (
             <div className="animate-fade-down">
               <SectionFinal
                 formData={formData}
@@ -1166,14 +1165,17 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           {/* Next Button */}
           {!isReadOnly && (
             <div className={`mt-16 flex justify-between`}>
-              {currentSection > 1 && (
+              {!isFirstSection(currentSection) && (
                 <button
                   onClick={() => {
-                    // If on section 3 in results view, go back to edit view (spreadsheet)
-                    if (currentSection === 3 && section3InResultsView && section3Ref.current) {
+                    // If on equity allocation in results view, go back to edit view (spreadsheet)
+                    if (currentSection === SECTION_IDS.EQUITY_ALLOCATION && section3InResultsView && section3Ref.current) {
                       section3Ref.current.backToEdit();
                     } else {
-                      setCurrentSection(Math.max(1, currentSection - 1));
+                      const prevSection = getPreviousSection(currentSection);
+                      if (prevSection) {
+                        setCurrentSection(prevSection);
+                      }
                     }
                   }}
                   className="pr-6 py-2 text-gray-400 hover:text-gray-600 font-normal flex items-center gap-2"
@@ -1184,16 +1186,19 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                   Previous
                 </button>
               )}
-              {currentSection === 1 && <div />}
+              {isFirstSection(currentSection) && <div />}
 
-              {currentSection < 10 ? (
+              {!isLastSection(currentSection) ? (
                 <button
                   onClick={() => {
-                    // If on section 3 (Equity Allocation)
-                    if (currentSection === 3) {
+                    // If on Equity Allocation section
+                    if (currentSection === SECTION_IDS.EQUITY_ALLOCATION) {
                       // If in results view, proceed to next section
                       if (section3InResultsView) {
-                        setCurrentSection(4);
+                        const nextSection = getNextSection(currentSection);
+                        if (nextSection) {
+                          setCurrentSection(nextSection);
+                        }
                         return;
                       }
                       // If in edit view, submit the calculator first
@@ -1209,7 +1214,10 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                       }
                     }
                     // For other sections, proceed normally
-                    setCurrentSection(currentSection + 1);
+                    const nextSection = getNextSection(currentSection);
+                    if (nextSection) {
+                      setCurrentSection(nextSection);
+                    }
                   }}
                   className="next-button bg-black text-white px-7 py-2 rounded font-normal hover:bg-[#1a1a1a] transition flex items-center gap-2"
                 >

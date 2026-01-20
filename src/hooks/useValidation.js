@@ -1,4 +1,5 @@
 import { FIELDS } from '../config/surveySchema';
+import { SECTION_IDS } from '../config/sectionConfig';
 
 /**
  * Custom hook for survey validation logic
@@ -214,7 +215,7 @@ export function useValidation(formData, project) {
     const collaboratorIds = Object.keys(project?.collaborators || {});
 
     switch(sectionId) {
-      case 1: // Formation & Purpose
+      case SECTION_IDS.FORMATION: // Formation & Purpose
         return formData[FIELDS.COMPANY_NAME] &&
                isOtherFieldValid(formData[FIELDS.ENTITY_TYPE], formData[FIELDS.ENTITY_TYPE_OTHER]) &&
                formData[FIELDS.REGISTERED_STATE] &&
@@ -222,7 +223,7 @@ export function useValidation(formData, project) {
                formData[FIELDS.MAILING_ZIP] && formData[FIELDS.COMPANY_DESCRIPTION] &&
                isOtherArrayFieldValid(formData[FIELDS.INDUSTRIES], formData[FIELDS.INDUSTRY_OTHER]);
 
-      case 2: // Cofounder Info
+      case SECTION_IDS.COFOUNDERS: // Cofounder Info
         if (!formData[FIELDS.COFOUNDER_COUNT]) return false;
         if (formData[FIELDS.COFOUNDERS] && formData[FIELDS.COFOUNDERS].length > 0) {
           // Check that all cofounders have all required fields filled
@@ -234,7 +235,7 @@ export function useValidation(formData, project) {
         }
         return true;
 
-      case 3: // Equity Allocation
+      case SECTION_IDS.EQUITY_ALLOCATION: // Equity Allocation
         // Check that all equity percentages are filled
         const allPercentagesFilled = collaboratorIds.every(userId =>
           formData[FIELDS.FINAL_EQUITY_PERCENTAGES]?.[userId] && formData[FIELDS.FINAL_EQUITY_PERCENTAGES][userId] !== ''
@@ -252,7 +253,7 @@ export function useValidation(formData, project) {
           collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION]?.[userId]);
         return allAcknowledgedEquityAllocation;
 
-      case 4: // Vesting Schedule
+      case SECTION_IDS.VESTING: // Vesting Schedule
         const allAcknowledgedForfeiture = collaboratorIds.length > 0 &&
           collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_FORFEITURE]?.[userId]);
         return formData[FIELDS.VESTING_START_DATE] &&
@@ -261,7 +262,7 @@ export function useValidation(formData, project) {
                formData[FIELDS.SHARES_SELL_NOTICE_DAYS] && formData[FIELDS.SHARES_BUYBACK_DAYS] &&
                allAcknowledgedForfeiture && formData[FIELDS.VESTED_SHARES_DISPOSAL];
 
-      case 5: // Decision-Making
+      case SECTION_IDS.DECISION_MAKING: // Decision-Making
         const allAcknowledgedTieResolution = collaboratorIds.length > 0 &&
           collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_TIE_RESOLUTION]?.[userId]);
         const allAcknowledgedShotgunClause = formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === 'Yes' ? (
@@ -274,28 +275,28 @@ export function useValidation(formData, project) {
                allAcknowledgedTieResolution &&
                formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] && allAcknowledgedShotgunClause;
 
-      case 6: // IP & Ownership
+      case SECTION_IDS.IP: // IP & Ownership
         const allAcknowledgedIPOwnership = collaboratorIds.length > 0 &&
           collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_IP_OWNERSHIP]?.[userId]);
         return formData[FIELDS.HAS_PRE_EXISTING_IP] && allAcknowledgedIPOwnership;
 
-      case 7: // Compensation
+      case SECTION_IDS.COMPENSATION: // Compensation
         return formData[FIELDS.TAKING_COMPENSATION] && formData[FIELDS.SPENDING_LIMIT];
 
-      case 8: // Performance (Cofounder Performance & Departure)
+      case SECTION_IDS.PERFORMANCE: // Performance (Cofounder Performance & Departure)
         return formData[FIELDS.PERFORMANCE_CONSEQUENCES] && formData[FIELDS.PERFORMANCE_CONSEQUENCES].length > 0 &&
                formData[FIELDS.REMEDY_PERIOD_DAYS] &&
                isOtherArrayFieldValid(formData[FIELDS.TERMINATION_WITH_CAUSE], formData[FIELDS.TERMINATION_WITH_CAUSE_OTHER]) &&
                formData[FIELDS.VOLUNTARY_NOTICE_DAYS];
 
-      case 9: // Non-Competition (Confidentiality, Non-Competition & Non-Solicitation)
+      case SECTION_IDS.NON_COMPETITION: // Non-Competition (Confidentiality, Non-Competition & Non-Solicitation)
         const allAcknowledgedConfidentiality = collaboratorIds.length > 0 &&
           collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_CONFIDENTIALITY]?.[userId]);
         return allAcknowledgedConfidentiality &&
                isOtherFieldValid(formData[FIELDS.NON_COMPETE_DURATION], formData[FIELDS.NON_COMPETE_DURATION_OTHER]) &&
                isOtherFieldValid(formData[FIELDS.NON_SOLICIT_DURATION], formData[FIELDS.NON_SOLICIT_DURATION_OTHER]);
 
-      case 10: // Final Details
+      case SECTION_IDS.GENERAL_PROVISIONS: // Final Details
         const allAcknowledgedPeriodicReview = collaboratorIds.length > 0 &&
           collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW]?.[userId]);
         const allAcknowledgedAmendmentReviewRequest = collaboratorIds.length > 0 &&
