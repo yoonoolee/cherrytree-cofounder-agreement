@@ -99,7 +99,7 @@ function SectionNonCompete({ formData, handleChange, isReadOnly, project, showVa
               value={formData[FIELDS.NON_COMPETE_DURATION_OTHER] || ''}
               onChange={(e) => handleChange('nonCompeteDurationOther', e.target.value)}
               disabled={isReadOnly}
-              className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
+              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
               placeholder="Please specify"
             />
           )}
@@ -140,7 +140,7 @@ function SectionNonCompete({ formData, handleChange, isReadOnly, project, showVa
               value={formData[FIELDS.NON_SOLICIT_DURATION_OTHER] || ''}
               onChange={(e) => handleChange('nonSolicitDurationOther', e.target.value)}
               disabled={isReadOnly}
-              className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
+              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
               placeholder="Please specify"
             />
           )}

@@ -52,7 +52,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
               value={formData[FIELDS.DISPUTE_RESOLUTION_OTHER] || ''}
               onChange={(e) => handleChange('disputeResolutionOther', e.target.value)}
               disabled={isReadOnly}
-              className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
+              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
               placeholder="Please specify"
             />
           )}
@@ -110,7 +110,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
               value={formData[FIELDS.AMENDMENT_PROCESS_OTHER] || ''}
               onChange={(e) => handleChange('amendmentProcessOther', e.target.value)}
               disabled={isReadOnly}
-              className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
+              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
               placeholder="Please specify"
             />
           )}
