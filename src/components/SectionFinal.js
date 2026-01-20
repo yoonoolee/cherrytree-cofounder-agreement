@@ -4,7 +4,7 @@ import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
 import CustomSelect from './CustomSelect';
 
-function Section10Final({ formData, handleChange, isReadOnly, project, showValidation }) {
+function SectionFinal({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
   const { collaboratorIds, getDisplayName, isAdmin } = useCollaborators(project);
 
@@ -349,4 +349,4 @@ function Section10Final({ formData, handleChange, isReadOnly, project, showValid
   );
 }
 
-export default Section10Final;
+export default SectionFinal;

@@ -4,7 +4,7 @@ import { useCollaborators } from '../hooks/useCollaborators';
 import { VESTING_SCHEDULES, VESTED_SHARES_DISPOSAL_OPTIONS } from '../config/surveySchema';
 import Tooltip from './Tooltip';
 
-function Section5EquityVesting({ formData, handleChange, isReadOnly, project, showValidation }) {
+function SectionEquityVesting({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
   const { collaboratorIds, getDisplayName, isAdmin } = useCollaborators(project);
 
@@ -362,4 +362,4 @@ function Section5EquityVesting({ formData, handleChange, isReadOnly, project, sh
   );
 }
 
-export default Section5EquityVesting;
+export default SectionEquityVesting;

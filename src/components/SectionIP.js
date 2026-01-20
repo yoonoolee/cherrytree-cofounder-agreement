@@ -3,7 +3,7 @@ import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
 import Tooltip from './Tooltip';
 
-function Section6IP({ formData, handleChange, isReadOnly, project, showValidation }) {
+function SectionIP({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
   const { collaboratorIds, getDisplayName, isAdmin } = useCollaborators(project);
 
@@ -150,4 +150,4 @@ function Section6IP({ formData, handleChange, isReadOnly, project, showValidatio
   );
 }
 
-export default Section6IP;
+export default SectionIP;

@@ -2,7 +2,7 @@ import React from 'react';
 import { PERFORMANCE_CONSEQUENCES, TERMINATION_WITH_CAUSE_OPTIONS } from '../config/surveySchema';
 import Tooltip from './Tooltip';
 
-function Section8Performance({ formData, handleChange, isReadOnly, showValidation }) {
+function SectionPerformance({ formData, handleChange, isReadOnly, showValidation }) {
   return (
     <div>
       <h2 className="text-3xl font-medium text-gray-800 mb-6">Cofounder Performance & Departure</h2>
@@ -147,4 +147,4 @@ function Section8Performance({ formData, handleChange, isReadOnly, showValidatio
   );
 }
 
-export default Section8Performance;
+export default SectionPerformance;

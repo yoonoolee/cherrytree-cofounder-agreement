@@ -6,7 +6,7 @@ import Tooltip from './Tooltip';
 // Constants
 const ADDRESS_SEARCH_MIN_LENGTH = 3; // Minimum characters before triggering address autocomplete
 
-function Section1Formation({ formData, handleChange, isReadOnly, showValidation }) {
+function SectionFormation({ formData, handleChange, isReadOnly, showValidation }) {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -578,4 +578,4 @@ function Section1Formation({ formData, handleChange, isReadOnly, showValidation 
   );
 }
 
-export default Section1Formation;
+export default SectionFormation;

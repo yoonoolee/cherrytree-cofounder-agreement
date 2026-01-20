@@ -4,7 +4,7 @@ import { useCollaborators } from '../hooks/useCollaborators';
 import { NON_COMPETE_DURATIONS, NON_SOLICIT_DURATIONS } from '../config/surveySchema';
 import Tooltip from './Tooltip';
 
-function Section9NonCompete({ formData, handleChange, isReadOnly, project, showValidation }) {
+function SectionNonCompete({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
   const { collaboratorIds, getDisplayName, isAdmin } = useCollaborators(project);
 
@@ -149,4 +149,4 @@ function Section9NonCompete({ formData, handleChange, isReadOnly, project, showV
   );
 }
 
-export default Section9NonCompete;
+export default SectionNonCompete;

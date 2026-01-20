@@ -1,7 +1,7 @@
 import React from 'react';
 import CustomSelect from './CustomSelect';
 
-function Section7Compensation({ formData, handleChange, isReadOnly, showValidation, project }) {
+function SectionCompensation({ formData, handleChange, isReadOnly, showValidation, project }) {
   const compensations = formData.compensations || [];
   // Count all collaborators
   const collaboratorCount = Object.keys(project?.collaborators || {}).length;
@@ -288,4 +288,4 @@ function Section7Compensation({ formData, handleChange, isReadOnly, showValidati
   );
 }
 
-export default Section7Compensation;
+export default SectionCompensation;

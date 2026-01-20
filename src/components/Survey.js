@@ -10,16 +10,16 @@ import { useAutoSave } from '../hooks/useAutoSave';
 import { useProjectSync } from '../hooks/useProjectSync';
 import { useValidation } from '../hooks/useValidation';
 import { isAfterEditDeadline } from '../utils/dateUtils';
-import Section1Formation from './Section1Formation';
-import Section2Cofounders from './Section2Cofounders';
-import Section3EquityAllocation from './Section3EquityAllocation';
-import Section4DecisionMaking from './Section4DecisionMaking';
-import Section5EquityVesting from './Section5EquityVesting';
-import Section6IP from './Section6IP';
-import Section7Compensation from './Section7Compensation';
-import Section8Performance from './Section8Performance';
-import Section9NonCompete from './Section9NonCompete';
-import Section10Final from './Section10Final';
+import SectionFormation from './SectionFormation';
+import SectionCofounders from './SectionCofounders';
+import SectionEquityAllocation from './SectionEquityAllocation';
+import SectionDecisionMaking from './SectionDecisionMaking';
+import SectionEquityVesting from './SectionEquityVesting';
+import SectionIP from './SectionIP';
+import SectionCompensation from './SectionCompensation';
+import SectionPerformance from './SectionPerformance';
+import SectionNonCompete from './SectionNonCompete';
+import SectionFinal from './SectionFinal';
 import CollaboratorManager from './CollaboratorManager';
 import SurveyNavigation from './SurveyNavigation';
 
@@ -1156,7 +1156,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           {currentSection === 1 && (
             <div className="animate-fade-down">
               {isLoaded ? (
-                <Section1Formation
+                <SectionFormation
                   formData={formData}
                   handleChange={handleChange}
                   isReadOnly={isReadOnly}
@@ -1171,7 +1171,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           )}
           {currentSection === 2 && (
             <div className="animate-fade-down">
-              <Section2Cofounders
+              <SectionCofounders
                 formData={formData}
                 handleChange={handleChange}
                 isReadOnly={isReadOnly}
@@ -1182,7 +1182,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           )}
           {currentSection === 3 && (
             <div className="animate-fade-down">
-              <Section3EquityAllocation
+              <SectionEquityAllocation
                 ref={section3Ref}
                 formData={formData}
                 handleChange={handleChange}
@@ -1195,7 +1195,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           )}
           {currentSection === 4 && (
             <div className="animate-fade-down">
-              <Section5EquityVesting
+              <SectionEquityVesting
                 formData={formData}
                 handleChange={handleChange}
                 isReadOnly={isReadOnly}
@@ -1206,7 +1206,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           )}
           {currentSection === 5 && (
             <div className="animate-fade-down">
-              <Section4DecisionMaking
+              <SectionDecisionMaking
                 formData={formData}
                 handleChange={handleChange}
                 isReadOnly={isReadOnly}
@@ -1217,7 +1217,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           )}
           {currentSection === 6 && (
             <div className="animate-fade-down">
-              <Section6IP
+              <SectionIP
                 formData={formData}
                 handleChange={handleChange}
                 isReadOnly={isReadOnly}
@@ -1228,7 +1228,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           )}
           {currentSection === 7 && (
             <div className="animate-fade-down">
-              <Section7Compensation
+              <SectionCompensation
                 formData={formData}
                 handleChange={handleChange}
                 isReadOnly={isReadOnly}
@@ -1239,7 +1239,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           )}
           {currentSection === 8 && (
             <div className="animate-fade-down">
-              <Section8Performance
+              <SectionPerformance
                 formData={formData}
                 handleChange={handleChange}
                 isReadOnly={isReadOnly}
@@ -1249,7 +1249,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           )}
           {currentSection === 9 && (
             <div className="animate-fade-down">
-              <Section9NonCompete
+              <SectionNonCompete
                 formData={formData}
                 handleChange={handleChange}
                 isReadOnly={isReadOnly}
@@ -1260,7 +1260,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
           )}
           {currentSection === 10 && (
             <div className="animate-fade-down">
-              <Section10Final
+              <SectionFinal
                 formData={formData}
                 handleChange={handleChange}
                 isReadOnly={isReadOnly}

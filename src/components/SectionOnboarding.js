@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Section0Onboarding({ formData, handleChange, isReadOnly, showValidation, onGetStarted }) {
+function SectionOnboarding({ formData, handleChange, isReadOnly, showValidation, onGetStarted }) {
   return (
     <div className="-mx-20 px-8">
       <div className="flex gap-20">
@@ -83,4 +83,4 @@ function Section0Onboarding({ formData, handleChange, isReadOnly, showValidation
   );
 }
 
-export default Section0Onboarding;
+export default SectionOnboarding;

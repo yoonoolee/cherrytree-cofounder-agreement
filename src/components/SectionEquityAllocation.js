@@ -5,7 +5,7 @@ import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
 import './Section3EquityAllocation.css';
 
-const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnly, showValidation, project, onViewModeChange }, ref) => {
+const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly, showValidation, project, onViewModeChange }, ref) => {
   const { currentUser } = useUser();
   const visualBarsRef = useRef(null);
   const { collaboratorIds, isAdmin } = useCollaborators(project);
@@ -950,4 +950,4 @@ const Section3EquityAllocation = forwardRef(({ formData, handleChange, isReadOnl
   );
 });
 
-export default Section3EquityAllocation;
+export default SectionEquityAllocation;
