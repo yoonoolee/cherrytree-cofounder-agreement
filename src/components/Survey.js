@@ -6,6 +6,8 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useAuth } from '@clerk/clerk-react';
 import { SECTIONS, INDUSTRIES, MAJOR_DECISIONS, PERFORMANCE_CONSEQUENCES, US_STATES } from '../config/surveySchema';
+import { SECTION_IDS, SECTION_ORDER, SECTIONS as SECTION_CONFIG, getSectionIndex } from '../config/sectionConfig';
+import { QUESTION_CONFIG, getQuestionsBySection } from '../config/questionConfig';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useProjectSync } from '../hooks/useProjectSync';
 import { useValidation } from '../hooks/useValidation';
@@ -227,142 +229,32 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
     }
   };
 
-  // Search data mapping sections to their questions and keywords
-  const SEARCH_DATA = [
-    {
-      id: 1,
-      name: 'Formation & Purpose',
-      questions: [
-        "What's your company's name?",
-        "What is your company's current or intended legal structure?",
-        "What state will your company be registered in?",
-        "What's your company mailing address?",
-        "Can you describe your company in 1 line?",
-        "What industry is it in?"
-      ],
-      answers: [
-        "C-Corp", "S-Corp", "LLC",
-        ...INDUSTRIES,
-        ...US_STATES.map(s => s.label)
-      ]
-    },
-    {
-      id: 2,
-      name: 'Cofounder Info',
-      questions: [
-        "Full Name",
-        "Title",
-        "Email",
-        "Roles & Responsibilities"
-      ],
-      answers: []
-    },
-    {
-      id: 3,
-      name: 'Equity Allocation',
-      questions: [
-        "Individual Assessments",
-        "equity ownership",
-        "equity split",
-        "ownership percentage"
-      ],
-      answers: []
-    },
-    {
-      id: 4,
-      name: 'Vesting Schedule',
-      questions: [
-        "What date should the vesting start?",
-        "What vesting schedule will you use?",
-        "What percent of equity will be vested once the cliff is complete?",
-        "Should unvested shares accelerate if the cofounder is terminated and the company is acquired?",
-        "If a cofounder wants to sell their shares, how many days notice do they need to provide the Board and shareholders?",
-        "If a cofounder resigns, how many days does the company have to buy back the shares?",
-        "You acknowledge that if a cofounder dies, becomes permanently disabled, or is otherwise incapacitated, their unvested shares are automatically forfeited and returned to the company",
-        "If a cofounder dies, becomes permanently disabled, or is otherwise incapacitated"
-      ],
-      answers: [
-        "4-year with 1-year cliff", "3-year with 1-year cliff", "2-year with 6-month cliff",
-        "Single trigger", "Double trigger", "No acceleration",
-        "Company has the right to repurchase", "Cofounder can sell to any buyer", "Cofounder can only sell to existing shareholders"
-      ]
-    },
-    {
-      id: 5,
-      name: 'Decision-Making',
-      questions: [
-        "Should equity ownership reflect voting power?",
-        "If cofounders are deadlocked, how should the tie be resolved?",
-        "Do you want to include a shotgun clause if you and your cofounder(s) cannot resolve deadlocks?"
-      ],
-      answers: [
-        ...MAJOR_DECISIONS,
-        "Mediation", "Arbitration", "Coin flip", "Third-party advisor", "Majority vote"
-      ]
-    },
-    {
-      id: 6,
-      name: 'IP & Ownership',
-      questions: [
-        "Has any cofounder created code, designs, or other assets before joining the company that might be used in the business?",
-        "intellectual property assignment",
-        "IP ownership"
-      ],
-      answers: ["Yes", "No"]
-    },
-    {
-      id: 7,
-      name: 'Compensation',
-      questions: [
-        "Are any cofounders currently taking compensation or salary from the company?",
-        "Compensation Details",
-        "Compensation (USD/year)",
-        "What's the spending limit, in USD, before a cofounder needs to check with other cofounders?"
-      ],
-      answers: ["Yes", "No"]
-    },
-    {
-      id: 8,
-      name: 'Performance',
-      questions: [
-        "What happens if a cofounder fails to meet their agreed-upon obligations (e.g., time commitment, role performance, or deliverables)?",
-        "How many days does a cofounder have to fix the issue after receiving written notice before termination can occur?",
-        "Which of the following constitutes termination with cause?",
-        "How many days is the notice period if a Cofounder wishes to voluntarily leave?"
-      ],
-      answers: [
-        ...PERFORMANCE_CONSEQUENCES,
-        "Breach of fiduciary duty", "Criminal conviction", "Fraud or dishonesty", "Material breach of agreement", "Gross negligence", "Willful misconduct"
-      ]
-    },
-    {
-      id: 9,
-      name: 'Non-Competition',
-      questions: [
-        "How long should the non-competition obligation last after a cofounder leaves?",
-        "How long should the non-solicitation obligation last after a cofounder leaves?",
-        "non-compete agreement",
-        "confidentiality"
-      ],
-      answers: [
-        "6 months", "1 year", "2 years", "3 years", "None"
-      ]
-    },
-    {
-      id: 10,
-      name: 'General Provisions',
-      questions: [
-        "How should disputes among cofounders be resolved?",
-        "Which state's laws will govern this agreement?",
-        "How can this agreement be amended or modified?",
-        "How often (in months) should this agreement be reviewed by the cofounders?"
-      ],
-      answers: [
-        "Mediation first, then arbitration", "Arbitration only", "Litigation in court",
-        "Unanimous consent", "Majority vote", "Board approval"
-      ]
-    }
-  ];
+  // Auto-generate search data from questionConfig
+  const SEARCH_DATA = React.useMemo(() => {
+    return SECTION_ORDER.map((sectionId, index) => {
+      const sectionConfig = SECTION_CONFIG[sectionId];
+      const questions = getQuestionsBySection(sectionId);
+
+      // Extract all questions (text only, not nested/acknowledgment fields)
+      const questionTexts = questions
+        .filter(q => !q.nested && q.type !== 'custom')
+        .map(q => q.question);
+
+      // Extract all answer options (static answers only)
+      const answers = questions
+        .filter(q => q.options && Array.isArray(q.options))
+        .flatMap(q => q.options)
+        .filter((value, index, self) => self.indexOf(value) === index); // Dedupe
+
+      return {
+        id: index + 1, // Keep numeric ID for backwards compatibility with rendering
+        sectionId: sectionId, // Add section ID for future use
+        name: sectionConfig.displayName,
+        questions: questionTexts,
+        answers: answers
+      };
+    });
+  }, []);
 
   const handleSearch = (query) => {
     setSearchQuery(query);
