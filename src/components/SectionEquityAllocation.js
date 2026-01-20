@@ -20,7 +20,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
     // Get cofounder at that index
     const cofounder = formData[FIELDS.COFOUNDERS]?.[index];
     // Return first name if it exists, otherwise return fallback
-    if (cofounder?[FIELDS.COFOUNDER_FULL_NAME] && cofounder[FIELDS.COFOUNDER_FULL_NAME].trim() !== '') {
+    if (cofounder?.[FIELDS.COFOUNDER_FULL_NAME] && cofounder[FIELDS.COFOUNDER_FULL_NAME].trim() !== '') {
       const firstName = cofounder[FIELDS.COFOUNDER_FULL_NAME].trim().split(' ')[0];
       return firstName;
     }
