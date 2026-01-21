@@ -42,7 +42,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
 
     if (isDeleting.current) {
       isDeleting.current = false;
-      handleChange('registeredState', value);
+      handleChange(FIELDS.REGISTERED_STATE, value);
       return;
     }
 
@@ -64,10 +64,10 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
           }
         }, 0);
       } else {
-        handleChange('registeredState', value);
+        handleChange(FIELDS.REGISTERED_STATE, value);
       }
     } else {
-      handleChange('registeredState', value);
+      handleChange(FIELDS.REGISTERED_STATE, value);
     }
   };
 
@@ -93,7 +93,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
 
     if (isDeleting.current) {
       isDeleting.current = false;
-      handleChange('mailingState', value);
+      handleChange(FIELDS.MAILING_STATE, value);
       return;
     }
 
@@ -115,10 +115,10 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
           }
         }, 0);
       } else {
-        handleChange('mailingState', value);
+        handleChange(FIELDS.MAILING_STATE, value);
       }
     } else {
-      handleChange('mailingState', value);
+      handleChange(FIELDS.MAILING_STATE, value);
     }
   };
 
@@ -268,11 +268,11 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
 
       // Update all address fields
       setInputValue(street.trim());
-      handleChange('mailingStreet', street.trim());
-      if (street2) handleChange('mailingStreet2', street2);
-      handleChange('mailingCity', city);
-      handleChange('mailingState', stateFullName);
-      handleChange('mailingZip', zip);
+      handleChange(FIELDS.MAILING_STREET, street.trim());
+      if (street2) handleChange(FIELDS.MAILING_STREET2, street2);
+      handleChange(FIELDS.MAILING_CITY, city);
+      handleChange(FIELDS.MAILING_STATE, stateFullName);
+      handleChange(FIELDS.MAILING_ZIP, zip);
 
       setSuggestions([]);
       setShowSuggestions(false);
@@ -303,7 +303,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
           <input
             type="text"
             value={formData[FIELDS.COMPANY_NAME] || ''}
-            onChange={(e) => handleChange('companyName', e.target.value)}
+            onChange={(e) => handleChange(FIELDS.COMPANY_NAME, e.target.value)}
             disabled={isReadOnly}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
             placeholder="Enter your company name"
@@ -327,7 +327,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                   checked={formData[FIELDS.ENTITY_TYPE] === type}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('entityType', formData[FIELDS.ENTITY_TYPE] === type ? '' : type);
+                      handleChange(FIELDS.ENTITY_TYPE, formData[FIELDS.ENTITY_TYPE] === type ? '' : type);
                     }
                   }}
                   onChange={() => {}}
@@ -343,7 +343,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
             <input
               type="text"
               value={formData[FIELDS.ENTITY_TYPE_OTHER] || ''}
-              onChange={(e) => handleChange('entityTypeOther', e.target.value)}
+              onChange={(e) => handleChange(FIELDS.ENTITY_TYPE_OTHER, e.target.value)}
               disabled={isReadOnly}
               className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
               placeholder="Please specify entity type"
@@ -360,7 +360,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
           </label>
           <CustomSelect
             value={formData[FIELDS.REGISTERED_STATE] || ''}
-            onChange={(value) => handleChange('registeredState', value)}
+            onChange={(value) => handleChange(FIELDS.REGISTERED_STATE, value)}
             options={US_STATES.map(state => ({
               value: state.label,
               label: `${state.label} (${state.value})`
@@ -392,7 +392,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                     handleInputChange(newValue);
                     // If user clears the input, also clear the formData
                     if (!newValue) {
-                      handleChange('mailingStreet', '');
+                      handleChange(FIELDS.MAILING_STREET, '');
                     }
                   }
                 }}
@@ -440,7 +440,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
               <input
                 type="text"
                 value={formData[FIELDS.MAILING_STREET2] || ''}
-                onChange={(e) => handleChange('mailingStreet2', e.target.value)}
+                onChange={(e) => handleChange(FIELDS.MAILING_STREET2, e.target.value)}
                 disabled={isReadOnly}
                 autoComplete="chrome-off"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
@@ -457,7 +457,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                 <input
                   type="text"
                   value={formData[FIELDS.MAILING_CITY] || ''}
-                  onChange={(e) => handleChange('mailingCity', e.target.value)}
+                  onChange={(e) => handleChange(FIELDS.MAILING_CITY, e.target.value)}
                   disabled={isReadOnly}
                   autoComplete="chrome-off"
                   className="w-full bg-transparent border-none border-b-2 border-gray-300 py-3 text-gray-700 focus:outline-none focus:border-black disabled:opacity-60 disabled:cursor-not-allowed"
@@ -475,7 +475,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                 </label>
                 <CustomSelect
                   value={formData[FIELDS.MAILING_STATE] || ''}
-                  onChange={(value) => handleChange('mailingState', value)}
+                  onChange={(value) => handleChange(FIELDS.MAILING_STATE, value)}
                   options={US_STATES.map(state => ({
                     value: state.label,
                     label: `${state.label} (${state.value})`
@@ -497,7 +497,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                   value={formData[FIELDS.MAILING_ZIP] || ''}
                   onChange={(e) => {
                     const value = e.target.value.replace(/[^\d-]/g, '');
-                    handleChange('mailingZip', value);
+                    handleChange(FIELDS.MAILING_ZIP, value);
                   }}
                   disabled={isReadOnly}
                   autoComplete="chrome-off"
@@ -524,7 +524,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
           <input
             type="text"
             value={formData[FIELDS.COMPANY_DESCRIPTION] || ''}
-            onChange={(e) => handleChange('companyDescription', e.target.value)}
+            onChange={(e) => handleChange(FIELDS.COMPANY_DESCRIPTION, e.target.value)}
             disabled={isReadOnly}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
             placeholder="Helping cofounders create Cofounder Agreements"
@@ -550,7 +550,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                     const newIndustries = e.target.checked
                       ? [...currentIndustries, industry]
                       : currentIndustries.filter(i => i !== industry);
-                    handleChange('industries', newIndustries);
+                    handleChange(FIELDS.INDUSTRIES, newIndustries);
                   }}
                   disabled={isReadOnly}
                   className="mr-3"
@@ -565,7 +565,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
               <input
                 type="text"
                 value={formData[FIELDS.INDUSTRY_OTHER] || ''}
-                onChange={(e) => handleChange('industryOther', e.target.value)}
+                onChange={(e) => handleChange(FIELDS.INDUSTRY_OTHER, e.target.value)}
                 disabled={isReadOnly}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                 placeholder="Please specify other industry"

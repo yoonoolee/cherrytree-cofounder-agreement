@@ -35,7 +35,7 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
                     const newList = e.target.checked
                       ? [...current, option]
                       : current.filter(item => item !== option);
-                    handleChange('performanceConsequences', newList);
+                    handleChange(FIELDS.PERFORMANCE_CONSEQUENCES, newList);
                   }}
                   disabled={isReadOnly}
                   className="mr-3"
@@ -62,7 +62,7 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
               const value = e.target.value;
               // Only allow integers (no decimals) and no negatives
               if (value === '' || (Number.isInteger(Number(value)) && Number(value) >= 0)) {
-                handleChange('remedyPeriodDays', value);
+                handleChange(FIELDS.REMEDY_PERIOD_DAYS, value);
               }
             }}
             onKeyDown={(e) => {
@@ -100,7 +100,7 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
                     const newList = e.target.checked
                       ? [...current, option]
                       : current.filter(item => item !== option);
-                    handleChange('terminationWithCause', newList);
+                    handleChange(FIELDS.TERMINATION_WITH_CAUSE, newList);
                   }}
                   disabled={isReadOnly}
                   className="mr-3"
@@ -115,7 +115,7 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
               <input
                 type="text"
                 value={formData[FIELDS.TERMINATION_WITH_CAUSE_OTHER] || ''}
-                onChange={(e) => handleChange('terminationWithCauseOther', e.target.value)}
+                onChange={(e) => handleChange(FIELDS.TERMINATION_WITH_CAUSE_OTHER, e.target.value)}
                 disabled={isReadOnly}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                 placeholder="Please specify"
@@ -133,7 +133,7 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
           <input
             type="number"
             value={formData[FIELDS.VOLUNTARY_NOTICE_DAYS] || ''}
-            onChange={(e) => handleChange('voluntaryNoticeDays', e.target.value)}
+            onChange={(e) => handleChange(FIELDS.VOLUNTARY_NOTICE_DAYS, e.target.value)}
             disabled={isReadOnly}
             className="w-full bg-transparent border-none border-b-2 border-gray-300 py-3 text-gray-700 focus:outline-none focus:border-black disabled:opacity-60 disabled:cursor-not-allowed"
             placeholder="Enter number of days"

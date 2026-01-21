@@ -11,12 +11,12 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
   const handleAddCompensation = () => {
     if (!canAddMore) return;
     const newCompensations = [...compensations, { who: '', amount: '' }];
-    handleChange('compensations', newCompensations);
+    handleChange(FIELDS.COMPENSATIONS, newCompensations);
   };
 
   const handleRemoveCompensation = (index) => {
     const newCompensations = compensations.filter((_, i) => i !== index);
-    handleChange('compensations', newCompensations);
+    handleChange(FIELDS.COMPENSATIONS, newCompensations);
   };
 
   const handleCompensationChange = (index, field, value) => {
@@ -25,7 +25,7 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
       ...newCompensations[index],
       [field]: value
     };
-    handleChange('compensations', newCompensations);
+    handleChange(FIELDS.COMPENSATIONS, newCompensations);
   };
 
   return (
@@ -53,7 +53,7 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
                   checked={formData[FIELDS.TAKING_COMPENSATION] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('takingCompensation', formData[FIELDS.TAKING_COMPENSATION] === option ? '' : option);
+                      handleChange(FIELDS.TAKING_COMPENSATION, formData[FIELDS.TAKING_COMPENSATION] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -232,12 +232,12 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
 
               // Allow decimals for spending limit (max 2 decimal places)
               if (value === '') {
-                handleChange('spendingLimit', value);
+                handleChange(FIELDS.SPENDING_LIMIT, value);
               } else if (!isNaN(value) && parseFloat(value) >= 0) {
                 // Check if it has more than 2 decimal places
                 const decimalParts = value.split('.');
                 if (decimalParts.length === 1 || (decimalParts.length === 2 && decimalParts[1].length <= 2)) {
-                  handleChange('spendingLimit', value);
+                  handleChange(FIELDS.SPENDING_LIMIT, value);
                 }
               }
             }}

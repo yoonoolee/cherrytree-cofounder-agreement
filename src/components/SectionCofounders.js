@@ -13,7 +13,7 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
     if (calculatedCofounderCount > 0) {
       // Update cofounderCount if it's different
       if (parseInt(formData[FIELDS.COFOUNDER_COUNT]) !== calculatedCofounderCount) {
-        handleChange('cofounderCount', calculatedCofounderCount.toString());
+        handleChange(FIELDS.COFOUNDER_COUNT, calculatedCofounderCount.toString());
       }
 
       // Initialize cofounders array ONLY if length doesn't match
@@ -28,7 +28,7 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
             rolesOther: ''
           };
         });
-        handleChange('cofounders', newCofounders);
+        handleChange(FIELDS.COFOUNDERS, newCofounders);
       }
     }
   }, [calculatedCofounderCount, formData[FIELDS.COFOUNDER_COUNT], cofounders.length, handleChange]);
@@ -39,7 +39,7 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
       ...newCofounders[index],
       [field]: value
     };
-    handleChange('cofounders', newCofounders);
+    handleChange(FIELDS.COFOUNDERS, newCofounders);
   };
 
   return (

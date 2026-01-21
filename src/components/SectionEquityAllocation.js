@@ -105,10 +105,10 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
       ...(formData[FIELDS.FINAL_EQUITY_PERCENTAGES] || {}),
       [userId]: value
     };
-    handleChange('finalEquityPercentages', newPercentages);
+    handleChange(FIELDS.FINAL_EQUITY_PERCENTAGES, newPercentages);
 
     // Uncheck all acknowledgments when any equity is changed
-    handleChange('acknowledgeEquityAllocation', {});
+    handleChange(FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION, {});
   };
 
   const handleAcknowledgmentChange = (userId, checked) => {
@@ -116,7 +116,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
       ...(formData[FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION] || {}),
       [userId]: checked
     };
-    handleChange('acknowledgeEquityAllocation', newAcknowledgments);
+    handleChange(FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION, newAcknowledgments);
   };
 
   // Handle draft change - save to user's draft
@@ -130,7 +130,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
       ...(formData[FIELDS.EQUITY_CALCULATOR_DRAFT] || {}),
       [currentUserId]: draftData
     };
-    handleChange('equityCalculatorDraft', newDrafts);
+    handleChange(FIELDS.EQUITY_CALCULATOR_DRAFT, newDrafts);
   };
 
   // Validate spreadsheet data before submission
@@ -198,7 +198,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
         submittedAt: new Date().toISOString()
       }
     };
-    handleChange('equityCalculatorSubmitted', newSubmitted);
+    handleChange(FIELDS.EQUITY_CALCULATOR_SUBMITTED, newSubmitted);
 
     // Navigate to results view with animation
     changeView('results');

@@ -40,7 +40,7 @@ function SectionIP({ formData, handleChange, isReadOnly, project, showValidation
                   checked={formData[FIELDS.HAS_PRE_EXISTING_IP] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('hasPreExistingIP', formData[FIELDS.HAS_PRE_EXISTING_IP] === option ? '' : option);
+                      handleChange(FIELDS.HAS_PRE_EXISTING_IP, formData[FIELDS.HAS_PRE_EXISTING_IP] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -84,7 +84,7 @@ function SectionIP({ formData, handleChange, isReadOnly, project, showValidation
                         checked={isApproved}
                         onChange={(e) => {
                           const newApprovals = { ...approvals, [userId]: e.target.checked };
-                          handleChange('acknowledgeIPAssignment', newApprovals);
+                          handleChange(FIELDS.ACKNOWLEDGE_IP_ASSIGNMENT, newApprovals);
                         }}
                         disabled={isReadOnly || !isCurrentUser}
                         className="mr-3"
@@ -131,7 +131,7 @@ function SectionIP({ formData, handleChange, isReadOnly, project, showValidation
                       checked={isApproved}
                       onChange={(e) => {
                         const newApprovals = { ...approvals, [userId]: e.target.checked };
-                        handleChange('acknowledgeIPOwnership', newApprovals);
+                        handleChange(FIELDS.ACKNOWLEDGE_IP_OWNERSHIP, newApprovals);
                       }}
                       disabled={isReadOnly || !isCurrentUser}
                       className="mr-3"

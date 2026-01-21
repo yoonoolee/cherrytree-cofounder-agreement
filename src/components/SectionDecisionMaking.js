@@ -38,7 +38,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                     const newDecisions = e.target.checked
                       ? [...currentDecisions, decision]
                       : currentDecisions.filter(d => d !== decision);
-                    handleChange('majorDecisions', newDecisions);
+                    handleChange(FIELDS.MAJOR_DECISIONS, newDecisions);
                   }}
                   disabled={isReadOnly}
                   className="mr-3"
@@ -52,7 +52,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
             <input
               type="text"
               value={formData[FIELDS.MAJOR_DECISIONS_OTHER] || ''}
-              onChange={(e) => handleChange('majorDecisionsOther', e.target.value)}
+              onChange={(e) => handleChange(FIELDS.MAJOR_DECISIONS_OTHER, e.target.value)}
               disabled={isReadOnly}
               className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
               placeholder="Please specify"
@@ -75,7 +75,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                 checked={formData[FIELDS.EQUITY_VOTING_POWER] === 'yes'}
                 onClick={() => {
                   if (!isReadOnly) {
-                    handleChange('equityVotingPower', formData[FIELDS.EQUITY_VOTING_POWER] === 'yes' ? '' : 'yes');
+                    handleChange(FIELDS.EQUITY_VOTING_POWER, formData[FIELDS.EQUITY_VOTING_POWER] === 'yes' ? '' : 'yes');
                   }
                 }}
                 onChange={() => {}}
@@ -95,7 +95,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                 checked={formData[FIELDS.EQUITY_VOTING_POWER] === 'no'}
                 onClick={() => {
                   if (!isReadOnly) {
-                    handleChange('equityVotingPower', formData[FIELDS.EQUITY_VOTING_POWER] === 'no' ? '' : 'no');
+                    handleChange(FIELDS.EQUITY_VOTING_POWER, formData[FIELDS.EQUITY_VOTING_POWER] === 'no' ? '' : 'no');
                   }
                 }}
                 onChange={() => {}}
@@ -127,7 +127,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                   checked={formData[FIELDS.TIE_RESOLUTION] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('tieResolution', formData[FIELDS.TIE_RESOLUTION] === option ? '' : option);
+                      handleChange(FIELDS.TIE_RESOLUTION, formData[FIELDS.TIE_RESOLUTION] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -169,7 +169,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                           checked={isApproved}
                           onChange={(e) => {
                             const newApprovals = { ...approvals, [userId]: e.target.checked };
-                            handleChange('acknowledgeTieResolution', newApprovals);
+                            handleChange(FIELDS.ACKNOWLEDGE_TIE_RESOLUTION, newApprovals);
                           }}
                           disabled={isReadOnly || !isCurrentUser}
                           className="mr-3"
@@ -204,7 +204,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                   checked={formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('includeShotgunClause', formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === option ? '' : option);
+                      handleChange(FIELDS.INCLUDE_SHOTGUN_CLAUSE, formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -246,7 +246,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                           checked={isApproved}
                           onChange={(e) => {
                             const newApprovals = { ...approvals, [userId]: e.target.checked };
-                            handleChange('acknowledgeShotgunClause', newApprovals);
+                            handleChange(FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE, newApprovals);
                           }}
                           disabled={isReadOnly || !isCurrentUser}
                           className="mr-3"

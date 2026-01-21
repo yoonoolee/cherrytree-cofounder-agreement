@@ -34,7 +34,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
           <input
             type="date"
             value={formData[FIELDS.VESTING_START_DATE] || ''}
-            onChange={(e) => handleChange('vestingStartDate', e.target.value)}
+            onChange={(e) => handleChange(FIELDS.VESTING_START_DATE, e.target.value)}
             disabled={isReadOnly}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
           />
@@ -58,7 +58,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
                   checked={formData[FIELDS.VESTING_SCHEDULE] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('vestingSchedule', formData[FIELDS.VESTING_SCHEDULE] === option ? '' : option);
+                      handleChange(FIELDS.VESTING_SCHEDULE, formData[FIELDS.VESTING_SCHEDULE] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -74,7 +74,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
             <input
               type="text"
               value={formData[FIELDS.VESTING_SCHEDULE_OTHER] || ''}
-              onChange={(e) => handleChange('vestingScheduleOther', e.target.value)}
+              onChange={(e) => handleChange(FIELDS.VESTING_SCHEDULE_OTHER, e.target.value)}
               disabled={isReadOnly}
               className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
               placeholder="Please specify"
@@ -99,7 +99,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
               const value = e.target.value.replace('%', '');
 
               if (value === '' || (!isNaN(value) && parseFloat(value) >= 0 && parseFloat(value) <= 100)) {
-                handleChange('cliffPercentage', value);
+                handleChange(FIELDS.CLIFF_PERCENTAGE, value);
 
                 // Keep cursor before the %
                 setTimeout(() => {
@@ -170,7 +170,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
                   checked={formData[FIELDS.ACCELERATION_TRIGGER] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('accelerationTrigger', formData[FIELDS.ACCELERATION_TRIGGER] === option ? '' : option);
+                      handleChange(FIELDS.ACCELERATION_TRIGGER, formData[FIELDS.ACCELERATION_TRIGGER] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -229,7 +229,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
               const value = e.target.value;
               // Only allow integers (no decimals)
               if (value === '' || (Number.isInteger(Number(value)) && Number(value) >= 0)) {
-                handleChange('sharesSellNoticeDays', value);
+                handleChange(FIELDS.SHARES_SELL_NOTICE_DAYS, value);
               }
             }}
             onKeyDown={(e) => {
@@ -259,7 +259,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
               const value = e.target.value;
               // Only allow integers (no decimals)
               if (value === '' || (Number.isInteger(Number(value)) && Number(value) >= 0)) {
-                handleChange('sharesBuybackDays', value);
+                handleChange(FIELDS.SHARES_BUYBACK_DAYS, value);
               }
             }}
             onKeyDown={(e) => {
@@ -306,7 +306,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
                       checked={isApproved}
                       onChange={(e) => {
                         const newApprovals = { ...approvals, [userId]: e.target.checked };
-                        handleChange('acknowledgeForfeiture', newApprovals);
+                        handleChange(FIELDS.ACKNOWLEDGE_FORFEITURE, newApprovals);
                       }}
                       disabled={isReadOnly || !isCurrentUser}
                       className="mr-3"
@@ -339,7 +339,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
                   checked={formData[FIELDS.VESTED_SHARES_DISPOSAL] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('vestedSharesDisposal', formData[FIELDS.VESTED_SHARES_DISPOSAL] === option ? '' : option);
+                      handleChange(FIELDS.VESTED_SHARES_DISPOSAL, formData[FIELDS.VESTED_SHARES_DISPOSAL] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}

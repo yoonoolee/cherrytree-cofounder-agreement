@@ -34,7 +34,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
                   checked={formData[FIELDS.DISPUTE_RESOLUTION] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('disputeResolution', formData[FIELDS.DISPUTE_RESOLUTION] === option ? '' : option);
+                      handleChange(FIELDS.DISPUTE_RESOLUTION, formData[FIELDS.DISPUTE_RESOLUTION] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -50,7 +50,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
             <input
               type="text"
               value={formData[FIELDS.DISPUTE_RESOLUTION_OTHER] || ''}
-              onChange={(e) => handleChange('disputeResolutionOther', e.target.value)}
+              onChange={(e) => handleChange(FIELDS.DISPUTE_RESOLUTION_OTHER, e.target.value)}
               disabled={isReadOnly}
               className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
               placeholder="Please specify"
@@ -66,7 +66,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
           </label>
           <CustomSelect
             value={formData[FIELDS.GOVERNING_LAW] || ''}
-            onChange={(value) => handleChange('governingLaw', value)}
+            onChange={(value) => handleChange(FIELDS.GOVERNING_LAW, value)}
             options={US_STATES.map(state => ({
               value: state.label,
               label: `${state.label} (${state.value})`
@@ -92,7 +92,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
                   checked={formData[FIELDS.AMENDMENT_PROCESS] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('amendmentProcess', formData[FIELDS.AMENDMENT_PROCESS] === option ? '' : option);
+                      handleChange(FIELDS.AMENDMENT_PROCESS, formData[FIELDS.AMENDMENT_PROCESS] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -108,7 +108,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
             <input
               type="text"
               value={formData[FIELDS.AMENDMENT_PROCESS_OTHER] || ''}
-              onChange={(e) => handleChange('amendmentProcessOther', e.target.value)}
+              onChange={(e) => handleChange(FIELDS.AMENDMENT_PROCESS_OTHER, e.target.value)}
               disabled={isReadOnly}
               className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
               placeholder="Please specify"
@@ -129,7 +129,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
             onChange={(e) => {
               const value = e.target.value;
               if (value === '' || (parseInt(value) >= 0 && !value.includes('-'))) {
-                handleChange('reviewFrequencyMonths', value);
+                handleChange(FIELDS.REVIEW_FREQUENCY_MONTHS, value);
               }
             }}
             onKeyDown={(e) => {
@@ -178,7 +178,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
                       checked={isApproved}
                       onChange={(e) => {
                         const newApprovals = { ...approvals, [userId]: e.target.checked };
-                        handleChange('acknowledgePeriodicReview', newApprovals);
+                        handleChange(FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW, newApprovals);
                       }}
                       disabled={isReadOnly || !isCurrentUser}
                       className="mr-3"
@@ -226,7 +226,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
                       checked={isApproved}
                       onChange={(e) => {
                         const newApprovals = { ...approvals, [userId]: e.target.checked };
-                        handleChange('acknowledgeAmendmentReviewRequest', newApprovals);
+                        handleChange(FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST, newApprovals);
                       }}
                       disabled={isReadOnly || !isCurrentUser}
                       className="mr-3"
@@ -274,7 +274,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
                       checked={isApproved}
                       onChange={(e) => {
                         const newApprovals = { ...approvals, [userId]: e.target.checked };
-                        handleChange('acknowledgeEntireAgreement', newApprovals);
+                        handleChange(FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT, newApprovals);
                       }}
                       disabled={isReadOnly || !isCurrentUser}
                       className="mr-3"
@@ -322,7 +322,7 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
                       checked={isApproved}
                       onChange={(e) => {
                         const newApprovals = { ...approvals, [userId]: e.target.checked };
-                        handleChange('acknowledgeSeverability', newApprovals);
+                        handleChange(FIELDS.ACKNOWLEDGE_SEVERABILITY, newApprovals);
                       }}
                       disabled={isReadOnly || !isCurrentUser}
                       className="mr-3"
