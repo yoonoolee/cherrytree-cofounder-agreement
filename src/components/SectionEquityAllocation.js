@@ -5,6 +5,7 @@ import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
 import './Section3EquityAllocation.css';
 import { FIELDS } from '../config/surveySchema';
+import { calculateEquityPercentages } from '../utils/equityCalculation';
 
 const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly, showValidation, project, onViewModeChange }, ref) => {
   const { currentUser } = useUser();
@@ -141,7 +142,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
 
     try {
       // Calculate equity percentages from the spreadsheet
-      const equityPercentages = calculateEquityFromSpreadsheet(spreadsheetData);
+      const equityPercentages = calculateEquityPercentages(spreadsheetData, { collaboratorIds });
 
       // If calculation returns null, it means the data is invalid (all zeros)
       if (!equityPercentages) {
@@ -240,115 +241,17 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
     return sum + (parseFloat(formData[FIELDS.FINAL_EQUITY_PERCENTAGES]?.[userId]) || 0);
   }, 0);
 
-  // Function to calculate equity percentages from a submitted spreadsheet
-  const calculateEquityFromSpreadsheet = (spreadsheetData) => {
-    if (!spreadsheetData) return null;
-
-    try {
-      // Convert Firebase format to array if needed
-      let data = spreadsheetData;
-      if (typeof spreadsheetData === 'object' && !Array.isArray(spreadsheetData)) {
-        // It's in Firebase format, need to convert
-        const rowKeys = Object.keys(spreadsheetData).sort((a, b) => {
-          const aNum = parseInt(a.split('_')[1]);
-          const bNum = parseInt(b.split('_')[1]);
-          return aNum - bNum;
-        });
-
-        data = rowKeys.map(rowKey => {
-          const row = spreadsheetData[rowKey];
-          if (!row) return [];
-
-          const colKeys = Object.keys(row).sort((a, b) => {
-            const aNum = parseInt(a.split('_')[1]);
-            const bNum = parseInt(b.split('_')[1]);
-            return aNum - bNum;
-          });
-
-          return colKeys.map(colKey => {
-            const cell = row[colKey];
-            return {
-              value: cell?.value !== undefined ? cell.value : 0
-            };
-          });
-        });
-      }
-
-      // Skip header row (index 0)
-      // Column 0 = Category name
-      // Column 1 = Importance/Weight
-      // Columns 2+ = Cofounder scores
-
-      // Calculate total importance (sum of column 1, excluding header)
-      let totalImportance = 0;
-      for (let i = 1; i < data.length; i++) {
-        const importance = parseFloat(data[i][1]?.value) || 0;
-        totalImportance += importance;
-      }
-
-      if (totalImportance === 0) return null;
-
-      // Calculate weighted scores for each cofounder
-      const cofounderScores = {};
-      const numCofounders = data[0].length - 2; // Subtract Category and Importance columns
-
-      for (let cofounderIndex = 0; cofounderIndex < numCofounders; cofounderIndex++) {
-        const colIndex = cofounderIndex + 2; // Start after Category and Importance
-        let weightedScore = 0;
-
-        for (let rowIndex = 1; rowIndex < data.length; rowIndex++) {
-          const importance = parseFloat(data[rowIndex][1]?.value) || 0;
-          const score = parseFloat(data[rowIndex][colIndex]?.value) || 0;
-          const weight = importance / totalImportance;
-          weightedScore += score * weight;
-        }
-
-        // Map column index to actual cofounder userId
-        if (cofounderIndex < collaboratorIds.length) {
-          const cofounderUserId = collaboratorIds[cofounderIndex];
-          cofounderScores[cofounderUserId] = weightedScore;
-        }
-      }
-
-      // Calculate total of all weighted scores
-      const totalScore = Object.values(cofounderScores).reduce((sum, score) => sum + score, 0);
-
-      if (totalScore === 0) return null;
-
-      // Convert to percentages and round to 3 decimal places
-      const equityPercentages = {};
-      Object.keys(cofounderScores).forEach(userId => {
-        const percentage = (cofounderScores[userId] / totalScore) * 100;
-        equityPercentages[userId] = Math.round(percentage * 1000) / 1000;
-      });
-
-      return equityPercentages;
-    } catch (error) {
-      console.error('Error calculating equity:', error);
-      return null;
-    }
-  };
-
-  // Check if all cofounders have submitted
-  const allSubmitted = collaboratorIds.every(userId =>
-    !!formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED]?.[userId]
-  );
-
   // Calculate equity for each person's submission
   const equityCalculations = {};
   collaboratorIds.forEach(userId => {
     const submission = formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED]?.[userId];
     if (submission?.data) {
-      equityCalculations[userId] = calculateEquityFromSpreadsheet(submission.data);
+      equityCalculations[userId] = calculateEquityPercentages(submission.data, { collaboratorIds });
     }
   });
 
   // Ref for scrolling to Final Equity Allocation
   const finalEquityRef = React.useRef(null);
-
-  const scrollToFinalEquity = () => {
-    finalEquityRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
 
   const skipToFinalEquity = () => {
     // First, change to results view
@@ -536,7 +439,6 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                             {/* Legend */}
                             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 justify-center">
                               {collaboratorIds.map((cofounderUserId, index) => {
-                                const percentage = calculation[cofounderUserId] || 0;
                                 const color = colors[index % colors.length];
 
                                 return (

@@ -1,6 +1,5 @@
 import React from 'react';
 import { MAJOR_DECISIONS, TIE_RESOLUTION_OPTIONS } from '../config/surveySchema';
-import CustomSelect from './CustomSelect';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
 import Tooltip from './Tooltip';

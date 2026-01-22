@@ -3,11 +3,10 @@ import { db, functions } from '../firebase';
 import { doc, onSnapshot, getDoc, updateDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import ApprovalSection from './ApprovalSection';
-import { SECTION_IDS, SECTION_ORDER, SECTIONS as SECTION_CONFIG } from '../config/sectionConfig';
+import { SECTION_ORDER, SECTIONS as SECTION_CONFIG } from '../config/sectionConfig';
 import { useUser } from '../contexts/UserContext';
 import { useClerk, useAuth } from '@clerk/clerk-react';
 import { formatDeadline, isAfterEditDeadline } from '../utils/dateUtils';
-import { FIELDS } from '../config/surveySchema';
 
 function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreateProject }) {
   const { currentUser } = useUser();

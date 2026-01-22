@@ -76,7 +76,6 @@ function ApprovalSection({ project, projectId }) {
         {collaboratorIds.map((userId) => {
           const displayName = getDisplayName(userId);
           const isThisAdmin = isAdmin(userId);
-          const isCurrentUser = userId === currentUserId;
 
           return (
             <div key={userId} className="flex items-center justify-between bg-white rounded-lg p-3">

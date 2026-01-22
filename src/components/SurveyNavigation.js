@@ -1,11 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../firebase';
-import { doc, getDoc } from 'firebase/firestore';
 import PaymentModal from './PaymentModal';
 import UpgradeModal from './UpgradeModal';
-import { useUser } from '../contexts/UserContext';
-import { useClerk } from '@clerk/clerk-react';
 
 
 function SurveyNavigation({
@@ -23,100 +19,14 @@ function SurveyNavigation({
   setIsMobileNavOpen = () => {} // Mobile nav setState from parent
 }) {
   const navigate = useNavigate();
-  const { currentUser, organizationList, orgsLoaded } = useUser();
-  const { signOut } = useClerk();
-  const [fetchedProjects, setFetchedProjects] = useState([]);
-  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const dropdownRef = useRef(null);
-
-  // Use provided projects or fetch them
-  const allProjects = providedProjects !== null ? providedProjects : fetchedProjects;
-
-  // Fetch all projects for the current user (only if not provided)
-  // orgId === projectId (Clerk org ID is the Firestore document ID)
-  useEffect(() => {
-    if (providedProjects !== null) return;
-
-    const fetchProjects = async () => {
-      if (!currentUser || !orgsLoaded) return;
-
-      try {
-        const orgIds = organizationList?.map(org => org.organization.id) || [];
-
-        // Fetch projects directly by ID (orgId === projectId)
-        const projectPromises = orgIds.map(orgId =>
-          getDoc(doc(db, 'projects', orgId))
-        );
-        const projectDocs = await Promise.all(projectPromises);
-
-        const projects = projectDocs
-          .filter(projectDoc => projectDoc.exists())
-          .map(projectDoc => ({ id: projectDoc.id, ...projectDoc.data() }));
-
-        // Sort by lastOpened (most recent first)
-        projects.sort((a, b) => {
-          const aTime = a.lastOpened?.toMillis?.() || 0;
-          const bTime = b.lastOpened?.toMillis?.() || 0;
-          return bTime - aTime;
-        });
-
-        setFetchedProjects(projects);
-      } catch (error) {
-        console.error('Error fetching projects:', error);
-      }
-    };
-
-    fetchProjects();
-  }, [currentUser, orgsLoaded, organizationList, providedProjects]);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowProjectDropdown(false);
-      }
-    };
-
-    if (showProjectDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showProjectDropdown]);
-
-  const handleCreateProject = () => {
-    if (providedOnCreateProject) {
-      providedOnCreateProject();
-    } else {
-      setShowPaymentModal(true);
-    }
-  };
 
   const handlePaymentSuccess = (newProjectId) => {
     setShowPaymentModal(false);
     if (newProjectId) {
       navigate(`/survey/${newProjectId}`);
     }
-  };
-
-  const handleProjectSwitch = (newProjectId) => {
-    if (providedOnProjectSwitch) {
-      providedOnProjectSwitch(newProjectId);
-    } else {
-      navigate(`/survey/${newProjectId}`);
-    }
-  };
-
-  const handleLogout = () => {
-    // Set flag to prevent ProtectedRoute from intercepting
-    sessionStorage.setItem('isLoggingOut', 'true');
-
-    // Sign out (Clerk Dashboard handles redirect)
-    signOut().catch(err => console.error('Error signing out:', err));
   };
 
   return (
