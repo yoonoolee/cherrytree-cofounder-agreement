@@ -1226,7 +1226,7 @@ function LandingPage() {
                             </svg>
                           </div>
                           <div className="step2-cursor-white absolute z-20" style={{ width: '18px', height: '18px' }}>
-                            <svg viewBox="0 0 24 24" fill="white" stroke="black" strokeWidth="1.5" style={{ width: '18px', height: '18px' }}>
+                            <svg viewBox="0 0 24 24" fill="white" stroke="#0056D6" strokeWidth="1.5" style={{ width: '18px', height: '18px' }}>
                               <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
                             </svg>
                           </div>
