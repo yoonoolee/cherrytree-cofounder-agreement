@@ -13,10 +13,8 @@ function LandingPage() {
     title: 'Cherrytree - Create Cofounder Agreements',
     description: 'Cherrytree makes it easy to create cofounder agreements and determine equity splits.'
   });
-  const [activeTab, setActiveTab] = useState(0);
   const [openFaq, setOpenFaq] = useState(null);
   const [typedText, setTypedText] = useState('');
-  const [activeStep, setActiveStep] = useState(0);
   const [cardTilt, setCardTilt] = useState(15);
   const [activeFeature, setActiveFeature] = useState(0);
   const [contractCardsVisible, setContractCardsVisible] = useState(false);

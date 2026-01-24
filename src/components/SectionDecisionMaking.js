@@ -1,9 +1,9 @@
 import React from 'react';
 import { MAJOR_DECISIONS, TIE_RESOLUTION_OPTIONS } from '../config/surveySchema';
-import CustomSelect from './CustomSelect';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
 import Tooltip from './Tooltip';
+import { FIELDS } from '../config/surveySchema';
 
 function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
@@ -22,7 +22,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What type of decisions require a discussion between all cofounders?
-            {showValidation && (!formData.majorDecisions || formData.majorDecisions.length === 0) && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && (!formData[FIELDS.MAJOR_DECISIONS] || formData[FIELDS.MAJOR_DECISIONS].length === 0) && <span className="text-red-700 ml-0.5">*</span>}
             <Tooltip text="Which choices should never happen unless everyone's on board. Not office snacks." />
           </label>
           <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
@@ -31,13 +31,13 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
               <label key={decision} className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={(formData.majorDecisions || []).includes(decision)}
+                  checked={(formData[FIELDS.MAJOR_DECISIONS] || []).includes(decision)}
                   onChange={(e) => {
-                    const currentDecisions = formData.majorDecisions || [];
+                    const currentDecisions = formData[FIELDS.MAJOR_DECISIONS] || [];
                     const newDecisions = e.target.checked
                       ? [...currentDecisions, decision]
                       : currentDecisions.filter(d => d !== decision);
-                    handleChange('majorDecisions', newDecisions);
+                    handleChange(FIELDS.MAJOR_DECISIONS, newDecisions);
                   }}
                   disabled={isReadOnly}
                   className="mr-3"
@@ -47,13 +47,13 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
             ))}
           </div>
 
-          {(formData.majorDecisions || []).includes('Other') && (
+          {(formData[FIELDS.MAJOR_DECISIONS] || []).includes('Other') && (
             <input
               type="text"
-              value={formData.majorDecisionsOther || ''}
-              onChange={(e) => handleChange('majorDecisionsOther', e.target.value)}
+              value={formData[FIELDS.MAJOR_DECISIONS_OTHER] || ''}
+              onChange={(e) => handleChange(FIELDS.MAJOR_DECISIONS_OTHER, e.target.value)}
               disabled={isReadOnly}
-              className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
+              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
               placeholder="Please specify"
             />
           )}
@@ -63,7 +63,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             Should equity ownership reflect voting power?
-            {showValidation && !formData.equityVotingPower && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && !formData[FIELDS.EQUITY_VOTING_POWER] && <span className="text-red-700 ml-0.5">*</span>}
           </label>
           <div className="space-y-2">
             <label className="flex items-start">
@@ -71,10 +71,10 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                 type="radio"
                 name="equityVotingPower"
                 value="yes"
-                checked={formData.equityVotingPower === 'yes'}
+                checked={formData[FIELDS.EQUITY_VOTING_POWER] === 'yes'}
                 onClick={() => {
                   if (!isReadOnly) {
-                    handleChange('equityVotingPower', formData.equityVotingPower === 'yes' ? '' : 'yes');
+                    handleChange(FIELDS.EQUITY_VOTING_POWER, formData[FIELDS.EQUITY_VOTING_POWER] === 'yes' ? '' : 'yes');
                   }
                 }}
                 onChange={() => {}}
@@ -91,10 +91,10 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                 type="radio"
                 name="equityVotingPower"
                 value="no"
-                checked={formData.equityVotingPower === 'no'}
+                checked={formData[FIELDS.EQUITY_VOTING_POWER] === 'no'}
                 onClick={() => {
                   if (!isReadOnly) {
-                    handleChange('equityVotingPower', formData.equityVotingPower === 'no' ? '' : 'no');
+                    handleChange(FIELDS.EQUITY_VOTING_POWER, formData[FIELDS.EQUITY_VOTING_POWER] === 'no' ? '' : 'no');
                   }
                 }}
                 onChange={() => {}}
@@ -114,7 +114,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
           <label className="block text-base font-medium text-gray-900 mb-2">
             If cofounders are deadlocked, how should the tie be resolved?
             <Tooltip text="Decide how to break a stalemate before it becomes a staring contest nobody wins." />
-            {showValidation && !formData.tieResolution && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && !formData[FIELDS.TIE_RESOLUTION] && <span className="text-red-700 ml-0.5">*</span>}
           </label>
           <div className="space-y-2">
             {TIE_RESOLUTION_OPTIONS.map((option) => (
@@ -123,10 +123,10 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                   type="radio"
                   name="tieResolution"
                   value={option}
-                  checked={formData.tieResolution === option}
+                  checked={formData[FIELDS.TIE_RESOLUTION] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('tieResolution', formData.tieResolution === option ? '' : option);
+                      handleChange(FIELDS.TIE_RESOLUTION, formData[FIELDS.TIE_RESOLUTION] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -138,14 +138,14 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
             ))}
           </div>
 
-          {formData.tieResolution && (
+          {formData[FIELDS.TIE_RESOLUTION] && (
             <div className="conditional-section">
               <p className="text-gray-700 mb-4">
                 {(() => {
-                  const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeTieResolution?.[userId]);
+                  const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_TIE_RESOLUTION]?.[userId]);
                   return (
                     <>
-                      In the event of a deadlock, the Cofounders agree to first seek resolution through informal negotiation for a period of 30 days. If unresolved, the deadlock shall be resolved by {formData.tieResolution}.
+                      In the event of a deadlock, the Cofounders agree to first seek resolution through informal negotiation for a period of 30 days. If unresolved, the deadlock shall be resolved by {formData[FIELDS.TIE_RESOLUTION]}.
                       {showValidation && !allAcknowledged && <span className="text-red-700 ml-0.5">*</span>}
                     </>
                   );
@@ -153,7 +153,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
               </p>
               <div className="space-y-2 mt-3 pl-4">
                 {(() => {
-                  const approvals = formData.acknowledgeTieResolution || {};
+                  const approvals = formData[FIELDS.ACKNOWLEDGE_TIE_RESOLUTION] || {};
                   const currentUserId = currentUser?.id;
 
                   return collaboratorIds.map((userId) => {
@@ -168,7 +168,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                           checked={isApproved}
                           onChange={(e) => {
                             const newApprovals = { ...approvals, [userId]: e.target.checked };
-                            handleChange('acknowledgeTieResolution', newApprovals);
+                            handleChange(FIELDS.ACKNOWLEDGE_TIE_RESOLUTION, newApprovals);
                           }}
                           disabled={isReadOnly || !isCurrentUser}
                           className="mr-3"
@@ -191,7 +191,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
           <label className="block text-base font-medium text-gray-900 mb-2">
             Do you want to include a shotgun clause if you and your cofounder(s) cannot resolve deadlocks?
             <Tooltip text="You can essentially offer to buy each other out. You're incentivized to make a reasonable offer because you might be bought out." placement="left" />
-            {showValidation && !formData.includeShotgunClause && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && !formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] && <span className="text-red-700 ml-0.5">*</span>}
           </label>
           <div className="space-y-2">
             {['Yes', 'No'].map((option) => (
@@ -200,10 +200,10 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                   type="radio"
                   name="includeShotgunClause"
                   value={option}
-                  checked={formData.includeShotgunClause === option}
+                  checked={formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('includeShotgunClause', formData.includeShotgunClause === option ? '' : option);
+                      handleChange(FIELDS.INCLUDE_SHOTGUN_CLAUSE, formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -215,11 +215,11 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
             ))}
           </div>
 
-          {formData.includeShotgunClause === 'Yes' && (
+          {formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === 'Yes' && (
             <div className="conditional-section">
               <p className="text-gray-700 mb-4">
                 {(() => {
-                  const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeShotgunClause?.[userId]);
+                  const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE]?.[userId]);
                   return (
                     <>
                       I acknowledge that no partial buy/sell is allowed and payment is due in cash within 60 days of acceptance.
@@ -230,7 +230,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
               </p>
               <div className="space-y-2 mt-3 pl-4">
                 {(() => {
-                  const approvals = formData.acknowledgeShotgunClause || {};
+                  const approvals = formData[FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE] || {};
                   const currentUserId = currentUser?.id;
 
                   return collaboratorIds.map((userId) => {
@@ -245,7 +245,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                           checked={isApproved}
                           onChange={(e) => {
                             const newApprovals = { ...approvals, [userId]: e.target.checked };
-                            handleChange('acknowledgeShotgunClause', newApprovals);
+                            handleChange(FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE, newApprovals);
                           }}
                           disabled={isReadOnly || !isCurrentUser}
                           className="mr-3"

@@ -240,10 +240,13 @@ exports.submitSurvey = onCall({
     // Merge "Other" fields before sending - keeps separate in Firestore, merged for PDF
     const mergedSurveyData = mergeOtherFields(projectData.surveyData || {});
 
+    // Use consistent timestamp for this submission operation
+    const submissionTime = new Date();
+
     const webhookData = {
       projectId: projectId,
       projectName: projectData.name,
-      submittedAt: new Date().toISOString(),
+      submittedAt: submissionTime.toISOString(),
       data: mergedSurveyData
     };
 
@@ -259,11 +262,10 @@ exports.submitSurvey = onCall({
         throw new HttpsError('internal', 'Invalid PDF URL received from external service');
       }
 
-      const generatedAt = new Date();
       await projectRef.update({
         pdfAgreements: FieldValue.arrayUnion({
           url: response.data.pdfUrl,
-          generatedAt: generatedAt,
+          generatedAt: submissionTime,
           generatedBy: userId
         }),
         latestPdfUrl: response.data.pdfUrl
@@ -560,7 +562,7 @@ exports.stripeWebhook = onRequest({
                 [userId]: {
                   role: 'admin',
                   isActive: true,
-                  history: [{ startAt: new Date(), endAt: null }]
+                  history: [{ startAt: now, endAt: null }]
                 }
               },
               approvals: {
@@ -597,7 +599,7 @@ exports.stripeWebhook = onRequest({
                   amountPaidCents: session.amount_total,
                   currency: session.currency,
                   receiptUrl: receiptUrl,
-                  purchasedAt: purchasedAt || new Date()
+                  purchasedAt: purchasedAt || now
                 }
               },
               // Timestamps
@@ -687,6 +689,9 @@ exports.deleteAccount = onCall({
     // Verify Clerk session token
     const { userId, email } = await verifyClerkToken(sessionToken);
 
+    // Use consistent timestamp for this deletion operation
+    const deletionTime = new Date();
+
     // Generate pseudonymized identifier
     const pseudoId = `deleted_user_${userId.substring(0, 8)}`;
     const pseudoEmail = `${pseudoId}@cherrytree.internal`;
@@ -720,7 +725,7 @@ exports.deleteAccount = onCall({
         // Mark deleted user as inactive
         if (collaborators[userId]) {
           const currentEntry = collaborators[userId].history?.find(h => h.endAt === null);
-          if (currentEntry) currentEntry.endAt = new Date();
+          if (currentEntry) currentEntry.endAt = deletionTime;
           collaborators[userId].isActive = false;
         }
 
@@ -755,7 +760,7 @@ exports.deleteAccount = onCall({
           [pseudoId]: {
             role: 'admin',
             isActive: true,
-            history: [{ startAt: new Date(), endAt: null }]
+            history: [{ startAt: deletionTime, endAt: null }]
           }
         };
 
@@ -791,7 +796,7 @@ exports.deleteAccount = onCall({
       if (collaborators[userId]) {
         const currentEntry = collaborators[userId].history?.find(h => h.endAt === null);
         if (currentEntry) {
-          currentEntry.endAt = new Date();
+          currentEntry.endAt = deletionTime;
         }
         collaborators[userId].isActive = false;
         await projectDoc.ref.update({
@@ -1011,6 +1016,7 @@ exports.clerkWebhook = onRequest({
         const { organization, public_user_data } = evt.data;
         const userId = public_user_data.user_id;
         const orgId = organization.id;
+        const joinTime = new Date();
 
         try {
           const projectDoc = await db.collection('projects').doc(orgId).get();
@@ -1022,14 +1028,14 @@ exports.clerkWebhook = onRequest({
 
             if (collaborators[userId]) {
               // User rejoining - add new history entry and set active
-              collaborators[userId].history.push({ startAt: new Date(), endAt: null });
+              collaborators[userId].history.push({ startAt: joinTime, endAt: null });
               collaborators[userId].isActive = true;
             } else {
               // New collaborator
               collaborators[userId] = {
                 role: 'collaborator',
                 isActive: true,
-                history: [{ startAt: new Date(), endAt: null }]
+                history: [{ startAt: joinTime, endAt: null }]
               };
             }
 
@@ -1051,6 +1057,7 @@ exports.clerkWebhook = onRequest({
         const { organization, public_user_data } = evt.data;
         const userId = public_user_data.user_id;
         const orgId = organization.id;
+        const leaveTime = new Date();
 
         try {
           const projectDoc = await db.collection('projects').doc(orgId).get();
@@ -1065,7 +1072,7 @@ exports.clerkWebhook = onRequest({
               const history = collaborators[userId].history || [];
               const currentEntry = history.find(h => h.endAt === null);
               if (currentEntry) {
-                currentEntry.endAt = new Date();
+                currentEntry.endAt = leaveTime;
               }
               collaborators[userId].isActive = false;
             }

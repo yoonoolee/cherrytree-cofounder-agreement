@@ -2,6 +2,7 @@ import React from 'react';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
 import Tooltip from './Tooltip';
+import { FIELDS } from '../config/surveySchema';
 
 function SectionIP({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
@@ -26,7 +27,7 @@ function SectionIP({ formData, handleChange, isReadOnly, project, showValidation
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             Has any cofounder created code, designs, or other assets before joining the company that might be used in the business?
-            {showValidation && !formData.hasPreExistingIP && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.HAS_PRE_EXISTING_IP] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
             <Tooltip text="Nail down ownership now, or risk ugly debates later over who really owns what once the company takes off." />
           </label>
           <div className="space-y-2">
@@ -36,10 +37,10 @@ function SectionIP({ formData, handleChange, isReadOnly, project, showValidation
                   type="radio"
                   name="hasPreExistingIP"
                   value={option}
-                  checked={formData.hasPreExistingIP === option}
+                  checked={formData[FIELDS.HAS_PRE_EXISTING_IP] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('hasPreExistingIP', formData.hasPreExistingIP === option ? '' : option);
+                      handleChange(FIELDS.HAS_PRE_EXISTING_IP, formData[FIELDS.HAS_PRE_EXISTING_IP] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -53,11 +54,11 @@ function SectionIP({ formData, handleChange, isReadOnly, project, showValidation
         </div>
 
         {/* Acknowledge IP Assignment */}
-        {formData.hasPreExistingIP === 'Yes' && (
+        {formData[FIELDS.HAS_PRE_EXISTING_IP] === 'Yes' && (
           <div>
             <label className="block text-base font-medium text-gray-900 mb-2">
               {(() => {
-                const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeIPAssignment?.[userId]);
+                const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_IP_ASSIGNMENT]?.[userId]);
                 return (
                   <>
                     Any pre-existing IP can be assigned to the company via a written agreement if the cofounders agree:
@@ -68,7 +69,7 @@ function SectionIP({ formData, handleChange, isReadOnly, project, showValidation
             </label>
             <div className="space-y-2">
               {(() => {
-                const approvals = formData.acknowledgeIPAssignment || {};
+                const approvals = formData[FIELDS.ACKNOWLEDGE_IP_ASSIGNMENT] || {};
                 const currentUserId = currentUser?.id;
 
                 return collaboratorIds.map((userId) => {
@@ -83,7 +84,7 @@ function SectionIP({ formData, handleChange, isReadOnly, project, showValidation
                         checked={isApproved}
                         onChange={(e) => {
                           const newApprovals = { ...approvals, [userId]: e.target.checked };
-                          handleChange('acknowledgeIPAssignment', newApprovals);
+                          handleChange(FIELDS.ACKNOWLEDGE_IP_ASSIGNMENT, newApprovals);
                         }}
                         disabled={isReadOnly || !isCurrentUser}
                         className="mr-3"
@@ -104,7 +105,7 @@ function SectionIP({ formData, handleChange, isReadOnly, project, showValidation
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             {(() => {
-              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeIPOwnership?.[userId]);
+              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_IP_OWNERSHIP]?.[userId]);
               return (
                 <>
                   Each Cofounder agrees that all inventions, discoveries, designs, developments, improvements, processes, works of authorship, trade secrets, and other intellectual property (collectively, "IP") conceived, created, developed, or reduced to practice by the Cofounder, either alone or with others, in the course of their work for the Company or using the Company's resources, shall be the sole and exclusive property of the Company.
@@ -115,7 +116,7 @@ function SectionIP({ formData, handleChange, isReadOnly, project, showValidation
           </label>
           <div className="space-y-2">
             {(() => {
-              const approvals = formData.acknowledgeIPOwnership || {};
+              const approvals = formData[FIELDS.ACKNOWLEDGE_IP_OWNERSHIP] || {};
               const currentUserId = currentUser?.id;
 
               return collaboratorIds.map((userId) => {
@@ -130,7 +131,7 @@ function SectionIP({ formData, handleChange, isReadOnly, project, showValidation
                       checked={isApproved}
                       onChange={(e) => {
                         const newApprovals = { ...approvals, [userId]: e.target.checked };
-                        handleChange('acknowledgeIPOwnership', newApprovals);
+                        handleChange(FIELDS.ACKNOWLEDGE_IP_OWNERSHIP, newApprovals);
                       }}
                       disabled={isReadOnly || !isCurrentUser}
                       className="mr-3"

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Spreadsheet from 'react-spreadsheet';
 import './EquityCalculator.css';
+import { calculateEquityPercentages, convertFromFirebaseFormat, isFirebaseFormat } from '../utils/equityCalculation';
 
 function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftChange, onSubmit, isReadOnly, hasSubmitted, submissionError, lastSubmittedAt, wiggle }) {
   // Function to get cofounder name from userId
@@ -39,44 +40,6 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
       });
     });
     return firebaseData;
-  };
-
-  // Helper function to convert Firebase object structure back to nested arrays
-  const convertFromFirebaseFormat = (firebaseData) => {
-    if (!firebaseData) return null;
-
-    try {
-      // Extract row keys and sort them
-      const rowKeys = Object.keys(firebaseData).sort((a, b) => {
-        const aNum = parseInt(a.split('_')[1]);
-        const bNum = parseInt(b.split('_')[1]);
-        return aNum - bNum;
-      });
-
-      return rowKeys.map(rowKey => {
-        const row = firebaseData[rowKey];
-        if (!row) return [];
-
-        const colKeys = Object.keys(row).sort((a, b) => {
-          const aNum = parseInt(a.split('_')[1]);
-          const bNum = parseInt(b.split('_')[1]);
-          return aNum - bNum;
-        });
-
-        return colKeys.map(colKey => {
-          const cell = row[colKey];
-          const cellValue = cell?.value;
-          return {
-            value: (cellValue !== undefined && cellValue !== null && cellValue !== '') ? cellValue : 0,
-            readOnly: cell?.readOnly || false,
-            className: cell?.className || ''
-          };
-        });
-      });
-    } catch (error) {
-      console.error('Error converting from Firebase format:', error);
-      return null;
-    }
   };
 
   // Initialize spreadsheet data - 22 rows (header + 21 categories, no group headers)
@@ -143,7 +106,7 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
     // Merge in saved data if it exists
     if (userDraftData) {
       let loadedData = null;
-      if (typeof userDraftData === 'object' && !Array.isArray(userDraftData) && Object.keys(userDraftData).some(key => key.startsWith('row_'))) {
+      if (isFirebaseFormat(userDraftData)) {
         loadedData = convertFromFirebaseFormat(userDraftData);
       } else if (Array.isArray(userDraftData)) {
         loadedData = userDraftData;
@@ -181,62 +144,7 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
   const spreadsheetRef = useRef(null);
 
   // Calculate equity percentages from current data
-  const calculateCurrentEquity = () => {
-    try {
-      // Skip header row (index 0)
-      // Column 0 = Category name
-      // Column 1 = Importance/Weight
-      // Columns 2+ = Cofounder scores
-
-      // Calculate total importance (sum of column 1, excluding header)
-      let totalImportance = 0;
-      for (let i = 1; i < data.length; i++) {
-        const importance = parseFloat(data[i][1]?.value) || 0;
-        totalImportance += importance;
-      }
-
-      if (totalImportance === 0) return null;
-
-      // Calculate weighted scores for each cofounder
-      const cofounderScores = {};
-      const numCofounders = data[0].length - 2;
-
-      for (let cofounderIndex = 0; cofounderIndex < numCofounders; cofounderIndex++) {
-        const colIndex = cofounderIndex + 2;
-        let weightedScore = 0;
-
-        for (let rowIndex = 1; rowIndex < data.length; rowIndex++) {
-          const importance = parseFloat(data[rowIndex][1]?.value) || 0;
-          const score = parseFloat(data[rowIndex][colIndex]?.value) || 0;
-          const weight = importance / totalImportance;
-          weightedScore += score * weight;
-        }
-
-        if (cofounderIndex < cofounders.length) {
-          cofounderScores[cofounders[cofounderIndex]] = weightedScore;
-        }
-      }
-
-      // Calculate total of all weighted scores
-      const totalScore = Object.values(cofounderScores).reduce((sum, score) => sum + score, 0);
-
-      if (totalScore === 0) return null;
-
-      // Convert to percentages and round to 3 decimal places
-      const equityPercentages = {};
-      Object.keys(cofounderScores).forEach(userId => {
-        const percentage = (cofounderScores[userId] / totalScore) * 100;
-        equityPercentages[userId] = Math.round(percentage * 1000) / 1000;
-      });
-
-      return equityPercentages;
-    } catch (error) {
-      console.error('Error calculating current equity:', error);
-      return null;
-    }
-  };
-
-  const currentEquity = calculateCurrentEquity();
+  const currentEquity = calculateEquityPercentages(data, { collaboratorIds: cofounders });
 
   // Stacked progress bar component
   const EquityProgressBar = ({ equity }) => {

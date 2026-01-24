@@ -5,6 +5,7 @@ import { usePageMeta } from '../hooks/usePageMeta';
 import Footer from '../components/Footer';
 import Spreadsheet from 'react-spreadsheet';
 import '../components/EquityCalculator.css';
+import { calculateEquityPercentages } from '../utils/equityCalculation';
 
 function EquityCalculatorPage() {
   useScrollAnimation();
@@ -142,42 +143,8 @@ function EquityCalculatorPage() {
     }
   }, [numCofounders, cofounderNames, showCalculator]);
 
-  // Calculate equity percentages
-  const calculateEquity = () => {
-    try {
-      let totalImportance = 0;
-      for (let i = 1; i < data.length; i++) {
-        const importance = parseFloat(data[i][1]?.value) || 0;
-        totalImportance += importance;
-      }
-
-      if (totalImportance === 0) return null;
-
-      const cofounderScores = [];
-      for (let cofounderIndex = 0; cofounderIndex < numCofounders; cofounderIndex++) {
-        const colIndex = cofounderIndex + 2;
-        let weightedScore = 0;
-
-        for (let rowIndex = 1; rowIndex < data.length; rowIndex++) {
-          const importance = parseFloat(data[rowIndex][1]?.value) || 0;
-          const score = parseFloat(data[rowIndex][colIndex]?.value) || 0;
-          const weight = importance / totalImportance;
-          weightedScore += score * weight;
-        }
-
-        cofounderScores.push(weightedScore);
-      }
-
-      const totalScore = cofounderScores.reduce((sum, score) => sum + score, 0);
-      if (totalScore === 0) return null;
-
-      return cofounderScores.map(score => Math.round((score / totalScore) * 100 * 1000) / 1000);
-    } catch (error) {
-      return null;
-    }
-  };
-
-  const currentEquity = calculateEquity();
+  // Calculate equity percentages using shared utility (returns array for this standalone page)
+  const currentEquity = calculateEquityPercentages(data);
 
   // Handle spreadsheet changes
   const handleChange = (newData) => {
@@ -225,17 +192,6 @@ function EquityCalculatorPage() {
     setData(preservedData);
   };
 
-  // Handle number of cofounders change
-  const handleNumCofoundersChange = (num) => {
-    setNumCofounders(num);
-    setCofounderNames(prev => {
-      const newNames = [...prev];
-      while (newNames.length < num) {
-        newNames.push('');
-      }
-      return newNames.slice(0, num);
-    });
-  };
 
   // Handle cofounder name change
   const handleNameChange = (index, name) => {

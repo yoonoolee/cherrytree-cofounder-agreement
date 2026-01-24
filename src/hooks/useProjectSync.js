@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { INITIAL_FORM_DATA } from '../config/surveySchema';
+import { FIELDS } from '../config/surveySchema';
 
 /**
  * Get initial form data from survey schema

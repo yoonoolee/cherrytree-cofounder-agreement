@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { usePageMeta } from '../hooks/usePageMeta';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 function AboutPage() {
-  const navigate = useNavigate();
-
   // SEO meta tags
   usePageMeta({
     title: 'About Cherrytree | Fair Cofounder Agreements for Startups',

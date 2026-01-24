@@ -15,7 +15,6 @@ function Tooltip({ text, placement }) {
 
     if (isVisible && tooltipRef.current && containerRef.current) {
       const tooltipRect = tooltipRef.current.getBoundingClientRect();
-      const containerRect = containerRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
 
       // Check if tooltip would overflow on the right

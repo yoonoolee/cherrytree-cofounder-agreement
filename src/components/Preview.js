@@ -1,28 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db, functions } from '../firebase';
-import { doc, onSnapshot, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot, getDoc, updateDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import ApprovalSection from './ApprovalSection';
-import SurveyNavigation from './SurveyNavigation';
-import { useValidation } from '../hooks/useValidation';
-import { SECTIONS } from '../config/surveySchema';
+import { SECTION_ORDER, SECTIONS as SECTION_CONFIG } from '../config/sectionConfig';
 import { useUser } from '../contexts/UserContext';
-import { useAuth } from '@clerk/clerk-react';
+import { useClerk, useAuth } from '@clerk/clerk-react';
 import { formatDeadline, isAfterEditDeadline } from '../utils/dateUtils';
 
 function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreateProject }) {
   const { currentUser } = useUser();
+  const { signOut } = useClerk();
   const { getToken } = useAuth();
   const [project, setProject] = useState(null);
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [pdfUrl, setPdfUrl] = useState(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfError, setPdfError] = useState('');
   const [submitterName, setSubmitterName] = useState('<blank>');
-  const [currentSection, setCurrentSection] = useState(11); // Default to section 11 (Generated Agreement)
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [currentSection, setCurrentSection] = useState('generated-agreement'); // Default to Generated Agreement section
+  const [showProjectSelector, setShowProjectSelector] = useState(false);
+  const [isEditingProjectName, setIsEditingProjectName] = useState(false);
+  const [editedProjectName, setEditedProjectName] = useState('');
 
   // Convert Google Drive URL to embeddable format
   const getEmbedUrl = (url) => {
@@ -209,12 +209,17 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
   };
 
   const isAdmin = project?.admin === currentUser?.id;
-  const isReadOnly = true; // TEMP: was project?.submitted
+  const isReadOnly = project?.submitted;
 
-  // Create sections array with the 11th section (excluding Welcome section 0)
+  // Create sections array with Generated Agreement section
+  const GENERATED_AGREEMENT_ID = 'generated-agreement';
   const previewSections = [
-    ...SECTIONS.filter(s => s.id !== 0),
-    { id: 11, name: 'Generated Agreement' }
+    ...SECTION_ORDER.map((sectionId, index) => ({
+      id: sectionId,
+      name: SECTION_CONFIG[sectionId].displayName,
+      numericId: index + 1 // For backward compatibility if needed
+    })),
+    { id: GENERATED_AGREEMENT_ID, name: 'Generated Agreement', numericId: 11 }
   ];
 
   if (!project) {
@@ -497,18 +502,31 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
           {/* Content Container */}
           <div className="px-20 pt-8 pb-20">
 
-          {/* Sections 1-10: Show section name only */}
-          {currentSection >= 1 && currentSection <= 10 && (
-            <div className="p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                {SECTIONS.find(s => s.id === currentSection)?.name}
+          {/* Survey Sections: Show message to edit in survey mode */}
+          {SECTION_ORDER.includes(currentSection) && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+              <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {SECTION_CONFIG[currentSection]?.displayName}
               </h3>
-              <p className="text-gray-500">Section content placeholder</p>
+              <p className="text-gray-600 mb-4">
+                To view or edit this section, please {isReadOnly ? 'this survey is locked' : 'switch to edit mode'}
+              </p>
+              {!isReadOnly && (
+                <button
+                  onClick={onEdit}
+                  className="bg-black text-white px-6 py-2 rounded font-medium hover:bg-gray-800 transition"
+                >
+                  Go to Edit Mode
+                </button>
+              )}
             </div>
           )}
 
-          {/* Section 11: Generated Agreement (PDF) */}
-          {currentSection === 11 && (
+          {/* Generated Agreement (PDF) */}
+          {currentSection === GENERATED_AGREEMENT_ID && (
             <div>
               {/* Stale Preview Warning */}
               {!isReadOnly && pdfUrl && isPreviewStale() && !isGeneratingPdf && (

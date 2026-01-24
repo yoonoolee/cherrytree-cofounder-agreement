@@ -1,18 +1,19 @@
 import React from 'react';
 import { ROLES } from '../config/surveySchema';
+import { FIELDS } from '../config/surveySchema';
 
 function SectionCofounders({ formData, handleChange, isReadOnly, showValidation, project }) {
   // Get cofounder count from collaborators map
   const calculatedCofounderCount = Object.keys(project?.collaborators || {}).length;
 
-  const cofounders = formData.cofounders || [];
+  const cofounders = formData[FIELDS.COFOUNDERS] || [];
 
   // Automatically set cofounder count and initialize cofounders array
   React.useEffect(() => {
     if (calculatedCofounderCount > 0) {
       // Update cofounderCount if it's different
-      if (parseInt(formData.cofounderCount) !== calculatedCofounderCount) {
-        handleChange('cofounderCount', calculatedCofounderCount.toString());
+      if (parseInt(formData[FIELDS.COFOUNDER_COUNT]) !== calculatedCofounderCount) {
+        handleChange(FIELDS.COFOUNDER_COUNT, calculatedCofounderCount.toString());
       }
 
       // Initialize cofounders array ONLY if length doesn't match
@@ -27,10 +28,10 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
             rolesOther: ''
           };
         });
-        handleChange('cofounders', newCofounders);
+        handleChange(FIELDS.COFOUNDERS, newCofounders);
       }
     }
-  }, [calculatedCofounderCount, formData.cofounderCount, cofounders.length, handleChange]);
+  }, [calculatedCofounderCount, formData[FIELDS.COFOUNDER_COUNT], cofounders.length, handleChange]);
 
   const handleCofounderChange = (index, field, value) => {
     const newCofounders = [...cofounders];
@@ -38,7 +39,7 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
       ...newCofounders[index],
       [field]: value
     };
-    handleChange('cofounders', newCofounders);
+    handleChange(FIELDS.COFOUNDERS, newCofounders);
   };
 
   return (
@@ -70,11 +71,11 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
                   <div>
                     <label className="block text-base font-medium text-gray-900 mb-2">
                       Full Name
-                      {showValidation && !cofounder.fullName && <span className="text-red-700 ml-0.5">*</span>}
+                      {showValidation && !cofounder[FIELDS.COFOUNDER_FULL_NAME] && <span className="text-red-700 ml-0.5">*</span>}
                     </label>
                     <input
                       type="text"
-                      value={cofounder.fullName || ''}
+                      value={cofounder[FIELDS.COFOUNDER_FULL_NAME] || ''}
                       onChange={(e) => handleCofounderChange(index, 'fullName', e.target.value)}
                       disabled={isReadOnly}
                       required
@@ -87,11 +88,11 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
                   <div>
                     <label className="block text-base font-medium text-gray-900 mb-2">
                       Title
-                      {showValidation && !cofounder.title && <span className="text-red-700 ml-0.5">*</span>}
+                      {showValidation && !cofounder[FIELDS.COFOUNDER_TITLE] && <span className="text-red-700 ml-0.5">*</span>}
                     </label>
                     <input
                       type="text"
-                      value={cofounder.title || ''}
+                      value={cofounder[FIELDS.COFOUNDER_TITLE] || ''}
                       onChange={(e) => handleCofounderChange(index, 'title', e.target.value)}
                       disabled={isReadOnly}
                       required
@@ -104,11 +105,11 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
                   <div>
                     <label className="block text-base font-medium text-gray-900 mb-2">
                       Email
-                      {showValidation && !cofounder.email && <span className="text-red-700 ml-0.5">*</span>}
+                      {showValidation && !cofounder[FIELDS.COFOUNDER_EMAIL] && <span className="text-red-700 ml-0.5">*</span>}
                     </label>
                     <input
                       type="email"
-                      value={cofounder.email || ''}
+                      value={cofounder[FIELDS.COFOUNDER_EMAIL] || ''}
                       onChange={(e) => handleCofounderChange(index, 'email', e.target.value)}
                       disabled={isReadOnly}
                       required
@@ -121,7 +122,7 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
                   <div>
                     <label className="block text-base font-medium text-gray-900 mb-2">
                       Roles & Responsibilities
-                      {showValidation && (!cofounder.roles || cofounder.roles.length === 0) && <span className="text-red-700 ml-0.5">*</span>}
+                      {showValidation && (!cofounder[FIELDS.COFOUNDER_ROLES] || cofounder[FIELDS.COFOUNDER_ROLES].length === 0) && <span className="text-red-700 ml-0.5">*</span>}
                     </label>
                     <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
                     <div className="space-y-2">
@@ -129,9 +130,9 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
                         <label key={role} className="flex items-center">
                           <input
                             type="checkbox"
-                            checked={(cofounder.roles || []).includes(role)}
+                            checked={(cofounder[FIELDS.COFOUNDER_ROLES] || []).includes(role)}
                             onChange={(e) => {
-                              const currentRoles = cofounder.roles || [];
+                              const currentRoles = cofounder[FIELDS.COFOUNDER_ROLES] || [];
                               const newRoles = e.target.checked
                                 ? [...currentRoles, role]
                                 : currentRoles.filter(r => r !== role);
@@ -145,13 +146,13 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
                       ))}
                     </div>
 
-                    {(cofounder.roles || []).includes('Other') && (
+                    {(cofounder[FIELDS.COFOUNDER_ROLES] || []).includes('Other') && (
                       <input
                         type="text"
-                        value={cofounder.rolesOther || ''}
+                        value={cofounder[FIELDS.COFOUNDER_ROLES_OTHER] || ''}
                         onChange={(e) => handleCofounderChange(index, 'rolesOther', e.target.value)}
                         disabled={isReadOnly}
-                        className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
+                        className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                         placeholder="Please specify"
                       />
                     )}

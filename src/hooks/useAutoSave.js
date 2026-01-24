@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import { FIELDS } from '../config/surveySchema';
 
 // Constants
 const AUTO_SAVE_DELAY_MS = 2000; // Debounce delay before saving (2 seconds)

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { US_STATES, INDUSTRIES, ENTITY_TYPES } from '../config/surveySchema';
 import CustomSelect from './CustomSelect';
 import Tooltip from './Tooltip';
+import { FIELDS } from '../config/surveySchema';
 
 // Constants
 const ADDRESS_SEARCH_MIN_LENGTH = 3; // Minimum characters before triggering address autocomplete
@@ -13,138 +14,14 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const autocompleteSuggestion = useRef(null);
   const isInitialMount = useRef(true);
-  const registeredStateInputRef = useRef(null);
-  const mailingStateInputRef = useRef(null);
-  const isDeleting = useRef(false);
-
-  const findStateMatch = (input) => {
-    if (!input) return '';
-    const match = US_STATES.find(state =>
-      state.label.toLowerCase().startsWith(input.toLowerCase())
-    );
-    return match ? match.label : '';
-  };
-
-  const handleStateKeyDown = (e, inputRef) => {
-    if (e.key === 'Backspace' || e.key === 'Delete') {
-      isDeleting.current = true;
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (inputRef.current) {
-        inputRef.current.blur();
-      }
-    }
-  };
-
-  const handleRegisteredStateChange = (e) => {
-    const value = e.target.value;
-
-    if (isDeleting.current) {
-      isDeleting.current = false;
-      handleChange('registeredState', value);
-      return;
-    }
-
-    if (value) {
-      const matchesAnyState = US_STATES.some(state =>
-        state.label.toLowerCase().startsWith(value.toLowerCase())
-      );
-
-      if (!matchesAnyState) {
-        return;
-      }
-
-      const match = findStateMatch(value);
-      if (match && match.toLowerCase().startsWith(value.toLowerCase())) {
-        handleChange('registeredState', match);
-        setTimeout(() => {
-          if (registeredStateInputRef.current) {
-            registeredStateInputRef.current.setSelectionRange(value.length, match.length);
-          }
-        }, 0);
-      } else {
-        handleChange('registeredState', value);
-      }
-    } else {
-      handleChange('registeredState', value);
-    }
-  };
-
-  const handleRegisteredStateBlur = () => {
-    const value = formData.registeredState;
-    if (value) {
-      const isExactMatch = US_STATES.some(state =>
-        state.label.toLowerCase() === value.toLowerCase()
-      );
-      if (!isExactMatch) {
-        const match = findStateMatch(value);
-        if (match) {
-          handleChange('registeredState', match);
-        } else {
-          handleChange('registeredState', '');
-        }
-      }
-    }
-  };
-
-  const handleMailingStateChange = (e) => {
-    const value = e.target.value;
-
-    if (isDeleting.current) {
-      isDeleting.current = false;
-      handleChange('mailingState', value);
-      return;
-    }
-
-    if (value) {
-      const matchesAnyState = US_STATES.some(state =>
-        state.label.toLowerCase().startsWith(value.toLowerCase())
-      );
-
-      if (!matchesAnyState) {
-        return;
-      }
-
-      const match = findStateMatch(value);
-      if (match && match.toLowerCase().startsWith(value.toLowerCase())) {
-        handleChange('mailingState', match);
-        setTimeout(() => {
-          if (mailingStateInputRef.current) {
-            mailingStateInputRef.current.setSelectionRange(value.length, match.length);
-          }
-        }, 0);
-      } else {
-        handleChange('mailingState', value);
-      }
-    } else {
-      handleChange('mailingState', value);
-    }
-  };
-
-  const handleMailingStateBlur = () => {
-    const value = formData.mailingState;
-    if (value) {
-      const isExactMatch = US_STATES.some(state =>
-        state.label.toLowerCase() === value.toLowerCase()
-      );
-      if (!isExactMatch) {
-        const match = findStateMatch(value);
-        if (match) {
-          handleChange('mailingState', match);
-        } else {
-          handleChange('mailingState', '');
-        }
-      }
-    }
-  };
 
   useEffect(() => {
     // Only sync formData to inputValue on initial mount
-    if (isInitialMount.current && formData.mailingStreet) {
-      setInputValue(formData.mailingStreet);
+    if (isInitialMount.current && formData[FIELDS.MAILING_STREET]) {
+      setInputValue(formData[FIELDS.MAILING_STREET]);
       isInitialMount.current = false;
     }
-  }, [formData.mailingStreet]);
+  }, [formData[FIELDS.MAILING_STREET]]);
 
   useEffect(() => {
     const initAutocomplete = async () => {
@@ -267,11 +144,11 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
 
       // Update all address fields
       setInputValue(street.trim());
-      handleChange('mailingStreet', street.trim());
-      if (street2) handleChange('mailingStreet2', street2);
-      handleChange('mailingCity', city);
-      handleChange('mailingState', stateFullName);
-      handleChange('mailingZip', zip);
+      handleChange(FIELDS.MAILING_STREET, street.trim());
+      if (street2) handleChange(FIELDS.MAILING_STREET2, street2);
+      handleChange(FIELDS.MAILING_CITY, city);
+      handleChange(FIELDS.MAILING_STATE, stateFullName);
+      handleChange(FIELDS.MAILING_ZIP, zip);
 
       setSuggestions([]);
       setShowSuggestions(false);
@@ -296,13 +173,13 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What's your company's name?
-            {showValidation && !formData.companyName && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && !formData[FIELDS.COMPANY_NAME] && <span className="text-red-700 ml-0.5">*</span>}
             <Tooltip text="Make sure it's good, your company might go big one day." />
           </label>
           <input
             type="text"
-            value={formData.companyName || ''}
-            onChange={(e) => handleChange('companyName', e.target.value)}
+            value={formData[FIELDS.COMPANY_NAME] || ''}
+            onChange={(e) => handleChange(FIELDS.COMPANY_NAME, e.target.value)}
             disabled={isReadOnly}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
             placeholder="Enter your company name"
@@ -313,7 +190,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What is your company's current or intended legal structure?
-            {showValidation && !formData.entityType && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && !formData[FIELDS.ENTITY_TYPE] && <span className="text-red-700 ml-0.5">*</span>}
             <Tooltip text="This defines how your company is structured for ownership, taxes, and decision-making. If you plan to raise venture capital, a C-Corp is usually preferred." />
           </label>
           <div className="space-y-2">
@@ -323,10 +200,10 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                   type="radio"
                   name="entityType"
                   value={type}
-                  checked={formData.entityType === type}
+                  checked={formData[FIELDS.ENTITY_TYPE] === type}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('entityType', formData.entityType === type ? '' : type);
+                      handleChange(FIELDS.ENTITY_TYPE, formData[FIELDS.ENTITY_TYPE] === type ? '' : type);
                     }
                   }}
                   onChange={() => {}}
@@ -338,13 +215,13 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
             ))}
           </div>
 
-          {formData.entityType === 'Other' && (
+          {formData[FIELDS.ENTITY_TYPE] === 'Other' && (
             <input
               type="text"
-              value={formData.entityTypeOther || ''}
-              onChange={(e) => handleChange('entityTypeOther', e.target.value)}
+              value={formData[FIELDS.ENTITY_TYPE_OTHER] || ''}
+              onChange={(e) => handleChange(FIELDS.ENTITY_TYPE_OTHER, e.target.value)}
               disabled={isReadOnly}
-              className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
+              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
               placeholder="Please specify entity type"
             />
           )}
@@ -354,12 +231,12 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         <div style={{ overflow: 'visible', position: 'relative', zIndex: 100, marginBottom: '3rem' }}>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What state will your company be registered in?
-            {showValidation && !formData.registeredState && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && !formData[FIELDS.REGISTERED_STATE] && <span className="text-red-700 ml-0.5">*</span>}
             <Tooltip text="Delaware is a popular choice for many startups because its laws and courts are well established. Just be aware you may have additional fees or filings if your business is based elsewhere." />
           </label>
           <CustomSelect
-            value={formData.registeredState || ''}
-            onChange={(value) => handleChange('registeredState', value)}
+            value={formData[FIELDS.REGISTERED_STATE] || ''}
+            onChange={(value) => handleChange(FIELDS.REGISTERED_STATE, value)}
             options={US_STATES.map(state => ({
               value: state.label,
               label: `${state.label} (${state.value})`
@@ -373,7 +250,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         <div>
           <label className="block text-base font-medium text-gray-900 mb-3">
             What's your company mailing address?
-            {showValidation && (!formData.mailingStreet || !formData.mailingCity || !formData.mailingState || !formData.mailingZip) && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && (!formData[FIELDS.MAILING_STREET] || !formData[FIELDS.MAILING_CITY] || !formData[FIELDS.MAILING_STATE] || !formData[FIELDS.MAILING_ZIP]) && <span className="text-red-700 ml-0.5">*</span>}
           </label>
 
           <div className="space-y-3">
@@ -391,7 +268,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                     handleInputChange(newValue);
                     // If user clears the input, also clear the formData
                     if (!newValue) {
-                      handleChange('mailingStreet', '');
+                      handleChange(FIELDS.MAILING_STREET, '');
                     }
                   }
                 }}
@@ -438,8 +315,8 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
               </label>
               <input
                 type="text"
-                value={formData.mailingStreet2 || ''}
-                onChange={(e) => handleChange('mailingStreet2', e.target.value)}
+                value={formData[FIELDS.MAILING_STREET2] || ''}
+                onChange={(e) => handleChange(FIELDS.MAILING_STREET2, e.target.value)}
                 disabled={isReadOnly}
                 autoComplete="chrome-off"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
@@ -455,8 +332,8 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                 </label>
                 <input
                   type="text"
-                  value={formData.mailingCity || ''}
-                  onChange={(e) => handleChange('mailingCity', e.target.value)}
+                  value={formData[FIELDS.MAILING_CITY] || ''}
+                  onChange={(e) => handleChange(FIELDS.MAILING_CITY, e.target.value)}
                   disabled={isReadOnly}
                   autoComplete="chrome-off"
                   className="w-full bg-transparent border-none border-b-2 border-gray-300 py-3 text-gray-700 focus:outline-none focus:border-black disabled:opacity-60 disabled:cursor-not-allowed"
@@ -473,15 +350,15 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                   State
                 </label>
                 <CustomSelect
-                  value={formData.mailingState || ''}
-                  onChange={(value) => handleChange('mailingState', value)}
+                  value={formData[FIELDS.MAILING_STATE] || ''}
+                  onChange={(value) => handleChange(FIELDS.MAILING_STATE, value)}
                   options={US_STATES.map(state => ({
                     value: state.label,
                     label: `${state.label} (${state.value})`
                   }))}
                   placeholder="Select state"
                   disabled={isReadOnly}
-                  displayValue={formData.mailingState ? US_STATES.find(s => s.label === formData.mailingState)?.value : ''}
+                  displayValue={formData[FIELDS.MAILING_STATE] ? US_STATES.find(s => s.label === formData[FIELDS.MAILING_STATE])?.value : ''}
                 />
               </div>
             </div>
@@ -493,10 +370,10 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                 </label>
                 <input
                   type="text"
-                  value={formData.mailingZip || ''}
+                  value={formData[FIELDS.MAILING_ZIP] || ''}
                   onChange={(e) => {
                     const value = e.target.value.replace(/[^\d-]/g, '');
-                    handleChange('mailingZip', value);
+                    handleChange(FIELDS.MAILING_ZIP, value);
                   }}
                   disabled={isReadOnly}
                   autoComplete="chrome-off"
@@ -517,13 +394,13 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             Can you describe your company in 1 line?
-            {showValidation && !formData.companyDescription && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && !formData[FIELDS.COMPANY_DESCRIPTION] && <span className="text-red-700 ml-0.5">*</span>}
             <Tooltip text="Describe what you do in plain language. No buzzwords needed." />
           </label>
           <input
             type="text"
-            value={formData.companyDescription || ''}
-            onChange={(e) => handleChange('companyDescription', e.target.value)}
+            value={formData[FIELDS.COMPANY_DESCRIPTION] || ''}
+            onChange={(e) => handleChange(FIELDS.COMPANY_DESCRIPTION, e.target.value)}
             disabled={isReadOnly}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
             placeholder="Helping cofounders create Cofounder Agreements"
@@ -534,7 +411,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What industry is it in?
-            {showValidation && (!formData.industries || formData.industries.length === 0) && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && (!formData[FIELDS.INDUSTRIES] || formData[FIELDS.INDUSTRIES].length === 0) && <span className="text-red-700 ml-0.5">*</span>}
             <Tooltip text="Pick the industry that best describes what you currently do. Aspirations to conquer all markets can wait." />
           </label>
           <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
@@ -543,13 +420,13 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
               <label key={industry} className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={(formData.industries || []).includes(industry)}
+                  checked={(formData[FIELDS.INDUSTRIES] || []).includes(industry)}
                   onChange={(e) => {
-                    const currentIndustries = formData.industries || [];
+                    const currentIndustries = formData[FIELDS.INDUSTRIES] || [];
                     const newIndustries = e.target.checked
                       ? [...currentIndustries, industry]
                       : currentIndustries.filter(i => i !== industry);
-                    handleChange('industries', newIndustries);
+                    handleChange(FIELDS.INDUSTRIES, newIndustries);
                   }}
                   disabled={isReadOnly}
                   className="mr-3"
@@ -559,12 +436,12 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
             ))}
           </div>
 
-          {(formData.industries || []).includes('Other') && (
+          {(formData[FIELDS.INDUSTRIES] || []).includes('Other') && (
             <div className="conditional-section">
               <input
                 type="text"
-                value={formData.industryOther || ''}
-                onChange={(e) => handleChange('industryOther', e.target.value)}
+                value={formData[FIELDS.INDUSTRY_OTHER] || ''}
+                onChange={(e) => handleChange(FIELDS.INDUSTRY_OTHER, e.target.value)}
                 disabled={isReadOnly}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                 placeholder="Please specify other industry"

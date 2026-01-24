@@ -3,6 +3,7 @@ import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
 import { VESTING_SCHEDULES, VESTED_SHARES_DISPOSAL_OPTIONS } from '../config/surveySchema';
 import Tooltip from './Tooltip';
+import { FIELDS } from '../config/surveySchema';
 
 function SectionEquityVesting({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
@@ -27,13 +28,13 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What date should the vesting start?
-            {showValidation && !formData.vestingStartDate && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && !formData[FIELDS.VESTING_START_DATE] && <span className="text-red-700 ml-0.5">*</span>}
             <Tooltip text="This can start today or retroactively when the work began." />
           </label>
           <input
             type="date"
-            value={formData.vestingStartDate || ''}
-            onChange={(e) => handleChange('vestingStartDate', e.target.value)}
+            value={formData[FIELDS.VESTING_START_DATE] || ''}
+            onChange={(e) => handleChange(FIELDS.VESTING_START_DATE, e.target.value)}
             disabled={isReadOnly}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
           />
@@ -43,7 +44,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What vesting schedule will you use?
-            {showValidation && !formData.vestingSchedule && <span className="text-red-700 ml-0.5">*</span>}
+            {showValidation && !formData[FIELDS.VESTING_SCHEDULE] && <span className="text-red-700 ml-0.5">*</span>}
             <Tooltip text='You earn no equity until the "cliff" is hit. Then, once the cliff is reached, you immediately vest the first portion of your equity, and the rest continues to vest gradually over the remaining period.' />
           </label>
           <p className="text-sm text-gray-500 mb-2">The standard is 4 years with a 1-year cliff</p>
@@ -54,10 +55,10 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
                   type="radio"
                   name="vestingSchedule"
                   value={option}
-                  checked={formData.vestingSchedule === option}
+                  checked={formData[FIELDS.VESTING_SCHEDULE] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('vestingSchedule', formData.vestingSchedule === option ? '' : option);
+                      handleChange(FIELDS.VESTING_SCHEDULE, formData[FIELDS.VESTING_SCHEDULE] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -69,13 +70,13 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
             ))}
           </div>
 
-          {formData.vestingSchedule === 'Other' && (
+          {formData[FIELDS.VESTING_SCHEDULE] === 'Other' && (
             <input
               type="text"
-              value={formData.vestingScheduleOther || ''}
-              onChange={(e) => handleChange('vestingScheduleOther', e.target.value)}
+              value={formData[FIELDS.VESTING_SCHEDULE_OTHER] || ''}
+              onChange={(e) => handleChange(FIELDS.VESTING_SCHEDULE_OTHER, e.target.value)}
               disabled={isReadOnly}
-              className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
+              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
               placeholder="Please specify"
             />
           )}
@@ -85,20 +86,20 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What percent of equity will be vested once the cliff is complete?
-            {showValidation && !formData.cliffPercentage && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.CLIFF_PERCENTAGE] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
             <Tooltip text="If you leave before the cliff, you get nothing." />
           </label>
           <p className="text-sm text-gray-500 mb-2">The standard is 25% for 4 years with a 1-year cliff</p>
           <input
             type="text"
-            value={formData.cliffPercentage ? `${formData.cliffPercentage}%` : ''}
+            value={formData[FIELDS.CLIFF_PERCENTAGE] ? `${formData[FIELDS.CLIFF_PERCENTAGE]}%` : ''}
             onChange={(e) => {
               const input = e.target;
               const cursorPos = input.selectionStart;
               const value = e.target.value.replace('%', '');
 
               if (value === '' || (!isNaN(value) && parseFloat(value) >= 0 && parseFloat(value) <= 100)) {
-                handleChange('cliffPercentage', value);
+                handleChange(FIELDS.CLIFF_PERCENTAGE, value);
 
                 // Keep cursor before the %
                 setTimeout(() => {
@@ -153,7 +154,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             If the company is acquired and a cofounder is terminated without cause, should their unvested shares accelerate?
-            {showValidation && !formData.accelerationTrigger && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.ACCELERATION_TRIGGER] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
             <Tooltip text="Acceleration decides if unvested shares vest early. Single-trigger happens when the company is acquired. Double-trigger only kicks in if the company is acquired and you're terminated without cause." />
           </label>
           <div className="space-y-2">
@@ -166,10 +167,10 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
                   type="radio"
                   name="accelerationTrigger"
                   value={option}
-                  checked={formData.accelerationTrigger === option}
+                  checked={formData[FIELDS.ACCELERATION_TRIGGER] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('accelerationTrigger', formData.accelerationTrigger === option ? '' : option);
+                      handleChange(FIELDS.ACCELERATION_TRIGGER, formData[FIELDS.ACCELERATION_TRIGGER] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
@@ -182,7 +183,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
           </div>
 
           {/* Conditional: Acceleration Protection Period */}
-          {formData.accelerationTrigger === 'Yes' && (
+          {formData[FIELDS.ACCELERATION_TRIGGER] === 'Yes' && (
             <div className="conditional-section">
               <label className="block text-base font-medium text-gray-900 mb-2">
                 For how long after the acquisition should this protection apply?
@@ -217,18 +218,18 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             If a cofounder wants to sell their shares, how many days notice do they need to provide the Board and shareholders?
-            {showValidation && !formData.sharesSellNoticeDays && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.SHARES_SELL_NOTICE_DAYS] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
           </label>
           <input
             type="number"
             step="1"
             min="0"
-            value={formData.sharesSellNoticeDays || ''}
+            value={formData[FIELDS.SHARES_SELL_NOTICE_DAYS] || ''}
             onChange={(e) => {
               const value = e.target.value;
               // Only allow integers (no decimals)
               if (value === '' || (Number.isInteger(Number(value)) && Number(value) >= 0)) {
-                handleChange('sharesSellNoticeDays', value);
+                handleChange(FIELDS.SHARES_SELL_NOTICE_DAYS, value);
               }
             }}
             onKeyDown={(e) => {
@@ -247,18 +248,18 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             If a cofounder resigns, how many days does the company have to buy back the shares?
-            {showValidation && !formData.sharesBuybackDays && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.SHARES_BUYBACK_DAYS] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
           </label>
           <input
             type="number"
             step="1"
             min="0"
-            value={formData.sharesBuybackDays || ''}
+            value={formData[FIELDS.SHARES_BUYBACK_DAYS] || ''}
             onChange={(e) => {
               const value = e.target.value;
               // Only allow integers (no decimals)
               if (value === '' || (Number.isInteger(Number(value)) && Number(value) >= 0)) {
-                handleChange('sharesBuybackDays', value);
+                handleChange(FIELDS.SHARES_BUYBACK_DAYS, value);
               }
             }}
             onKeyDown={(e) => {
@@ -277,7 +278,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             {(() => {
-              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData.acknowledgeForfeiture?.[userId]);
+              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_FORFEITURE]?.[userId]);
               return (
                 <>
                   You acknowledge that if a cofounder dies, becomes permanently disabled, or is otherwise incapacitated, their unvested shares are automatically forfeited and returned to the company.
@@ -290,7 +291,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
           <div className="space-y-2">
             {(() => {
               // Deduplicate collaborators list
-              const approvals = formData.acknowledgeForfeiture || {};
+              const approvals = formData[FIELDS.ACKNOWLEDGE_FORFEITURE] || {};
               const currentUserId = currentUser?.id;
 
               return collaboratorIds.map((userId) => {
@@ -305,7 +306,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
                       checked={isApproved}
                       onChange={(e) => {
                         const newApprovals = { ...approvals, [userId]: e.target.checked };
-                        handleChange('acknowledgeForfeiture', newApprovals);
+                        handleChange(FIELDS.ACKNOWLEDGE_FORFEITURE, newApprovals);
                       }}
                       disabled={isReadOnly || !isCurrentUser}
                       className="mr-3"
@@ -326,7 +327,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             If a cofounder dies, becomes permanently disabled, or is otherwise incapacitated:
-            {showValidation && !formData.vestedSharesDisposal && <span className="text-red-700 ml-0.5 validation-error">*</span>}
+            {showValidation && !formData[FIELDS.VESTED_SHARES_DISPOSAL] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
           </label>
           <div className="space-y-2">
             {VESTED_SHARES_DISPOSAL_OPTIONS.map((option) => (
@@ -335,10 +336,10 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
                   type="radio"
                   name="vestedSharesDisposal"
                   value={option}
-                  checked={formData.vestedSharesDisposal === option}
+                  checked={formData[FIELDS.VESTED_SHARES_DISPOSAL] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange('vestedSharesDisposal', formData.vestedSharesDisposal === option ? '' : option);
+                      handleChange(FIELDS.VESTED_SHARES_DISPOSAL, formData[FIELDS.VESTED_SHARES_DISPOSAL] === option ? '' : option);
                     }
                   }}
                   onChange={() => {}}
