@@ -516,6 +516,35 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
               </button>
             );
           })}
+
+          {/* Review and Approve - Section 11 style, greyed out until complete */}
+          {(() => {
+            const DESIGN_MODE = true; // TODO: Set to false for production
+            const allSectionsComplete = SECTION_ORDER.every(sectionId => isSectionCompleted(sectionId));
+            const isClickable = DESIGN_MODE || allSectionsComplete;
+
+            return (
+              <button
+                onClick={() => isClickable && onPreview()}
+                disabled={!isClickable}
+                className={`text-left px-2 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between ${
+                  isClickable
+                    ? 'text-gray-600'
+                    : 'text-gray-300 cursor-not-allowed'
+                }`}
+                style={{ width: '100%', fontSize: '15px' }}
+              >
+                <div className="flex items-center gap-2">
+                  <span className={`flex items-center justify-center w-6 h-6 ${isClickable ? 'text-gray-500' : 'text-gray-300'}`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </span>
+                  <span className="nav-link-underline">Review and Approve</span>
+                </div>
+              </button>
+            );
+          })()}
           </div>
         </div>
 

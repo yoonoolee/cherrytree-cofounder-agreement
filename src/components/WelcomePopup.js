@@ -249,16 +249,16 @@ function WelcomePopup({ isOpen, onClose }) {
 
               {/* Animation area */}
               <div className="relative bg-gray-50 rounded-lg p-2 md:p-5 mb-2 overflow-hidden" style={{ height: 'clamp(180px, 40vh, 240px)', minHeight: '180px', maxHeight: '240px', display: 'block' }}>
-                {/* Black cursor */}
+                {/* Blue cursor */}
                 <div className="cursor-black absolute w-4 h-4 z-20" style={{ pointerEvents: 'none' }}>
-                  <svg viewBox="0 0 24 24" fill="black" className="w-4 h-4">
+                  <svg viewBox="0 0 24 24" fill="#0056D6" className="w-4 h-4">
                     <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
                   </svg>
                 </div>
 
-                {/* White cursor */}
+                {/* White cursor with blue stroke */}
                 <div className="cursor-white absolute w-4 h-4 z-20" style={{ pointerEvents: 'none' }}>
-                  <svg viewBox="0 0 24 24" fill="white" stroke="black" strokeWidth="1" className="w-4 h-4">
+                  <svg viewBox="0 0 24 24" fill="white" stroke="#0056D6" strokeWidth="1" className="w-4 h-4">
                     <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
                   </svg>
                 </div>
@@ -443,7 +443,7 @@ function WelcomePopup({ isOpen, onClose }) {
                   </div>
                 </div>
                 {/* Scanner line */}
-                <div className="scanner-line absolute h-0.5 bg-gray-300" style={{ left: '5%', right: '5%', boxShadow: '0 0 6px 1px rgba(209, 213, 219, 0.5)' }}></div>
+                <div className="scanner-line absolute h-0.5" style={{ left: '5%', right: '5%', backgroundColor: '#0056D6', boxShadow: '0 0 6px 1px rgba(0, 86, 214, 0.5)' }}></div>
               </div>
 
               <style>{`
