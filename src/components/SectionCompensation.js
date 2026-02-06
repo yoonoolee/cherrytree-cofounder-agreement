@@ -1,5 +1,7 @@
 import React from 'react';
 import CustomSelect from './CustomSelect';
+import QuestionRenderer from './QuestionRenderer';
+import { QUESTION_CONFIG } from '../config/questionConfig';
 import { FIELDS } from '../config/surveySchema';
 
 function SectionCompensation({ formData, handleChange, isReadOnly, showValidation, project }) {
@@ -38,35 +40,17 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
 
       <div className="space-y-12" style={{ overflow: 'visible' }}>
         {/* Taking Compensation */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            Are any cofounders currently taking compensation or salary from the company?
-            {showValidation && !formData[FIELDS.TAKING_COMPENSATION] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
-          </label>
-          <div className="space-y-2">
-            {['Yes', 'No'].map((option) => (
-              <label key={option} className="flex items-center">
-                <input
-                  type="radio"
-                  name="takingCompensation"
-                  value={option}
-                  checked={formData[FIELDS.TAKING_COMPENSATION] === option}
-                  onClick={() => {
-                    if (!isReadOnly) {
-                      handleChange(FIELDS.TAKING_COMPENSATION, formData[FIELDS.TAKING_COMPENSATION] === option ? '' : option);
-                    }
-                  }}
-                  onChange={() => {}}
-                  disabled={isReadOnly}
-                  className="mr-3"
-                />
-                <span className="text-gray-700">{option}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.TAKING_COMPENSATION}
+          config={QUESTION_CONFIG[FIELDS.TAKING_COMPENSATION]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+          project={project}
+        />
 
-        {/* Compensation Details */}
+        {/* Compensation Details - Custom (dynamic array + currency) */}
         {formData[FIELDS.TAKING_COMPENSATION] === 'Yes' && (
           <div className="border-l-4 border-gray-300 pl-6 py-4">
             <div className="flex justify-between items-center mb-4">
@@ -213,7 +197,7 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
           </div>
         )}
 
-        {/* Spending Limit */}
+        {/* Spending Limit - Custom (currency formatting) */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What's the spending limit, in USD, before a cofounder needs to check with other cofounders?

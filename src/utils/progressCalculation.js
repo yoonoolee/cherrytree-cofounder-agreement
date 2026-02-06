@@ -1,4 +1,4 @@
-import { FIELDS } from '../config/surveySchema';
+import { FIELDS, COLLABORATOR_FIELDS } from '../config/surveySchema';
 
 /**
  * Standalone progress calculation utility
@@ -36,8 +36,10 @@ export const calculateProjectProgress = (project) => {
   let totalRequired = 0;
   let completed = 0;
 
-  // Get all collaborator userIds from the project
-  const collaboratorIds = Object.keys(project?.collaborators || {});
+  // Get active collaborator userIds from the project
+  const collaboratorIds = Object.entries(project?.collaborators || {})
+    .filter(([_, data]) => data[COLLABORATOR_FIELDS.IS_ACTIVE] !== false)
+    .map(([userId]) => userId);
 
   // Section 1: Formation & Purpose (9 fields)
   if (formData[FIELDS.COMPANY_NAME]) completed++;
@@ -71,15 +73,16 @@ export const calculateProjectProgress = (project) => {
   }
 
   // Section 3: Equity Allocation
-  if (formData[FIELDS.FINAL_EQUITY_PERCENTAGES] && Object.keys(formData[FIELDS.FINAL_EQUITY_PERCENTAGES]).length > 0) {
-    const allPercentagesFilled = collaboratorIds.every(userId =>
-      formData[FIELDS.FINAL_EQUITY_PERCENTAGES][userId] && formData[FIELDS.FINAL_EQUITY_PERCENTAGES][userId] !== ''
+  const equityEntries = formData[FIELDS.EQUITY_ENTRIES] || [];
+  if (equityEntries.length > 0) {
+    const allEntriesFilled = equityEntries.every(entry =>
+      entry[FIELDS.EQUITY_ENTRY_NAME] && entry[FIELDS.EQUITY_ENTRY_PERCENTAGE] && entry[FIELDS.EQUITY_ENTRY_PERCENTAGE] !== ''
     );
-    if (allPercentagesFilled) completed++;
+    if (allEntriesFilled) completed++;
     totalRequired++;
 
-    const totalEquity = collaboratorIds.reduce((sum, userId) =>
-      sum + (parseFloat(formData[FIELDS.FINAL_EQUITY_PERCENTAGES][userId]) || 0), 0
+    const totalEquity = equityEntries.reduce((sum, entry) =>
+      sum + (parseFloat(entry[FIELDS.EQUITY_ENTRY_PERCENTAGE]) || 0), 0
     );
     if (Math.abs(totalEquity - 100) <= 0.01) completed++;
     totalRequired++;

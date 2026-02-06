@@ -37,6 +37,34 @@ const FIELDS = {
   AMENDMENT_PROCESS_OTHER: 'amendmentProcessOther',
 };
 
+/**
+ * All acknowledgment field names (per-user approval fields)
+ * Used for initializing collaborator entries when they join a project
+ */
+/**
+ * Acknowledgment fields initialized on project creation and collaborator join.
+ */
+const REQUIRED_ACKNOWLEDGMENT_FIELDS = [
+  'acknowledgeEquityAllocation',
+  'acknowledgeForfeiture',
+  'acknowledgeIPOwnership',
+  'acknowledgeConfidentiality',
+  'acknowledgePeriodicReview',
+  'acknowledgeAmendmentReviewRequest',
+  'acknowledgeEntireAgreement',
+  'acknowledgeSeverability',
+];
+
+/**
+ * Acknowledgment fields created/deleted dynamically based on a parent question.
+ * Only initialized for collaborators if they already exist in surveyData.
+ */
+const CONDITIONAL_ACKNOWLEDGMENT_FIELDS = [
+  'acknowledgeTieResolution',
+  'acknowledgeShotgunClause',
+  'acknowledgeIPAssignment',
+];
+
 const OTHER_FIELD_CONFIG = [
   // Array fields
   { field: FIELDS.INDUSTRIES, otherField: FIELDS.INDUSTRY_OTHER, type: 'array' },
@@ -121,6 +149,8 @@ function mergeOtherFields(surveyData) {
 }
 
 module.exports = {
+  REQUIRED_ACKNOWLEDGMENT_FIELDS,
+  CONDITIONAL_ACKNOWLEDGMENT_FIELDS,
   OTHER_FIELD_CONFIG,
   OTHER_FIELD_NAMES,
   mergeOtherFields

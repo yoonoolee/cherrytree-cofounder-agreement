@@ -21,7 +21,7 @@ const crypto = require('crypto');
 const { Webhook } = require('svix');
 const validator = require('validator');
 const { getClerk, verifyClerkToken, CLERK_SECRET_KEY } = require('./auth-helpers');
-const { mergeOtherFields } = require('./surveySchema');
+const { REQUIRED_ACKNOWLEDGMENT_FIELDS, CONDITIONAL_ACKNOWLEDGMENT_FIELDS, mergeOtherFields } = require('./surveySchema');
 
 initializeApp();
 const db = getFirestore();
@@ -597,19 +597,9 @@ exports.stripeWebhook = onRequest({
                 [userId]: false
               },
               surveyVersion: CURRENT_SURVEY_VERSION,
-              surveyData: {
-                // Initialize acknowledgement fields with owner's userId
-                acknowledgeEquityAllocation: { [userId]: false },
-                acknowledgeTieResolution: { [userId]: false },
-                acknowledgeShotgunClause: { [userId]: false },
-                acknowledgeForfeiture: { [userId]: false },
-                acknowledgeIPOwnership: { [userId]: false },
-                acknowledgeConfidentiality: { [userId]: false },
-                acknowledgePeriodicReview: { [userId]: false },
-                acknowledgeAmendmentReviewRequest: { [userId]: false },
-                acknowledgeEntireAgreement: { [userId]: false },
-                acknowledgeSeverability: { [userId]: false }
-              },
+              surveyData: Object.fromEntries(
+                REQUIRED_ACKNOWLEDGMENT_FIELDS.map(field => [field, { [userId]: false }])
+              ),
               submitted: false,
               pdfAgreements: [],
               latestPdfUrl: null,
@@ -1091,6 +1081,21 @@ exports.clerkWebhook = onRequest({
 
             approvals[userId] = false;
 
+            // Initialize acknowledgment fields for new collaborator
+            const surveyData = projectData.surveyData || {};
+            for (const field of REQUIRED_ACKNOWLEDGMENT_FIELDS) {
+              if (!surveyData[field]) {
+                surveyData[field] = {};
+              }
+              surveyData[field][userId] = false;
+            }
+            // Also add to conditional acknowledgment fields if they already exist
+            for (const field of CONDITIONAL_ACKNOWLEDGMENT_FIELDS) {
+              if (surveyData[field]) {
+                surveyData[field][userId] = false;
+              }
+            }
+
             // Get current onboardingCompleted map
             const onboardingCompleted = projectData.onboardingCompleted || {};
             if (typeof onboardingCompleted[userId] === 'undefined') {
@@ -1101,6 +1106,7 @@ exports.clerkWebhook = onRequest({
               collaborators: collaborators,
               approvals: approvals,
               onboardingCompleted: onboardingCompleted,
+              surveyData: surveyData,
               lastUpdated: FieldValue.serverTimestamp()
             });
           }
@@ -1136,9 +1142,18 @@ exports.clerkWebhook = onRequest({
 
             delete approvals[userId];
 
+            // Remove user from all acknowledgment fields
+            const surveyData = projectData.surveyData || {};
+            for (const field of [...REQUIRED_ACKNOWLEDGMENT_FIELDS, ...CONDITIONAL_ACKNOWLEDGMENT_FIELDS]) {
+              if (surveyData[field]) {
+                delete surveyData[field][userId];
+              }
+            }
+
             await projectDoc.ref.update({
               collaborators: collaborators,
               approvals: approvals,
+              surveyData: surveyData,
               lastUpdated: FieldValue.serverTimestamp()
             });
           }

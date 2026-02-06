@@ -20,13 +20,14 @@ export function getSortedCollaboratorIds(collaboratorsMap) {
   return Object.entries(collaboratorsMap)
     .filter(([_, data]) => data[COLLABORATOR_FIELDS.IS_ACTIVE] !== false) // Only include active collaborators
     .map(([userId, data]) => {
-      // Get current (active) history entry
-      const currentEntry = data[COLLABORATOR_FIELDS.HISTORY]?.find(h => h.endAt === null);
-      const joinTime = currentEntry?.startAt ? new Date(currentEntry.startAt).getTime() : Infinity;
+      const name = [
+        data[COLLABORATOR_FIELDS.FIRST_NAME],
+        data[COLLABORATOR_FIELDS.LAST_NAME]
+      ].filter(Boolean).join(' ').toLowerCase();
 
-      return { userId, joinTime };
+      return { userId, name };
     })
-    .sort((a, b) => a.joinTime - b.joinTime) // Sort by join time (earliest first)
+    .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically by name
     .map(item => item.userId);
 }
 

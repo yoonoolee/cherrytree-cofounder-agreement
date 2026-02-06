@@ -1,14 +1,9 @@
 import React from 'react';
-import { US_STATES, DISPUTE_RESOLUTION_OPTIONS, AMENDMENT_PROCESS_OPTIONS } from '../config/surveySchema';
-import { useUser } from '../contexts/UserContext';
-import { useCollaborators } from '../hooks/useCollaborators';
-import CustomSelect from './CustomSelect';
+import QuestionRenderer from './QuestionRenderer';
+import { QUESTION_CONFIG } from '../config/questionConfig';
 import { FIELDS } from '../config/surveySchema';
 
 function SectionFinal({ formData, handleChange, isReadOnly, project, showValidation }) {
-  const { currentUser } = useUser();
-  const { collaboratorIds, getDisplayName, isAdmin } = useCollaborators(project);
-
   return (
     <div>
       <h2 className="text-3xl font-medium text-gray-800 mb-6">General Provisions</h2>
@@ -19,104 +14,41 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
 
       <div className="space-y-12">
         {/* Dispute Resolution */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            How should disputes among cofounders be resolved?
-            {showValidation && !formData[FIELDS.DISPUTE_RESOLUTION] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
-          </label>
-          <div className="space-y-2">
-            {DISPUTE_RESOLUTION_OPTIONS.map((option) => (
-              <label key={option} className="flex items-center">
-                <input
-                  type="radio"
-                  name="disputeResolution"
-                  value={option}
-                  checked={formData[FIELDS.DISPUTE_RESOLUTION] === option}
-                  onClick={() => {
-                    if (!isReadOnly) {
-                      handleChange(FIELDS.DISPUTE_RESOLUTION, formData[FIELDS.DISPUTE_RESOLUTION] === option ? '' : option);
-                    }
-                  }}
-                  onChange={() => {}}
-                  disabled={isReadOnly}
-                  className="mr-3"
-                />
-                <span className="text-gray-700">{option}</span>
-              </label>
-            ))}
-          </div>
-
-          {formData[FIELDS.DISPUTE_RESOLUTION] === 'Other' && (
-            <input
-              type="text"
-              value={formData[FIELDS.DISPUTE_RESOLUTION_OTHER] || ''}
-              onChange={(e) => handleChange(FIELDS.DISPUTE_RESOLUTION_OTHER, e.target.value)}
-              disabled={isReadOnly}
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-              placeholder="Please specify"
-            />
-          )}
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.DISPUTE_RESOLUTION}
+          config={QUESTION_CONFIG[FIELDS.DISPUTE_RESOLUTION]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+          project={project}
+        />
 
         {/* Governing Law */}
         <div style={{ overflow: 'visible', position: 'relative', zIndex: 100, marginBottom: '3rem' }}>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            Which state's laws will govern this agreement?
-            {showValidation && !formData[FIELDS.GOVERNING_LAW] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
-          </label>
-          <CustomSelect
-            value={formData[FIELDS.GOVERNING_LAW] || ''}
-            onChange={(value) => handleChange(FIELDS.GOVERNING_LAW, value)}
-            options={US_STATES.map(state => ({
-              value: state.label,
-              label: `${state.label} (${state.value})`
-            }))}
-            placeholder="Select state"
-            disabled={isReadOnly}
+          <QuestionRenderer
+            fieldName={FIELDS.GOVERNING_LAW}
+            config={QUESTION_CONFIG[FIELDS.GOVERNING_LAW]}
+            formData={formData}
+            handleChange={handleChange}
+            isReadOnly={isReadOnly}
+            showValidation={showValidation}
+            project={project}
           />
         </div>
 
         {/* Amendment Process */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            How can this agreement be amended or modified?
-            {showValidation && !formData[FIELDS.AMENDMENT_PROCESS] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
-          </label>
-          <div className="space-y-2">
-            {AMENDMENT_PROCESS_OPTIONS.map((option) => (
-              <label key={option} className="flex items-center">
-                <input
-                  type="radio"
-                  name="amendmentProcess"
-                  value={option}
-                  checked={formData[FIELDS.AMENDMENT_PROCESS] === option}
-                  onClick={() => {
-                    if (!isReadOnly) {
-                      handleChange(FIELDS.AMENDMENT_PROCESS, formData[FIELDS.AMENDMENT_PROCESS] === option ? '' : option);
-                    }
-                  }}
-                  onChange={() => {}}
-                  disabled={isReadOnly}
-                  className="mr-3"
-                />
-                <span className="text-gray-700">{option}</span>
-              </label>
-            ))}
-          </div>
+        <QuestionRenderer
+          fieldName={FIELDS.AMENDMENT_PROCESS}
+          config={QUESTION_CONFIG[FIELDS.AMENDMENT_PROCESS]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+          project={project}
+        />
 
-          {formData[FIELDS.AMENDMENT_PROCESS] === 'Other' && (
-            <input
-              type="text"
-              value={formData[FIELDS.AMENDMENT_PROCESS_OTHER] || ''}
-              onChange={(e) => handleChange(FIELDS.AMENDMENT_PROCESS_OTHER, e.target.value)}
-              disabled={isReadOnly}
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-              placeholder="Please specify"
-            />
-          )}
-        </div>
-
-        {/* Periodic Review */}
+        {/* Periodic Review - Custom (underline styling) */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             How often (in months) should this agreement be reviewed by the cofounders?
@@ -130,6 +62,8 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
               const value = e.target.value;
               if (value === '' || (parseInt(value) >= 0 && !value.includes('-'))) {
                 handleChange(FIELDS.REVIEW_FREQUENCY_MONTHS, value);
+                // Reset acknowledgment since the terms changed
+                handleChange(FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW, {});
               }
             }}
             onKeyDown={(e) => {
@@ -148,196 +82,48 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
         </div>
 
         {/* Periodic Review Acknowledgment */}
-        <div className="">
-          <p className="text-gray-700 mb-4">
-            {(() => {
-              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW]?.[userId]);
-              return (
-                <>
-                  Each Cofounder acknowledges that this Agreement shall be reviewed every {formData[FIELDS.REVIEW_FREQUENCY_MONTHS] ? `${formData[FIELDS.REVIEW_FREQUENCY_MONTHS]} month${formData[FIELDS.REVIEW_FREQUENCY_MONTHS] !== '1' ? 's' : ''}` : '[frequency not specified]'} to ensure it remains current and effective.
-                  {showValidation && !allAcknowledged && <span className="text-red-700 ml-0.5 validation-error">*</span>}
-                </>
-              );
-            })()}
-          </p>
-          <div className="space-y-2 mt-3 pl-4">
-
-            {(() => {
-              const approvals = formData[FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW] || {};
-              const currentUserId = currentUser?.id;
-
-              return collaboratorIds.map((userId) => {
-                const isApproved = approvals[userId] || false;
-                const isCurrentUser = userId === currentUserId;
-                const displayName = getDisplayName(userId);
-
-                return (
-                  <label key={userId} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={isApproved}
-                      onChange={(e) => {
-                        const newApprovals = { ...approvals, [userId]: e.target.checked };
-                        handleChange(FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW, newApprovals);
-                      }}
-                      disabled={isReadOnly || !isCurrentUser}
-                      className="mr-3"
-                    />
-                    <span className="text-gray-700">
-                      {displayName}
-                      {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
-
-                    </span>
-                  </label>
-                );
-              });
-            })()}
-          </div>
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW}
+          config={QUESTION_CONFIG[FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+          project={project}
+        />
 
         {/* Amendment Review Request Acknowledgment */}
-        <div className="">
-          <p className="text-gray-700 mb-4">
-            {(() => {
-              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST]?.[userId]);
-              return (
-                <>
-                  Any Cofounder may request a review of this Agreement in the event of material changes in circumstances affecting the Company or the Cofounder's role. Any amendments proposed pursuant to such review shall become effective only if approved and executed in writing according to the amendment process set forth in this Agreement.
-                  {showValidation && !allAcknowledged && <span className="text-red-700 ml-0.5 validation-error">*</span>}
-                </>
-              );
-            })()}
-          </p>
-          <div className="space-y-2 mt-3 pl-4">
-
-            {(() => {
-              const approvals = formData[FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST] || {};
-              const currentUserId = currentUser?.id;
-
-              return collaboratorIds.map((userId) => {
-                const isApproved = approvals[userId] || false;
-                const isCurrentUser = userId === currentUserId;
-                const displayName = getDisplayName(userId);
-
-                return (
-                  <label key={userId} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={isApproved}
-                      onChange={(e) => {
-                        const newApprovals = { ...approvals, [userId]: e.target.checked };
-                        handleChange(FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST, newApprovals);
-                      }}
-                      disabled={isReadOnly || !isCurrentUser}
-                      className="mr-3"
-                    />
-                    <span className="text-gray-700">
-                      {displayName}
-                      {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
-
-                    </span>
-                  </label>
-                );
-              });
-            })()}
-          </div>
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST}
+          config={QUESTION_CONFIG[FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+          project={project}
+        />
 
         {/* Entire Agreement Acknowledgment */}
-        <div className="">
-          <p className="text-gray-700 mb-4">
-            {(() => {
-              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT]?.[userId]);
-              return (
-                <>
-                  Each Cofounder acknowledges that this Agreement constitutes the entire agreement between the Cofounders regarding the subject matter hereof and supersedes all prior agreements, understandings, negotiations, and discussions, whether oral or written.
-                  {showValidation && !allAcknowledged && <span className="text-red-700 ml-0.5 validation-error">*</span>}
-                </>
-              );
-            })()}
-          </p>
-          <div className="space-y-2 mt-3 pl-4">
-
-            {(() => {
-              const approvals = formData[FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT] || {};
-              const currentUserId = currentUser?.id;
-
-              return collaboratorIds.map((userId) => {
-                const isApproved = approvals[userId] || false;
-                const isCurrentUser = userId === currentUserId;
-                const displayName = getDisplayName(userId);
-
-                return (
-                  <label key={userId} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={isApproved}
-                      onChange={(e) => {
-                        const newApprovals = { ...approvals, [userId]: e.target.checked };
-                        handleChange(FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT, newApprovals);
-                      }}
-                      disabled={isReadOnly || !isCurrentUser}
-                      className="mr-3"
-                    />
-                    <span className="text-gray-700">
-                      {displayName}
-                      {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
-                      
-                    </span>
-                  </label>
-                );
-              });
-            })()}
-          </div>
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT}
+          config={QUESTION_CONFIG[FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+          project={project}
+        />
 
         {/* Severability Acknowledgment */}
-        <div className="">
-          <p className="text-gray-700 mb-4">
-            {(() => {
-              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_SEVERABILITY]?.[userId]);
-              return (
-                <>
-                  Each Cofounder acknowledges that if any provision of this Agreement is held to be invalid or unenforceable, the remaining provisions shall continue in full force and effect.
-                  {showValidation && !allAcknowledged && <span className="text-red-700 ml-0.5 validation-error">*</span>}
-                </>
-              );
-            })()}
-          </p>
-          <div className="space-y-2 mt-3 pl-4">
-
-            {(() => {
-              const approvals = formData[FIELDS.ACKNOWLEDGE_SEVERABILITY] || {};
-              const currentUserId = currentUser?.id;
-
-              return collaboratorIds.map((userId) => {
-                const isApproved = approvals[userId] || false;
-                const isCurrentUser = userId === currentUserId;
-                const displayName = getDisplayName(userId);
-
-                return (
-                  <label key={userId} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={isApproved}
-                      onChange={(e) => {
-                        const newApprovals = { ...approvals, [userId]: e.target.checked };
-                        handleChange(FIELDS.ACKNOWLEDGE_SEVERABILITY, newApprovals);
-                      }}
-                      disabled={isReadOnly || !isCurrentUser}
-                      className="mr-3"
-                    />
-                    <span className="text-gray-700">
-                      {displayName}
-                      {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
-                      
-                    </span>
-                  </label>
-                );
-              });
-            })()}
-          </div>
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.ACKNOWLEDGE_SEVERABILITY}
+          config={QUESTION_CONFIG[FIELDS.ACKNOWLEDGE_SEVERABILITY]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+          project={project}
+        />
 
         {/* Final Note */}
         <div>

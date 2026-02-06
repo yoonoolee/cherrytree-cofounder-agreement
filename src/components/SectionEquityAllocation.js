@@ -14,8 +14,8 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
 
   const currentUserId = currentUser?.id;
 
-  // Function to get cofounder name from userId
-  const getCofounderName = (userId) => {
+  // Get collaborator display name from userId (for acknowledgment checkboxes)
+  const getCollaboratorName = (userId) => {
     const index = collaboratorIds.indexOf(userId);
     const collaborator = collaboratorsMap[userId];
     const accountName = [
@@ -23,6 +23,17 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
       collaborator?.[COLLABORATOR_FIELDS.LAST_NAME]
     ].filter(Boolean).join(' ');
     return accountName || `Cofounder ${String.fromCharCode(65 + index)}`;
+  };
+
+  // Get cofounder entry name by index (for calculator results display)
+  const getCofounderEntryName = (index) => {
+    const cofounderEntries = formData[FIELDS.COFOUNDERS] || [];
+    const entry = cofounderEntries[index];
+    const fullName = entry?.[FIELDS.COFOUNDER_FULL_NAME];
+    if (fullName && fullName.trim() !== '') {
+      return fullName.trim().split(' ')[0];
+    }
+    return `Cofounder ${String.fromCharCode(65 + index)}`;
   };
 
   // Initialize equity percentages, acknowledgments, and calculator data if not present
@@ -67,14 +78,6 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
     let needsUpdate = false;
     const updates = {};
 
-    if (!formData[FIELDS.FINAL_EQUITY_PERCENTAGES]) {
-      const initialPercentages = {};
-      collaboratorIds.forEach(userId => {
-        initialPercentages[userId] = '';
-      });
-      updates.finalEquityPercentages = initialPercentages;
-      needsUpdate = true;
-    }
     if (!formData[FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION]) {
       updates.acknowledgeEquityAllocation = {};
       needsUpdate = true;
@@ -97,14 +100,27 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
     initializedRef.current = true;
   }, []);
 
-  const handleEquityChange = (userId, value) => {
-    const newPercentages = {
-      ...(formData[FIELDS.FINAL_EQUITY_PERCENTAGES] || {}),
-      [userId]: value
-    };
-    handleChange(FIELDS.FINAL_EQUITY_PERCENTAGES, newPercentages);
+  const equityEntries = formData[FIELDS.EQUITY_ENTRIES] || [];
 
-    // Uncheck all acknowledgments when any equity is changed
+  const handleAddEquityEntry = () => {
+    const newEntries = [...equityEntries, { [FIELDS.EQUITY_ENTRY_NAME]: '', [FIELDS.EQUITY_ENTRY_PERCENTAGE]: '' }];
+    handleChange(FIELDS.EQUITY_ENTRIES, newEntries);
+    // Uncheck all acknowledgments when equity changes
+    handleChange(FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION, {});
+  };
+
+  const handleRemoveEquityEntry = (index) => {
+    const newEntries = equityEntries.filter((_, i) => i !== index);
+    handleChange(FIELDS.EQUITY_ENTRIES, newEntries);
+    // Uncheck all acknowledgments when equity changes
+    handleChange(FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION, {});
+  };
+
+  const handleEquityEntryChange = (index, field, value) => {
+    const newEntries = [...equityEntries];
+    newEntries[index] = { ...newEntries[index], [field]: value };
+    handleChange(FIELDS.EQUITY_ENTRIES, newEntries);
+    // Uncheck all acknowledgments when equity changes
     handleChange(FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION, {});
   };
 
@@ -136,35 +152,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
       return { valid: false, message: 'No data to submit. Please fill out the equity calculator first.' };
     }
 
-    try {
-      // Calculate equity percentages from the spreadsheet
-      const equityPercentages = calculateEquityPercentages(spreadsheetData, { collaboratorIds });
-
-      // If calculation returns null, it means the data is invalid (all zeros)
-      if (!equityPercentages) {
-        return { valid: false, message: 'All cofounders must have equity % higher than 0.' };
-      }
-
-      // Check that all cofounders have non-zero equity percentages
-      const cofoundersWithZeroEquity = [];
-      collaboratorIds.forEach(userId => {
-        const percentage = equityPercentages[userId] || 0;
-        if (percentage === 0) {
-          cofoundersWithZeroEquity.push(getCofounderName(userId));
-        }
-      });
-
-      if (cofoundersWithZeroEquity.length > 0) {
-        return {
-          valid: false,
-          message: `All cofounders must have non-zero equity. ${cofoundersWithZeroEquity.join(', ')} ${cofoundersWithZeroEquity.length === 1 ? 'has' : 'have'} 0% equity.`
-        };
-      }
-
-      return { valid: true };
-    } catch (error) {
-      return { valid: false, message: 'Error validating data. Please check your entries.' };
-    }
+    return { valid: true };
   };
 
   // Handle submit - copy draft to submitted
@@ -233,16 +221,16 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
   // Check if current user has submitted
   const hasSubmitted = !!formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED]?.[currentUserId];
 
-  const totalEquity = collaboratorIds.reduce((sum, userId) => {
-    return sum + (parseFloat(formData[FIELDS.FINAL_EQUITY_PERCENTAGES]?.[userId]) || 0);
+  const totalEquity = equityEntries.reduce((sum, entry) => {
+    return sum + (parseFloat(entry[FIELDS.EQUITY_ENTRY_PERCENTAGE]) || 0);
   }, 0);
 
-  // Calculate equity for each person's submission
+  // Calculate equity for each person's submission (results are arrays by cofounder index)
   const equityCalculations = {};
   collaboratorIds.forEach(userId => {
     const submission = formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED]?.[userId];
     if (submission?.data) {
-      equityCalculations[userId] = calculateEquityPercentages(submission.data, { collaboratorIds });
+      equityCalculations[userId] = calculateEquityPercentages(submission.data);
     }
   });
 
@@ -338,8 +326,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                 ''
               }`} style={{ minHeight: '700px' }}>
                 <EquityCalculator
-                  cofounders={collaboratorIds}
-                  cofounderData={formData[FIELDS.COFOUNDERS]}
+                  cofounders={formData[FIELDS.COFOUNDERS] || []}
                   userDraftData={formData[FIELDS.EQUITY_CALCULATOR_DRAFT]?.[currentUserId]}
                   onDraftChange={handleDraftChange}
                   onSubmit={handleSubmit}
@@ -373,9 +360,10 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                   {collaboratorIds.map(assessorUserId => {
                     const hasSubmittedAssessment = !!formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED]?.[assessorUserId];
                     const calculation = equityCalculations[assessorUserId];
+                    const cofounderEntries = formData[FIELDS.COFOUNDERS] || [];
 
-                    // Generate greyscale colors evenly spaced from black to white
-                    const numCofounders = collaboratorIds.length;
+                    // Generate greyscale colors based on cofounder entry count
+                    const numCofounders = cofounderEntries.length;
                     const colors = Array.from({ length: numCofounders }, (_, i) => {
                       const value = numCofounders === 1 ? 0 : Math.round((i * 255) / (numCofounders - 1));
                       const hex = value.toString(16).padStart(2, '0');
@@ -385,7 +373,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                     return (
                       <div key={assessorUserId} className="mb-4">
                         <p className="font-medium text-gray-900 mb-3">
-                          {getCofounderName(assessorUserId)}
+                          {getCollaboratorName(assessorUserId)}
                         </p>
                         {!hasSubmittedAssessment ? (
                           <p className="text-sm text-gray-500 italic">
@@ -396,17 +384,17 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                             {/* Stacked Progress Bar */}
                             <div className="w-full h-7 bg-gray-200 rounded-lg flex relative" style={{ overflow: 'hidden', border: '1px solid #000000' }}>
                               {(() => {
-                                const nonZeroEntries = collaboratorIds
-                                  .map((userId, idx) => ({ userId, idx, percentage: calculation[userId] || 0 }))
+                                const nonZeroEntries = cofounderEntries
+                                  .map((_, idx) => ({ idx, percentage: calculation[idx] || 0 }))
                                   .filter(entry => entry.percentage > 0);
 
-                                return nonZeroEntries.map((entry, barIndex) => {
-                                  const { userId: cofounderUserId, idx: index, percentage } = entry;
+                                return nonZeroEntries.map((entry) => {
+                                  const { idx: index, percentage } = entry;
                                   const color = colors[index % colors.length];
 
                                   return (
                                     <div
-                                      key={cofounderUserId}
+                                      key={index}
                                       className="transition-all duration-300 flex items-center justify-center relative"
                                       style={{
                                         width: `${percentage}%`,
@@ -434,17 +422,17 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
 
                             {/* Legend */}
                             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 justify-center">
-                              {collaboratorIds.map((cofounderUserId, index) => {
+                              {cofounderEntries.map((_, index) => {
                                 const color = colors[index % colors.length];
 
                                 return (
-                                  <div key={cofounderUserId} className="flex items-center gap-2">
+                                  <div key={index} className="flex items-center gap-2">
                                     <div
                                       className="w-3 h-3 rounded-sm"
                                       style={{ backgroundColor: color, border: '1px solid #000000' }}
                                     />
                                     <span className="text-sm text-gray-700">
-                                      {getCofounderName(cofounderUserId)}
+                                      {getCofounderEntryName(index)}
                                     </span>
                                   </div>
                                 );
@@ -486,13 +474,15 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                     <div className="mt-6 space-y-6 mb-6">
                       {collaboratorIds.map(assessorUserId => {
                         const submission = formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED]?.[assessorUserId];
+                        const cofounderEntries = formData[FIELDS.COFOUNDERS] || [];
+                        const numCofounders = cofounderEntries.length;
 
                         if (!submission?.data) {
                           return (
                             <div key={assessorUserId} className="mb-4">
                               <p className="font-medium text-gray-900 mb-3">
-                                {getCofounderName(assessorUserId)}
-                                    </p>
+                                {getCollaboratorName(assessorUserId)}
+                              </p>
                               <p className="text-sm text-gray-500 italic">
                                 Submission pending
                               </p>
@@ -518,7 +508,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                             return aNum - bNum;
                           });
 
-                          const totalColumns = 2 + collaboratorIds.length;
+                          const totalColumns = 2 + numCofounders;
 
                           spreadsheetData = rowKeys.map((rowKey, rowIndex) => {
                             const row = firebaseData[rowKey];
@@ -528,13 +518,9 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                               const colKey = `col_${colIndex}`;
                               const cell = row?.[colKey];
 
-                              // Build the row first to check the first cell value
                               const cellValue = cell?.value !== undefined ? cell.value : 0;
-
-                              // Determine className based on position and content
                               let className = cell?.className || '';
 
-                              // After we have all cells in the row, we'll update classNames
                               if (cell) {
                                 resultRow.push({
                                   value: cellValue,
@@ -550,7 +536,6 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                               }
                             }
 
-                            // Now update classNames based on row content
                             const firstCellValue = resultRow[0]?.value;
                             const isSeparatorRow = firstCellValue === 'Input' || firstCellValue === 'Execution' || firstCellValue === 'Intangibles';
                             const isHeaderRow = rowIndex === 0;
@@ -558,7 +543,6 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                             resultRow.forEach((cell, colIndex) => {
                               const isFirstColumn = colIndex === 0;
 
-                              // Force separator rows to have empty values and proper styling
                               if (isSeparatorRow && !isFirstColumn) {
                                 cell.value = '';
                                 cell.readOnly = true;
@@ -579,13 +563,11 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                         } else if (Array.isArray(spreadsheetData)) {
                           spreadsheetData = spreadsheetData.map((row, rowIndex) =>
                             row.map((cell, colIndex) => {
-                              // Check if this row is a separator row based on the first cell value
                               const firstCellValue = row[0]?.value;
                               const isSeparatorRow = firstCellValue === 'Input' || firstCellValue === 'Execution' || firstCellValue === 'Intangibles';
                               const isHeaderRow = rowIndex === 0;
                               const isFirstColumn = colIndex === 0;
 
-                              // Force separator rows to have empty values
                               if (isSeparatorRow && !isFirstColumn) {
                                 return {
                                   value: '',
@@ -594,7 +576,6 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                                 };
                               }
 
-                              // Determine the appropriate className
                               let className = cell.className || '';
 
                               if (isHeaderRow) {
@@ -615,20 +596,17 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                         }
 
                         // Ensure we have the complete structure with all rows
-                        // Expected: 1 header + 21 categories = 22 rows
                         const expectedRowCount = 1 + categories.length;
 
                         if (spreadsheetData && spreadsheetData.length < expectedRowCount) {
-                          // Rebuild complete structure if data is incomplete
-                          const numCofounders = collaboratorIds.length;
                           const completeData = [];
 
                           // Header row
                           completeData.push([
                             { value: 'Category', readOnly: true, className: 'header-cell' },
                             { value: 'Importance', readOnly: true, className: 'header-cell' },
-                            ...collaboratorIds.map(userId => ({
-                              value: getCofounderName(userId),
+                            ...cofounderEntries.map((_, index) => ({
+                              value: getCofounderEntryName(index),
                               readOnly: true,
                               className: 'header-cell'
                             }))
@@ -641,7 +619,6 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                             const isSeparatorRow = category === 'Input' || category === 'Execution' || category === 'Intangibles';
 
                             if (isSeparatorRow) {
-                              // Separator rows: always empty values with grey styling
                               completeData.push([
                                 {
                                   value: category,
@@ -649,10 +626,9 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                                   className: 'category-cell separator-cell'
                                 },
                                 { value: '', readOnly: true, className: 'separator-cell' },
-                                ...collaboratorIds.map(() => ({ value: '', readOnly: true, className: 'separator-cell' }))
+                                ...cofounderEntries.map(() => ({ value: '', readOnly: true, className: 'separator-cell' }))
                               ]);
                             } else if (existingRow) {
-                              // Use existing data but ensure all columns exist
                               completeData.push([
                                 {
                                   value: category,
@@ -660,12 +636,11 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                                   className: 'category-cell'
                                 },
                                 existingRow[1] || { value: 0, readOnly: true },
-                                ...collaboratorIds.map((_, idx) =>
+                                ...cofounderEntries.map((_, idx) =>
                                   existingRow[idx + 2] || { value: 0, readOnly: true }
                                 )
                               ]);
                             } else {
-                              // Create default row
                               completeData.push([
                                 {
                                   value: category,
@@ -684,8 +659,8 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                         return (
                           <div key={assessorUserId} className="mb-6">
                             <p className="font-medium text-gray-900 mb-3">
-                              {getCofounderName(assessorUserId)}
-                                </p>
+                              {getCollaboratorName(assessorUserId)}
+                            </p>
                             <div className="spreadsheet-wrapper" style={{ overflow: 'visible' }}>
                               <div
                                 className="spreadsheet-scroll-container"
@@ -717,91 +692,128 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
         {/* Final Equity Allocation - Only show in results view */}
         {viewMode === 'results' && (
           <div ref={finalEquityRef} className={showIndividualSpreadsheets ? "pt-4" : "pt-2"}>
-            <h3 className="text-xl font-medium text-gray-800 mb-6">Final Equity Allocation</h3>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-medium text-gray-800">Final Equity Allocation</h3>
+              <button
+                type="button"
+                onClick={handleAddEquityEntry}
+                disabled={isReadOnly}
+                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+              >
+                + Add Entry
+              </button>
+            </div>
 
-          <div className="flex gap-4 mb-6">
-            {collaboratorIds.map((userId, index) => (
-              <div key={userId} className="flex-1">
-                <label className="block text-base font-medium text-gray-900 mb-2">
-                  {getCofounderName(userId)}
-                  {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
-                  {showValidation && !formData[FIELDS.FINAL_EQUITY_PERCENTAGES]?.[userId] && <span className="text-red-700 ml-0.5">*</span>}
-                </label>
-                <input
-                  type="text"
-                  value={formData[FIELDS.FINAL_EQUITY_PERCENTAGES]?.[userId] ? `${formData[FIELDS.FINAL_EQUITY_PERCENTAGES][userId]}%` : ''}
-                  onChange={(e) => {
-                    const input = e.target;
-                    const cursorPos = input.selectionStart;
-                    const value = e.target.value.replace('%', '');
+          {equityEntries.length === 0 ? (
+            <p className="text-gray-500 text-sm mb-6">Click "+ Add Entry" to add equity allocations</p>
+          ) : (
+            <div className="space-y-4 mb-6">
+              {equityEntries.map((entry, index) => (
+                <div key={index} className="flex gap-4 items-start">
+                  <div className="flex-1">
+                    <label className="block text-base font-medium text-gray-900 mb-2">
+                      Name
+                      {showValidation && !entry[FIELDS.EQUITY_ENTRY_NAME] && <span className="text-red-700 ml-0.5">*</span>}
+                    </label>
+                    <input
+                      type="text"
+                      value={entry[FIELDS.EQUITY_ENTRY_NAME] || ''}
+                      onChange={(e) => handleEquityEntryChange(index, FIELDS.EQUITY_ENTRY_NAME, e.target.value)}
+                      disabled={isReadOnly}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
+                      placeholder="Cofounder name"
+                    />
+                  </div>
+                  <div className="w-32">
+                    <label className="block text-base font-medium text-gray-900 mb-2">
+                      Equity
+                      {showValidation && !entry[FIELDS.EQUITY_ENTRY_PERCENTAGE] && <span className="text-red-700 ml-0.5">*</span>}
+                    </label>
+                    <input
+                      type="text"
+                      value={entry[FIELDS.EQUITY_ENTRY_PERCENTAGE] ? `${entry[FIELDS.EQUITY_ENTRY_PERCENTAGE]}%` : ''}
+                      onChange={(e) => {
+                        const input = e.target;
+                        const cursorPos = input.selectionStart;
+                        const value = e.target.value.replace('%', '');
 
-                    if (value === '' || (!isNaN(value) && parseFloat(value) >= 0 && parseFloat(value) <= 100)) {
-                      handleEquityChange(userId, value);
+                        if (value === '' || (!isNaN(value) && parseFloat(value) >= 0 && parseFloat(value) <= 100)) {
+                          handleEquityEntryChange(index, FIELDS.EQUITY_ENTRY_PERCENTAGE, value);
 
-                      // Keep cursor before the %
-                      setTimeout(() => {
-                        const newPos = Math.min(cursorPos, value.length);
-                        input.setSelectionRange(newPos, newPos);
-                      }, 0);
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    const input = e.target;
-                    const value = input.value.replace('%', '');
-                    const cursorPos = input.selectionStart;
+                          // Keep cursor before the %
+                          setTimeout(() => {
+                            const newPos = Math.min(cursorPos, value.length);
+                            input.setSelectionRange(newPos, newPos);
+                          }, 0);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        const input = e.target;
+                        const value = input.value.replace('%', '');
+                        const cursorPos = input.selectionStart;
 
-                    // Prevent cursor from going past the number into %
-                    if (e.key === 'ArrowRight' && cursorPos >= value.length) {
-                      e.preventDefault();
-                    }
+                        if (e.key === 'ArrowRight' && cursorPos >= value.length) {
+                          e.preventDefault();
+                        }
 
-                    // Keep cursor before % on arrow left at the end
-                    if (e.key === 'ArrowLeft' && cursorPos > value.length) {
-                      e.preventDefault();
-                      input.setSelectionRange(value.length, value.length);
-                    }
-                  }}
-                  onClick={(e) => {
-                    const input = e.target;
-                    const value = input.value.replace('%', '');
-                    const cursorPos = input.selectionStart;
+                        if (e.key === 'ArrowLeft' && cursorPos > value.length) {
+                          e.preventDefault();
+                          input.setSelectionRange(value.length, value.length);
+                        }
+                      }}
+                      onClick={(e) => {
+                        const input = e.target;
+                        const value = input.value.replace('%', '');
+                        const cursorPos = input.selectionStart;
 
-                    // If clicked after the %, move cursor before %
-                    if (cursorPos > value.length) {
-                      setTimeout(() => {
-                        input.setSelectionRange(value.length, value.length);
-                      }, 0);
-                    }
-                  }}
-                  onFocus={(e) => {
-                    const input = e.target;
-                    const value = input.value.replace('%', '');
-                    // Position cursor at end of number, before %
-                    setTimeout(() => {
-                      input.setSelectionRange(value.length, value.length);
-                    }, 0);
-                  }}
-                  disabled={isReadOnly}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-                  placeholder="25%"
-                />
-              </div>
-            ))}
-          </div>
+                        if (cursorPos > value.length) {
+                          setTimeout(() => {
+                            input.setSelectionRange(value.length, value.length);
+                          }, 0);
+                        }
+                      }}
+                      onFocus={(e) => {
+                        const input = e.target;
+                        const value = input.value.replace('%', '');
+                        setTimeout(() => {
+                          input.setSelectionRange(value.length, value.length);
+                        }, 0);
+                      }}
+                      disabled={isReadOnly}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
+                      placeholder="25%"
+                    />
+                  </div>
+                  <div className="pt-9">
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveEquityEntry(index)}
+                      disabled={isReadOnly}
+                      className="text-red-500 hover:text-red-700 text-sm disabled:text-gray-400"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Total Equity Validation */}
-          <div>
-            <p className="font-medium text-black">
-              Total Equity: {totalEquity.toFixed(2)}%
-            </p>
-            {Math.abs(totalEquity - 100) > 0.01 && (
-              <p className="text-sm mt-1 text-red-500">
-                {totalEquity > 100.01
-                  ? 'Total equity exceeds 100%. Please adjust.'
-                  : 'Total equity must equal 100% before proceeding.'}
+          {equityEntries.length > 0 && (
+            <div>
+              <p className="font-medium text-black">
+                Total Equity: {totalEquity.toFixed(2)}%
               </p>
-            )}
-          </div>
+              {Math.abs(totalEquity - 100) > 0.01 && (
+                <p className="text-sm mt-1 text-red-500">
+                  {totalEquity > 100.01
+                    ? 'Total equity exceeds 100%. Please adjust.'
+                    : 'Total equity must equal 100% before proceeding.'}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Acknowledgment Checkboxes */}
           <div className="mt-6">
@@ -812,17 +824,19 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
             <p className="text-gray-600 text-sm mb-4 italic">
               This equity calculator is for informational and planning purposes only. Using it does not grant, issue, vest, or transfer any equity, securities, or ownership interest of any kind. No equity exists unless and until it is formally approved and issued through proper corporate action (e.g., board approval) and documented via legally binding agreements (such as a stock purchase agreement, option grant, or equity incentive plan). You must complete the required legal and administrative steps for any equity to be valid.
             </p>
+            {(() => {
+              // Check if all equity entries are filled and total equals 100%
+              const allEntriesFilled = equityEntries.length > 0 && equityEntries.every(entry =>
+                entry[FIELDS.EQUITY_ENTRY_NAME] && entry[FIELDS.EQUITY_ENTRY_PERCENTAGE] && entry[FIELDS.EQUITY_ENTRY_PERCENTAGE] !== ''
+              );
+              const equityValid = Math.abs(totalEquity - 100) <= 0.01;
+              const canAcknowledge = allEntriesFilled && equityValid;
+
+              return (
             <div className="space-y-2 pl-4">
               {collaboratorIds.map((userId) => {
                 const isApproved = formData[FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION]?.[userId] || false;
                 const isCurrentUser = userId === currentUserId;
-
-                // Check if all equity percentages are filled and total equals 100%
-                const allPercentagesFilled = collaboratorIds.every(userId =>
-                  formData[FIELDS.FINAL_EQUITY_PERCENTAGES]?.[userId] && formData[FIELDS.FINAL_EQUITY_PERCENTAGES][userId] !== ''
-                );
-                const equityValid = Math.abs(totalEquity - 100) <= 0.01;
-                const canAcknowledge = allPercentagesFilled && equityValid;
 
                 return (
                   <label key={userId} className="flex items-center">
@@ -834,13 +848,15 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
                       className="mr-3"
                     />
                     <span className={`${!canAcknowledge ? 'text-gray-400' : 'text-gray-700'}`}>
-                      {getCofounderName(userId)}
+                      {getCollaboratorName(userId)}
                       {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
                     </span>
                   </label>
                 );
               })}
             </div>
+              );
+            })()}
           </div>
           </div>
         )}

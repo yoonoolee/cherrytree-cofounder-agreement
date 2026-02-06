@@ -52,7 +52,8 @@ function QuestionRenderer({
     helperText,
     otherField,
     acknowledgmentText,
-    multiSelect
+    multiSelect,
+    clearsFields
   } = config;
 
   const value = formData[fieldName];
@@ -140,7 +141,7 @@ function QuestionRenderer({
             const optionDescription = typeof option === 'object' ? option.description : null;
 
             return (
-              <label key={optionValue} className="flex items-start">
+              <label key={optionValue} className={`flex ${optionDescription ? 'items-start' : 'items-center'}`}>
                 <input
                   type="radio"
                   name={fieldName}
@@ -148,7 +149,24 @@ function QuestionRenderer({
                   checked={value === optionValue}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange(fieldName, value === optionValue ? '' : optionValue);
+                      const newValue = value === optionValue ? '' : optionValue;
+                      handleChange(fieldName, newValue);
+                      if (otherField && newValue !== 'Other') {
+                        handleChange(otherField, '');
+                      }
+                      if (clearsFields) {
+                        if (newValue === clearsFields.value) {
+                          clearsFields.fields.forEach(({ field, type }) => {
+                            if (type === 'acknowledgment') {
+                              const init = Object.fromEntries(collaboratorIds.map(id => [id, false]));
+                              handleChange(field, init);
+                            }
+                            // Non-acknowledgment fields: no action needed on activation
+                          });
+                        } else {
+                          clearsFields.fields.forEach(({ field }) => handleChange(field, null));
+                        }
+                      }
                     }
                   }}
                   onChange={() => {}}
@@ -196,10 +214,14 @@ function QuestionRenderer({
                 type="checkbox"
                 checked={selectedValues.includes(option)}
                 onChange={(e) => {
-                  const newValues = e.target.checked
+                  const unsorted = e.target.checked
                     ? [...selectedValues, option]
                     : selectedValues.filter(v => v !== option);
+                  const newValues = unsorted.sort((a, b) => options.indexOf(a) - options.indexOf(b));
                   handleChange(fieldName, newValues);
+                  if (otherField && option === 'Other' && !e.target.checked) {
+                    handleChange(otherField, '');
+                  }
                 }}
                 disabled={isReadOnly}
                 className="mr-3"
@@ -234,7 +256,12 @@ function QuestionRenderer({
         {helperText && <p className="text-sm text-gray-500 mb-3">{helperText}</p>}
         <CustomSelect
           value={value || ''}
-          onChange={(selectedValue) => handleChange(fieldName, selectedValue)}
+          onChange={(selectedValue) => {
+            handleChange(fieldName, selectedValue);
+            if (otherField && selectedValue !== 'Other') {
+              handleChange(otherField, '');
+            }
+          }}
           options={options}
           disabled={isReadOnly}
         />
@@ -264,10 +291,10 @@ function QuestionRenderer({
     // Support dynamic acknowledgmentText as function or string
     const displayText = typeof acknowledgmentText === 'function'
       ? acknowledgmentText(formData)
-      : acknowledgmentText;
+      : (acknowledgmentText || question);
 
     return (
-      <div className="conditional-section">
+      <div className={config.conditionalOn ? "conditional-section" : ""}>
         <p className="text-gray-700 mb-4">
           {displayText}
           {isInvalid && <span className="text-red-700 ml-0.5">*</span>}

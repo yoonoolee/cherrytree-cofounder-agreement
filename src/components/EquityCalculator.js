@@ -1,28 +1,24 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Spreadsheet from 'react-spreadsheet';
 import './EquityCalculator.css';
+import { FIELDS } from '../config/surveySchema';
 import { calculateEquityPercentages, convertFromFirebaseFormat, isFirebaseFormat } from '../utils/equityCalculation';
 
-function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftChange, onSubmit, isReadOnly, hasSubmitted, submissionError, lastSubmittedAt, wiggle }) {
-  // Function to get cofounder name from userId
-  const getCofounderName = (userId) => {
-    // Find index of this collaborator
-    const index = cofounders.indexOf(userId);
-    // Get cofounder at that index
-    const cofounder = cofounderData?.[index];
-    // Return first name if it exists, otherwise return fallback
-    if (cofounder?.fullName && cofounder.fullName.trim() !== '') {
-      const firstName = cofounder.fullName.trim().split(' ')[0];
-      return firstName;
+function EquityCalculator({ cofounders, userDraftData, onDraftChange, onSubmit, isReadOnly, hasSubmitted, submissionError, lastSubmittedAt, wiggle }) {
+  // Function to get cofounder display name by index
+  const getCofounderName = (index) => {
+    const cofounder = cofounders[index];
+    const fullName = cofounder?.[FIELDS.COFOUNDER_FULL_NAME];
+    if (fullName && fullName.trim() !== '') {
+      return fullName.trim().split(' ')[0];
     }
-    // Convert index to letter (0 -> A, 1 -> B, etc.)
     return `Cofounder ${String.fromCharCode(65 + index)}`;
   };
 
   // Memoize cofounder names to detect actual changes
   const cofounderNames = useMemo(() => {
-    return cofounders.map(userId => getCofounderName(userId)).join('|');
-  }, [cofounders, cofounderData]);
+    return cofounders.map((_, index) => getCofounderName(index)).join('|');
+  }, [cofounders]);
 
   // Helper function to convert nested arrays to Firebase-compatible object structure
   const convertToFirebaseFormat = (data) => {
@@ -78,8 +74,8 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
         return [
           { value: 'Category', readOnly: true, className: 'header-cell' },
           { value: 'Importance', readOnly: true, className: 'header-cell' },
-          ...cofounders.map((userId) => ({
-            value: getCofounderName(userId),
+          ...cofounders.map((_, index) => ({
+            value: getCofounderName(index),
             readOnly: true,
             className: 'header-cell'
           }))
@@ -143,8 +139,8 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
   const prevCofounderNamesRef = useRef(cofounderNames);
   const spreadsheetRef = useRef(null);
 
-  // Calculate equity percentages from current data
-  const currentEquity = calculateEquityPercentages(data, { collaboratorIds: cofounders });
+  // Calculate equity percentages from current data (returns array by column index)
+  const currentEquity = calculateEquityPercentages(data);
 
   // Stacked progress bar component
   const EquityProgressBar = ({ equity }) => {
@@ -156,32 +152,30 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
       );
     }
 
-    const entries = Object.entries(equity);
-
-    // Generate greyscale colors evenly spaced from black to white
-    const numCofounders = entries.length;
+    // equity is an array of percentages by index
+    const numCofounders = equity.length;
     const colors = Array.from({ length: numCofounders }, (_, i) => {
       const value = numCofounders === 1 ? 0 : Math.round((i * 255) / (numCofounders - 1));
       const hex = value.toString(16).padStart(2, '0');
-      return { bg: `#${hex}${hex}${hex}` };
+      return `#${hex}${hex}${hex}`;
     });
 
     return (
       <div className="w-full max-w-3xl mx-auto">
         {/* Stacked Progress Bar */}
         <div className="w-full h-7 bg-gray-200 rounded-lg flex relative overflow-hidden" style={{ border: '1px solid #000000' }}>
-          {entries.map(([userId, percentage], index) => {
+          {equity.map((percentage, index) => {
             if (percentage === 0) return null;
 
             const color = colors[index % colors.length];
 
             return (
               <div
-                key={userId}
+                key={index}
                 className="transition-all duration-300 flex items-center justify-center relative"
                 style={{
                   width: `${percentage}%`,
-                  backgroundColor: color.bg
+                  backgroundColor: color
                 }}
               >
                 <span
@@ -204,17 +198,17 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
 
         {/* Legend */}
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 justify-center">
-          {entries.map(([userId, percentage], index) => {
+          {equity.map((percentage, index) => {
             const color = colors[index % colors.length];
 
             return (
-              <div key={userId} className="flex items-center gap-2">
+              <div key={index} className="flex items-center gap-2">
                 <div
                   className="w-3 h-3 rounded-sm"
-                  style={{ backgroundColor: color.bg, border: '1px solid #000000' }}
+                  style={{ backgroundColor: color, border: '1px solid #000000' }}
                 />
                 <span className="text-sm text-gray-700">
-                  {getCofounderName(userId)}
+                  {getCofounderName(index)}
                 </span>
               </div>
             );
@@ -224,36 +218,87 @@ function EquityCalculator({ cofounders, cofounderData, userDraftData, onDraftCha
     );
   };
 
-  // Update header row when cofounder names actually change
+  // Track previous cofounder IDs for reliable column add/remove detection
+  const prevCofounderIdsRef = useRef(cofounders.map(cf => cf[FIELDS.COFOUNDER_ID]));
+
+  // Update spreadsheet columns when cofounders change (add/remove/rename)
   useEffect(() => {
-    // Only update if cofounder names actually changed
     if (prevCofounderNamesRef.current === cofounderNames) {
       return;
     }
 
+    const prevIds = prevCofounderIdsRef.current;
+    const currentIds = cofounders.map(cf => cf[FIELDS.COFOUNDER_ID]);
+
     prevCofounderNamesRef.current = cofounderNames;
+    prevCofounderIdsRef.current = currentIds;
 
     setData(prevData => {
-      const newData = [...prevData];
+      let newData = prevData.map(row => [...row]);
+      let columnsChanged = false;
+
+      // Handle removals: find all IDs that are no longer present
+      const removedPositions = prevIds
+        .map((id, i) => currentIds.includes(id) ? -1 : i)
+        .filter(i => i !== -1)
+        .sort((a, b) => b - a); // descending — remove right to left
+
+      if (removedPositions.length > 0) {
+        columnsChanged = true;
+        removedPositions.forEach(pos => {
+          const colToRemove = pos + 2; // +2 for Category and Importance columns
+          newData = newData.map(row => {
+            const newRow = [...row];
+            if (colToRemove < newRow.length) {
+              newRow.splice(colToRemove, 1);
+            }
+            return newRow;
+          });
+        });
+      }
+
+      // Handle additions: find all IDs that are new
+      const addedIds = currentIds.filter(id => !prevIds.includes(id));
+      if (addedIds.length > 0) {
+        columnsChanged = true;
+        newData = newData.map((row, rowIndex) => {
+          const newRow = [...row];
+          for (let i = 0; i < addedIds.length; i++) {
+            if (rowIndex === 0) {
+              newRow.push({ value: '', readOnly: true, className: 'header-cell' });
+            } else {
+              const categoryName = row[0]?.value;
+              const isSeparatorRow = categoryName === 'Input' || categoryName === 'Execution' || categoryName === 'Intangibles';
+              if (isSeparatorRow) {
+                newRow.push({ value: '', readOnly: true, className: 'separator-cell' });
+              } else {
+                newRow.push({ value: 0 });
+              }
+            }
+          }
+          return newRow;
+        });
+      }
+
+      // Always rebuild header row with current names
       if (newData[0]) {
         newData[0] = [
           { value: 'Category', readOnly: true, className: 'header-cell' },
           { value: 'Importance', readOnly: true, className: 'header-cell' },
-          ...cofounders.map((email) => ({
-            value: getCofounderName(email),
+          ...cofounders.map((_, index) => ({
+            value: getCofounderName(index),
             readOnly: true,
             className: 'header-cell'
           }))
         ];
       }
-      // Update category column to be read-only
-      for (let i = 1; i < newData.length; i++) {
-        if (newData[i] && newData[i][0]) {
-          // Preserve group-header-cell or category-cell class
-          const cellClass = newData[i][0].className || 'category-cell';
-          newData[i][0] = { ...newData[i][0], readOnly: true, className: cellClass };
-        }
+
+      // Save updated draft when columns change
+      if (columnsChanged && onDraftChange) {
+        const firebaseData = convertToFirebaseFormat(newData);
+        setTimeout(() => onDraftChange(firebaseData), 0);
       }
+
       return newData;
     });
   }, [cofounderNames]);

@@ -1,9 +1,10 @@
 import React from 'react';
-import { PERFORMANCE_CONSEQUENCES, TERMINATION_WITH_CAUSE_OPTIONS } from '../config/surveySchema';
 import Tooltip from './Tooltip';
+import QuestionRenderer from './QuestionRenderer';
+import { QUESTION_CONFIG } from '../config/questionConfig';
 import { FIELDS } from '../config/surveySchema';
 
-function SectionPerformance({ formData, handleChange, isReadOnly, showValidation }) {
+function SectionPerformance({ formData, handleChange, isReadOnly, showValidation, project }) {
   return (
     <div>
       <h2 className="text-3xl font-medium text-gray-800 mb-6">Cofounder Performance & Departure</h2>
@@ -17,36 +18,17 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
 
       <div className="space-y-12">
         {/* Performance Consequences */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            What happens if a cofounder fails to meet their agreed-upon obligations?
-            {showValidation && (!formData[FIELDS.PERFORMANCE_CONSEQUENCES] || formData[FIELDS.PERFORMANCE_CONSEQUENCES].length === 0) && <span className="text-red-700 ml-0.5 validation-error">*</span>}
-            <Tooltip text="These measures are intended for serious, ongoing failures to meet material obligations, not for minor issues or temporary setbacks." />
-          </label>
-          <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
-          <div className="space-y-2">
-            {PERFORMANCE_CONSEQUENCES.map((option) => (
-              <label key={option} className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={(formData[FIELDS.PERFORMANCE_CONSEQUENCES] || []).includes(option)}
-                  onChange={(e) => {
-                    const current = formData[FIELDS.PERFORMANCE_CONSEQUENCES] || [];
-                    const newList = e.target.checked
-                      ? [...current, option]
-                      : current.filter(item => item !== option);
-                    handleChange(FIELDS.PERFORMANCE_CONSEQUENCES, newList);
-                  }}
-                  disabled={isReadOnly}
-                  className="mr-3"
-                />
-                <span className="text-gray-700">{option}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.PERFORMANCE_CONSEQUENCES}
+          config={QUESTION_CONFIG[FIELDS.PERFORMANCE_CONSEQUENCES]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+          project={project}
+        />
 
-        {/* Remedy Period */}
+        {/* Remedy Period - Custom (underline styling + integer validation) */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             How many days does a cofounder have to fix the issue after receiving written notice before termination can occur?
@@ -82,49 +64,17 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
         </div>
 
         {/* Termination with Cause */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            Which of the following constitutes termination "with cause"?
-            {showValidation && (!formData[FIELDS.TERMINATION_WITH_CAUSE] || formData[FIELDS.TERMINATION_WITH_CAUSE].length === 0) && <span className="text-red-700 ml-0.5 validation-error">*</span>}
-            <Tooltip text="Basically, what kind of bad behavior gets you booted." />
-          </label>
-          <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
-          <div className="space-y-2">
-            {TERMINATION_WITH_CAUSE_OPTIONS.map((option) => (
-              <label key={option} className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={(formData[FIELDS.TERMINATION_WITH_CAUSE] || []).includes(option)}
-                  onChange={(e) => {
-                    const current = formData[FIELDS.TERMINATION_WITH_CAUSE] || [];
-                    const newList = e.target.checked
-                      ? [...current, option]
-                      : current.filter(item => item !== option);
-                    handleChange(FIELDS.TERMINATION_WITH_CAUSE, newList);
-                  }}
-                  disabled={isReadOnly}
-                  className="mr-3"
-                />
-                <span className="text-gray-700">{option}</span>
-              </label>
-            ))}
-          </div>
+        <QuestionRenderer
+          fieldName={FIELDS.TERMINATION_WITH_CAUSE}
+          config={QUESTION_CONFIG[FIELDS.TERMINATION_WITH_CAUSE]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+          project={project}
+        />
 
-          {(formData[FIELDS.TERMINATION_WITH_CAUSE] || []).includes('Other') && (
-            <div className="conditional-section">
-              <input
-                type="text"
-                value={formData[FIELDS.TERMINATION_WITH_CAUSE_OTHER] || ''}
-                onChange={(e) => handleChange(FIELDS.TERMINATION_WITH_CAUSE_OTHER, e.target.value)}
-                disabled={isReadOnly}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-                placeholder="Please specify"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Voluntary Notice Period */}
+        {/* Voluntary Notice Period - Custom (underline styling) */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             How many days is the notice period if a Cofounder wishes to voluntarily leave?

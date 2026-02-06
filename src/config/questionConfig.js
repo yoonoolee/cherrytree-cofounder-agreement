@@ -55,7 +55,8 @@ export const QUESTION_CONFIG = {
     question: "What's your company's name?",
     type: INPUT_TYPES.TEXT,
     required: true,
-    placeholder: 'Acme Inc.',
+    placeholder: 'Enter your company name',
+    tooltip: "Make sure it's good, your company might go big one day.",
   },
 
   [FIELDS.ENTITY_TYPE]: {
@@ -65,13 +66,16 @@ export const QUESTION_CONFIG = {
     required: true,
     options: ENTITY_TYPES,
     otherField: FIELDS.ENTITY_TYPE_OTHER,
+    tooltip: "This defines how your company is structured for ownership, taxes, and decision-making. If you plan to raise venture capital, a C-Corp is usually preferred.",
   },
 
   [FIELDS.REGISTERED_STATE]: {
     section: SECTION_IDS.FORMATION,
     question: "What state will your company be registered in?",
-    type: INPUT_TYPES.TEXT, // Uses custom autocomplete
+    type: INPUT_TYPES.DROPDOWN,
     required: true,
+    options: US_STATES.map(state => ({ value: state.label, label: `${state.label} (${state.value})` })),
+    tooltip: "Delaware is a popular choice for many startups because its laws and courts are well established. Just be aware you may have additional fees or filings if your business is based elsewhere.",
   },
 
   [FIELDS.MAILING_STREET]: {
@@ -105,9 +109,10 @@ export const QUESTION_CONFIG = {
   [FIELDS.COMPANY_DESCRIPTION]: {
     section: SECTION_IDS.FORMATION,
     question: "Can you describe your company in 1 line?",
-    type: INPUT_TYPES.TEXTAREA,
+    type: INPUT_TYPES.TEXT,
     required: true,
-    placeholder: 'We help...',
+    placeholder: 'Helping cofounders create Cofounder Agreements',
+    tooltip: "Describe what you do in plain language. No buzzwords needed.",
   },
 
   [FIELDS.INDUSTRIES]: {
@@ -117,6 +122,8 @@ export const QUESTION_CONFIG = {
     required: true,
     options: INDUSTRIES,
     otherField: FIELDS.INDUSTRY_OTHER,
+    helperText: "Select all that apply",
+    tooltip: "Pick the industry that best describes what you currently do. Aspirations to conquer all markets can wait.",
   },
 
   // ============================================================================
@@ -173,17 +180,16 @@ export const QUESTION_CONFIG = {
   // Section 3: Equity Allocation
   // ============================================================================
 
-  [FIELDS.FINAL_EQUITY_PERCENTAGES]: {
+  [FIELDS.EQUITY_ENTRIES]: {
     section: SECTION_IDS.EQUITY_ALLOCATION,
     question: "Final Equity Allocation",
     type: INPUT_TYPES.CUSTOM,
     required: true,
-    requiresAllCollaborators: true,
   },
 
   [FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION]: {
     section: SECTION_IDS.EQUITY_ALLOCATION,
-    question: "I acknowledge and accept this equity allocation",
+    question: "I acknowledge and accept this equity allocation.",
     type: INPUT_TYPES.ACKNOWLEDGMENT,
     required: true,
     requiresAllCollaborators: true,
@@ -208,6 +214,7 @@ export const QUESTION_CONFIG = {
     required: true,
     options: VESTING_SCHEDULES,
     otherField: FIELDS.VESTING_SCHEDULE_OTHER,
+    helperText: "The standard is 4 years with a 1-year cliff",
     tooltip: 'You earn no equity until the "cliff" is hit. Then, once the cliff is reached, you immediately vest the first portion of your equity, and the rest continues to vest gradually over the remaining period.',
   },
 
@@ -244,7 +251,7 @@ export const QUESTION_CONFIG = {
 
   [FIELDS.ACKNOWLEDGE_FORFEITURE]: {
     section: SECTION_IDS.VESTING,
-    question: "You acknowledge that if a cofounder dies, becomes permanently disabled, or is otherwise incapacitated, their unvested shares are automatically forfeited and returned to the company.",
+    question: "I acknowledge that if a cofounder dies, becomes permanently disabled, or is otherwise incapacitated, their unvested shares are automatically forfeited and returned to the company.",
     type: INPUT_TYPES.ACKNOWLEDGMENT,
     required: true,
     requiresAllCollaborators: true,
@@ -280,8 +287,8 @@ export const QUESTION_CONFIG = {
     type: INPUT_TYPES.RADIO,
     required: true,
     options: [
-      { value: 'yes', label: 'Yes', description: 'Voting weight tied to equity %' },
-      { value: 'no', label: 'No', description: 'All founders have equal vote' }
+      { value: 'Yes', label: 'Yes', description: 'Voting weight tied to equity %' },
+      { value: 'No', label: 'No', description: 'All founders have equal vote' }
     ],
   },
 
@@ -300,7 +307,7 @@ export const QUESTION_CONFIG = {
     required: true,
     requiresAllCollaborators: true,
     conditionalOn: { field: FIELDS.TIE_RESOLUTION },
-    acknowledgmentText: (formData) => `In the event of a deadlock, the Cofounders agree to first seek resolution through informal negotiation for a period of 30 days. If unresolved, the deadlock shall be resolved by ${formData[FIELDS.TIE_RESOLUTION]}.`,
+    acknowledgmentText: (formData) => `I acknowledge that in the event of a deadlock, the Cofounders agree to first seek resolution through informal negotiation for a period of 30 days. If unresolved, the deadlock shall be resolved by ${formData[FIELDS.TIE_RESOLUTION]}.`,
   },
 
   [FIELDS.INCLUDE_SHOTGUN_CLAUSE]: {
@@ -332,11 +339,12 @@ export const QUESTION_CONFIG = {
     required: true,
     options: ['Yes', 'No'],
     tooltip: "Nail down ownership now, or risk ugly debates later over who really owns what once the company takes off.",
+    clearsFields: { value: 'Yes', fields: [{ field: FIELDS.ACKNOWLEDGE_IP_ASSIGNMENT, type: 'acknowledgment' }] },
   },
 
   [FIELDS.ACKNOWLEDGE_IP_ASSIGNMENT]: {
     section: SECTION_IDS.IP,
-    question: "Any pre-existing IP can be assigned to the company via a written agreement if the cofounders agree",
+    question: "I acknowledge that any pre-existing IP can be assigned to the company via a written agreement if the cofounders agree.",
     type: INPUT_TYPES.ACKNOWLEDGMENT,
     required: true,
     requiresAllCollaborators: true,
@@ -345,7 +353,7 @@ export const QUESTION_CONFIG = {
 
   [FIELDS.ACKNOWLEDGE_IP_OWNERSHIP]: {
     section: SECTION_IDS.IP,
-    question: "Each Cofounder agrees that all inventions, discoveries, designs, developments, improvements, processes, works of authorship, trade secrets, and other intellectual property conceived, created, developed, or reduced to practice by the Cofounder, either alone or with others, in the course of their work for the Company or using the Company's resources, shall be the sole and exclusive property of the Company.",
+    question: "I acknowledge that all inventions, discoveries, designs, developments, improvements, processes, works of authorship, trade secrets, and other intellectual property conceived, created, developed, or reduced to practice by the Cofounder, either alone or with others, in the course of their work for the Company or using the Company's resources, shall be the sole and exclusive property of the Company.",
     type: INPUT_TYPES.ACKNOWLEDGMENT,
     required: true,
     requiresAllCollaborators: true,
@@ -361,6 +369,7 @@ export const QUESTION_CONFIG = {
     type: INPUT_TYPES.RADIO,
     required: true,
     options: ['Yes', 'No'],
+    clearsFields: { value: 'Yes', fields: [{ field: FIELDS.COMPENSATIONS }] },
   },
 
   [FIELDS.COMPENSATIONS]: {
@@ -388,6 +397,7 @@ export const QUESTION_CONFIG = {
     type: INPUT_TYPES.CHECKBOX,
     required: true,
     options: PERFORMANCE_CONSEQUENCES,
+    helperText: "Select all that apply",
     tooltip: "These measures are intended for serious, ongoing failures to meet material obligations, not for minor issues or temporary setbacks.",
   },
 
@@ -401,11 +411,12 @@ export const QUESTION_CONFIG = {
 
   [FIELDS.TERMINATION_WITH_CAUSE]: {
     section: SECTION_IDS.PERFORMANCE,
-    question: "Which of the following constitutes termination with cause?",
+    question: 'Which of the following constitutes termination "with cause"?',
     type: INPUT_TYPES.CHECKBOX,
     required: true,
     options: TERMINATION_WITH_CAUSE_OPTIONS,
     otherField: FIELDS.TERMINATION_WITH_CAUSE_OTHER,
+    helperText: "Select all that apply",
     tooltip: "Basically, what kind of bad behavior gets you booted.",
   },
 
@@ -422,7 +433,7 @@ export const QUESTION_CONFIG = {
 
   [FIELDS.ACKNOWLEDGE_CONFIDENTIALITY]: {
     section: SECTION_IDS.NON_COMPETITION,
-    question: "Each Cofounder agrees to hold all Confidential Information in strict confidence and not to disclose any Confidential Information to any third party without the Company's prior written consent.",
+    question: "I acknowledge that each Cofounder agrees to hold all Confidential Information in strict confidence and not to disclose any Confidential Information to any third party without the Company's prior written consent.",
     type: INPUT_TYPES.ACKNOWLEDGMENT,
     required: true,
     requiresAllCollaborators: true,
@@ -466,7 +477,7 @@ export const QUESTION_CONFIG = {
     question: "Which state's laws will govern this agreement?",
     type: INPUT_TYPES.DROPDOWN,
     required: true,
-    options: US_STATES.map(state => state.label),
+    options: US_STATES.map(state => ({ value: state.label, label: `${state.label} (${state.value})` })),
   },
 
   [FIELDS.AMENDMENT_PROCESS]: {
@@ -487,15 +498,20 @@ export const QUESTION_CONFIG = {
 
   [FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW]: {
     section: SECTION_IDS.GENERAL_PROVISIONS,
-    question: "Each Cofounder acknowledges that this Agreement shall be reviewed periodically to ensure it remains current and effective.",
+    question: "I acknowledge that this Agreement shall be reviewed periodically to ensure it remains current and effective.",
     type: INPUT_TYPES.ACKNOWLEDGMENT,
     required: true,
     requiresAllCollaborators: true,
+    acknowledgmentText: (formData) => {
+      const months = formData[FIELDS.REVIEW_FREQUENCY_MONTHS];
+      const frequency = months ? `${months} month${months !== '1' ? 's' : ''}` : '[frequency not specified]';
+      return `I acknowledge that this Agreement shall be reviewed every ${frequency} to ensure it remains current and effective.`;
+    },
   },
 
   [FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST]: {
     section: SECTION_IDS.GENERAL_PROVISIONS,
-    question: "Any Cofounder may request a review of this Agreement in the event of material changes in circumstances affecting the Company or the Cofounder's role.",
+    question: "I acknowledge that any Cofounder may request a review of this Agreement in the event of material changes in circumstances affecting the Company or the Cofounder's role. Any amendments proposed pursuant to such review shall become effective only if approved and executed in writing according to the amendment process set forth in this Agreement.",
     type: INPUT_TYPES.ACKNOWLEDGMENT,
     required: true,
     requiresAllCollaborators: true,
@@ -503,7 +519,7 @@ export const QUESTION_CONFIG = {
 
   [FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT]: {
     section: SECTION_IDS.GENERAL_PROVISIONS,
-    question: "Each Cofounder acknowledges that this Agreement constitutes the entire agreement between the Cofounders regarding the subject matter hereof and supersedes all prior agreements, understandings, negotiations, and discussions, whether oral or written.",
+    question: "I acknowledge that this Agreement constitutes the entire agreement between the Cofounders regarding the subject matter hereof and supersedes all prior agreements, understandings, negotiations, and discussions, whether oral or written.",
     type: INPUT_TYPES.ACKNOWLEDGMENT,
     required: true,
     requiresAllCollaborators: true,
@@ -511,7 +527,7 @@ export const QUESTION_CONFIG = {
 
   [FIELDS.ACKNOWLEDGE_SEVERABILITY]: {
     section: SECTION_IDS.GENERAL_PROVISIONS,
-    question: "Each Cofounder acknowledges that if any provision of this Agreement is held to be invalid or unenforceable, the remaining provisions shall continue in full force and effect.",
+    question: "I acknowledge that if any provision of this Agreement is held to be invalid or unenforceable, the remaining provisions shall continue in full force and effect.",
     type: INPUT_TYPES.ACKNOWLEDGMENT,
     required: true,
     requiresAllCollaborators: true,

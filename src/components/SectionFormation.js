@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { US_STATES, INDUSTRIES, ENTITY_TYPES } from '../config/surveySchema';
+import { US_STATES } from '../config/surveySchema';
 import CustomSelect from './CustomSelect';
-import Tooltip from './Tooltip';
+import QuestionRenderer from './QuestionRenderer';
+import { QUESTION_CONFIG } from '../config/questionConfig';
 import { FIELDS } from '../config/surveySchema';
 
 // Constants
@@ -178,83 +179,38 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
 
       <div className="space-y-12" style={{ overflow: 'visible' }}>
         {/* Company Name */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            What's your company's name?
-            {showValidation && !formData[FIELDS.COMPANY_NAME] && <span className="text-red-700 ml-0.5">*</span>}
-            <Tooltip text="Make sure it's good, your company might go big one day." />
-          </label>
-          <input
-            type="text"
-            value={formData[FIELDS.COMPANY_NAME] || ''}
-            onChange={(e) => handleChange(FIELDS.COMPANY_NAME, e.target.value)}
-            disabled={isReadOnly}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-            placeholder="Enter your company name"
-          />
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.COMPANY_NAME}
+          config={QUESTION_CONFIG[FIELDS.COMPANY_NAME]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+        />
 
         {/* Entity Type */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            What is your company's current or intended legal structure?
-            {showValidation && !formData[FIELDS.ENTITY_TYPE] && <span className="text-red-700 ml-0.5">*</span>}
-            <Tooltip text="This defines how your company is structured for ownership, taxes, and decision-making. If you plan to raise venture capital, a C-Corp is usually preferred." />
-          </label>
-          <div className="space-y-2">
-            {ENTITY_TYPES.map((type) => (
-              <label key={type} className="flex items-center">
-                <input
-                  type="radio"
-                  name="entityType"
-                  value={type}
-                  checked={formData[FIELDS.ENTITY_TYPE] === type}
-                  onClick={() => {
-                    if (!isReadOnly) {
-                      handleChange(FIELDS.ENTITY_TYPE, formData[FIELDS.ENTITY_TYPE] === type ? '' : type);
-                    }
-                  }}
-                  onChange={() => {}}
-                  disabled={isReadOnly}
-                  className="mr-3"
-                />
-                <span className="text-gray-700">{type}</span>
-              </label>
-            ))}
-          </div>
-
-          {formData[FIELDS.ENTITY_TYPE] === 'Other' && (
-            <input
-              type="text"
-              value={formData[FIELDS.ENTITY_TYPE_OTHER] || ''}
-              onChange={(e) => handleChange(FIELDS.ENTITY_TYPE_OTHER, e.target.value)}
-              disabled={isReadOnly}
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-              placeholder="Please specify entity type"
-            />
-          )}
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.ENTITY_TYPE}
+          config={QUESTION_CONFIG[FIELDS.ENTITY_TYPE]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+        />
 
         {/* Registered State */}
         <div style={{ overflow: 'visible', position: 'relative', zIndex: 100, marginBottom: '3rem' }}>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            What state will your company be registered in?
-            {showValidation && !formData[FIELDS.REGISTERED_STATE] && <span className="text-red-700 ml-0.5">*</span>}
-            <Tooltip text="Delaware is a popular choice for many startups because its laws and courts are well established. Just be aware you may have additional fees or filings if your business is based elsewhere." />
-          </label>
-          <CustomSelect
-            value={formData[FIELDS.REGISTERED_STATE] || ''}
-            onChange={(value) => handleChange(FIELDS.REGISTERED_STATE, value)}
-            options={US_STATES.map(state => ({
-              value: state.label,
-              label: `${state.label} (${state.value})`
-            }))}
-            placeholder="Select state"
-            disabled={isReadOnly}
+          <QuestionRenderer
+            fieldName={FIELDS.REGISTERED_STATE}
+            config={QUESTION_CONFIG[FIELDS.REGISTERED_STATE]}
+            formData={formData}
+            handleChange={handleChange}
+            isReadOnly={isReadOnly}
+            showValidation={showValidation}
           />
         </div>
 
-        {/* Mailing Address */}
+        {/* Mailing Address - Custom (Google Places autocomplete) */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-3">
             What's your company mailing address?
@@ -399,64 +355,24 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         </div>
 
         {/* Company Description */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            Can you describe your company in 1 line?
-            {showValidation && !formData[FIELDS.COMPANY_DESCRIPTION] && <span className="text-red-700 ml-0.5">*</span>}
-            <Tooltip text="Describe what you do in plain language. No buzzwords needed." />
-          </label>
-          <input
-            type="text"
-            value={formData[FIELDS.COMPANY_DESCRIPTION] || ''}
-            onChange={(e) => handleChange(FIELDS.COMPANY_DESCRIPTION, e.target.value)}
-            disabled={isReadOnly}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-            placeholder="Helping cofounders create Cofounder Agreements"
-          />
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.COMPANY_DESCRIPTION}
+          config={QUESTION_CONFIG[FIELDS.COMPANY_DESCRIPTION]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+        />
 
         {/* Industry */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            What industry is it in?
-            {showValidation && (!formData[FIELDS.INDUSTRIES] || formData[FIELDS.INDUSTRIES].length === 0) && <span className="text-red-700 ml-0.5">*</span>}
-            <Tooltip text="Pick the industry that best describes what you currently do. Aspirations to conquer all markets can wait." />
-          </label>
-          <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
-          <div className="space-y-2">
-            {INDUSTRIES.map((industry) => (
-              <label key={industry} className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={(formData[FIELDS.INDUSTRIES] || []).includes(industry)}
-                  onChange={(e) => {
-                    const currentIndustries = formData[FIELDS.INDUSTRIES] || [];
-                    const newIndustries = e.target.checked
-                      ? [...currentIndustries, industry]
-                      : currentIndustries.filter(i => i !== industry);
-                    handleChange(FIELDS.INDUSTRIES, newIndustries);
-                  }}
-                  disabled={isReadOnly}
-                  className="mr-3"
-                />
-                <span className="text-gray-700">{industry}</span>
-              </label>
-            ))}
-          </div>
-
-          {(formData[FIELDS.INDUSTRIES] || []).includes('Other') && (
-            <div className="conditional-section">
-              <input
-                type="text"
-                value={formData[FIELDS.INDUSTRY_OTHER] || ''}
-                onChange={(e) => handleChange(FIELDS.INDUSTRY_OTHER, e.target.value)}
-                disabled={isReadOnly}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-                placeholder="Please specify other industry"
-              />
-            </div>
-          )}
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.INDUSTRIES}
+          config={QUESTION_CONFIG[FIELDS.INDUSTRIES]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+        />
 
       </div>
     </div>

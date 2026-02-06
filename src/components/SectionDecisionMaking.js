@@ -1,8 +1,10 @@
 import React from 'react';
-import { MAJOR_DECISIONS, TIE_RESOLUTION_OPTIONS } from '../config/surveySchema';
+import { TIE_RESOLUTION_OPTIONS } from '../config/surveySchema';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
 import Tooltip from './Tooltip';
+import QuestionRenderer from './QuestionRenderer';
+import { QUESTION_CONFIG } from '../config/questionConfig';
 import { FIELDS } from '../config/surveySchema';
 
 function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, showValidation }) {
@@ -19,97 +21,28 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
 
       <div className="space-y-12" style={{ overflow: 'visible' }}>
         {/* Major Decisions */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            What type of decisions require a discussion between all cofounders?
-            {showValidation && (!formData[FIELDS.MAJOR_DECISIONS] || formData[FIELDS.MAJOR_DECISIONS].length === 0) && <span className="text-red-700 ml-0.5">*</span>}
-            <Tooltip text="Which choices should never happen unless everyone's on board. Not office snacks." />
-          </label>
-          <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
-          <div className="space-y-2">
-            {MAJOR_DECISIONS.map((decision) => (
-              <label key={decision} className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={(formData[FIELDS.MAJOR_DECISIONS] || []).includes(decision)}
-                  onChange={(e) => {
-                    const currentDecisions = formData[FIELDS.MAJOR_DECISIONS] || [];
-                    const newDecisions = e.target.checked
-                      ? [...currentDecisions, decision]
-                      : currentDecisions.filter(d => d !== decision);
-                    handleChange(FIELDS.MAJOR_DECISIONS, newDecisions);
-                  }}
-                  disabled={isReadOnly}
-                  className="mr-3"
-                />
-                <span className="text-gray-700">{decision}</span>
-              </label>
-            ))}
-          </div>
-
-          {(formData[FIELDS.MAJOR_DECISIONS] || []).includes('Other') && (
-            <input
-              type="text"
-              value={formData[FIELDS.MAJOR_DECISIONS_OTHER] || ''}
-              onChange={(e) => handleChange(FIELDS.MAJOR_DECISIONS_OTHER, e.target.value)}
-              disabled={isReadOnly}
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-              placeholder="Please specify"
-            />
-          )}
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.MAJOR_DECISIONS}
+          config={QUESTION_CONFIG[FIELDS.MAJOR_DECISIONS]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+          project={project}
+        />
 
         {/* Equity Voting Power */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            Should equity ownership reflect voting power?
-            {showValidation && !formData[FIELDS.EQUITY_VOTING_POWER] && <span className="text-red-700 ml-0.5">*</span>}
-          </label>
-          <div className="space-y-2">
-            <label className="flex items-start">
-              <input
-                type="radio"
-                name="equityVotingPower"
-                value="yes"
-                checked={formData[FIELDS.EQUITY_VOTING_POWER] === 'yes'}
-                onClick={() => {
-                  if (!isReadOnly) {
-                    handleChange(FIELDS.EQUITY_VOTING_POWER, formData[FIELDS.EQUITY_VOTING_POWER] === 'yes' ? '' : 'yes');
-                  }
-                }}
-                onChange={() => {}}
-                disabled={isReadOnly}
-                className="mr-3 mt-1"
-              />
-              <div>
-                <span className="text-gray-700 font-medium">Yes</span>
-                <p className="text-sm text-gray-500">Voting weight tied to equity %</p>
-              </div>
-            </label>
-            <label className="flex items-start">
-              <input
-                type="radio"
-                name="equityVotingPower"
-                value="no"
-                checked={formData[FIELDS.EQUITY_VOTING_POWER] === 'no'}
-                onClick={() => {
-                  if (!isReadOnly) {
-                    handleChange(FIELDS.EQUITY_VOTING_POWER, formData[FIELDS.EQUITY_VOTING_POWER] === 'no' ? '' : 'no');
-                  }
-                }}
-                onChange={() => {}}
-                disabled={isReadOnly}
-                className="mr-3 mt-1"
-              />
-              <div>
-                <span className="text-gray-700 font-medium">No</span>
-                <p className="text-sm text-gray-500">All founders have equal vote</p>
-              </div>
-            </label>
-          </div>
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.EQUITY_VOTING_POWER}
+          config={QUESTION_CONFIG[FIELDS.EQUITY_VOTING_POWER]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+          project={project}
+        />
 
-        {/* Tie Resolution */}
+        {/* Tie Resolution - Custom (nested acknowledgment) */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             If cofounders are deadlocked, how should the tie be resolved?
@@ -126,7 +59,15 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                   checked={formData[FIELDS.TIE_RESOLUTION] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange(FIELDS.TIE_RESOLUTION, formData[FIELDS.TIE_RESOLUTION] === option ? '' : option);
+                      const newValue = formData[FIELDS.TIE_RESOLUTION] === option ? '' : option;
+                      handleChange(FIELDS.TIE_RESOLUTION, newValue);
+                      if (newValue) {
+                        // Initialize acknowledgment with all collaborators
+                        const init = Object.fromEntries(collaboratorIds.map(id => [id, false]));
+                        handleChange(FIELDS.ACKNOWLEDGE_TIE_RESOLUTION, init);
+                      } else {
+                        handleChange(FIELDS.ACKNOWLEDGE_TIE_RESOLUTION, null);
+                      }
                     }
                   }}
                   onChange={() => {}}
@@ -145,7 +86,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                   const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_TIE_RESOLUTION]?.[userId]);
                   return (
                     <>
-                      In the event of a deadlock, the Cofounders agree to first seek resolution through informal negotiation for a period of 30 days. If unresolved, the deadlock shall be resolved by {formData[FIELDS.TIE_RESOLUTION]}.
+                      I acknowledge that in the event of a deadlock, the Cofounders agree to first seek resolution through informal negotiation for a period of 30 days. If unresolved, the deadlock shall be resolved by {formData[FIELDS.TIE_RESOLUTION]}.
                       {showValidation && !allAcknowledged && <span className="text-red-700 ml-0.5">*</span>}
                     </>
                   );
@@ -186,7 +127,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
           )}
         </div>
 
-        {/* Shotgun Clause */}
+        {/* Shotgun Clause - Custom (nested acknowledgment) */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             Do you want to include a shotgun clause if you and your cofounder(s) cannot resolve deadlocks?
@@ -203,7 +144,14 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                   checked={formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange(FIELDS.INCLUDE_SHOTGUN_CLAUSE, formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === option ? '' : option);
+                      const newValue = formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === option ? '' : option;
+                      handleChange(FIELDS.INCLUDE_SHOTGUN_CLAUSE, newValue);
+                      if (newValue === 'Yes') {
+                        const init = Object.fromEntries(collaboratorIds.map(id => [id, false]));
+                        handleChange(FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE, init);
+                      } else {
+                        handleChange(FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE, null);
+                      }
                     }
                   }}
                   onChange={() => {}}

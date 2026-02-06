@@ -1,14 +1,10 @@
 import React from 'react';
-import { useUser } from '../contexts/UserContext';
-import { useCollaborators } from '../hooks/useCollaborators';
-import { VESTING_SCHEDULES, VESTED_SHARES_DISPOSAL_OPTIONS } from '../config/surveySchema';
 import Tooltip from './Tooltip';
+import QuestionRenderer from './QuestionRenderer';
+import { QUESTION_CONFIG } from '../config/questionConfig';
 import { FIELDS } from '../config/surveySchema';
 
 function SectionEquityVesting({ formData, handleChange, isReadOnly, project, showValidation }) {
-  const { currentUser } = useUser();
-  const { collaboratorIds, getDisplayName, isAdmin } = useCollaborators(project);
-
   return (
     <div>
       <h2 className="text-3xl font-medium text-gray-800 mb-6">Vesting Schedule</h2>
@@ -25,64 +21,28 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
 
       <div className="space-y-12">
         {/* Vesting Start Date */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            What date should the vesting start?
-            {showValidation && !formData[FIELDS.VESTING_START_DATE] && <span className="text-red-700 ml-0.5">*</span>}
-            <Tooltip text="This can start today or retroactively when the work began." />
-          </label>
-          <input
-            type="date"
-            value={formData[FIELDS.VESTING_START_DATE] || ''}
-            onChange={(e) => handleChange(FIELDS.VESTING_START_DATE, e.target.value)}
-            disabled={isReadOnly}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-          />
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.VESTING_START_DATE}
+          config={QUESTION_CONFIG[FIELDS.VESTING_START_DATE]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+          project={project}
+        />
 
         {/* Vesting Schedule */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            What vesting schedule will you use?
-            {showValidation && !formData[FIELDS.VESTING_SCHEDULE] && <span className="text-red-700 ml-0.5">*</span>}
-            <Tooltip text='You earn no equity until the "cliff" is hit. Then, once the cliff is reached, you immediately vest the first portion of your equity, and the rest continues to vest gradually over the remaining period.' />
-          </label>
-          <p className="text-sm text-gray-500 mb-2">The standard is 4 years with a 1-year cliff</p>
-          <div className="space-y-2">
-            {VESTING_SCHEDULES.map((option) => (
-              <label key={option} className="flex items-center">
-                <input
-                  type="radio"
-                  name="vestingSchedule"
-                  value={option}
-                  checked={formData[FIELDS.VESTING_SCHEDULE] === option}
-                  onClick={() => {
-                    if (!isReadOnly) {
-                      handleChange(FIELDS.VESTING_SCHEDULE, formData[FIELDS.VESTING_SCHEDULE] === option ? '' : option);
-                    }
-                  }}
-                  onChange={() => {}}
-                  disabled={isReadOnly}
-                  className="mr-3"
-                />
-                <span className="text-gray-700">{option}</span>
-              </label>
-            ))}
-          </div>
+        <QuestionRenderer
+          fieldName={FIELDS.VESTING_SCHEDULE}
+          config={QUESTION_CONFIG[FIELDS.VESTING_SCHEDULE]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+          project={project}
+        />
 
-          {formData[FIELDS.VESTING_SCHEDULE] === 'Other' && (
-            <input
-              type="text"
-              value={formData[FIELDS.VESTING_SCHEDULE_OTHER] || ''}
-              onChange={(e) => handleChange(FIELDS.VESTING_SCHEDULE_OTHER, e.target.value)}
-              disabled={isReadOnly}
-              className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-              placeholder="Please specify"
-            />
-          )}
-        </div>
-
-        {/* Cliff Percentage */}
+        {/* Cliff Percentage - Custom (cursor management) */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             What percent of equity will be vested once the cliff is complete?
@@ -150,7 +110,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
           />
         </div>
 
-        {/* Acceleration Trigger */}
+        {/* Acceleration Trigger - Custom (nested conditional) */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             If the company is acquired and a cofounder is terminated without cause, should their unvested shares accelerate?
@@ -170,7 +130,11 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
                   checked={formData[FIELDS.ACCELERATION_TRIGGER] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      handleChange(FIELDS.ACCELERATION_TRIGGER, formData[FIELDS.ACCELERATION_TRIGGER] === option ? '' : option);
+                      const newValue = formData[FIELDS.ACCELERATION_TRIGGER] === option ? '' : option;
+                      handleChange(FIELDS.ACCELERATION_TRIGGER, newValue);
+                      if (newValue !== 'Yes') {
+                        handleChange('accelerationProtectionMonths', '');
+                      }
                     }
                   }}
                   onChange={() => {}}
@@ -214,7 +178,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
           )}
         </div>
 
-        {/* Shares Sell Notice Days */}
+        {/* Shares Sell Notice Days - Custom (integer validation) */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             If a cofounder wants to sell their shares, how many days notice do they need to provide the Board and shareholders?
@@ -244,7 +208,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
           />
         </div>
 
-        {/* Shares Buyback Days */}
+        {/* Shares Buyback Days - Custom (integer validation) */}
         <div>
           <label className="block text-base font-medium text-gray-900 mb-2">
             If a cofounder resigns, how many days does the company have to buy back the shares?
@@ -275,82 +239,26 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
         </div>
 
         {/* Acknowledge Forfeiture */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            {(() => {
-              const allAcknowledged = collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_FORFEITURE]?.[userId]);
-              return (
-                <>
-                  You acknowledge that if a cofounder dies, becomes permanently disabled, or is otherwise incapacitated, their unvested shares are automatically forfeited and returned to the company.
-                  {showValidation && !allAcknowledged && <span className="text-red-700 ml-0.5 validation-error">*</span>}
-                  <Tooltip text="Knock on wood." />
-                </>
-              );
-            })()}
-          </label>
-          <div className="space-y-2">
-            {(() => {
-              // Deduplicate collaborators list
-              const approvals = formData[FIELDS.ACKNOWLEDGE_FORFEITURE] || {};
-              const currentUserId = currentUser?.id;
-
-              return collaboratorIds.map((userId) => {
-                const isApproved = approvals[userId] || false;
-                const isCurrentUser = userId === currentUserId;
-                const displayName = getDisplayName(userId);
-
-                return (
-                  <label key={userId} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={isApproved}
-                      onChange={(e) => {
-                        const newApprovals = { ...approvals, [userId]: e.target.checked };
-                        handleChange(FIELDS.ACKNOWLEDGE_FORFEITURE, newApprovals);
-                      }}
-                      disabled={isReadOnly || !isCurrentUser}
-                      className="mr-3"
-                    />
-                    <span className="text-gray-700">
-                      {displayName}
-                      {isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}
-
-                    </span>
-                  </label>
-                );
-              });
-            })()}
-          </div>
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.ACKNOWLEDGE_FORFEITURE}
+          config={QUESTION_CONFIG[FIELDS.ACKNOWLEDGE_FORFEITURE]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+          project={project}
+        />
 
         {/* Vested Shares Disposal */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-2">
-            If a cofounder dies, becomes permanently disabled, or is otherwise incapacitated:
-            {showValidation && !formData[FIELDS.VESTED_SHARES_DISPOSAL] && <span className="text-red-700 ml-0.5 validation-error">*</span>}
-          </label>
-          <div className="space-y-2">
-            {VESTED_SHARES_DISPOSAL_OPTIONS.map((option) => (
-              <label key={option} className="flex items-start">
-                <input
-                  type="radio"
-                  name="vestedSharesDisposal"
-                  value={option}
-                  checked={formData[FIELDS.VESTED_SHARES_DISPOSAL] === option}
-                  onClick={() => {
-                    if (!isReadOnly) {
-                      handleChange(FIELDS.VESTED_SHARES_DISPOSAL, formData[FIELDS.VESTED_SHARES_DISPOSAL] === option ? '' : option);
-                    }
-                  }}
-                  onChange={() => {}}
-                  disabled={isReadOnly}
-                  className="mr-3 mt-1"
-                />
-                <span className="text-gray-700">{option}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <QuestionRenderer
+          fieldName={FIELDS.VESTED_SHARES_DISPOSAL}
+          config={QUESTION_CONFIG[FIELDS.VESTED_SHARES_DISPOSAL]}
+          formData={formData}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          showValidation={showValidation}
+          project={project}
+        />
 
         {/* 83(b) Note */}
         <div className="bg-gray-50 border border-gray-300 rounded-lg p-4">

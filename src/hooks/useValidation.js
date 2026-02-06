@@ -1,4 +1,4 @@
-import { FIELDS } from '../config/surveySchema';
+import { FIELDS, COLLABORATOR_FIELDS } from '../config/surveySchema';
 import { SECTION_IDS } from '../config/sectionConfig';
 import { calculateProjectProgress } from '../utils/progressCalculation';
 
@@ -47,8 +47,10 @@ export function useValidation(formData, project) {
    * @returns {boolean} - Whether the section is complete
    */
   const isSectionCompleted = (sectionId) => {
-    // Get all collaborator userIds from the project
-    const collaboratorIds = Object.keys(project?.collaborators || {});
+    // Get active collaborator userIds from the project
+    const collaboratorIds = Object.entries(project?.collaborators || {})
+      .filter(([_, data]) => data[COLLABORATOR_FIELDS.IS_ACTIVE] !== false)
+      .map(([userId]) => userId);
 
     switch(sectionId) {
       case SECTION_IDS.FORMATION: // Formation & Purpose
@@ -61,6 +63,8 @@ export function useValidation(formData, project) {
 
       case SECTION_IDS.COFOUNDERS: // Cofounder Info
         if (!formData[FIELDS.COFOUNDER_COUNT]) return false;
+        // Block if more cofounders than collaborators (collaborator was removed from project)
+        if ((formData[FIELDS.COFOUNDERS] || []).length > collaboratorIds.length) return false;
         if (formData[FIELDS.COFOUNDERS] && formData[FIELDS.COFOUNDERS].length > 0) {
           // Check that all cofounders have all required fields filled
           const allCofoundersFilled = formData[FIELDS.COFOUNDERS].every(cf =>
@@ -72,15 +76,17 @@ export function useValidation(formData, project) {
         return true;
 
       case SECTION_IDS.EQUITY_ALLOCATION: // Equity Allocation
-        // Check that all equity percentages are filled
-        const allPercentagesFilled = collaboratorIds.every(userId =>
-          formData[FIELDS.FINAL_EQUITY_PERCENTAGES]?.[userId] && formData[FIELDS.FINAL_EQUITY_PERCENTAGES][userId] !== ''
+        // Check that equity entries exist and all are filled
+        const equityEntries = formData[FIELDS.EQUITY_ENTRIES] || [];
+        if (equityEntries.length === 0) return false;
+        const allEntriesFilled = equityEntries.every(entry =>
+          entry[FIELDS.EQUITY_ENTRY_NAME] && entry[FIELDS.EQUITY_ENTRY_PERCENTAGE] && entry[FIELDS.EQUITY_ENTRY_PERCENTAGE] !== ''
         );
-        if (!allPercentagesFilled) return false;
+        if (!allEntriesFilled) return false;
 
         // Check that total equity equals 100%
-        const totalEquity = collaboratorIds.reduce((sum, userId) =>
-          sum + (parseFloat(formData[FIELDS.FINAL_EQUITY_PERCENTAGES]?.[userId]) || 0), 0
+        const totalEquity = equityEntries.reduce((sum, entry) =>
+          sum + (parseFloat(entry[FIELDS.EQUITY_ENTRY_PERCENTAGE]) || 0), 0
         );
         if (Math.abs(totalEquity - 100) > 0.01) return false;
 

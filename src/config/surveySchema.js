@@ -36,6 +36,7 @@ export const FIELDS = {
   COFOUNDERS: 'cofounders',
 
   // Section 3: Equity Allocation
+  EQUITY_ENTRIES: 'equityEntries',
   FINAL_EQUITY_PERCENTAGES: 'finalEquityPercentages',
   ACKNOWLEDGE_EQUITY_ALLOCATION: 'acknowledgeEquityAllocation',
   EQUITY_CALCULATOR_DRAFT: 'equityCalculatorDraft',
@@ -98,6 +99,7 @@ export const FIELDS = {
   ACKNOWLEDGE_SEVERABILITY: 'acknowledgeSeverability',
 
   // Nested fields (inside cofounders)
+  COFOUNDER_ID: 'id',
   COFOUNDER_FULL_NAME: 'fullName',
   COFOUNDER_TITLE: 'title',
   COFOUNDER_EMAIL: 'email',
@@ -109,6 +111,10 @@ export const FIELDS = {
   COMPENSATION_NAME: 'name',
   COMPENSATION_AMOUNT: 'amount',
   COMPENSATION_FREQUENCY: 'frequency',
+
+  // Nested fields (inside equityEntries)
+  EQUITY_ENTRY_NAME: 'name',
+  EQUITY_ENTRY_PERCENTAGE: 'percentage',
 };
 
 /**
@@ -302,6 +308,30 @@ export const AMENDMENT_PROCESS_OPTIONS = [
   'Other'
 ];
 
+/**
+ * Acknowledgment fields initialized on project creation and collaborator join.
+ */
+export const REQUIRED_ACKNOWLEDGMENT_FIELDS = [
+  FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION,
+  FIELDS.ACKNOWLEDGE_FORFEITURE,
+  FIELDS.ACKNOWLEDGE_IP_OWNERSHIP,
+  FIELDS.ACKNOWLEDGE_CONFIDENTIALITY,
+  FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW,
+  FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST,
+  FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT,
+  FIELDS.ACKNOWLEDGE_SEVERABILITY,
+];
+
+/**
+ * Acknowledgment fields created/deleted dynamically based on a parent question.
+ * Only initialized for collaborators if they already exist in surveyData.
+ */
+export const CONDITIONAL_ACKNOWLEDGMENT_FIELDS = [
+  FIELDS.ACKNOWLEDGE_TIE_RESOLUTION,
+  FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE,
+  FIELDS.ACKNOWLEDGE_IP_ASSIGNMENT,
+];
+
 export const SECTIONS = [
   { id: 0, name: 'Welcome' },
   { id: 1, name: 'Formation & Purpose' },
@@ -348,6 +378,7 @@ export const SURVEY_FIELDS = {
   cofounders: { default: [], type: 'array' },
 
   // Section 3: Equity Allocation
+  equityEntries: { default: [], type: 'array' },
   finalEquityPercentages: { default: {}, type: 'object' },
   acknowledgeEquityAllocation: { default: {}, type: 'object' },
   equityCalculatorDraft: { default: {}, type: 'object' },
