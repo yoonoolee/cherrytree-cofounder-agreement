@@ -48,6 +48,15 @@ const FUNCTION_CONFIG = {
 const EMAIL_MAX_LENGTH = 254; // RFC 5321 maximum email length
 const PROJECT_NAME_MIN_LENGTH = 2; // Minimum characters for project/company name
 
+// Collaborator field constants
+const COLLABORATOR_FIELDS = {
+  FIRST_NAME: 'firstName',
+  LAST_NAME: 'lastName',
+  ROLE: 'role',
+  IS_ACTIVE: 'isActive',
+  HISTORY: 'history',
+};
+
 // Trusted domains for PDF URLs from Make.com webhook
 const PDF_ALLOWED_DOMAINS = [
   'drive.google.com',
@@ -316,7 +325,7 @@ exports.generatePreviewPDF = onCall({
 
     // Check if user has access to this project (active collaborator with endAt: null)
     const collaborator = projectData.collaborators?.[userId];
-    const hasAccess = collaborator?.history?.some(h => h.endAt === null);
+    const hasAccess = collaborator?.[COLLABORATOR_FIELDS.HISTORY]?.some(h => h.endAt === null);
 
     if (!hasAccess) {
       throw new HttpsError('permission-denied', 'No access to this project');
@@ -550,6 +559,20 @@ exports.stripeWebhook = onRequest({
             // Use clerkOrgId as the Firestore document ID
             const projectRef = db.collection('projects').doc(clerkOrgId);
 
+            // Fetch admin's name from their profile
+            let firstName = '';
+            let lastName = '';
+            try {
+              const userDoc = await db.collection('users').doc(userId).get();
+              if (userDoc.exists) {
+                const userData = userDoc.data();
+                firstName = userData[COLLABORATOR_FIELDS.FIRST_NAME] || '';
+                lastName = userData[COLLABORATOR_FIELDS.LAST_NAME] || '';
+              }
+            } catch (userError) {
+              console.error('Error fetching admin user data:', userError);
+            }
+
             // Calculate edit deadline based on EDIT_WINDOW_CONFIG
             // This is calculated ONCE and stored forever - changing config later won't affect existing projects
             const now = new Date();
@@ -560,9 +583,11 @@ exports.stripeWebhook = onRequest({
               admin: userId,
               collaborators: {
                 [userId]: {
-                  role: 'admin',
-                  isActive: true,
-                  history: [{ startAt: now, endAt: null }]
+                  [COLLABORATOR_FIELDS.ROLE]: 'admin',
+                  [COLLABORATOR_FIELDS.IS_ACTIVE]: true,
+                  [COLLABORATOR_FIELDS.FIRST_NAME]: firstName,
+                  [COLLABORATOR_FIELDS.LAST_NAME]: lastName,
+                  [COLLABORATOR_FIELDS.HISTORY]: [{ startAt: now, endAt: null }]
                 }
               },
               approvals: {
@@ -713,7 +738,7 @@ exports.deleteAccount = onCall({
       const collaborators = project.collaborators || {};
       const activeCollaboratorIds = Object.keys(collaborators).filter(id => {
         if (id === userId) return false;
-        const history = collaborators[id].history || [];
+        const history = collaborators[id][COLLABORATOR_FIELDS.HISTORY] || [];
         return history.some(h => h.endAt === null);
       });
 
@@ -724,13 +749,13 @@ exports.deleteAccount = onCall({
 
         // Mark deleted user as inactive
         if (collaborators[userId]) {
-          const currentEntry = collaborators[userId].history?.find(h => h.endAt === null);
+          const currentEntry = collaborators[userId][COLLABORATOR_FIELDS.HISTORY]?.find(h => h.endAt === null);
           if (currentEntry) currentEntry.endAt = deletionTime;
-          collaborators[userId].isActive = false;
+          collaborators[userId][COLLABORATOR_FIELDS.IS_ACTIVE] = false;
         }
 
         // Update new admin's role
-        collaborators[newAdminId].role = 'admin';
+        collaborators[newAdminId][COLLABORATOR_FIELDS.ROLE] = 'admin';
 
         await projectDoc.ref.update({
           admin: newAdminId,
@@ -794,11 +819,11 @@ exports.deleteAccount = onCall({
 
       const collaborators = project.collaborators || {};
       if (collaborators[userId]) {
-        const currentEntry = collaborators[userId].history?.find(h => h.endAt === null);
+        const currentEntry = collaborators[userId][COLLABORATOR_FIELDS.HISTORY]?.find(h => h.endAt === null);
         if (currentEntry) {
           currentEntry.endAt = deletionTime;
         }
-        collaborators[userId].isActive = false;
+        collaborators[userId][COLLABORATOR_FIELDS.IS_ACTIVE] = false;
         await projectDoc.ref.update({
           collaborators: collaborators,
           lastUpdated: FieldValue.serverTimestamp()
@@ -1023,27 +1048,59 @@ exports.clerkWebhook = onRequest({
 
           if (projectDoc.exists) {
             const projectData = projectDoc.data();
-            const collaborators = projectData.collaborators || {};
+            let collaborators = projectData.collaborators || {};
             const approvals = projectData.approvals || {};
 
+            // Fetch user's name from their profile
+            let firstName = '';
+            let lastName = '';
+            try {
+              const userDoc = await db.collection('users').doc(userId).get();
+              if (userDoc.exists) {
+                const userData = userDoc.data();
+                firstName = userData[COLLABORATOR_FIELDS.FIRST_NAME] || '';
+                lastName = userData[COLLABORATOR_FIELDS.LAST_NAME] || '';
+              }
+            } catch (userError) {
+              console.error('Error fetching user data:', userError);
+            }
+
             if (collaborators[userId]) {
-              // User rejoining - add new history entry and set active
-              collaborators[userId].history.push({ startAt: joinTime, endAt: null });
-              collaborators[userId].isActive = true;
+              // User rejoining - only add new history entry if they previously left
+              const history = collaborators[userId][COLLABORATOR_FIELDS.HISTORY] || [];
+              const hasActiveEntry = history.some(h => h.endAt === null);
+
+              if (!hasActiveEntry) {
+                // They left before, so add new history entry
+                collaborators[userId][COLLABORATOR_FIELDS.HISTORY].push({ startAt: joinTime, endAt: null });
+              }
+              // Always ensure they're marked as active and update name
+              collaborators[userId][COLLABORATOR_FIELDS.IS_ACTIVE] = true;
+              collaborators[userId][COLLABORATOR_FIELDS.FIRST_NAME] = firstName;
+              collaborators[userId][COLLABORATOR_FIELDS.LAST_NAME] = lastName;
             } else {
               // New collaborator
               collaborators[userId] = {
-                role: 'collaborator',
-                isActive: true,
-                history: [{ startAt: joinTime, endAt: null }]
+                [COLLABORATOR_FIELDS.ROLE]: 'collaborator',
+                [COLLABORATOR_FIELDS.IS_ACTIVE]: true,
+                [COLLABORATOR_FIELDS.FIRST_NAME]: firstName,
+                [COLLABORATOR_FIELDS.LAST_NAME]: lastName,
+                [COLLABORATOR_FIELDS.HISTORY]: [{ startAt: joinTime, endAt: null }]
               };
             }
 
             approvals[userId] = false;
 
+            // Get current onboardingCompleted map
+            const onboardingCompleted = projectData.onboardingCompleted || {};
+            if (typeof onboardingCompleted[userId] === 'undefined') {
+              onboardingCompleted[userId] = false;
+            }
+
             await projectDoc.ref.update({
               collaborators: collaborators,
               approvals: approvals,
+              onboardingCompleted: onboardingCompleted,
               lastUpdated: FieldValue.serverTimestamp()
             });
           }
@@ -1064,17 +1121,17 @@ exports.clerkWebhook = onRequest({
 
           if (projectDoc.exists) {
             const projectData = projectDoc.data();
-            const collaborators = projectData.collaborators || {};
+            let collaborators = projectData.collaborators || {};
             const approvals = projectData.approvals || {};
 
             // Update history and set inactive
             if (collaborators[userId]) {
-              const history = collaborators[userId].history || [];
+              const history = collaborators[userId][COLLABORATOR_FIELDS.HISTORY] || [];
               const currentEntry = history.find(h => h.endAt === null);
               if (currentEntry) {
                 currentEntry.endAt = leaveTime;
               }
-              collaborators[userId].isActive = false;
+              collaborators[userId][COLLABORATOR_FIELDS.IS_ACTIVE] = false;
             }
 
             delete approvals[userId];

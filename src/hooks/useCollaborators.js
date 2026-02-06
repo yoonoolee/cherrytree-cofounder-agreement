@@ -1,9 +1,13 @@
 import { useMemo } from 'react';
+import { getSortedCollaboratorIds, migrateCollaboratorPositions } from '../utils/collaboratorPositions';
+import { COLLABORATOR_FIELDS } from '../config/surveySchema';
 
 export function useCollaborators(project) {
+  // Auto-migrate collaborators to have positions if they don't already
   const collaboratorsMap = useMemo(() => {
-    return project?.collaborators || {};
-  }, [project?.collaborators]);
+    const rawCollaborators = project?.collaborators || {};
+    return migrateCollaboratorPositions(rawCollaborators, project?.admin);
+  }, [project?.collaborators, project?.admin]);
 
   const collaborators = useMemo(() => {
     return Object.entries(collaboratorsMap).map(([userId, data]) => ({
@@ -12,22 +16,29 @@ export function useCollaborators(project) {
     }));
   }, [collaboratorsMap]);
 
+  // Sort collaborators by position (determines A, B, C order)
   const collaboratorIds = useMemo(() => {
-    return Object.keys(collaboratorsMap);
+    return getSortedCollaboratorIds(collaboratorsMap);
   }, [collaboratorsMap]);
 
-  const cofounders = project?.surveyData?.cofounders || [];
+  const cofounders = useMemo(() => {
+    return project?.surveyData?.cofounders || [];
+  }, [project?.surveyData?.cofounders]);
 
   const getCofounderLabel = (index) => `Cofounder ${String.fromCharCode(65 + index)}`;
 
   const getDisplayName = useMemo(() => {
     return (userId) => {
-      const index = Object.keys(collaboratorsMap).indexOf(userId);
+      const index = collaboratorIds.indexOf(userId);
       if (index === -1) return '';
-      const name = cofounders[index]?.fullName?.trim();
-      return name || getCofounderLabel(index);
+      const collaborator = collaboratorsMap[userId];
+      const accountName = [
+        collaborator?.[COLLABORATOR_FIELDS.FIRST_NAME],
+        collaborator?.[COLLABORATOR_FIELDS.LAST_NAME]
+      ].filter(Boolean).join(' ');
+      return accountName || getCofounderLabel(index);
     };
-  }, [collaboratorsMap, cofounders]);
+  }, [collaboratorIds, collaboratorsMap]);
 
   const isAdmin = useMemo(() => {
     return (userId) => project?.admin === userId;

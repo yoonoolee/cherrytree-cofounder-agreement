@@ -27,7 +27,6 @@ export const FIELDS = {
   MAILING_CITY: 'mailingCity',
   MAILING_STATE: 'mailingState',
   MAILING_ZIP: 'mailingZip',
-  FULL_MAILING_ADDRESS: 'fullMailingAddress',
   COMPANY_DESCRIPTION: 'companyDescription',
   INDUSTRIES: 'industries',
   INDUSTRY_OTHER: 'industryOther',
@@ -110,6 +109,18 @@ export const FIELDS = {
   COMPENSATION_NAME: 'name',
   COMPENSATION_AMOUNT: 'amount',
   COMPENSATION_FREQUENCY: 'frequency',
+};
+
+/**
+ * Collaborator field constants for accessing collaborator data
+ * Usage: collaborator[COLLABORATOR_FIELDS.FIRST_NAME]
+ */
+export const COLLABORATOR_FIELDS = {
+  FIRST_NAME: 'firstName',
+  LAST_NAME: 'lastName',
+  ROLE: 'role',
+  IS_ACTIVE: 'isActive',
+  HISTORY: 'history',
 };
 
 // =============================================================================
@@ -328,7 +339,6 @@ export const SURVEY_FIELDS = {
   mailingCity: { default: '', type: 'string' },
   mailingState: { default: '', type: 'string' },
   mailingZip: { default: '', type: 'string' },
-  fullMailingAddress: { default: '', type: 'string' },
   companyDescription: { default: '', type: 'string' },
   industries: { default: [], type: 'array', hasOther: true, otherField: 'industryOther', options: INDUSTRIES },
   industryOther: { default: '', type: 'string' },

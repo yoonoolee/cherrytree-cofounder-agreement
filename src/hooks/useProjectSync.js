@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { INITIAL_FORM_DATA } from '../config/surveySchema';
-import { FIELDS } from '../config/surveySchema';
 
 /**
  * Get initial form data from survey schema
@@ -15,10 +14,9 @@ const getInitialFormData = () => ({ ...INITIAL_FORM_DATA });
  *
  * @param {string} projectId - The project ID to sync
  * @param {React.RefObject} isSavingRef - Reference to track if save is in progress
- * @param {function} calculateFullMailingAddress - Function to calculate full mailing address
  * @returns {object} - { project, formData, setFormData, accessDenied, lastSaved, setLastSaved }
  */
-export function useProjectSync(projectId, isSavingRef, calculateFullMailingAddress) {
+export function useProjectSync(projectId, isSavingRef) {
   const [project, setProject] = useState(null);
   const [formData, setFormData] = useState(getInitialFormData());
   const [accessDenied, setAccessDenied] = useState(false);
@@ -44,11 +42,6 @@ export function useProjectSync(projectId, isSavingRef, calculateFullMailingAddre
               ...(data.surveyData || {})
             };
 
-            // Calculate fullMailingAddress if it doesn't exist (backwards compatibility)
-            if (!loadedData.fullMailingAddress && loadedData.mailingStreet) {
-              loadedData.fullMailingAddress = calculateFullMailingAddress(loadedData);
-            }
-
             setFormData(loadedData);
           }
 
@@ -67,7 +60,7 @@ export function useProjectSync(projectId, isSavingRef, calculateFullMailingAddre
     );
 
     return unsubscribe;
-  }, [projectId, isSavingRef, calculateFullMailingAddress]);
+  }, [projectId, isSavingRef]);
 
   return {
     project,

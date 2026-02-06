@@ -1,14 +1,15 @@
 import React from 'react';
-import { ROLES } from '../config/surveySchema';
-import { FIELDS } from '../config/surveySchema';
+import { ROLES, FIELDS, COLLABORATOR_FIELDS } from '../config/surveySchema';
+import { useCollaborators } from '../hooks/useCollaborators';
 
 function SectionCofounders({ formData, handleChange, isReadOnly, showValidation, project }) {
-  // Get cofounder count from collaborators map
-  const calculatedCofounderCount = Object.keys(project?.collaborators || {}).length;
+  // Get sorted collaborator IDs (active only, sorted by position)
+  const { collaboratorIds, collaboratorsMap } = useCollaborators(project);
+  const calculatedCofounderCount = collaboratorIds.length;
 
   const cofounders = formData[FIELDS.COFOUNDERS] || [];
 
-  // Automatically set cofounder count and initialize cofounders array
+  // Automatically set cofounder count and reorder cofounders array to match collaboratorIds
   React.useEffect(() => {
     if (calculatedCofounderCount > 0) {
       // Update cofounderCount if it's different
@@ -16,11 +17,18 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
         handleChange(FIELDS.COFOUNDER_COUNT, calculatedCofounderCount.toString());
       }
 
-      // Initialize cofounders array ONLY if length doesn't match
-      // Don't reinitialize if it already has the correct length (preserves user input)
-      if (cofounders.length !== calculatedCofounderCount) {
-        const newCofounders = Array.from({ length: calculatedCofounderCount }, (_, i) => {
-          return cofounders[i] || {
+      // Always reorder cofounders array to match current collaboratorIds order
+      // This ensures data stays with the right person even when people are removed
+      const needsUpdate = cofounders.length !== calculatedCofounderCount ||
+        collaboratorIds.some((userId, index) => cofounders[index]?.userId !== userId);
+
+      if (needsUpdate) {
+        const newCofounders = collaboratorIds.map(userId => {
+          // Find existing cofounder entry with this userId
+          const existingEntry = cofounders.find(cf => cf.userId === userId);
+
+          return existingEntry || {
+            userId: userId,
             fullName: '',
             title: '',
             email: '',
@@ -31,7 +39,7 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
         handleChange(FIELDS.COFOUNDERS, newCofounders);
       }
     }
-  }, [calculatedCofounderCount, formData[FIELDS.COFOUNDER_COUNT], cofounders.length, handleChange]);
+  }, [calculatedCofounderCount, formData[FIELDS.COFOUNDER_COUNT], cofounders, handleChange, collaboratorIds]);
 
   const handleCofounderChange = (index, field, value) => {
     const newCofounders = [...cofounders];
@@ -60,10 +68,19 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
               </svg>
               <span>All cofounders must be added as collaborators to be included. Click the + button in the top right to add them.</span>
             </div>
-            {cofounders.map((cofounder, index) => (
-              <div key={index} className="py-4">
+            {cofounders.map((cofounder, index) => {
+              const userId = collaboratorIds[index];
+              const collaborator = collaboratorsMap[userId];
+              const accountName = [
+                collaborator?.[COLLABORATOR_FIELDS.FIRST_NAME],
+                collaborator?.[COLLABORATOR_FIELDS.LAST_NAME]
+              ].filter(Boolean).join(' ');
+              const displayName = accountName || `Cofounder ${String.fromCharCode(65 + index)}`;
+
+              return (
+              <div key={userId || index} className="py-4">
                 <h3 className="text-xl font-medium text-gray-800 mb-6">
-                  Cofounder {String.fromCharCode(65 + index)}
+                  {displayName}
                 </h3>
 
                 <div className="space-y-4">
@@ -159,7 +176,8 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

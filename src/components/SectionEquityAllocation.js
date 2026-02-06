@@ -4,29 +4,25 @@ import Spreadsheet from 'react-spreadsheet';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
 import './Section3EquityAllocation.css';
-import { FIELDS } from '../config/surveySchema';
+import { FIELDS, COLLABORATOR_FIELDS } from '../config/surveySchema';
 import { calculateEquityPercentages } from '../utils/equityCalculation';
 
 const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly, showValidation, project, onViewModeChange }, ref) => {
   const { currentUser } = useUser();
   const visualBarsRef = useRef(null);
-  const { collaboratorIds, isAdmin } = useCollaborators(project);
+  const { collaboratorIds, collaboratorsMap, isAdmin } = useCollaborators(project);
 
   const currentUserId = currentUser?.id;
 
   // Function to get cofounder name from userId
   const getCofounderName = (userId) => {
-    // Find index of this collaborator
     const index = collaboratorIds.indexOf(userId);
-    // Get cofounder at that index
-    const cofounder = formData[FIELDS.COFOUNDERS]?.[index];
-    // Return first name if it exists, otherwise return fallback
-    if (cofounder?.[FIELDS.COFOUNDER_FULL_NAME] && cofounder[FIELDS.COFOUNDER_FULL_NAME].trim() !== '') {
-      const firstName = cofounder[FIELDS.COFOUNDER_FULL_NAME].trim().split(' ')[0];
-      return firstName;
-    }
-    // Convert index to letter (0 -> A, 1 -> B, etc.)
-    return `Cofounder ${String.fromCharCode(65 + index)}`;
+    const collaborator = collaboratorsMap[userId];
+    const accountName = [
+      collaborator?.[COLLABORATOR_FIELDS.FIRST_NAME],
+      collaborator?.[COLLABORATOR_FIELDS.LAST_NAME]
+    ].filter(Boolean).join(' ');
+    return accountName || `Cofounder ${String.fromCharCode(65 + index)}`;
   };
 
   // Initialize equity percentages, acknowledgments, and calculator data if not present

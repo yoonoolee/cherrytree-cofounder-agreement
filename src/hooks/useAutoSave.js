@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
-import { FIELDS } from '../config/surveySchema';
 
 // Constants
 const AUTO_SAVE_DELAY_MS = 2000; // Debounce delay before saving (2 seconds)
@@ -69,21 +68,14 @@ export function useAutoSave(projectId, project, currentUser) {
   /**
    * Handle form field changes with debounced auto-save
    * @param {function} setFormData - Form data setter
-   * @param {function} calculateFullMailingAddress - Address calculator function
    */
-  const createChangeHandler = useCallback((setFormData, calculateFullMailingAddress) => {
+  const createChangeHandler = useCallback((setFormData) => {
     return (field, value) => {
       setFormData(prevFormData => {
         const newFormData = {
           ...prevFormData,
           [field]: value
         };
-
-        // Auto-update fullMailingAddress when any address field changes
-        const addressFields = ['mailingStreet', 'mailingStreet2', 'mailingCity', 'mailingState', 'mailingZip'];
-        if (addressFields.includes(field)) {
-          newFormData.fullMailingAddress = calculateFullMailingAddress(newFormData);
-        }
 
         setSaveStatus('saving');
 

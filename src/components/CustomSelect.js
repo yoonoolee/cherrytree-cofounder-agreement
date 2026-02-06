@@ -112,7 +112,7 @@ function CustomSelect({ value, onChange, options, placeholder, disabled, classNa
       </div>
 
       {isOpen && !disabled && (
-        <div className="absolute w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto" style={{ maxHeight: '180px', zIndex: 9999 }}>
+        <div className="absolute w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto" style={{ maxHeight: '120px', zIndex: 9999 }}>
           {filteredOptions.length > 0 ? (
             filteredOptions.map((option, index) => (
               <div

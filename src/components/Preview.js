@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLoadScript } from '@react-google-maps/api';
 import { db, functions } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -44,28 +44,12 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
   const [submitterName, setSubmitterName] = useState('<blank>');
   const [currentSection, setCurrentSection] = useState(GENERATED_AGREEMENT_ID);
 
-  // Helper function to calculate fullMailingAddress
-  const calculateFullMailingAddress = useCallback((addressData) => {
-    const { mailingStreet, mailingStreet2, mailingCity, mailingState, mailingZip } = addressData;
-    let fullAddress = '';
-    if (mailingStreet) {
-      fullAddress = mailingStreet;
-      if (mailingStreet2) {
-        fullAddress += '\n' + mailingStreet2;
-      }
-      if (mailingCity || mailingState || mailingZip) {
-        fullAddress += '\n' + [mailingCity, mailingState, mailingZip].filter(Boolean).join(', ');
-      }
-    }
-    return fullAddress;
-  }, []);
-
   // Refs and hooks for form data
   const isSavingRef = useRef(false);
-  const { project, formData, setFormData } = useProjectSync(projectId, isSavingRef, calculateFullMailingAddress);
+  const { project, formData, setFormData } = useProjectSync(projectId, isSavingRef);
   const { createChangeHandler } = useAutoSave(projectId, project, currentUser);
   const { isSectionCompleted } = useValidation(formData, project);
-  const handleChange = createChangeHandler(setFormData, calculateFullMailingAddress);
+  const handleChange = createChangeHandler(setFormData);
 
   // Convert Google Drive URL to embeddable format
   const getEmbedUrl = (url) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLoadScript } from '@react-google-maps/api';
 import { db } from '../firebase';
@@ -48,38 +48,21 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
-  // Helper function to calculate fullMailingAddress
-  const calculateFullMailingAddress = useCallback((addressData) => {
-    const { mailingStreet, mailingStreet2, mailingCity, mailingState, mailingZip } = addressData;
-
-    let fullAddress = '';
-    if (mailingStreet) {
-      fullAddress = mailingStreet;
-      if (mailingStreet2) {
-        fullAddress += '\n' + mailingStreet2;
-      }
-      if (mailingCity || mailingState || mailingZip) {
-        fullAddress += '\n' + [mailingCity, mailingState, mailingZip].filter(Boolean).join(', ');
-      }
-    }
-    return fullAddress;
-  }, []);
-
   // Custom hooks for managing survey state and logic
   // Note: isSavingRef needs to be created first for useProjectSync
   const isSavingRef = useRef(false);
 
   // Load project and form data from Firestore
-  const { project, formData, setFormData, accessDenied, lastSaved } = useProjectSync(projectId, isSavingRef, calculateFullMailingAddress);
+  const { project, formData, setFormData, accessDenied, lastSaved } = useProjectSync(projectId, isSavingRef);
 
   // Auto-save functionality
-  const { saveStatus, saveFormData, createChangeHandler } = useAutoSave(projectId, project, currentUser);
+  const { saveStatus, saveFormData, createChangeHandler, lastSaved: autoSaveLastSaved } = useAutoSave(projectId, project, currentUser);
 
   // Validation logic
   const { calculateProgress, isSectionCompleted } = useValidation(formData, project);
 
   // Create the handleChange function using the hook
-  const handleChange = createChangeHandler(setFormData, calculateFullMailingAddress);
+  const handleChange = createChangeHandler(setFormData);
 
   // Set initial section when project changes - always start at Formation & Purpose
   useEffect(() => {
@@ -460,9 +443,9 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
             {saveStatus === 'saving' && (
               <span className="text-xs text-gray-500">Saving...</span>
             )}
-            {saveStatus === 'saved' && lastSaved && (
+            {saveStatus === 'saved' && (autoSaveLastSaved || lastSaved) && (
               <span className="text-xs text-gray-500">
-                Saved at {lastSaved.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                Saved at {(autoSaveLastSaved || lastSaved).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
               </span>
             )}
             {saveStatus === 'error' && (

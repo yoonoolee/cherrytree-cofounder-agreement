@@ -95,6 +95,14 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
     }
   };
 
+  const handleStreetBlur = () => {
+    setTimeout(() => setShowSuggestions(false), 200);
+    // Sync inputValue to formData on blur (handles manual input)
+    if (inputValue !== formData[FIELDS.MAILING_STREET]) {
+      handleChange(FIELDS.MAILING_STREET, inputValue);
+    }
+  };
+
   const handleSelectAddress = async (placeId) => {
     try {
       const { Place } = await window.google.maps.importLibrary("places");
@@ -276,7 +284,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                 disabled={isReadOnly}
                 autoComplete="chrome-off"
                 onFocus={() => !isReadOnly && inputValue.length >= ADDRESS_SEARCH_MIN_LENGTH && setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                onBlur={handleStreetBlur}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                 placeholder="Start typing address..."
               />
