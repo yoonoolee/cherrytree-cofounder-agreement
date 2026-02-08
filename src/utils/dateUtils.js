@@ -20,6 +20,26 @@ export function isAfterEditDeadline(editDeadline) {
 }
 
 /**
+ * Determine if project should be read-only based on deadline and submission history
+ * LOGIC:
+ * - Before deadline: Always editable (even if submitted)
+ * - After deadline: Locked if they've ever submitted, editable for one-time submission if never submitted
+ *
+ * @param {Object} project - The project object from Firestore
+ * @returns {boolean} True if read-only, false if editable
+ */
+export function isProjectReadOnly(project) {
+  if (!project) {
+    return false;
+  }
+
+  const isAfterDeadline = isAfterEditDeadline(project.editDeadline);
+  const hasEverSubmitted = (project.pdfAgreements?.length || 0) > 0;
+
+  return isAfterDeadline && hasEverSubmitted;
+}
+
+/**
  * Format a deadline date for display
  * @param {Date|Timestamp|null} editDeadline - The edit deadline from Firestore
  * @returns {string|null} Formatted date string (e.g., "July 16, 2026") or null

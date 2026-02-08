@@ -8,8 +8,11 @@ function PreviewPage() {
   const navigate = useNavigate();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  const handleEdit = () => {
-    navigate(`/survey/${projectId}`);
+  const handleEdit = (sectionId = null) => {
+    const url = sectionId
+      ? `/survey/${projectId}?section=${sectionId}`
+      : `/survey/${projectId}`;
+    navigate(url);
   };
 
   const handleCreateProject = () => {

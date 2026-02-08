@@ -1,38 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLoadScript } from '@react-google-maps/api';
 import { db, functions } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import ApprovalSection from './ApprovalSection';
 import SurveyNavigation from './SurveyNavigation';
-import { SECTION_IDS, SECTION_ORDER, SECTIONS as SECTION_CONFIG } from '../config/sectionConfig';
 import { useUser } from '../contexts/UserContext';
 import { useAuth } from '@clerk/clerk-react';
-import { formatDeadline, isAfterEditDeadline } from '../utils/dateUtils';
+import { formatDeadline, isAfterEditDeadline, isProjectReadOnly } from '../utils/dateUtils';
 import { useProjectSync } from '../hooks/useProjectSync';
-import { useAutoSave } from '../hooks/useAutoSave';
-import { useValidation } from '../hooks/useValidation';
-import SectionFormation from './SectionFormation';
-import SectionCofounders from './SectionCofounders';
-import SectionEquityAllocation from './SectionEquityAllocation';
-import SectionDecisionMaking from './SectionDecisionMaking';
-import SectionEquityVesting from './SectionEquityVesting';
-import SectionIP from './SectionIP';
-import SectionCompensation from './SectionCompensation';
-import SectionPerformance from './SectionPerformance';
-import SectionNonCompete from './SectionNonCompete';
-import SectionFinal from './SectionFinal';
 
-const libraries = ['places'];
 const GENERATED_AGREEMENT_ID = 'generated-agreement';
 
 function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreateProject }) {
   const { currentUser } = useUser();
   const { getToken } = useAuth();
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
-    libraries,
-  });
 
   // UI state
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -44,12 +25,9 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
   const [submitterName, setSubmitterName] = useState('<blank>');
   const [currentSection, setCurrentSection] = useState(GENERATED_AGREEMENT_ID);
 
-  // Refs and hooks for form data
+  // Refs and hooks for form data (SurveyNavigation has its own hooks now)
   const isSavingRef = useRef(false);
-  const { project, formData, setFormData } = useProjectSync(projectId, isSavingRef);
-  const { createChangeHandler } = useAutoSave(projectId, project, currentUser);
-  const { isSectionCompleted } = useValidation(formData, project);
-  const handleChange = createChangeHandler(setFormData);
+  const { project } = useProjectSync(projectId, isSavingRef);
 
   // Convert Google Drive URL to embeddable format
   const getEmbedUrl = (url) => {
@@ -88,7 +66,8 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
   // Update PDF URL when project changes
   useEffect(() => {
     if (project) {
-      if (project.submitted && project.latestPdfUrl) {
+      // Show latest submitted PDF if it exists, otherwise show preview PDF
+      if (project.latestPdfUrl) {
         setPdfUrl(project.latestPdfUrl);
       } else if (project.previewPdfUrl) {
         setPdfUrl(project.previewPdfUrl);
@@ -116,7 +95,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
 
   // Manual PDF generation (called on mount or by button click)
   const generatePreview = async () => {
-    if (!project || project.submitted) return;
+    if (!project || isReadOnly) return;
 
     setIsGeneratingPdf(true);
     setPdfError('');
@@ -150,7 +129,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
 
   // Trigger PDF generation when navigating to preview (button clicked)
   useEffect(() => {
-    if (project && !project.submitted && !hasAttemptedGeneration.current) {
+    if (project && !isReadOnly && !hasAttemptedGeneration.current) {
       hasAttemptedGeneration.current = true;
 
       // Check if preview needs regeneration
@@ -226,7 +205,8 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
   };
 
   const isAdmin = project?.admin === currentUser?.id;
-  const isReadOnly = project?.submitted;
+  // Check if survey should be read-only (logic in dateUtils.js)
+  const isReadOnly = isProjectReadOnly(project);
 
   if (!project) {
     return (
@@ -238,77 +218,18 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
 
   return (
     <div className="min-h-screen flex bg-white">
-      {/* Sidebar Navigation */}
+      {/* Sidebar Navigation - self-contained with all hooks */}
       <SurveyNavigation
-        displayTitle={project?.name || 'Loading...'}
-        currentPage="survey"
         projectId={projectId}
+        currentSection={currentSection}
+        onSectionClick={(sectionId) => onEdit(sectionId)} // Navigate back to survey at specific section
+        onReviewAndApproveClick={() => setCurrentSection(GENERATED_AGREEMENT_ID)}
         allProjects={allProjects}
         onProjectSwitch={onProjectSwitch}
         onCreateProject={onCreateProject}
-        hideUpgrade={project?.currentPlan === 'pro'}
-        planType={project?.currentPlan}
         isMobileNavOpen={isMobileNavOpen}
         setIsMobileNavOpen={setIsMobileNavOpen}
-      >
-        {/* Section Navigation */}
-        <div className="flex-1 overflow-y-auto pb-3 px-1 pt-4 flex flex-col">
-          <div>
-          <div className="px-2 mb-2">
-            <span className="text-xs font-medium text-gray-600">Sections</span>
-          </div>
-          {SECTION_ORDER.map((sectionId, index) => {
-            const sectionConfig = SECTION_CONFIG[sectionId];
-            return (
-              <button
-                key={sectionId}
-                data-section-id={sectionId}
-                onClick={() => {
-                  setCurrentSection(sectionId);
-                  setIsMobileNavOpen(false);
-                }}
-                className={`text-left px-2 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between ${
-                  currentSection === sectionId
-                    ? 'text-black font-semibold'
-                    : 'text-gray-600'
-                }`}
-                style={{ width: '100%', fontSize: '15px' }}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="flex items-center justify-center w-6 h-6 text-gray-500" style={{ fontSize: '15px' }}>
-                    {index + 1}
-                  </span>
-                  <span className="nav-link-underline">{sectionConfig.displayName}</span>
-                </div>
-              </button>
-            );
-          })}
-
-          {/* Review and Approve - Section 11 */}
-          <button
-            onClick={() => {
-              setCurrentSection(GENERATED_AGREEMENT_ID);
-              setIsMobileNavOpen(false);
-            }}
-            className={`text-left px-2 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between ${
-              currentSection === GENERATED_AGREEMENT_ID
-                ? 'text-black font-semibold'
-                : 'text-gray-600'
-            }`}
-            style={{ width: '100%', fontSize: '15px' }}
-          >
-            <div className="flex items-center gap-2">
-              <span className="flex items-center justify-center w-6 h-6 text-gray-500">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </span>
-              <span className="nav-link-underline">Review and Approve</span>
-            </div>
-          </button>
-          </div>
-        </div>
-      </SurveyNavigation>
+      />
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto ml-[270px]" style={{ marginTop: '0' }}>
@@ -316,125 +237,9 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
           {/* Content Container */}
           <div className="px-20 pt-8 pb-20">
 
-          {/* Section Content - render actual sections */}
-          {currentSection === SECTION_IDS.FORMATION && (
-            <div className="animate-fade-down">
-              {isLoaded ? (
-                <SectionFormation
-                  formData={formData}
-                  handleChange={handleChange}
-                  isReadOnly={true}
-                  showValidation={false}
-                />
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-600">Loading...</p>
-                </div>
-              )}
-            </div>
-          )}
-          {currentSection === SECTION_IDS.COFOUNDERS && (
-            <div className="animate-fade-down">
-              <SectionCofounders
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={true}
-                showValidation={false}
-                project={project}
-              />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.EQUITY_ALLOCATION && (
-            <div className="animate-fade-down">
-              <SectionEquityAllocation
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={true}
-                project={project}
-                showValidation={false}
-              />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.VESTING && (
-            <div className="animate-fade-down">
-              <SectionEquityVesting
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={true}
-                project={project}
-                showValidation={false}
-              />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.DECISION_MAKING && (
-            <div className="animate-fade-down">
-              <SectionDecisionMaking
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={true}
-                project={project}
-                showValidation={false}
-              />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.IP && (
-            <div className="animate-fade-down">
-              <SectionIP
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={true}
-                project={project}
-                showValidation={false}
-              />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.COMPENSATION && (
-            <div className="animate-fade-down">
-              <SectionCompensation
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={true}
-                showValidation={false}
-                project={project}
-              />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.PERFORMANCE && (
-            <div className="animate-fade-down">
-              <SectionPerformance
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={true}
-                showValidation={false}
-              />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.NON_COMPETITION && (
-            <div className="animate-fade-down">
-              <SectionNonCompete
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={true}
-                project={project}
-                showValidation={false}
-              />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.GENERAL_PROVISIONS && (
-            <div className="animate-fade-down">
-              <SectionFinal
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={true}
-                project={project}
-                showValidation={false}
-              />
-            </div>
-          )}
-
-          {/* Generated Agreement (PDF) */}
-          {currentSection === GENERATED_AGREEMENT_ID && (
-            <div>
+          {/* Preview page only shows the Generated Agreement (PDF/Approval) */}
+          {/* Clicking sections 1-10 in nav navigates back to Survey page */}
+          <div>
               {/* Stale Preview Warning */}
               {!isReadOnly && pdfUrl && isPreviewStale() && !isGeneratingPdf && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
@@ -462,12 +267,12 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">Generated Agreement</h2>
                   <p className="text-sm text-gray-500">
-                    {project.submittedAt
-                      ? `Submitted by ${submitterName} on ${project.submittedAt.toDate().toLocaleDateString()}`
+                    {project.pdfAgreements && project.pdfAgreements.length > 0
+                      ? `Last submitted by ${submitterName} on ${project.pdfAgreements[project.pdfAgreements.length - 1].generatedAt.toDate().toLocaleDateString()}`
                       : 'Preview - Not yet submitted'
                     }
                   </p>
-                  {!project.submitted && project.editDeadline && (
+                  {!isReadOnly && project.editDeadline && (
                     <p className={`text-sm mt-1 ${isAfterEditDeadline(project.editDeadline) ? 'text-red-600' : 'text-gray-500'}`}>
                       {isAfterEditDeadline(project.editDeadline)
                         ? (project.previewPdfGeneratedAt
@@ -584,7 +389,6 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                 </div>
               )}
             </div>
-          )}
           </div>
           {/* End White Card Container */}
         </div>

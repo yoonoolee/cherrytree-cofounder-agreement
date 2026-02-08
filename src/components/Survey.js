@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLoadScript } from '@react-google-maps/api';
 import { db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -10,7 +10,7 @@ import { getQuestionsBySection } from '../config/questionConfig';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useProjectSync } from '../hooks/useProjectSync';
 import { useValidation } from '../hooks/useValidation';
-import { isAfterEditDeadline } from '../utils/dateUtils';
+import { isProjectReadOnly } from '../utils/dateUtils';
 import SectionFormation from './SectionFormation';
 import SectionCofounders from './SectionCofounders';
 import SectionEquityAllocation from './SectionEquityAllocation';
@@ -29,6 +29,7 @@ const libraries = ['places'];
 
 function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCreateProject }) {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser, setActive, userMemberships, orgsLoaded } = useUser();
   const { orgId } = useAuth();
   const { isLoaded } = useLoadScript({
@@ -49,26 +50,19 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // Custom hooks for managing survey state and logic
-  // Note: isSavingRef needs to be created first for useProjectSync
   const isSavingRef = useRef(false);
-
-  // Load project and form data from Firestore
-  const { project, formData, setFormData, accessDenied, lastSaved } = useProjectSync(projectId, isSavingRef);
-
-  // Auto-save functionality
-  const { saveStatus, saveFormData, createChangeHandler, lastSaved: autoSaveLastSaved } = useAutoSave(projectId, project, currentUser);
-
-  // Validation logic
-  const { calculateProgress, isSectionCompleted } = useValidation(formData, project);
-
-  // Create the handleChange function using the hook
+  const { project, formData, setFormData, accessDenied } = useProjectSync(projectId, isSavingRef);
+  const { saveStatus, saveFormData, createChangeHandler } = useAutoSave(projectId, project, currentUser);
+  const { isSectionCompleted } = useValidation(formData, project);
   const handleChange = createChangeHandler(setFormData);
 
-  // Set initial section when project changes - always start at Formation & Purpose
+  // Read section from URL query parameter or default to Formation
   useEffect(() => {
-    setCurrentSection(SECTION_IDS.FORMATION);
+    const sectionFromUrl = searchParams.get('section');
+    const validSection = SECTION_ORDER.includes(sectionFromUrl) ? sectionFromUrl : SECTION_IDS.FORMATION;
+    setCurrentSection(validSection);
     setSection3InResultsView(false);
-  }, [projectId]);
+  }, [projectId, searchParams]);
 
 
   // Reset section3InResultsView when leaving equity allocation section
@@ -157,8 +151,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
   // Project sync, auto-save, and validation are now handled by custom hooks
   // See: useProjectSync, useAutoSave, useValidation
 
-  // Check if edit deadline has passed (deadline is calculated once at purchase and stored in Firestore)
-  const isReadOnly = isAfterEditDeadline(project?.editDeadline);
+  // Check if survey should be read-only (logic in dateUtils.js)
+  const isReadOnly = isProjectReadOnly(project);
 
   // Find first incomplete section
   const findFirstIncompleteSection = () => {
@@ -409,122 +403,21 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
         </div>
       </div>
 
-      {/* Sidebar Navigation */}
+      {/* Sidebar Navigation - self-contained with all hooks */}
       <SurveyNavigation
-        displayTitle={project?.name || 'Loading...'}
-        currentPage="survey"
         projectId={projectId}
+        currentSection={currentSection}
+        onSectionClick={(sectionId) => {
+          setCurrentSection(sectionId);
+          setSearchParams({ section: sectionId });
+        }}
+        onReviewAndApproveClick={onPreview}
         allProjects={allProjects}
         onProjectSwitch={onProjectSwitch}
         onCreateProject={onCreateProject}
-        hideUpgrade={project?.currentPlan === 'pro'}
-        planType={project?.currentPlan}
         isMobileNavOpen={isMobileNavOpen}
         setIsMobileNavOpen={setIsMobileNavOpen}
-      >
-
-        {/* Progress Bar */}
-        <div className="px-2 pb-2">
-          <div className="flex items-center">
-            <span className="text-xs font-medium text-gray-600">Progress</span>
-          </div>
-          <div className="pl-2 pr-3">
-            <div className="flex justify-end items-center mb-2">
-              <span className="text-xs font-medium text-gray-600">{calculateProgress()}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-1.5">
-              <div
-                className="bg-black h-1.5 rounded-full transition-all duration-300"
-                style={{ width: `${calculateProgress()}%` }}
-              />
-            </div>
-          </div>
-          <div className="mt-2 pl-2" style={{ height: '24px', display: 'flex', alignItems: 'center' }}>
-            {saveStatus === 'saving' && (
-              <span className="text-xs text-gray-500">Saving...</span>
-            )}
-            {saveStatus === 'saved' && (autoSaveLastSaved || lastSaved) && (
-              <span className="text-xs text-gray-500">
-                Saved at {(autoSaveLastSaved || lastSaved).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-              </span>
-            )}
-            {saveStatus === 'error' && (
-              <span className="text-xs text-red-950">Error saving</span>
-            )}
-          </div>
-        </div>
-
-        {/* Section Navigation */}
-        <div className="flex-1 overflow-y-auto pb-3 px-1 pt-4 flex flex-col">
-          <div>
-          <div className="px-2 mb-2">
-            <span className="text-xs font-medium text-gray-600">Sections</span>
-          </div>
-          {SECTION_ORDER.map((sectionId, index) => {
-            const sectionConfig = SECTION_CONFIG[sectionId];
-            const isCompleted = isSectionCompleted(sectionId);
-            return (
-              <button
-                key={sectionId}
-                data-section-id={sectionId}
-                onClick={() => {
-                  setCurrentSection(sectionId);
-                  setIsMobileNavOpen(false);
-                }}
-                className={`text-left px-2 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between ${
-                  currentSection === sectionId
-                    ? 'text-black font-semibold'
-                    : 'text-gray-600'
-                }`}
-                style={{ width: '100%', fontSize: '15px' }}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="flex items-center justify-center w-6 h-6 text-gray-500" style={{ fontSize: '15px' }}>
-                    {index + 1}
-                  </span>
-                  <span className="nav-link-underline">{sectionConfig.displayName}</span>
-                  {isCompleted && (
-                    <svg width="14" height="14" viewBox="22 22 56 56" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 ml-auto">
-                      <path d="M70.63,61.53c-.77-5.18-5.27-6.64-10.45-5.86l-.39.06C57.39,47.09,53,42.27,49.53,39.66c3.65.71,6.83.23,9.74-3.08,1.9-2.18,2.83-5.14,5.75-7.53a.46.46,0,0,0-.17-.8c-5.07-1.4-11.84-1.08-15.43,3a13.83,13.83,0,0,0-3.17,6.38,18.48,18.48,0,0,0-4.87-1.73.35.35,0,0,0-.41.3l-.23,1.62a.35.35,0,0,0,.28.4A17.86,17.86,0,0,1,45.74,40c2.49,6.14-2.9,13.55-5.88,17-4.7-1.25-9-.37-10.28,4.33a8.89,8.89,0,1,0,17.15,4.67c1.16-4.26-1.42-7.08-5.4-8.54A37.59,37.59,0,0,0,45,52.51c2.59-4.14,3.57-8,2.91-11.25l.42.3A25.14,25.14,0,0,1,58.47,56c-4.28,1.08-7.25,3.73-6.57,8.31a9.47,9.47,0,1,0,18.73-2.79Z" fill="black" shapeRendering="geometricPrecision"/>
-                    </svg>
-                  )}
-                </div>
-              </button>
-            );
-          })}
-
-          {/* Review and Approve - Section 11 style, greyed out until complete */}
-          {(() => {
-            const DESIGN_MODE = true; // TODO: Set to false for production
-            const allSectionsComplete = SECTION_ORDER.every(sectionId => isSectionCompleted(sectionId));
-            const isClickable = DESIGN_MODE || allSectionsComplete;
-
-            return (
-              <button
-                onClick={() => isClickable && onPreview()}
-                disabled={!isClickable}
-                className={`text-left px-2 py-1.5 rounded-lg mb-0.5 transition-all duration-200 flex items-center justify-between ${
-                  isClickable
-                    ? 'text-gray-600'
-                    : 'text-gray-300 cursor-not-allowed'
-                }`}
-                style={{ width: '100%', fontSize: '15px' }}
-              >
-                <div className="flex items-center gap-2">
-                  <span className={`flex items-center justify-center w-6 h-6 ${isClickable ? 'text-gray-500' : 'text-gray-300'}`}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </span>
-                  <span className="nav-link-underline">Review and Approve</span>
-                </div>
-              </button>
-            );
-          })()}
-          </div>
-        </div>
-
-      </SurveyNavigation>
+      />
 
       {/* Collaborators Modal */}
       {showCollaborators && (
@@ -695,6 +588,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                       const prevSection = getPreviousSection(currentSection);
                       if (prevSection) {
                         setCurrentSection(prevSection);
+                        setSearchParams({ section: prevSection });
                       }
                     }
                   }}
@@ -718,6 +612,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                         const nextSection = getNextSection(currentSection);
                         if (nextSection) {
                           setCurrentSection(nextSection);
+                          setSearchParams({ section: nextSection });
                         }
                         return;
                       }
@@ -737,6 +632,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onCre
                     const nextSection = getNextSection(currentSection);
                     if (nextSection) {
                       setCurrentSection(nextSection);
+                      setSearchParams({ section: nextSection });
                     }
                   }}
                   className="next-button bg-black text-white px-7 py-2 rounded font-normal hover:bg-[#1a1a1a] transition flex items-center gap-2"

@@ -235,15 +235,8 @@ exports.submitSurvey = onCall({
       );
     }
 
-    // Check if already submitted
-    if (projectData.submitted) {
-      throw new HttpsError('already-exists', 'Project already submitted');
-    }
-
-    // Mark as submitted
-    await projectRef.update({
-      submitted: true
-    });
+    // NOTE: No longer blocking multiple submissions before deadline
+    // Read-only logic is now handled client-side based on editDeadline + pdfAgreements.length
 
     // Prepare data for Make.com
     // Merge "Other" fields before sending - keeps separate in Firestore, merged for PDF
@@ -600,7 +593,7 @@ exports.stripeWebhook = onRequest({
               surveyData: Object.fromEntries(
                 REQUIRED_ACKNOWLEDGMENT_FIELDS.map(field => [field, { [userId]: false }])
               ),
-              submitted: false,
+              // NOTE: No longer using 'submitted' field - tracking via pdfAgreements.length instead
               pdfAgreements: [],
               latestPdfUrl: null,
               currentPlan: plan, // Current active plan (for easy access)

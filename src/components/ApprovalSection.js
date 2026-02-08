@@ -3,6 +3,7 @@ import { db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
+import { isProjectReadOnly } from '../utils/dateUtils';
 
 function ApprovalSection({ project, projectId }) {
   const { currentUser, loading } = useUser();
@@ -42,7 +43,8 @@ function ApprovalSection({ project, projectId }) {
     }
   };
 
-  if (project.submitted) {
+  // Hide approval section if project is read-only (after deadline + has submitted)
+  if (isProjectReadOnly(project)) {
     return null;
   }
 
