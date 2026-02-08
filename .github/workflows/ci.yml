@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - master
+      - dev
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env.production for build test
+        run: |
+          cat > .env.production << EOF
+          # CI Build Test Environment
+          REACT_APP_MARKETING_URL=https://cherrytree.app
+          REACT_APP_APP_URL=https://my.cherrytree.app
+          REACT_APP_GOOGLE_MAPS_API_KEY=test_key
+          REACT_APP_FIREBASE_API_KEY=test_key
+          REACT_APP_FIREBASE_AUTH_DOMAIN=test.firebaseapp.com
+          REACT_APP_FIREBASE_PROJECT_ID=test-project
+          REACT_APP_FIREBASE_STORAGE_BUCKET=test.appspot.com
+          REACT_APP_FIREBASE_MESSAGING_SENDER_ID=123456789
+          REACT_APP_FIREBASE_APP_ID=1:123456789:web:test
+          REACT_APP_RECAPTCHA_SITE_KEY=test_key
+          REACT_APP_STRIPE_PUBLISHABLE_KEY=pk_test_test
+          REACT_APP_STRIPE_STARTER_PRICE_ID=price_test
+          REACT_APP_STRIPE_PRO_PRICE_ID=price_test
+          REACT_APP_ENFORCE_HTTPS=true
+          REACT_APP_CLERK_PUBLISHABLE_KEY=pk_test_test
+          EOF
+
+      - name: Build application
+        run: npm run build
+
+      - name: Verify build output
+        run: |
+          if [ ! -d "build" ]; then
+            echo "❌ Build directory not found!"
+            exit 1
+          fi
+          echo "✅ Build successful - ready for deployment"
