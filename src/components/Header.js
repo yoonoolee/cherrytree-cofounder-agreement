@@ -7,6 +7,7 @@ function Header() {
   const location = useLocation();
   const { currentUser: user, loading } = useUser();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [productsOpen, setProductsOpen] = useState(false);
 
   const handleNavigation = (path) => {
     setMobileMenuOpen(false);
@@ -46,7 +47,55 @@ function Header() {
           </div>
 
           <nav className="hidden md:flex items-center gap-6 absolute left-1/2 transform -translate-x-1/2 text-sm">
-            <button onClick={() => navigate('/equity-calculator')} className={`${location.pathname === '/equity-calculator' ? 'text-black' : 'text-[#808080]'} hover:text-black transition nav-link-underline`}>Equity Calculator</button>
+            <div className="relative" onMouseEnter={() => setProductsOpen(true)} onMouseLeave={() => setProductsOpen(false)}>
+              <button className="flex items-center gap-1 text-[#808080] hover:text-black transition">
+                Products
+                <svg className={`w-3 h-3 transition-transform ${productsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {productsOpen && (
+                <div className="absolute top-full left-0 pt-2 w-48">
+                <div className="bg-white border border-gray-200 rounded-lg shadow-lg py-2">
+                  <button
+                    onClick={() => {
+                      const isProduction = window.location.hostname.includes('cherrytree.app');
+                      if (isProduction) {
+                        window.location.href = 'https://my.cherrytree.app/dashboard';
+                      } else {
+                        navigate('/dashboard', { replace: true });
+                      }
+                    }}
+                    className="w-full text-left px-4 py-2 text-[#808080] hover:text-black hover:bg-gray-50 transition"
+                  >
+                    Contract Creator
+                  </button>
+                  <button
+                    onClick={() => navigate('/equity-calculator')}
+                    className="w-full text-left px-4 py-2 text-[#808080] hover:text-black hover:bg-gray-50 transition"
+                  >
+                    Equity Calculator
+                  </button>
+                  <a
+                    href="https://cherrytree.beehiiv.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full text-left px-4 py-2 text-[#808080] hover:text-black hover:bg-gray-50 transition"
+                  >
+                    Newsletter
+                  </a>
+                  <a
+                    href="https://app.hubble.social/timhe"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full text-left px-4 py-2 text-[#808080] hover:text-black hover:bg-gray-50 transition"
+                  >
+                    Coaching
+                  </a>
+                </div>
+                </div>
+              )}
+            </div>
             <button onClick={() => navigate('/pricing')} className={`${location.pathname === '/pricing' ? 'text-black' : 'text-[#808080]'} hover:text-black transition nav-link-underline`}>Pricing</button>
             <button onClick={() => navigate('/about')} className={`${location.pathname === '/about' ? 'text-black' : 'text-[#808080]'} hover:text-black transition nav-link-underline`}>About</button>
           </nav>
@@ -134,12 +183,46 @@ function Header() {
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 bg-white">
             <nav className="flex flex-col py-4">
+              <div className="px-4 py-2 text-xs text-gray-400 uppercase">Products</div>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  const isProduction = window.location.hostname.includes('cherrytree.app');
+                  if (isProduction) {
+                    window.location.href = 'https://my.cherrytree.app/dashboard';
+                  } else {
+                    navigate('/dashboard', { replace: true });
+                  }
+                }}
+                className="text-[#808080] hover:text-black hover:bg-gray-50 transition px-6 py-3 text-left text-sm"
+              >
+                Contract Creator
+              </button>
               <button
                 onClick={() => handleNavigation('/equity-calculator')}
-                className={`${location.pathname === '/equity-calculator' ? 'text-black bg-gray-50' : 'text-[#808080]'} hover:text-black hover:bg-gray-50 transition px-4 py-3 text-left text-sm`}
+                className={`${location.pathname === '/equity-calculator' ? 'text-black bg-gray-50' : 'text-[#808080]'} hover:text-black hover:bg-gray-50 transition px-6 py-3 text-left text-sm`}
               >
                 Equity Calculator
               </button>
+              <a
+                href="https://cherrytree.beehiiv.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-[#808080] hover:text-black hover:bg-gray-50 transition px-6 py-3 text-left text-sm"
+              >
+                Newsletter
+              </a>
+              <a
+                href="https://app.hubble.social/timhe"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-[#808080] hover:text-black hover:bg-gray-50 transition px-6 py-3 text-left text-sm"
+              >
+                Coaching
+              </a>
+              <div className="border-t border-gray-200 my-2"></div>
               <button
                 onClick={() => handleNavigation('/pricing')}
                 className={`${location.pathname === '/pricing' ? 'text-black bg-gray-50' : 'text-[#808080]'} hover:text-black hover:bg-gray-50 transition px-4 py-3 text-left text-sm`}

@@ -45,7 +45,7 @@ function Footer() {
                 style={{ height: '32px', width: 'auto' }}
               />
             </div>
-            <p className="text-gray-500 text-sm">© {new Date().getFullYear()} Cherrytree</p>
+            <p className="text-gray-500 text-sm">© 2026 Cherrytree, LLC</p>
           </div>
 
           {/* Right side - Three columns */}
