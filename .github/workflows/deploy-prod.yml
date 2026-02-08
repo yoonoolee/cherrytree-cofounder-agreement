@@ -52,7 +52,20 @@ jobs:
       - name: Build application
         run: npm run build
 
-      - name: Deploy to Firebase Production
+      - name: Check if Functions changed
+        id: functions-check
+        run: |
+          if git diff --name-only HEAD~1 HEAD | grep -q '^functions/'; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install Functions dependencies
+        if: steps.functions-check.outputs.changed == 'true'
+        run: cd functions && npm ci
+
+      - name: Deploy Hosting to Firebase Production
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
@@ -61,3 +74,14 @@ jobs:
           projectId: cherrytree-cofounder-agreement
         env:
           FIREBASE_CLI_EXPERIMENTS: webframeworks
+
+      - name: Deploy Functions to Firebase Production
+        if: steps.functions-check.outputs.changed == 'true'
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}' > $HOME/gcloud-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud-key.json
+          npx firebase-tools deploy --only functions --project cherrytree-cofounder-agreement --non-interactive
+
+      - name: Skip Functions deployment
+        if: steps.functions-check.outputs.changed == 'false'
+        run: echo "Functions unchanged - skipping deployment"
