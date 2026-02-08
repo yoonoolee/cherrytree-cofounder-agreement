@@ -22,6 +22,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
       setInputValue(formData[FIELDS.MAILING_STREET]);
       isInitialMount.current = false;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData[FIELDS.MAILING_STREET]]);
 
   useEffect(() => {

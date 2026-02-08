@@ -60,6 +60,7 @@ export const UserProvider = ({ children }) => {
     };
 
     signInToFirebase();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clerkUser?.id, isLoaded, getToken]);
 
   useEffect(() => {
@@ -90,6 +91,7 @@ export const UserProvider = ({ children }) => {
         unsubscribeFirestore();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clerkUser?.id, isLoaded, firebaseAuthReady]);
 
   const isAuthReady = isLoaded && (!clerkUser || firebaseAuthReady);

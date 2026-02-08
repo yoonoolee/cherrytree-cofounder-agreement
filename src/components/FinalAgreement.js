@@ -25,7 +25,7 @@ function FinalAgreement({ projectId, allProjects = [], onProjectSwitch, onEdit, 
 
       // Format: https://drive.google.com/file/d/FILE_ID/view
       // Format: https://drive.google.com/file/d/FILE_ID (without /view)
-      const match1 = url.match(/\/file\/d\/([^\/\?]+)/);
+      const match1 = url.match(/\/file\/d\/([^/?]+)/);
       if (match1) {
         fileId = match1[1];
       }

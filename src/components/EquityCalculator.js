@@ -18,6 +18,7 @@ function EquityCalculator({ cofounders, userDraftData, onDraftChange, onSubmit, 
   // Memoize cofounder names to detect actual changes
   const cofounderNames = useMemo(() => {
     return cofounders.map((_, index) => getCofounderName(index)).join('|');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cofounders]);
 
   // Helper function to convert nested arrays to Firebase-compatible object structure
@@ -301,6 +302,7 @@ function EquityCalculator({ cofounders, userDraftData, onDraftChange, onSubmit, 
 
       return newData;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cofounderNames]);
 
   // Make single click behave like double click

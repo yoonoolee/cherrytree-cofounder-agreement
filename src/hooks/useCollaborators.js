@@ -21,10 +21,6 @@ export function useCollaborators(project) {
     return getSortedCollaboratorIds(collaboratorsMap);
   }, [collaboratorsMap]);
 
-  const cofounders = useMemo(() => {
-    return project?.surveyData?.cofounders || [];
-  }, [project?.surveyData?.cofounders]);
-
   const getCofounderLabel = (index) => `Cofounder ${String.fromCharCode(65 + index)}`;
 
   const getDisplayName = useMemo(() => {
