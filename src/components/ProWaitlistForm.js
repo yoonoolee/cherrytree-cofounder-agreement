@@ -10,6 +10,10 @@ function ProWaitlistForm({ source = 'unknown' }) {
 
   const handleWaitlistSubmit = async (e) => {
     e.preventDefault();
+
+    // Prevent double submission
+    if (waitlistLoading) return;
+
     setWaitlistError('');
 
     // Validate email
