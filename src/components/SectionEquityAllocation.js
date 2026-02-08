@@ -98,6 +98,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
     }
 
     initializedRef.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const equityEntries = formData[FIELDS.EQUITY_ENTRIES] || [];
@@ -209,6 +210,7 @@ const SectionEquityAllocation = forwardRef(({ formData, handleChange, isReadOnly
     if (hasSubmitted && viewMode === 'edit') {
       changeView('results');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED]]);
 
   // Notify parent when viewMode changes

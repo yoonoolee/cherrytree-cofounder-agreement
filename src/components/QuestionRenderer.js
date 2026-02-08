@@ -3,7 +3,6 @@ import Tooltip from './Tooltip';
 import CustomSelect from './CustomSelect';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
-import { FIELDS } from '../config/surveySchema';
 
 /**
  * QuestionRenderer - Dynamically renders any question based on config
@@ -52,7 +51,6 @@ function QuestionRenderer({
     helperText,
     otherField,
     acknowledgmentText,
-    multiSelect,
     clearsFields
   } = config;
 

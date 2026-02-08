@@ -141,6 +141,7 @@ function EquityCalculatorPage() {
     if (showCalculator) {
       setData(initializeData());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [numCofounders, cofounderNames, showCalculator]);
 
   // Calculate equity percentages using shared utility (returns array for this standalone page)

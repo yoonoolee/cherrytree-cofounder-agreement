@@ -85,6 +85,7 @@ function PricingPage() {
         document.head.removeChild(existingScript);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Trigger hero content fade-in on mount

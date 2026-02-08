@@ -60,6 +60,7 @@ export function useProjectSync(projectId, isSavingRef) {
     );
 
     return unsubscribe;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, isSavingRef]);
 
   return {
