@@ -1,7 +1,6 @@
 {
   "projects": {
     "default": "cherrytree-cofounder-agree-dev",
-    "dev": "cherrytree-cofounder-agree-dev",
-    "prod": "cherrytree-cofounder-agreement"
+    "dev": "cherrytree-cofounder-agree-dev"
   }
 }
