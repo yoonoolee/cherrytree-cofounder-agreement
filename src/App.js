@@ -15,6 +15,7 @@ import SignUpPage from './pages/SignUpPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
 import SurveyPage from './pages/SurveyPage';
 import PreviewPage from './pages/PreviewPage';
+import FinalAgreementPage from './pages/FinalAgreementPage';
 
 function App() {
   return (
@@ -57,6 +58,15 @@ function App() {
           element={
             <ProtectedRoute>
               <PreviewPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/final-agreement/:projectId"
+          element={
+            <ProtectedRoute>
+              <FinalAgreementPage />
             </ProtectedRoute>
           }
         />

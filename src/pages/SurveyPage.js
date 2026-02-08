@@ -56,6 +56,10 @@ function SurveyPage() {
     navigate(`/preview/${projectId}`);
   };
 
+  const handleFinalAgreement = () => {
+    navigate(`/final-agreement/${projectId}`);
+  };
+
   const handleCreateProject = () => {
     setShowPaymentModal(true);
   };
@@ -77,6 +81,7 @@ function SurveyPage() {
         projectId={projectId}
         allProjects={allProjects}
         onPreview={handlePreview}
+        onFinalAgreement={handleFinalAgreement}
         onCreateProject={handleCreateProject}
         onProjectSwitch={handleProjectSwitch}
       />

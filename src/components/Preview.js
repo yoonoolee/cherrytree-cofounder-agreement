@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { db, functions } from '../firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
+import { functions } from '../firebase';
 import { httpsCallable } from 'firebase/functions';
 import ApprovalSection from './ApprovalSection';
 import SurveyNavigation from './SurveyNavigation';
+import AgreementHeader from './AgreementHeader';
 import { useUser } from '../contexts/UserContext';
 import { useAuth } from '@clerk/clerk-react';
-import { formatDeadline, isAfterEditDeadline, isProjectReadOnly } from '../utils/dateUtils';
+import { isProjectReadOnly } from '../utils/dateUtils';
 import { useProjectSync } from '../hooks/useProjectSync';
 
 const GENERATED_AGREEMENT_ID = 'generated-agreement';
@@ -14,6 +15,7 @@ const GENERATED_AGREEMENT_ID = 'generated-agreement';
 function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreateProject }) {
   const { currentUser } = useUser();
   const { getToken } = useAuth();
+  const navigate = useNavigate();
 
   // UI state
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -22,7 +24,6 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
   const [pdfUrl, setPdfUrl] = useState(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfError, setPdfError] = useState('');
-  const [submitterName, setSubmitterName] = useState('<blank>');
   const [currentSection, setCurrentSection] = useState(GENERATED_AGREEMENT_ID);
 
   // Refs and hooks for form data (SurveyNavigation has its own hooks now)
@@ -141,28 +142,6 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
     }
   }, [project]);
 
-  // Fetch submitter name from user profile (from latest pdfAgreement)
-  useEffect(() => {
-    const fetchSubmitterName = async () => {
-      const latestAgreement = project?.pdfAgreements?.[project.pdfAgreements.length - 1];
-      if (latestAgreement?.generatedBy) {
-        try {
-          const userDoc = await getDoc(doc(db, 'users', latestAgreement.generatedBy));
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            const fullName = [userData.firstName, userData.lastName].filter(Boolean).join(' ');
-            if (fullName) {
-              setSubmitterName(fullName);
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching submitter name:', error);
-        }
-      }
-    };
-    fetchSubmitterName();
-  }, [project]);
-
   const checkAllApproved = () => {
     const collaborators = project.collaborators || {};
     const collaboratorIds = Object.keys(collaborators);
@@ -176,10 +155,6 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
 
   const handleSubmit = async () => {
     setSubmitError('');
-
-    if (!window.confirm('Submit this survey? You will not be able to edit it after submission.')) {
-      return;
-    }
 
     if (!currentUser) {
       setSubmitError('You must be logged in to submit');
@@ -197,6 +172,9 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
       const sessionToken = await getToken();
       const submitSurvey = httpsCallable(functions, 'submitSurvey');
       await submitSurvey({ sessionToken, projectId });
+
+      // Navigate to Final Agreement page after successful submit
+      navigate(`/final-agreement/${projectId}`);
     } catch (error) {
       console.error('Submit error:', error);
       setSubmitError(error.message || 'Failed to submit survey. Please try again.');
@@ -224,6 +202,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
         currentSection={currentSection}
         onSectionClick={(sectionId) => onEdit(sectionId)} // Navigate back to survey at specific section
         onReviewAndApproveClick={() => setCurrentSection(GENERATED_AGREEMENT_ID)}
+        onFinalAgreementClick={() => navigate(`/final-agreement/${projectId}`)}
         allProjects={allProjects}
         onProjectSwitch={onProjectSwitch}
         onCreateProject={onCreateProject}
@@ -262,41 +241,8 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                 </div>
               )}
 
-              {/* Header with Download Button */}
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Generated Agreement</h2>
-                  <p className="text-sm text-gray-500">
-                    {project.pdfAgreements && project.pdfAgreements.length > 0
-                      ? `Last submitted by ${submitterName} on ${project.pdfAgreements[project.pdfAgreements.length - 1].generatedAt.toDate().toLocaleDateString()}`
-                      : 'Preview - Not yet submitted'
-                    }
-                  </p>
-                  {!isReadOnly && project.editDeadline && (
-                    <p className={`text-sm mt-1 ${isAfterEditDeadline(project.editDeadline) ? 'text-red-600' : 'text-gray-500'}`}>
-                      {isAfterEditDeadline(project.editDeadline)
-                        ? (project.previewPdfGeneratedAt
-                            ? `Edit window expired on ${formatDeadline(project.editDeadline)}`
-                            : 'You will not be able to edit this agreement once it has been generated.')
-                        : `You can continue to edit and regenerate the agreement until ${formatDeadline(project.editDeadline)}`
-                      }
-                    </p>
-                  )}
-                </div>
-                {isReadOnly && project.latestPdfUrl && (
-                  <a
-                    href={project.latestPdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-black text-white px-6 py-2 rounded font-medium hover:bg-gray-800 transition"
-                  >
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    Download PDF
-                  </a>
-                )}
-              </div>
+              {/* Header */}
+              <AgreementHeader project={project} title="Generated Agreement" />
 
               {/* PDF Loading State */}
               {isGeneratingPdf && (
@@ -368,11 +314,6 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                           'Submit Agreement'
                         )}
                       </button>
-                      {isSubmitting && (
-                        <p className="text-sm text-gray-600 mt-3 font-medium">
-                          PDF is being generated... Wait for download button to appear
-                        </p>
-                      )}
                       {!checkAllApproved() && (
                         <p className="text-sm text-gray-600 mt-3">
                           Waiting for all collaborators to approve
