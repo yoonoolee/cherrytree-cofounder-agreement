@@ -1295,7 +1295,7 @@ function LandingPage() {
                             <div className="step1-input h-8 bg-white border border-gray-200 rounded px-2 flex items-center" style={{ minWidth: '160px', flex: '1 1 160px' }}>
                               <span className="step1-email text-sm text-gray-400" style={{ minWidth: '140px' }}>cofounder@email.com</span>
                             </div>
-                            <div className="step1-btn h-8 px-3 bg-gray-200 hover:bg-gray-300 text-gray-600 text-xs rounded flex items-center transition-colors whitespace-nowrap">Add</div>
+                            <div className="step1-btn h-8 px-3 text-gray-600 text-xs rounded flex items-center transition-colors whitespace-nowrap" style={{ backgroundColor: '#F0E8E7' }}>Add</div>
                           </div>
                           <div className="space-y-2">
                             <div className="text-sm text-gray-500">you@email.com</div>
@@ -1378,12 +1378,35 @@ function LandingPage() {
               })}
             </div>
           </div>
+
+          {/* Logo Grid */}
+          <div className="mt-16 max-w-7xl mx-auto">
+            <div className="flex flex-wrap justify-between items-center gap-y-6">
+              {logos.map((logo, i) => (
+                <div
+                  key={`built-${logo.alt}-${i}`}
+                  className="flex items-center justify-center w-20 md:w-24 transition-opacity duration-500"
+                  style={{
+                    opacity: isFading ? 0 : 1,
+                    transitionDelay: isFading ? '0ms' : `${logoDelayOrder[i] * 120}ms`
+                  }}
+                >
+                  <img
+                    src={logo.src}
+                    alt={logo.alt}
+                    className="max-h-7 md:max-h-8 w-auto"
+                    style={{ transform: `scale(${logo.scale * 1.1})` }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
       </section>
 
       {/* Features Section */}
-      <section id="features" ref={featuresRef} className="scroll-section py-16 md:py-24 px-4 md:px-6">
+      <section id="features" ref={featuresRef} className="scroll-section py-16 md:py-24 px-4 md:px-6" style={{ backgroundColor: '#faf6f5' }}>
         <div className="max-w-6xl mx-auto">
           <h2 className="section-header font-heading text-4xl sm:text-[2.75rem] md:text-[3.3rem] font-medium text-center mb-10 md:mb-16 px-2">Turn your cofoundership<br />into a company, <em className="italic" style={{ display: 'inline-block', minWidth: '6ch', textAlign: 'left', letterSpacing: '-0.02em' }}>{typedToday || '\u00A0'}</em></h2>
 
@@ -1399,15 +1422,15 @@ function LandingPage() {
                   <p className={`feature-description ${activeFeature === i ? 'active' : ''}`}>
                     {i === 0 ? (
                       <>
-                        Generate a <span style={{ backgroundColor: '#f0f0f0', color: '#000000', padding: '2px 6px', borderRadius: '4px' }}>ready-to-use, fully customized</span> document in minutes and start building your partnership with confidence.
+                        Generate a <span style={{ backgroundColor: '#F0E8E7', color: '#000000', padding: '2px 6px', borderRadius: '4px' }}>ready-to-use, fully customized</span> document in minutes and start building your partnership with confidence.
                       </>
                     ) : i === 1 ? (
                       <>
-                        Use our <span style={{ backgroundColor: '#f0f0f0', color: '#000000', padding: '2px 6px', borderRadius: '4px' }}>proprietary equity calculator</span> to determine ownership. Instant, precise splits so everyone knows their stake.
+                        Use our <span style={{ backgroundColor: '#F0E8E7', color: '#000000', padding: '2px 6px', borderRadius: '4px' }}>proprietary equity calculator</span> to determine ownership. Instant, precise splits so everyone knows their stake.
                       </>
                     ) : i === 2 ? (
                       <>
-                        Cofounder coaches and attorneys ready to help. We are here to guide you <span style={{ backgroundColor: '#f0f0f0', color: '#000000', padding: '2px 6px', borderRadius: '4px' }}>every step of the way</span>.
+                        Cofounder coaches and attorneys ready to help. We are here to guide you <span style={{ backgroundColor: '#F0E8E7', color: '#000000', padding: '2px 6px', borderRadius: '4px' }}>every step of the way</span>.
                       </>
                     ) : (
                       feature.description
@@ -2381,9 +2404,9 @@ function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="scroll-section py-16 md:py-24 px-4 md:px-6 relative" style={{ backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+      <section id="pricing" className="scroll-section py-16 md:py-24 px-4 md:px-6 relative" style={{ backgroundColor: '#E8F6E2' }}>
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#E8F6E2] to-transparent pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#E8F6E2] to-transparent pointer-events-none"></div>
         <div className="max-w-6xl mx-auto relative">
           <h2 className="section-header font-heading text-4xl sm:text-[2.75rem] md:text-[3.3rem] font-medium text-center mb-3 md:mb-4">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
           <p className="text-center text-sm md:text-base mb-12 md:mb-16 font-normal px-4" style={{ color: '#716B6B' }}>
@@ -2444,28 +2467,6 @@ function LandingPage() {
             ))}
           </div>
 
-          {/* Logo Grid */}
-          <div className="mt-16 max-w-7xl mx-auto">
-            <div className="flex flex-wrap justify-between items-center gap-y-6">
-              {logos.map((logo, i) => (
-                <div
-                  key={`${logo.alt}-${i}`}
-                  className="flex items-center justify-center w-20 md:w-24 transition-opacity duration-500"
-                  style={{
-                    opacity: isFading ? 0 : 1,
-                    transitionDelay: isFading ? '0ms' : `${logoDelayOrder[i] * 120}ms`
-                  }}
-                >
-                  <img
-                    src={logo.src}
-                    alt={logo.alt}
-                    className="max-h-7 md:max-h-8 w-auto"
-                    style={{ transform: `scale(${logo.scale * 1.1})` }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
@@ -2693,7 +2694,7 @@ function LandingPage() {
         }
 
         .feature-card {
-          background: #f7f7f7;
+          background: transparent;
           border: 1px solid transparent;
           border-radius: 8px;
           padding: 32px;
@@ -2708,14 +2709,14 @@ function LandingPage() {
 
         .feature-card:hover {
           transform: translateX(4px);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-          border-color: #e8e8e8;
+          box-shadow: none;
+          border-color: transparent;
         }
 
         .feature-card.active {
-          border-color: #e8e8e8;
-          background: #ffffff;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+          border-color: transparent;
+          background: transparent;
+          box-shadow: none;
         }
 
         .feature-title {
@@ -2750,15 +2751,17 @@ function LandingPage() {
         }
 
         .feature-visual {
-          background: #b50704;
+          background: rgba(240, 232, 231, 0.6);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
           border-radius: 8px;
-          box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+          box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
           overflow: hidden;
           align-items: center;
           justify-content: center;
           position: relative;
           padding: 16px 32px;
-          border: 12px solid #b50704;
+          border: 12px solid rgba(240, 232, 231, 0.4);
           height: calc(160px*3 + 24px);
           display: flex;
         }
