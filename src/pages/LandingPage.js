@@ -340,7 +340,7 @@ function LandingPage() {
       const pastCard = rect.bottom < windowHeight * 0.85;
       if (pastCard) {
         const slideProgress = Math.min(1, (windowHeight * 0.85 - rect.bottom) / (windowHeight * 0.5));
-        setCardSlideUp(slideProgress * rect.height * 0.2);
+        setCardSlideUp(slideProgress * rect.height * 0.35);
       } else {
         setCardSlideUp(0);
       }
@@ -688,7 +688,7 @@ function LandingPage() {
       <Header variant="dark" />
 
       {/* Hero Section */}
-      <section className="px-4 md:px-6 pt-20 md:pt-32 lg:pt-40 pb-8 md:pb-14" style={{ background: 'linear-gradient(to bottom, #06271D 90%, #ffffff 90%)' }}>
+      <section className="px-4 md:px-6 pt-20 md:pt-32 lg:pt-40 pb-8 md:pb-14" style={{ background: 'linear-gradient(to bottom, #06271D 85%, #ffffff 85%)' }}>
         <div className="max-w-6xl mx-auto text-center">
           <div className="hero-content">
             <h1 className="font-heading text-[2.72rem] sm:text-[3.63rem] md:text-[4.54rem] lg:text-[5.45rem] font-normal text-white mb-4 md:mb-6 min-h-[110px] sm:min-h-[132px] md:min-h-[154px]">
@@ -719,34 +719,63 @@ function LandingPage() {
               </a>
             </div>
           </div>
+        </div>
 
-          {/* Tilted Card */}
-          <div className="mt-2 md:mt-4" style={{ perspective: '1000px' }}>
+          {/* Tilted Cards */}
+          <div className="mt-2 md:mt-4 mx-auto" style={{ perspective: '1000px', maxWidth: '1280px', padding: '0 12px' }}>
             <div
-              className="tilty-card mx-auto"
+              className="tilty-card"
               style={{
                 width: '100%',
-                maxWidth: 'min(1100px, 90vw)',
-                height: 'auto',
+                maxWidth: '1140px',
+                margin: '0 auto',
                 aspectRatio: '1100 / 595',
-                background: '#F9F6F5',
-                borderRadius: '16px',
-                border: '1px solid rgba(0, 0, 0, 0.08)',
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.12)',
+                background: 'rgba(240, 254, 234, 0.15)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                borderRadius: '8px',
+                border: '1px solid rgba(240, 254, 234, 0.3)',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
                 transform: `rotateX(${cardTilt}deg) translateY(-${cardSlideUp}px)`,
                 transformStyle: 'preserve-3d',
                 transition: 'transform 0.3s ease-out',
                 padding: '0',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                position: 'relative'
               }}
             >
+              {/* Inner card scaled to fit - original 1100x595 dimensions */}
+              <div style={{
+                width: '1100px',
+                height: '595px',
+                transform: 'scale(var(--card-scale))',
+                transformOrigin: 'center center',
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                marginTop: '-297.5px',
+                marginLeft: '-550px'
+              }} ref={el => {
+                if (el) {
+                  const parent = el.parentElement;
+                  const padding = 20;
+                  const updateScale = () => {
+                    const scaleX = (parent.offsetWidth - padding * 2) / 1100;
+                    const scaleY = (parent.offsetHeight - padding * 2) / 595;
+                    el.style.setProperty('--card-scale', Math.min(scaleX, scaleY));
+                  };
+                  updateScale();
+                  const observer = new ResizeObserver(updateScale);
+                  observer.observe(parent);
+                }
+              }}>
               <div
                 className={section1Fading ? 'fade-out' : (section1Visible ? 'fade-in' : '')}
                 style={{
                   width: '100%',
                   height: '100%',
                   background: 'linear-gradient(to bottom, #fafbfc, #f5f7fa)',
-                  borderRadius: '16px',
+                  borderRadius: '8px',
                   overflow: 'hidden',
                   display: 'flex',
                   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 20px 40px rgba(0, 0, 0, 0.08)',
@@ -1187,13 +1216,14 @@ function LandingPage() {
                   </div>
                 </div>
               </div>
+              </div>
             </div>
+
           </div>
-        </div>
       </section>
 
       {/* Process Section - Combined heading + cards */}
-      <section className="scroll-section scroll-section-early process-section px-4 md:px-6 pt-12 md:pt-20 lg:pt-24 pb-16 md:pb-24 lg:pb-30 relative" style={{ backgroundColor: '#ffffff' }}>
+      <section className="scroll-section scroll-section-early process-section px-4 md:px-6 pt-2 md:pt-4 lg:pt-6 pb-16 md:pb-24 lg:pb-30 relative" style={{ backgroundColor: '#ffffff' }}>
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
         <div className="max-w-7xl mx-auto relative">
           <div className="mx-auto" style={{ maxWidth: '720px' }}>
