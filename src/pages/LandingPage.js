@@ -41,6 +41,8 @@ function LandingPage() {
   const [selectedDate, setSelectedDate] = useState('');
   const [typedDate, setTypedDate] = useState('');
   const [showCalendar, setShowCalendar] = useState(false);
+  const [headingFill, setHeadingFill] = useState(0);
+  const headingRef = useRef(null);
   const [pricingCardAnimated, setPricingCardAnimated] = useState(false);
   const pricingCardRef = useRef(null);
   const [ctaShinePos, setCtaShinePos] = useState({ x: 0, y: 0, active: false });
@@ -374,11 +376,23 @@ function LandingPage() {
     return () => window.removeEventListener('scroll', handleCtaTiltScroll);
   }, []);
 
+  // Heading color fill on scroll
+  useEffect(() => {
+    const handleHeadingScroll = () => {
+      if (!headingRef.current) return;
+      const rect = headingRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const progress = Math.max(0, Math.min(1, (windowHeight * 0.7 - rect.top) / (windowHeight * 0.4)));
+      setHeadingFill(progress * 100);
+    };
+    window.addEventListener('scroll', handleHeadingScroll);
+    handleHeadingScroll();
+    return () => window.removeEventListener('scroll', handleHeadingScroll);
+  }, []);
+
   // Section1 animation with typing and selection
   useEffect(() => {
-    // Reset animation
-    setSection1Fading(false);
-    setSection1Visible(false);
+    // Reset interactive content
     setTypedCompanyName('');
     setShowCursor(false);
     setSelectedEntity('');
@@ -433,11 +447,19 @@ function LandingPage() {
       }, dateStartTime + index * 60));
     });
 
-    // Fade out (adjusted for longer animation)
-    timers.push(setTimeout(() => setSection1Fading(true), 10000));
+    // Clear interactive content instead of fading entire card
+    timers.push(setTimeout(() => {
+      setTypedCompanyName('');
+      setShowCursor(false);
+      setSelectedEntity('');
+      setTypedEntity('');
+      setSelectedDate('');
+      setTypedDate('');
+      setShowCalendar(false);
+    }, 10000));
 
-    // Restart cycle (adjusted for longer animation)
-    timers.push(setTimeout(() => setSection1AnimationCycle(prev => prev + 1), 11000));
+    // Restart cycle
+    timers.push(setTimeout(() => setSection1AnimationCycle(prev => prev + 1), 10500));
 
     return () => timers.forEach(timer => clearTimeout(timer));
   }, [section1AnimationCycle]);
@@ -729,7 +751,7 @@ function LandingPage() {
                 width: '100%',
                 maxWidth: '1140px',
                 margin: '0 auto',
-                aspectRatio: '1100 / 595',
+                aspectRatio: '1140 / 635',
                 background: 'rgba(240, 254, 234, 0.15)',
                 backdropFilter: 'blur(12px)',
                 WebkitBackdropFilter: 'blur(12px)',
@@ -770,7 +792,7 @@ function LandingPage() {
                 }
               }}>
               <div
-                className={section1Fading ? 'fade-out' : (section1Visible ? 'fade-in' : '')}
+                className={section1Visible ? 'fade-in' : ''}
                 style={{
                   width: '100%',
                   height: '100%',
@@ -827,7 +849,7 @@ function LandingPage() {
                         style={{
                           padding: '10px 12px',
                           borderRadius: '8px',
-                          background: idx === 0 ? '#F9F6F5' : 'transparent',
+                          background: idx === 0 ? '#ECE6E6' : 'transparent',
                           border: idx === 0 ? '1.5px solid #e5e7eb' : 'none',
                           boxShadow: idx === 0 ? '0 2px 4px rgba(0, 0, 0, 0.08)' : 'none',
                           fontSize: '12px',
@@ -1091,7 +1113,7 @@ function LandingPage() {
                 <div style={{
                   flex: '0.8',
                   padding: '32px',
-                  background: '#f5f7fa',
+                  background: '#ffffff',
                   overflow: 'hidden',
                   display: 'flex',
                   flexDirection: 'column'
@@ -1099,7 +1121,7 @@ function LandingPage() {
                   {/* Document Content */}
                   <div className={section1Visible ? 'visible' : 'invisible'} style={{
                     background: '#F9F6F5',
-                    borderRadius: '12px',
+                    borderRadius: '0px',
                     padding: '28px',
                     border: '1px solid #e1e4e8',
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.08)',
@@ -1149,7 +1171,7 @@ function LandingPage() {
                         The undersigned cofounders hereby form <span style={{
                           fontWeight: 600,
                           color: typedCompanyName ? '#0f1419' : '#9ca3af',
-                          background: '#e5e7eb',
+                          background: '#ECE6E6',
                           padding: '2px 6px',
                           borderRadius: '4px'
                         }}>{typedCompanyName || '[Company Name]'}</span>, a company to be organized for the purpose of developing and operating a technology business.
@@ -1178,7 +1200,7 @@ function LandingPage() {
                         The Company shall be organized as a <span style={{
                           fontWeight: 600,
                           color: typedEntity ? '#0f1419' : '#9ca3af',
-                          background: '#e5e7eb',
+                          background: '#ECE6E6',
                           padding: '2px 6px',
                           borderRadius: '4px'
                         }}>{typedEntity || '[Legal Entity]'}</span>, and the cofounders agree to take all necessary steps to effect such organization.
@@ -1207,7 +1229,7 @@ function LandingPage() {
                         This Agreement shall be effective as of <span style={{
                           fontWeight: 600,
                           color: typedDate ? '#0f1419' : '#9ca3af',
-                          background: '#e5e7eb',
+                          background: '#ECE6E6',
                           padding: '2px 6px',
                           borderRadius: '4px'
                         }}>{typedDate || '[Effective Date]'}</span>, and shall remain in effect until terminated in accordance with the terms herein.
@@ -1229,7 +1251,7 @@ function LandingPage() {
           <div className="mx-auto" style={{ maxWidth: '720px' }}>
             {/* Heading */}
             <div className="max-w-6xl mx-auto text-center mb-8 md:mb-10">
-              <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium mb-3 md:mb-4">
+              <h2 className="section-header font-heading text-4xl sm:text-[2.75rem] md:text-[3.3rem] font-medium mb-3 md:mb-4">
                 Built for <span className="underline-animate">early-stage
                   <svg viewBox="0 0 250 12" preserveAspectRatio="none">
                     <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
@@ -1363,7 +1385,7 @@ function LandingPage() {
       {/* Features Section */}
       <section id="features" ref={featuresRef} className="scroll-section py-16 md:py-24 px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium text-center mb-10 md:mb-16 px-2">Turn your cofoundership<br />into a company, <em className="italic" style={{ display: 'inline-block', minWidth: '6ch', textAlign: 'left', letterSpacing: '-0.02em' }}>{typedToday || '\u00A0'}</em></h2>
+          <h2 className="section-header font-heading text-4xl sm:text-[2.75rem] md:text-[3.3rem] font-medium text-center mb-10 md:mb-16 px-2">Turn your cofoundership<br />into a company, <em className="italic" style={{ display: 'inline-block', minWidth: '6ch', textAlign: 'left', letterSpacing: '-0.02em' }}>{typedToday || '\u00A0'}</em></h2>
 
           <div className="features-container">
             <div className="features-left">
@@ -2363,7 +2385,7 @@ function LandingPage() {
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
         <div className="max-w-6xl mx-auto relative">
-          <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium text-center mb-3 md:mb-4">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+          <h2 className="section-header font-heading text-4xl sm:text-[2.75rem] md:text-[3.3rem] font-medium text-center mb-3 md:mb-4">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
           <p className="text-center text-sm md:text-base mb-12 md:mb-16 font-normal px-4" style={{ color: '#716B6B' }}>
             Choose the plan that's right for your team.{' '}
             <a href="/pricing" className="underline hover:text-black transition-colors" style={{ color: '#9CA3AF' }}>
@@ -2452,7 +2474,7 @@ function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row gap-8 md:gap-20 lg:gap-80 items-start md:justify-center md:ml-32">
             <div className="flex-shrink-0 w-full md:w-auto text-center md:text-left">
-              <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium">FAQs<span style={{ marginLeft: '0.05em', color: '#000000' }}>.</span></h2>
+              <h2 className="section-header font-heading text-4xl sm:text-[2.75rem] md:text-[3.3rem] font-medium">FAQs<span style={{ marginLeft: '0.05em', color: '#000000' }}>.</span></h2>
             </div>
             <div className="flex-1 max-w-[700px] w-full">
               {faqs.map((faq, i) => (
