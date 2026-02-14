@@ -43,6 +43,7 @@ function LandingPage() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [headingFill, setHeadingFill] = useState(0);
   const headingRef = useRef(null);
+  const [productsHovered, setProductsHovered] = useState(false);
   const [pricingCardAnimated, setPricingCardAnimated] = useState(false);
   const pricingCardRef = useRef(null);
   const [ctaShinePos, setCtaShinePos] = useState({ x: 0, y: 0, active: false });
@@ -707,18 +708,24 @@ function LandingPage() {
 
   return (
     <div className="landing-page min-h-screen bg-white flex flex-col">
-      <Header variant="dark" />
+      <Header variant="dark" onProductsHover={setProductsHovered} />
 
       {/* Hero Section */}
       <section className="px-4 md:px-6 pt-20 md:pt-32 lg:pt-40 pb-8 md:pb-14" style={{ background: 'linear-gradient(to bottom, #06271D 85%, #ffffff 85%)' }}>
         <div className="max-w-6xl mx-auto text-center">
           <div className="hero-content">
-            <h1 className="font-heading text-[2.72rem] sm:text-[3.63rem] md:text-[4.54rem] lg:text-[5.45rem] font-normal text-white mb-4 md:mb-6 min-h-[110px] sm:min-h-[132px] md:min-h-[154px]">
+            <h1 className="font-heading text-[2.72rem] sm:text-[3.63rem] md:text-[4.54rem] lg:text-[5.45rem] font-normal text-white mb-4 md:mb-6 min-h-[110px] sm:min-h-[132px] md:min-h-[154px]" style={{
+              filter: productsHovered ? 'blur(1.5px)' : 'none',
+              transition: 'filter 0.3s ease'
+            }}>
               Great companies start
               <br />
               <em className="italic">{typedText || '\u00A0'}</em>
             </h1>
-            <p className="text-sm md:text-base mb-8 md:mb-16 max-w-2xl mx-auto font-normal px-4 text-white">
+            <p className="text-sm md:text-base mb-8 md:mb-16 max-w-2xl mx-auto font-normal px-4 text-white" style={{
+              filter: productsHovered ? 'blur(1.5px)' : 'none',
+              transition: 'filter 0.3s ease'
+            }}>
               Answer guided questions with your cofounders and get a complete<br className="hidden sm:block" /> Cofounder Agreement. No sketchy templates, no overpriced lawyers.
             </p>
             <div className="flex flex-row items-center justify-center gap-4 mb-8 md:mb-12">
@@ -1295,7 +1302,7 @@ function LandingPage() {
                             <div className="step1-input h-8 bg-white border border-gray-200 rounded px-2 flex items-center" style={{ minWidth: '160px', flex: '1 1 160px' }}>
                               <span className="step1-email text-sm text-gray-400" style={{ minWidth: '140px' }}>cofounder@email.com</span>
                             </div>
-                            <div className="step1-btn h-8 px-3 text-gray-600 text-xs rounded flex items-center transition-colors whitespace-nowrap" style={{ backgroundColor: '#F0E8E7' }}>Add</div>
+                            <div className="step1-btn h-8 px-3 text-gray-600 text-xs rounded flex items-center transition-colors whitespace-nowrap" style={{ backgroundColor: '#e9e6e7' }}>Add</div>
                           </div>
                           <div className="space-y-2">
                             <div className="text-sm text-gray-500">you@email.com</div>
@@ -1406,7 +1413,7 @@ function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" ref={featuresRef} className="scroll-section py-16 md:py-24 px-4 md:px-6" style={{ backgroundColor: '#faf6f5' }}>
+      <section id="features" ref={featuresRef} className="scroll-section py-16 md:py-24 px-4 md:px-6" style={{ backgroundColor: '#ffffff' }}>
         <div className="max-w-6xl mx-auto">
           <h2 className="section-header font-heading text-4xl sm:text-[2.75rem] md:text-[3.3rem] font-medium text-center mb-10 md:mb-16 px-2">Turn your cofoundership<br />into a company, <em className="italic" style={{ display: 'inline-block', minWidth: '6ch', textAlign: 'left', letterSpacing: '-0.02em' }}>{typedToday || '\u00A0'}</em></h2>
 
@@ -1422,15 +1429,15 @@ function LandingPage() {
                   <p className={`feature-description ${activeFeature === i ? 'active' : ''}`}>
                     {i === 0 ? (
                       <>
-                        Generate a <span style={{ backgroundColor: '#F0E8E7', color: '#000000', padding: '2px 6px', borderRadius: '4px' }}>ready-to-use, fully customized</span> document in minutes and start building your partnership with confidence.
+                        Generate a <span style={{ backgroundColor: '#f0f0f0', color: '#000000', padding: '2px 6px', borderRadius: '4px' }}>ready-to-use, fully customized</span> document in minutes and start building your partnership with confidence.
                       </>
                     ) : i === 1 ? (
                       <>
-                        Use our <span style={{ backgroundColor: '#F0E8E7', color: '#000000', padding: '2px 6px', borderRadius: '4px' }}>proprietary equity calculator</span> to determine ownership. Instant, precise splits so everyone knows their stake.
+                        Use our <span style={{ backgroundColor: '#f0f0f0', color: '#000000', padding: '2px 6px', borderRadius: '4px' }}>proprietary equity calculator</span> to determine ownership. Instant, precise splits so everyone knows their stake.
                       </>
                     ) : i === 2 ? (
                       <>
-                        Cofounder coaches and attorneys ready to help. We are here to guide you <span style={{ backgroundColor: '#F0E8E7', color: '#000000', padding: '2px 6px', borderRadius: '4px' }}>every step of the way</span>.
+                        Cofounder coaches and attorneys ready to help. We are here to guide you <span style={{ backgroundColor: '#f0f0f0', color: '#000000', padding: '2px 6px', borderRadius: '4px' }}>every step of the way</span>.
                       </>
                     ) : (
                       feature.description
@@ -1943,7 +1950,7 @@ function LandingPage() {
                 >
                   <path
                     d="M 0 0 Q 20 0, 20 109 Q 20 218, 40 218 Q 20 218, 20 327 Q 20 436, 0 436"
-                    stroke="#e5e7eb"
+                    stroke="rgba(255,255,255,0.3)"
                     strokeWidth="2"
                     fill="none"
                   />
@@ -2751,9 +2758,7 @@ function LandingPage() {
         }
 
         .feature-visual {
-          background: rgba(240, 232, 231, 0.6);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
+          background: #06271D;
           border-radius: 8px;
           box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
           overflow: hidden;
@@ -2761,7 +2766,7 @@ function LandingPage() {
           justify-content: center;
           position: relative;
           padding: 16px 32px;
-          border: 12px solid rgba(240, 232, 231, 0.4);
+          border: 12px solid #06271D;
           height: calc(160px*3 + 24px);
           display: flex;
         }
