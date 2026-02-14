@@ -28,6 +28,10 @@ function LandingPage() {
   const [expertGuidanceFading, setExpertGuidanceFading] = useState(false);
   const [expertGuidanceAnimationCycle, setExpertGuidanceAnimationCycle] = useState(0);
   const [featuresInView, setFeaturesInView] = useState(false);
+  const [cardDocVisible, setCardDocVisible] = useState(false);
+  const [cardEquityVisible, setCardEquityVisible] = useState(false);
+  const cardDocRef = useRef(null);
+  const cardEquityRef = useRef(null);
   const featuresRef = useRef(null);
   const [typedAnd, setTypedAnd] = useState('');
   const [typedToday, setTypedToday] = useState('');
@@ -497,6 +501,36 @@ function LandingPage() {
     const earlySections = document.querySelectorAll('.scroll-section-early');
     earlySections.forEach(section => earlyObserver.observe(section));
 
+    // Observe card doc animation (looping)
+    let cardDocLoopTimer;
+    const cardDocObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const runLoop = () => {
+            setCardDocVisible(true);
+            cardDocLoopTimer = setTimeout(() => {
+              setCardDocVisible(false);
+              cardDocLoopTimer = setTimeout(runLoop, 500);
+            }, 4000);
+          };
+          runLoop();
+          cardDocObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    if (cardDocRef.current) cardDocObserver.observe(cardDocRef.current);
+
+    // Observe card equity animation
+    const cardEquityObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setCardEquityVisible(true);
+          cardEquityObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    if (cardEquityRef.current) cardEquityObserver.observe(cardEquityRef.current);
+
     // Observe underline animation
     const underlineObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -714,7 +748,7 @@ function LandingPage() {
       <section className="px-4 md:px-6 pt-20 md:pt-32 lg:pt-40 pb-8 md:pb-14" style={{ background: 'linear-gradient(to bottom, #06271D 85%, #ffffff 85%)' }}>
         <div className="max-w-6xl mx-auto text-center">
           <div className="hero-content">
-            <h1 className="font-heading text-[2.72rem] sm:text-[3.63rem] md:text-[4.54rem] lg:text-[5.45rem] font-normal text-white mb-4 md:mb-6 min-h-[110px] sm:min-h-[132px] md:min-h-[154px]" style={{
+            <h1 className="font-heading text-[3rem] sm:text-[4rem] md:text-[5rem] lg:text-[6rem] font-normal text-white mb-4 md:mb-6 min-h-[110px] sm:min-h-[132px] md:min-h-[154px]" style={{
               filter: productsHovered ? 'blur(1.5px)' : 'none',
               transition: 'filter 0.3s ease'
             }}>
@@ -1258,7 +1292,7 @@ function LandingPage() {
           <div className="mx-auto" style={{ maxWidth: '720px' }}>
             {/* Heading */}
             <div className="max-w-6xl mx-auto text-center mb-8 md:mb-10">
-              <h2 className="section-header font-heading text-4xl sm:text-[2.75rem] md:text-[3.3rem] font-medium mb-3 md:mb-4">
+              <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium mb-3 md:mb-4">
                 Built for <span className="underline-animate">early-stage
                   <svg viewBox="0 0 250 12" preserveAspectRatio="none">
                     <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
@@ -1415,8 +1449,139 @@ function LandingPage() {
       {/* Features Section */}
       <section id="features" ref={featuresRef} className="scroll-section py-16 md:py-24 px-4 md:px-6" style={{ backgroundColor: '#ffffff' }}>
         <div className="max-w-6xl mx-auto">
-          <h2 className="section-header font-heading text-4xl sm:text-[2.75rem] md:text-[3.3rem] font-medium text-center mb-10 md:mb-16 px-2">Turn your cofoundership<br />into a company, <em className="italic" style={{ display: 'inline-block', minWidth: '6ch', textAlign: 'left', letterSpacing: '-0.02em' }}>{typedToday || '\u00A0'}</em></h2>
+          <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-center mb-14 md:mb-20 px-2">Turn your cofoundership<br />into a company, <em className="italic" style={{ display: 'inline-block', minWidth: '6ch', textAlign: 'left', letterSpacing: '-0.02em' }}>{typedToday || '\u00A0'}</em></h2>
 
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '96px', maxWidth: '80rem', margin: '0 auto 48px auto', padding: '0 24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '48px', alignSelf: 'flex-start', width: '100%' }}>
+            <div style={{ background: 'linear-gradient(135deg, #06271D 0%, #155845 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
+              {/* Mini animation preview */}
+              <div ref={cardDocRef} style={{ backgroundColor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', width: '100%', aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
+                <div
+                  style={{ width: '65%', height: '85%', backgroundColor: '#ffffff', borderRadius: '0px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '24px' }}
+                >
+                  <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590', marginBottom: '20px' }}>Cofounder Agreement</span>
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 8px' }}>
+                    {[
+                      { width: '100%', delay: 0.3 }, { width: '100%', delay: 0.45 }, { width: '100%', delay: 0.6 }, { width: '50%', delay: 0.75 },
+                      { width: '100%', delay: 0.9, mt: true }, { width: '100%', delay: 1.05 }, { width: '100%', delay: 1.2 }, { width: '65%', delay: 1.35 },
+                      { width: '100%', delay: 1.5, mt: true }, { width: '100%', delay: 1.65 }, { width: '100%', delay: 1.8 }, { width: '40%', delay: 1.95 }
+                    ].map((line, i) => (
+                      <div
+                        key={i}
+                        className={`text-line ${cardDocVisible ? 'text-line-visible' : ''}`}
+                        style={{ width: line.width, '--line-delay': `${line.delay}s`, marginTop: line.mt ? '12px' : '0' }}
+                      />
+                    ))}
+                  </div>
+                  <div style={{ width: '100%', marginTop: 'auto', padding: '0 8px' }}>
+                    <svg style={{ width: '140px', height: '50px', '--sig-delay': '2.2s' }} viewBox="0 0 140 50" fill="none">
+                      <path
+                        className={`signature-path ${cardDocVisible ? 'signature-draw' : ''}`}
+                        d="M 5 35 C 10 20, 15 15, 20 25 C 25 35, 30 40, 35 30 C 40 20, 42 15, 48 20 C 54 25, 56 35, 62 28 C 68 21, 70 18, 78 22 C 86 26, 88 32, 95 25 C 102 18, 105 15, 112 20 C 119 25, 122 30, 130 22 L 135 18"
+                        stroke="#7c8590"
+                        strokeWidth="2"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    <div style={{ width: '140px', height: '1px', backgroundColor: '#e5e7eb', marginTop: '2px' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+              <div style={{ maxWidth: '580px', marginLeft: 'auto' }}>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 400, marginBottom: '12px', color: '#000000' }}>Contract Creator</h3>
+                <p style={{ fontSize: '1.1rem', color: '#444', lineHeight: 1.6 }}>Generate a ready-to-use, fully customized document in minutes<br />and start building your partnership with confidence.</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', gap: '48px', alignSelf: 'flex-end', width: '100%' }}>
+              <div style={{ background: 'linear-gradient(135deg, #06271D 0%, #155845 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
+                <div ref={cardEquityRef} style={{ backgroundColor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', width: '100%', aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
+                  <div style={{ transform: 'scale(0.7)', transformOrigin: 'center center', position: 'absolute', display: 'flex', flexDirection: 'row', gap: '24px' }}>
+                    {/* Score Table */}
+                    <div className={`equity-table ${cardEquityVisible ? 'equity-table-visible' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '100px 50px 50px 50px', gap: '8px', padding: '8px 12px', backgroundColor: '#f7f7f7', borderRadius: '6px 6px 0 0' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#666' }}>Category</span>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SJ</span>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SW</span>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>RW</span>
+                      </div>
+                      {[
+                        { category: 'Cash Invested', scores: [6, 6, 4], delays: [0.2, 0.35, 0.1] },
+                        { category: 'Time Commit', scores: [10, 8, 4], delays: [0.4, 0.25, 0.5] },
+                        { category: 'Leadership', scores: [8, 10, 2], delays: [0.55, 0.7, 0.45] },
+                        { category: 'Engineering', scores: [4, 8, 4], delays: [0.65, 0.8, 0.6] },
+                        { category: 'Sales', scores: [8, 4, 2], delays: [0.75, 0.9, 0.85] },
+                        { category: 'Domain', scores: [6, 8, 6], delays: [1.0, 0.95, 1.1] },
+                        { category: 'Network', scores: [8, 6, 4], delays: [1.15, 1.25, 1.05] },
+                        { category: 'Idea Origin', scores: [10, 10, 4], delays: [1.3, 1.2, 1.35] }
+                      ].map((row, i) => (
+                        <div key={i} style={{ display: 'grid', gridTemplateColumns: '100px 50px 50px 50px', gap: '8px', padding: '8px 12px', backgroundColor: i % 2 === 0 ? '#fff' : '#fafafa', borderLeft: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb' }}>
+                          <span style={{ fontSize: '11px', color: '#666' }}>{row.category}</span>
+                          {row.scores.map((score, j) => (
+                            <span key={j} className={`equity-number ${cardEquityVisible ? 'equity-fade-in' : ''}`} style={{ fontSize: '11px', fontWeight: 500, color: '#999', textAlign: 'center', '--fade-delay': `${row.delays[j] + 0.3}s` }}>{score}</span>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Pie Chart */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ position: 'relative', width: '180px', height: '180px' }}>
+                        <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+                          <circle className={`pie-segment ${cardEquityVisible ? 'pie-segment-animate' : ''}`} cx="50" cy="50" r="35" fill="none" stroke="#cccccc" strokeWidth="13" strokeDasharray="98.96 120.95" strokeDashoffset="0" style={{ '--segment-delay': '1.62s', '--segment-length': '98.96' }} />
+                          <circle className={`pie-segment ${cardEquityVisible ? 'pie-segment-animate' : ''}`} cx="50" cy="50" r="35" fill="none" stroke="#cccccc" strokeWidth="13" strokeDasharray="98.96 120.95" strokeDashoffset="-98.96" style={{ '--segment-delay': '1.89s', '--segment-length': '98.96' }} />
+                          <circle className={`pie-segment ${cardEquityVisible ? 'pie-segment-animate' : ''}`} cx="50" cy="50" r="35" fill="none" stroke="#cccccc" strokeWidth="13" strokeDasharray="21.99 197.92" strokeDashoffset="-197.92" style={{ '--segment-delay': '2.16s', '--segment-length': '21.99' }} />
+                          <circle className={`pie-segment ${cardEquityVisible ? 'pie-segment-animate' : ''}`} cx="50" cy="50" r="35" fill="none" stroke="#d0d0d0" strokeWidth="12" strokeDasharray="98.96 120.95" strokeDashoffset="0" style={{ '--segment-delay': '1.62s', '--segment-length': '98.96' }} />
+                          <circle className={`pie-segment ${cardEquityVisible ? 'pie-segment-animate' : ''}`} cx="50" cy="50" r="35" fill="none" stroke="#f0f0f0" strokeWidth="12" strokeDasharray="98.96 120.95" strokeDashoffset="-98.96" style={{ '--segment-delay': '1.89s', '--segment-length': '98.96' }} />
+                          <circle className={`pie-segment ${cardEquityVisible ? 'pie-segment-animate' : ''}`} cx="50" cy="50" r="35" fill="none" stroke="#ffffff" strokeWidth="12" strokeDasharray="21.99 197.92" strokeDashoffset="-197.92" style={{ '--segment-delay': '2.16s', '--segment-length': '21.99' }} />
+                        </svg>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {[
+                          { name: 'Steve J.', percent: '45%', color: '#d0d0d0', border: false, delay: '2.43s' },
+                          { name: 'Steve W.', percent: '45%', color: '#f0f0f0', border: false, delay: '2.52s' },
+                          { name: 'Ron W.', percent: '10%', color: '#ffffff', border: true, delay: '2.61s' }
+                        ].map((item, i) => (
+                          <div key={i} className={`equity-legend-item ${cardEquityVisible ? 'equity-fade-in' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', '--fade-delay': item.delay }}>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: item.color, border: item.border ? '1px solid #ccc' : 'none' }} />
+                            <span style={{ fontSize: '11px', color: '#666' }}>{item.name}</span>
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#888' }}>{item.percent}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style={{ maxWidth: '580px', marginLeft: 'auto' }}>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 400, marginBottom: '12px', color: '#000000' }}>Equity Calculator</h3>
+                <p style={{ fontSize: '1.1rem', color: '#444', lineHeight: 1.6 }}>Use our proprietary equity calculator to determine ownership. Instant, precise splits so everyone knows their stake.</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '48px', alignSelf: 'flex-start', width: '100%' }}>
+              <div style={{ background: 'linear-gradient(135deg, #06271D 0%, #155845 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
+                <div style={{ backgroundColor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', width: '100%', aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                </div>
+              </div>
+              <div style={{ maxWidth: '580px', marginLeft: 'auto' }}>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 400, marginBottom: '12px', color: '#000000' }}>Expert Guidance</h3>
+                <p style={{ fontSize: '1.1rem', color: '#444', lineHeight: 1.6 }}>Cofounder coaches and attorneys ready to help. We are here to guide you every step of the way.</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', gap: '48px', alignSelf: 'flex-end', width: '100%' }}>
+              <div style={{ background: 'linear-gradient(135deg, #06271D 0%, #155845 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
+                <div style={{ backgroundColor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', width: '100%', aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                </div>
+              </div>
+              <div style={{ maxWidth: '580px', marginLeft: 'auto' }}>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 400, marginBottom: '12px', color: '#000000' }}>Card Title</h3>
+                <p style={{ fontSize: '1.1rem', color: '#444', lineHeight: 1.6 }}>Card description goes here.</p>
+              </div>
+            </div>
+          </div>
+          <div className="max-w-6xl mx-auto">
           <div className="features-container">
             <div className="features-left">
               {features.map((feature, i) => (
@@ -2411,14 +2576,14 @@ function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="scroll-section py-16 md:py-24 px-4 md:px-6 relative" style={{ backgroundColor: '#E8F6E2' }}>
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#E8F6E2] to-transparent pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#E8F6E2] to-transparent pointer-events-none"></div>
+      <section id="pricing" className="scroll-section py-24 md:py-36 px-4 md:px-6 relative" style={{ backgroundColor: '#06271D' }}>
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#06271D] to-transparent pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#06271D] to-transparent pointer-events-none"></div>
         <div className="max-w-6xl mx-auto relative">
-          <h2 className="section-header font-heading text-4xl sm:text-[2.75rem] md:text-[3.3rem] font-medium text-center mb-3 md:mb-4">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
-          <p className="text-center text-sm md:text-base mb-12 md:mb-16 font-normal px-4" style={{ color: '#716B6B' }}>
+          <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-center mb-3 md:mb-4 text-white">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+          <p className="text-center text-sm md:text-base mb-12 md:mb-16 font-normal px-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
             Choose the plan that's right for your team.{' '}
-            <a href="/pricing" className="underline hover:text-black transition-colors" style={{ color: '#9CA3AF' }}>
+            <a href="/pricing" className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>
               Compare plans.
             </a>
           </p>
@@ -2433,9 +2598,15 @@ function LandingPage() {
                     ? pricingCardAnimated ? 'pricing-card-bounce-in' : ''
                     : ''
                 }`}
-                style={plan.featured && !pricingCardAnimated ? {
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
-                } : {}}
+                style={{
+                  ...(plan.featured ? {
+                    transition: 'transform 0.5s ease-out, box-shadow 0.5s ease-out',
+                    transform: pricingCardAnimated ? 'translateY(-10px) scale(1.05)' : 'translateY(0) scale(1)',
+                    boxShadow: pricingCardAnimated
+                      ? '0 20px 40px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1)'
+                      : '0 2px 8px rgba(0, 0, 0, 0.06)'
+                  } : {})
+                }}
               >
                 <h3 className="text-lg md:text-xl font-normal mb-2 text-[#716B6B]">{plan.name}</h3>
                 <div className="text-3xl md:text-4xl font-bold mb-2">{plan.price}</div>
@@ -2482,7 +2653,9 @@ function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row gap-8 md:gap-20 lg:gap-80 items-start md:justify-center md:ml-32">
             <div className="flex-shrink-0 w-full md:w-auto text-center md:text-left">
-              <h2 className="section-header font-heading text-4xl sm:text-[2.75rem] md:text-[3.3rem] font-medium">FAQs<span style={{ marginLeft: '0.05em', color: '#000000' }}>.</span></h2>
+              <div style={{ backgroundColor: '#8B0000', borderRadius: '12px', padding: '16px 24px', display: 'inline-block' }}>
+                <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-white">FAQs<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+              </div>
             </div>
             <div className="flex-1 max-w-[700px] w-full">
               {faqs.map((faq, i) => (
@@ -2512,11 +2685,8 @@ function LandingPage() {
       <section className="scroll-section-full py-16 md:py-24 px-4 md:px-6 bg-white">
         <div
           ref={ctaCardRef}
-          className="max-w-6xl mx-auto bg-[#1a1a1a] rounded-xl md:rounded-2xl py-[3.63rem] sm:py-[4.84rem] md:py-[9.2rem] px-4 sm:px-6 md:px-12 relative overflow-hidden"
+          className="max-w-6xl mx-auto bg-[#1A1520] rounded-xl md:rounded-2xl py-[3.63rem] sm:py-[4.84rem] md:py-[9.2rem] px-4 sm:px-6 md:px-12 relative overflow-hidden"
           style={{
-            backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 2.4px, transparent 2.4px), radial-gradient(rgba(255,255,255,0.04) 2.4px, transparent 2.4px)',
-            backgroundSize: '15px 15px',
-            backgroundPosition: '0 0, 7.5px 7.5px',
             transform: `perspective(1000px) rotateX(${ctaCardTilt}deg)`,
             transformOrigin: 'center bottom',
             transition: 'transform 0.1s ease-out'
@@ -2528,7 +2698,7 @@ function LandingPage() {
           }}
           onMouseLeave={() => setCtaShinePos(prev => ({ ...prev, active: false }))}
         >
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 60%)' }}></div>
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.04) 0%, transparent 60%)' }}></div>
           <div
             className="absolute pointer-events-none transition-opacity duration-500"
             style={{
@@ -2536,7 +2706,7 @@ function LandingPage() {
               top: ctaShinePos.y - 250,
               width: 500,
               height: 500,
-              background: 'radial-gradient(ellipse, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.02) 50%, transparent 80%)',
+              background: 'radial-gradient(ellipse, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 30%, rgba(255,255,255,0.01) 50%, transparent 80%)',
               filter: 'blur(20px)',
               opacity: ctaShinePos.active ? 1 : 0
             }}
@@ -2552,7 +2722,7 @@ function LandingPage() {
             </h1>
           </div>
           <div className="max-w-4xl mx-auto text-center mt-12 md:mt-16">
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-row items-center justify-center gap-4">
               <button
                 onClick={() => {
                   // Navigate directly to app domain to avoid double redirect
@@ -2563,13 +2733,13 @@ function LandingPage() {
                     navigate('/dashboard', { replace: true });
                   }
                 }}
-                className="button-shimmer-dark bg-white text-[#1a1a1a] px-8 md:px-16 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-gray-100 transition"
+                className="button-shimmer-dark bg-white text-[#06271D] px-6 md:px-10 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-gray-100 transition"
               >
                 Get started
               </button>
-              <p className="text-xs md:text-sm text-gray-300">
-                or <a href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer" className="text-white underline hover:text-gray-200 font-semibold">Book a Free Consultation</a>
-              </p>
+              <a href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer" className="group text-white hover:text-gray-200 text-sm md:text-base font-normal transition">
+                Book a demo <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+              </a>
             </div>
           </div>
         </div>
