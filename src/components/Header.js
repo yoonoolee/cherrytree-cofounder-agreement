@@ -1,13 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 
-function Header() {
+function Header({ variant = 'light' }) {
+  const isDark = variant === 'dark';
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser: user, loading } = useUser();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      setHidden(currentScrollY > lastScrollY.current && currentScrollY > 10);
+      lastScrollY.current = currentScrollY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleNavigation = (path) => {
     setMobileMenuOpen(false);
@@ -35,20 +48,20 @@ function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white z-50">
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-200 ${hidden ? '-translate-y-full' : 'translate-y-0'} ${isDark ? 'bg-[#06271D]' : 'bg-white'}`}>
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between px-3 py-4">
           <div className="cursor-pointer" onClick={() => navigate('/')}>
             <img
               src="/images/cherrytree-logo.png"
               alt="Cherrytree"
-              style={{ height: '32px', width: 'auto' }}
+              style={{ height: '32px', width: 'auto', ...(isDark ? { filter: 'brightness(0) invert(1)' } : {}) }}
             />
           </div>
 
           <nav className="hidden md:flex items-center gap-6 absolute left-1/2 transform -translate-x-1/2 text-sm">
             <div className="relative" onMouseEnter={() => setProductsOpen(true)} onMouseLeave={() => setProductsOpen(false)}>
-              <button className="flex items-center gap-1 text-[#808080] hover:text-black transition">
+              <button className={`flex items-center gap-1 ${isDark ? 'text-white hover:text-gray-200' : 'text-[#808080] hover:text-black'} transition`}>
                 Products
                 <svg className={`w-3 h-3 transition-transform ${productsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -96,8 +109,8 @@ function Header() {
                 </div>
               )}
             </div>
-            <button onClick={() => navigate('/pricing')} className={`${location.pathname === '/pricing' ? 'text-black' : 'text-[#808080]'} hover:text-black transition nav-link-underline`}>Pricing</button>
-            <button onClick={() => navigate('/about')} className={`${location.pathname === '/about' ? 'text-black' : 'text-[#808080]'} hover:text-black transition nav-link-underline`}>About</button>
+            <button onClick={() => navigate('/pricing')} className={`${isDark ? 'text-white hover:text-gray-200' : location.pathname === '/pricing' ? 'text-black' : 'text-[#808080] hover:text-black'} transition nav-link-underline`}>Pricing</button>
+            <button onClick={() => navigate('/about')} className={`${isDark ? 'text-white hover:text-gray-200' : location.pathname === '/about' ? 'text-black' : 'text-[#808080] hover:text-black'} transition nav-link-underline`}>About</button>
           </nav>
 
           <div className="hidden md:flex items-center gap-4 text-sm">
@@ -112,7 +125,7 @@ function Header() {
                     navigate('/dashboard', { replace: true });
                   }
                 }}
-                className="text-[#808080] hover:text-black transition nav-link-underline"
+                className={`${isDark ? 'text-white hover:text-gray-200' : 'text-[#808080] hover:text-black'} transition nav-link-underline`}
               >
                 Dashboard
               </button>
@@ -127,7 +140,7 @@ function Header() {
                     navigate('/login');
                   }
                 }}
-                className="text-[#808080] hover:text-black transition nav-link-underline"
+                className={`${isDark ? 'text-white hover:text-gray-200' : 'text-[#808080] hover:text-black'} transition nav-link-underline`}
               >
                 Login
               </button>
@@ -142,7 +155,7 @@ function Header() {
                   navigate('/dashboard', { replace: true });
                 }
               }}
-              className="button-shimmer bg-[#000000] text-white px-5 py-2.5 rounded hover:bg-[#1a1a1a] transition"
+              className={`${isDark ? 'button-shimmer-dark bg-white text-[#06271D] hover:bg-gray-100' : 'button-shimmer bg-[#000000] text-white hover:bg-[#1a1a1a]'} px-5 py-2.5 rounded transition`}
             >
               Get started
             </button>
@@ -151,7 +164,7 @@ function Header() {
           {/* Mobile hamburger menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden flex items-center justify-center w-10 h-10 text-gray-700 hover:text-black transition"
+            className={`md:hidden flex items-center justify-center w-10 h-10 ${isDark ? 'text-white hover:text-gray-200' : 'text-gray-700 hover:text-black'} transition`}
             aria-label="Toggle mobile menu"
           >
             <svg
