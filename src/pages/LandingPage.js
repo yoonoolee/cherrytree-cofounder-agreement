@@ -16,6 +16,7 @@ function LandingPage() {
   const [openFaq, setOpenFaq] = useState(null);
   const [typedText, setTypedText] = useState('');
   const [cardTilt, setCardTilt] = useState(15);
+  const [cardSlideUp, setCardSlideUp] = useState(0);
   const [activeFeature, setActiveFeature] = useState(0);
   const [contractCardsVisible, setContractCardsVisible] = useState(false);
   const [contractCardsFading, setContractCardsFading] = useState(false);
@@ -334,6 +335,15 @@ function LandingPage() {
       // Interpolate tilt from 15deg to 0deg based on scroll progress
       const tiltValue = 15 * (1 - scrollProgress);
       setCardTilt(tiltValue);
+
+      // Slide card up when scrolled past it
+      const pastCard = rect.bottom < windowHeight * 0.85;
+      if (pastCard) {
+        const slideProgress = Math.min(1, (windowHeight * 0.85 - rect.bottom) / (windowHeight * 0.5));
+        setCardSlideUp(slideProgress * rect.height * 0.2);
+      } else {
+        setCardSlideUp(0);
+      }
     };
 
     window.addEventListener('scroll', handleTiltScroll);
@@ -568,8 +578,46 @@ function LandingPage() {
     { src: '/images/startupgrind-logo.png', alt: 'Startup Grind', scale: 1 }
   ];
 
+  const [heroLogos] = useState([...allLogos]);
+  const [heroFading, setHeroFading] = useState(false);
+  const [heroDelayOrder, setHeroDelayOrder] = useState(() => {
+    const order = allLogos.map((_, i) => i);
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    return order;
+  });
+
   const [logos, setLogos] = useState([...allLogos]);
   const [isFading, setIsFading] = useState(false);
+  const [logoDelayOrder, setLogoDelayOrder] = useState(() => {
+    const order = allLogos.map((_, i) => i);
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    return order;
+  });
+
+  // Hero logo fade cycle
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHeroFading(true);
+      setTimeout(() => {
+        setHeroDelayOrder(prev => {
+          const order = [...prev];
+          for (let i = order.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [order[i], order[j]] = [order[j], order[i]];
+          }
+          return order;
+        });
+        setTimeout(() => setHeroFading(false), 200);
+      }, 500);
+    }, 5700);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -585,11 +633,21 @@ function LandingPage() {
           return shuffled;
         });
 
+        // Reshuffle delay order
+        setLogoDelayOrder(prev => {
+          const order = [...prev];
+          for (let i = order.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [order[i], order[j]] = [order[j], order[i]];
+          }
+          return order;
+        });
+
         setTimeout(() => {
           setIsFading(false);
         }, 200);
       }, 500);
-    }, 8000);
+    }, 5700);
 
     return () => clearInterval(interval);
   }, []);
@@ -627,21 +685,21 @@ function LandingPage() {
 
   return (
     <div className="landing-page min-h-screen bg-white flex flex-col">
-      <Header />
+      <Header variant="dark" />
 
       {/* Hero Section */}
-      <section className="px-4 md:px-6 pt-20 md:pt-32 lg:pt-40 pb-8 md:pb-14">
+      <section className="px-4 md:px-6 pt-20 md:pt-32 lg:pt-40 pb-8 md:pb-14" style={{ background: 'linear-gradient(to bottom, #06271D 90%, #ffffff 90%)' }}>
         <div className="max-w-6xl mx-auto text-center">
           <div className="hero-content">
-            <h1 className="font-heading text-[2.475rem] sm:text-[3.3rem] md:text-[4.125rem] lg:text-[4.95rem] font-normal text-gray-900 mb-4 md:mb-6 min-h-[110px] sm:min-h-[132px] md:min-h-[154px]">
+            <h1 className="font-heading text-[2.72rem] sm:text-[3.63rem] md:text-[4.54rem] lg:text-[5.45rem] font-normal text-white mb-4 md:mb-6 min-h-[110px] sm:min-h-[132px] md:min-h-[154px]">
               Great companies start
               <br />
               <em className="italic">{typedText || '\u00A0'}</em>
             </h1>
-            <p className="text-sm md:text-base mb-8 md:mb-16 max-w-2xl mx-auto font-normal px-4" style={{ color: '#716B6B' }}>
+            <p className="text-sm md:text-base mb-8 md:mb-16 max-w-2xl mx-auto font-normal px-4 text-white">
               Answer guided questions with your cofounders and get a complete<br className="hidden sm:block" /> Cofounder Agreement. No sketchy templates, no overpriced lawyers.
             </p>
-            <div className="flex flex-col items-center gap-3 mb-8 md:mb-12">
+            <div className="flex flex-row items-center justify-center gap-4 mb-8 md:mb-12">
               <button
                 onClick={() => {
                   // Navigate directly to app domain to avoid double redirect
@@ -652,40 +710,18 @@ function LandingPage() {
                     navigate('/dashboard', { replace: true });
                   }
                 }}
-                className="button-shimmer bg-[#000000] text-white px-8 md:px-16 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-[#1a1a1a] transition"
+                className="button-shimmer-dark bg-white text-[#06271D] px-6 md:px-10 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-gray-100 transition"
               >
                 Get started
               </button>
-              <p className="text-xs md:text-sm text-gray-600">
-                or <a href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer" className="text-black underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
-              </p>
-            </div>
-          </div>
-
-          {/* Logo Carousel */}
-          <div className="logo-scroller">
-            <div className="logo-track">
-              <div className="logo-box"><img src="/images/yc-logo.png" alt="Y Combinator" /></div>
-              <div className="logo-box"><img src="/images/hubble-logo.png" alt="Hubble" style={{ transform: 'scale(1.1)' }} /></div>
-              <div className="logo-box"><img src="/images/a16z-logo.jpg" alt="a16z" style={{ transform: 'scale(1.1)' }} /></div>
-              <div className="logo-box"><img src="/images/berkeley-logo.png" alt="Berkeley" style={{ transform: 'scale(1.43)' }} /></div>
-              <div className="logo-box"><img src="/images/stanford-logo.png" alt="Stanford" /></div>
-              <div className="logo-box"><img src="/images/sequoia-logo.png" alt="Sequoia" style={{ transform: 'scale(0.9)' }} /></div>
-              <div className="logo-box"><img src="/images/startupgrind-logo.png" alt="Startup Grind" /></div>
-
-              {/* duplicate logos for seamless scroll */}
-              <div className="logo-box"><img src="/images/yc-logo.png" alt="Y Combinator" /></div>
-              <div className="logo-box"><img src="/images/hubble-logo.png" alt="Hubble" style={{ transform: 'scale(1.1)' }} /></div>
-              <div className="logo-box"><img src="/images/a16z-logo.jpg" alt="a16z" style={{ transform: 'scale(1.1)' }} /></div>
-              <div className="logo-box"><img src="/images/berkeley-logo.png" alt="Berkeley" style={{ transform: 'scale(1.43)' }} /></div>
-              <div className="logo-box"><img src="/images/stanford-logo.png" alt="Stanford" /></div>
-              <div className="logo-box"><img src="/images/sequoia-logo.png" alt="Sequoia" style={{ transform: 'scale(0.9)' }} /></div>
-              <div className="logo-box"><img src="/images/startupgrind-logo.png" alt="Startup Grind" /></div>
+              <a href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer" className="group text-white hover:text-gray-200 text-sm md:text-base font-normal transition">
+                Book a demo <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+              </a>
             </div>
           </div>
 
           {/* Tilted Card */}
-          <div className="mt-8 md:mt-12" style={{ perspective: '1000px' }}>
+          <div className="mt-2 md:mt-4" style={{ perspective: '1000px' }}>
             <div
               className="tilty-card mx-auto"
               style={{
@@ -693,13 +729,13 @@ function LandingPage() {
                 maxWidth: 'min(1100px, 90vw)',
                 height: 'auto',
                 aspectRatio: '1100 / 595',
-                background: '#ffffff',
+                background: '#F9F6F5',
                 borderRadius: '16px',
                 border: '1px solid rgba(0, 0, 0, 0.08)',
                 boxShadow: '0 10px 30px rgba(0, 0, 0, 0.12)',
-                transform: `rotateX(${cardTilt}deg)`,
+                transform: `rotateX(${cardTilt}deg) translateY(-${cardSlideUp}px)`,
                 transformStyle: 'preserve-3d',
-                transition: 'transform 0.8s ease-out',
+                transition: 'transform 0.3s ease-out',
                 padding: '0',
                 overflow: 'hidden'
               }}
@@ -721,12 +757,12 @@ function LandingPage() {
                 <div style={{
                   flex: '1.4',
                   display: 'flex',
-                  background: '#ffffff'
+                  background: '#F9F6F5'
                 }}>
                   {/* Sidebar */}
                   <div style={{
                     width: '220px',
-                    background: '#ffffff',
+                    background: '#F9F6F5',
                     padding: '28px 16px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -762,7 +798,7 @@ function LandingPage() {
                         style={{
                           padding: '10px 12px',
                           borderRadius: '8px',
-                          background: idx === 0 ? '#f3f4f6' : 'transparent',
+                          background: idx === 0 ? '#F9F6F5' : 'transparent',
                           border: idx === 0 ? '1.5px solid #e5e7eb' : 'none',
                           boxShadow: idx === 0 ? '0 2px 4px rgba(0, 0, 0, 0.08)' : 'none',
                           fontSize: '12px',
@@ -885,7 +921,7 @@ function LandingPage() {
                                 style={{
                                   marginRight: '12px',
                                   cursor: 'pointer',
-                                  accentColor: '#0000FF'
+                                  accentColor: '#000000'
                                 }}
                               />
                               <span style={{
@@ -997,7 +1033,7 @@ function LandingPage() {
                                       fontSize: '14px',
                                       fontWeight: isSelected ? 600 : 400,
                                       color: isSelected ? '#ffffff' : '#0f1419',
-                                      background: isSelected ? '#0056D6' : 'transparent',
+                                      background: isSelected ? '#000000' : 'transparent',
                                       cursor: 'pointer',
                                       transition: 'all 0.15s ease',
                                       fontFamily: 'Inter, system-ui, sans-serif',
@@ -1033,7 +1069,7 @@ function LandingPage() {
                 }}>
                   {/* Document Content */}
                   <div className={section1Visible ? 'visible' : 'invisible'} style={{
-                    background: '#ffffff',
+                    background: '#F9F6F5',
                     borderRadius: '12px',
                     padding: '28px',
                     border: '1px solid #e1e4e8',
@@ -1157,7 +1193,7 @@ function LandingPage() {
       </section>
 
       {/* Process Section - Combined heading + cards */}
-      <section className="scroll-section scroll-section-early process-section px-4 md:px-6 pt-20 md:pt-32 lg:pt-36 pb-16 md:pb-24 lg:pb-30 relative" style={{ backgroundImage: 'radial-gradient(#d1d5db 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
+      <section className="scroll-section scroll-section-early process-section px-4 md:px-6 pt-12 md:pt-20 lg:pt-24 pb-16 md:pb-24 lg:pb-30 relative" style={{ backgroundColor: '#ffffff' }}>
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
         <div className="max-w-7xl mx-auto relative">
           <div className="mx-auto" style={{ maxWidth: '720px' }}>
@@ -1179,7 +1215,7 @@ function LandingPage() {
             <div className="space-y-4">
               {steps.map((step, index) => {
                 const cardStyle = {
-                  background: '#fcfcfc',
+                  background: '#faf6f5',
                   border: '1px solid rgba(0, 0, 0, 0.1)',
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
                 };
@@ -1219,12 +1255,12 @@ function LandingPage() {
                         /* Step 2: Collab animation */
                         <div className="p-4 h-full relative flex flex-col justify-center">
                           <div className="step2-cursor-black absolute z-20" style={{ width: '18px', height: '18px' }}>
-                            <svg viewBox="0 0 24 24" fill="#0056D6" style={{ width: '18px', height: '18px' }}>
+                            <svg viewBox="0 0 24 24" fill="#000000" style={{ width: '18px', height: '18px' }}>
                               <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
                             </svg>
                           </div>
                           <div className="step2-cursor-white absolute z-20" style={{ width: '18px', height: '18px' }}>
-                            <svg viewBox="0 0 24 24" fill="white" stroke="#0056D6" strokeWidth="1.5" style={{ width: '18px', height: '18px' }}>
+                            <svg viewBox="0 0 24 24" fill="white" stroke="#000000" strokeWidth="1.5" style={{ width: '18px', height: '18px' }}>
                               <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
                             </svg>
                           </div>
@@ -1271,7 +1307,7 @@ function LandingPage() {
                               <div className="h-1 bg-gray-200 rounded w-full"></div>
                             </div>
                             {/* Scanner line */}
-                            <div className="step3-scanner absolute left-2 right-2 h-0.5" style={{ backgroundColor: '#0056D6', boxShadow: '0 0 6px 1px rgba(0, 86, 214, 0.5)' }}></div>
+                            <div className="step3-scanner absolute left-2 right-2 h-0.5" style={{ backgroundColor: '#000000', boxShadow: '0 0 6px 1px rgba(0, 0, 0, 0.5)' }}></div>
                           </div>
                         </div>
                       )}
@@ -1311,15 +1347,15 @@ function LandingPage() {
                   <p className={`feature-description ${activeFeature === i ? 'active' : ''}`}>
                     {i === 0 ? (
                       <>
-                        Generate a <span style={{ backgroundColor: '#E6F0FF', color: '#0056D6', padding: '2px 6px', borderRadius: '4px' }}>ready-to-use, fully customized</span> document in minutes and start building your partnership with confidence.
+                        Generate a <span style={{ backgroundColor: '#f0f0f0', color: '#000000', padding: '2px 6px', borderRadius: '4px' }}>ready-to-use, fully customized</span> document in minutes and start building your partnership with confidence.
                       </>
                     ) : i === 1 ? (
                       <>
-                        Use our <span style={{ backgroundColor: '#E6F0FF', color: '#0056D6', padding: '2px 6px', borderRadius: '4px' }}>proprietary equity calculator</span> to determine ownership. Instant, precise splits so everyone knows their stake.
+                        Use our <span style={{ backgroundColor: '#f0f0f0', color: '#000000', padding: '2px 6px', borderRadius: '4px' }}>proprietary equity calculator</span> to determine ownership. Instant, precise splits so everyone knows their stake.
                       </>
                     ) : i === 2 ? (
                       <>
-                        Cofounder coaches and attorneys ready to help. We are here to guide you <span style={{ backgroundColor: '#E6F0FF', color: '#0056D6', padding: '2px 6px', borderRadius: '4px' }}>every step of the way</span>.
+                        Cofounder coaches and attorneys ready to help. We are here to guide you <span style={{ backgroundColor: '#f0f0f0', color: '#000000', padding: '2px 6px', borderRadius: '4px' }}>every step of the way</span>.
                       </>
                     ) : (
                       feature.description
@@ -2365,7 +2401,7 @@ function LandingPage() {
                   className="flex items-center justify-center w-20 md:w-24 transition-opacity duration-500"
                   style={{
                     opacity: isFading ? 0 : 1,
-                    transitionDelay: isFading ? '0ms' : `${i * 200}ms`
+                    transitionDelay: isFading ? '0ms' : `${logoDelayOrder[i] * 120}ms`
                   }}
                 >
                   <img
@@ -2386,7 +2422,7 @@ function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row gap-8 md:gap-20 lg:gap-80 items-start md:justify-center md:ml-32">
             <div className="flex-shrink-0 w-full md:w-auto text-center md:text-left">
-              <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium">FAQs<span style={{ marginLeft: '0.05em', color: '#0056D6' }}>.</span></h2>
+              <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium">FAQs<span style={{ marginLeft: '0.05em', color: '#000000' }}>.</span></h2>
             </div>
             <div className="flex-1 max-w-[700px] w-full">
               {faqs.map((faq, i) => (
@@ -2525,7 +2561,7 @@ function LandingPage() {
           position: relative;
           overflow: hidden;
           width: 100%;
-          background: #fff;
+          background: #06271D;
           -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
           mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
           padding: 20px 0;
@@ -2550,6 +2586,7 @@ function LandingPage() {
           max-height: 36px;
           max-width: 120px;
           object-fit: contain;
+          filter: brightness(0) invert(1);
         }
 
         @keyframes scroll {
@@ -2661,7 +2698,7 @@ function LandingPage() {
         }
 
         .feature-visual {
-          background: #fefefe;
+          background: #b50704;
           border-radius: 8px;
           box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
           overflow: hidden;
@@ -2669,7 +2706,7 @@ function LandingPage() {
           justify-content: center;
           position: relative;
           padding: 16px 32px;
-          border: 12px solid #f7f7f7;
+          border: 12px solid #b50704;
           height: calc(160px*3 + 24px);
           display: flex;
         }
