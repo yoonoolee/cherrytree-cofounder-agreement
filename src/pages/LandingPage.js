@@ -14,6 +14,16 @@ function LandingPage() {
     description: 'Cherrytree makes it easy to create cofounder agreements and determine equity splits.'
   });
   const [openFaq, setOpenFaq] = useState(null);
+  const [faqSectionVisible, setFaqSectionVisible] = useState(false);
+  const faqSectionRef = useRef(null);
+  const featureRow1Ref = useRef(null);
+  const featureRow2Ref = useRef(null);
+  const featureRow3Ref = useRef(null);
+  const featureRow4Ref = useRef(null);
+  const [featureRow1Visible, setFeatureRow1Visible] = useState(false);
+  const [featureRow2Visible, setFeatureRow2Visible] = useState(false);
+  const [featureRow3Visible, setFeatureRow3Visible] = useState(false);
+  const [featureRow4Visible, setFeatureRow4Visible] = useState(false);
   const [typedText, setTypedText] = useState('');
   const [cardTilt, setCardTilt] = useState(15);
   const [cardSlideUp, setCardSlideUp] = useState(0);
@@ -511,7 +521,7 @@ function LandingPage() {
             cardEquityLoopTimer = setTimeout(() => {
               setCardEquityNumbersVisible(false);
               cardEquityLoopTimer = setTimeout(runLoop, 600);
-            }, 4000);
+            }, 6500);
           };
           runLoop();
           cardEquityObserver.unobserve(entry.target);
@@ -527,15 +537,27 @@ function LandingPage() {
         if (entry.isIntersecting) {
           setCardExpertVisible(true);
           const runLoop = () => {
-            requestAnimationFrame(() => {
-              setCardExpertLinesVisible(true);
-            });
+            // Show lines
+            setCardExpertLinesVisible(true);
+            // After all animations complete + pause, hide then restart
             cardExpertLoopTimer = setTimeout(() => {
               setCardExpertLinesVisible(false);
-              cardExpertLoopTimer = setTimeout(runLoop, 800);
+              // Wait for hide, then force reflow and restart
+              cardExpertLoopTimer = setTimeout(() => {
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => {
+                    runLoop();
+                  });
+                });
+              }, 600);
             }, 4500);
           };
-          runLoop();
+          // Initial start with reflow
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              runLoop();
+            });
+          });
           cardExpertObserver.unobserve(entry.target);
         }
       });
@@ -558,9 +580,58 @@ function LandingPage() {
     const underline = document.querySelector('.underline-animate');
     if (underline) underlineObserver.observe(underline);
 
+    // Observe feature rows for slide-in animation (re-triggers each time)
+    const setters = { '1': setFeatureRow1Visible, '2': setFeatureRow2Visible, '3': setFeatureRow3Visible, '4': setFeatureRow4Visible };
+    const featureRowObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const id = entry.target.dataset.featureRow;
+        if (entry.isIntersecting) {
+          setters[id](true);
+        } else {
+          const rect = entry.target.getBoundingClientRect();
+          if (rect.top > window.innerHeight * 0.5) {
+            setters[id](false);
+          }
+        }
+      });
+    }, { threshold: 0.2 });
+    [featureRow1Ref, featureRow2Ref, featureRow3Ref, featureRow4Ref].forEach(ref => {
+      if (ref.current) featureRowObserver.observe(ref.current);
+    });
+
+    // Observe FAQ section (re-triggers each time scrolled to from above)
+    // Use two observers: one to trigger at 40% visible, one to reset when section top enters viewport bottom
+    let faqResetTimer;
+    const faqTriggerObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          clearTimeout(faqResetTimer);
+          setFaqSectionVisible(true);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    const faqResetObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        // When not intersecting at all AND section is below viewport, reset
+        if (!entry.isIntersecting) {
+          const rect = entry.target.getBoundingClientRect();
+          if (rect.top > window.innerHeight * 0.5) {
+            setFaqSectionVisible(false);
+          }
+        }
+      });
+    }, { threshold: 0.0 });
+
+    if (faqSectionRef.current) {
+      faqTriggerObserver.observe(faqSectionRef.current);
+      faqResetObserver.observe(faqSectionRef.current);
+    }
+
     return () => {
       earlySections.forEach(section => earlyObserver.unobserve(section));
       if (underline) underlineObserver.unobserve(underline);
+      if (faqSectionRef.current) { faqTriggerObserver.unobserve(faqSectionRef.current); faqResetObserver.unobserve(faqSectionRef.current); }
       clearTimeout(cardDocLoopTimer);
       clearTimeout(cardEquityLoopTimer);
       clearTimeout(cardExpertLoopTimer);
@@ -1414,7 +1485,7 @@ function LandingPage() {
                               <div className="h-1 bg-gray-200 rounded w-full"></div>
                             </div>
                             {/* Scanner line */}
-                            <div className="step3-scanner absolute left-2 right-2 h-0.5" style={{ backgroundColor: '#000000', boxShadow: '0 0 6px 1px rgba(0, 0, 0, 0.5)' }}></div>
+                            <div className="step3-scanner absolute left-2 right-2 h-0.5" style={{ backgroundColor: '#ffffff', boxShadow: '0 0 6px 1px rgba(0, 0, 0, 0.5)' }}></div>
                           </div>
                         </div>
                       )}
@@ -1467,8 +1538,8 @@ function LandingPage() {
 
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '140px', maxWidth: '80rem', margin: '0 auto 48px auto', padding: '0 24px' }}>
-            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '48px', alignSelf: 'flex-start', width: '100%' }}>
-            <div style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
+            <div ref={featureRow1Ref} data-feature-row="1" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '48px', alignSelf: 'flex-start', width: '100%' }}>
+            <div style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', opacity: featureRow1Visible ? 1 : 0, transform: featureRow1Visible ? 'translateX(0)' : 'translateX(-80px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
               {/* Mini animation preview */}
               <div ref={cardDocRef} style={{ backgroundColor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', width: '100%', aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
                 <div
@@ -1510,8 +1581,8 @@ function LandingPage() {
                 <p style={{ fontSize: '1.1rem', color: '#444', lineHeight: 1.6 }}>Generate a ready-to-use, fully customized document in minutes<br />and start building your partnership with confidence.</p>
               </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', gap: '48px', alignSelf: 'flex-end', width: '100%' }}>
-              <div ref={cardEquityRef} style={{ background: 'linear-gradient(45deg, #1a6b52 0%, #042018 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', color: '#ffffff', overflow: 'hidden', position: 'relative' }}>
+            <div ref={featureRow2Ref} data-feature-row="2" style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', gap: '48px', alignSelf: 'flex-end', width: '100%' }}>
+              <div ref={cardEquityRef} style={{ background: 'linear-gradient(45deg, #1a6b52 0%, #042018 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', color: '#ffffff', overflow: 'hidden', position: 'relative', opacity: featureRow2Visible ? 1 : 0, transform: featureRow2Visible ? 'translateX(0)' : 'translateX(80px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
                   <div style={{ transform: 'scale(1.155)', transformOrigin: 'center top', marginTop: '12px' }}>
                     <div className={`equity-table ${cardEquityVisible ? 'equity-table-visible' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                       <div style={{ display: 'grid', gridTemplateColumns: '100px 50px 50px 50px', gap: '8px', padding: '8px 12px', backgroundColor: '#f7f7f7', borderRadius: '6px 6px 0 0' }}>
@@ -1551,8 +1622,8 @@ function LandingPage() {
                 <p style={{ fontSize: '1.1rem', color: '#444', lineHeight: 1.6 }}>Use our proprietary equity calculator to determine ownership.<br />Instant, precise splits so everyone knows their stake.</p>
               </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '48px', alignSelf: 'flex-start', width: '100%' }}>
-              <div ref={cardExpertRef} style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', overflow: 'hidden', position: 'relative' }}>
+            <div ref={featureRow3Ref} data-feature-row="3" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '48px', alignSelf: 'flex-start', width: '100%' }}>
+              <div ref={cardExpertRef} style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', overflow: 'hidden', position: 'relative', opacity: featureRow3Visible ? 1 : 0, transform: featureRow3Visible ? 'translateX(0)' : 'translateX(-80px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'stretch', padding: '40px 24px 24px 24px', gap: '20px', width: '100%', height: '100%', position: 'relative' }}>
                   {/* Contact icons */}
                   <div
@@ -1594,39 +1665,18 @@ function LandingPage() {
                 <p style={{ fontSize: '1.1rem', color: '#444', lineHeight: 1.6 }}>We are a team of cofounder coaches, founders, and attorneys<br />ready to help. You're in good hands every step of the way.</p>
               </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-              <div style={{ borderRadius: '14px', border: 'none', width: '100%', overflow: 'hidden', position: 'relative' }}>
-                <img src="/images/cofounders1.jpg" alt="Cofounders working together" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: '14px' }} />
-                <div style={{
-                  position: 'absolute',
-                  top: '16px',
-                  right: '16px',
-                  width: '280px',
-                  height: '90px',
-                  background: 'rgba(50, 130, 100, 0.45)',
-                  backdropFilter: 'blur(16px)',
-                  WebkitBackdropFilter: 'blur(16px)',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  fontSize: '22px',
-                }}>
-                  {'★★★★★'.split('').map((star, i) => (
-                    <span key={i} style={{ color: '#E8B830' }}>{star}</span>
-                  ))}
-                </div>
+            <div ref={featureRow4Ref} data-feature-row="4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+              <div style={{ borderRadius: '14px', border: 'none', width: '100%', overflow: 'hidden', position: 'relative', opacity: featureRow4Visible ? 1 : 0, transform: featureRow4Visible ? 'translateY(0)' : 'translateY(40px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+                <video src="/images/thiscofoundervideo.mp4" autoPlay muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: '14px', filter: 'saturate(1.5) contrast(1.15)' }} />
               </div>
             </div>
           </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="scroll-section pt-12 md:pt-20 pb-24 md:pb-36 px-4 md:px-6 relative" style={{ backgroundColor: '#FDECEF' }}>
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#FDECEF] to-transparent pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#FDECEF] to-transparent pointer-events-none"></div>
+      <section id="pricing" className="scroll-section pt-12 md:pt-20 pb-24 md:pb-36 px-4 md:px-6 relative" style={{ backgroundColor: '#ffffff' }}>
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#ffffff] to-transparent pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#ffffff] to-transparent pointer-events-none"></div>
         <div className="max-w-6xl mx-auto relative">
           <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-center mb-3 md:mb-4 text-black">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
           <p className="text-center text-sm md:text-base mb-12 md:mb-16 font-normal px-4" style={{ color: 'rgba(0,0,0,0.5)' }}>
@@ -1636,35 +1686,21 @@ function LandingPage() {
             </a>
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8 items-stretch max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-12 items-start max-w-7xl mx-auto">
             {pricingPlans.map((plan, i) => (
               <div
                 key={i}
                 ref={plan.featured ? pricingCardRef : null}
-                className={`bg-white p-6 md:p-8 rounded-lg flex flex-col border border-gray-300 ${
-                  plan.featured
-                    ? pricingCardAnimated ? 'pricing-card-bounce-in' : ''
-                    : ''
-                }`}
-                style={{
-                  ...(plan.featured ? {
-                    transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                    transform: pricingCardAnimated ? 'translateY(-10px) scale(1.05)' : 'translateY(0) scale(1)',
-                    boxShadow: pricingCardAnimated
-                      ? '0 20px 40px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1)'
-                      : '0 2px 8px rgba(0, 0, 0, 0.06)'
-                  } : {})
-                }}
+                className="flex flex-col text-center"
               >
                 <h3 className="text-lg md:text-xl font-normal mb-2 text-[#716B6B]">{plan.name}</h3>
                 <div className="text-3xl md:text-4xl font-bold mb-2">{plan.price}</div>
-                <p className="text-sm md:text-base text-gray-600 mb-6">{plan.description}</p>
+                <p className="text-sm md:text-base text-gray-500 mb-6">{plan.description}</p>
                 <button
                   onClick={() => {
                     if (plan.name === 'Enterprise') {
                       window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 });
                     } else {
-                      // Navigate directly to app domain to avoid double redirect
                       const isProduction = window.location.hostname.includes('cherrytree.app');
                       if (isProduction) {
                         window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
@@ -1681,7 +1717,7 @@ function LandingPage() {
                 >
                   {plan.name === 'Enterprise' ? 'Contact sales' : 'Get started'}
                 </button>
-                <ul className="space-y-3 flex-grow">
+                <ul className="space-y-3 text-left">
                   {plan.features.map((feature, j) => (
                     <li key={j} className="flex items-center gap-2 text-sm md:text-base">
                       <span className="text-[#716B6B]">✓</span>
@@ -1697,31 +1733,40 @@ function LandingPage() {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="scroll-section py-16 md:py-24 px-4 md:px-6">
+      <section id="faq" ref={faqSectionRef} className="scroll-section py-24 md:py-36 px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row gap-8 md:gap-28 lg:gap-44 items-center mx-auto w-fit">
-            <div className="flex-shrink-0 w-full md:w-auto text-center md:text-left">
-              <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-black">Frequently asked<span style={{ marginLeft: '0.05em' }}>.</span></h2>
-            </div>
-            <div className="flex-1 max-w-[700px] w-full">
-              {faqs.map((faq, i) => (
-                <div key={i} className="accordion-item border-b border-gray-300">
-                  <button
-                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                    className="accordion-title w-full py-4 md:py-5 px-3 md:px-4 flex justify-between items-center transition hover:bg-gray-50 text-left"
-                  >
-                    <span className="font-medium text-black text-sm md:text-base pr-4">{faq.q}</span>
-                    <span className={`accordion-icon text-gray-400 font-light transition-all duration-300 flex-shrink-0 text-xl ${openFaq === i ? 'rotate-90 scale-110 text-gray-700' : ''}`}>
-                      +
-                    </span>
-                  </button>
-                  <div
-                    className={`accordion-content overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-[1000px] py-6 md:py-8 px-3 md:px-4' : 'max-h-0 py-0 px-3 md:px-4'}`}
-                  >
-                    <p className="text-gray-600 text-sm md:text-[0.95rem]">{faq.a}</p>
-                  </div>
+          <div className="mx-auto" style={{ maxWidth: '1120px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #06271D', minHeight: '420px' }}>
+            <div className="flex flex-col md:flex-row items-stretch" style={{ height: '100%' }}>
+              <div className="text-center md:text-left flex items-center justify-center" style={{ backgroundColor: '#06271D', flex: faqSectionVisible ? '0 0 420px' : '1 1 100%', transition: 'flex 0.8s cubic-bezier(0.4, 0, 0.2, 1)', overflow: 'hidden', minWidth: '420px' }}>
+                <div className="w-full h-full flex items-center justify-center p-6 md:p-12">
+                  <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-white whitespace-nowrap">Frequently asked<span style={{ marginLeft: '0.05em' }}>.</span></h2>
                 </div>
-              ))}
+              </div>
+              <div style={{ backgroundColor: '#fff', flex: faqSectionVisible ? '1 1 700px' : '0 0 0px', opacity: faqSectionVisible ? 1 : 0, transition: 'flex 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease 0.3s', overflow: 'hidden' }}>
+                <div className="w-full h-full p-6 md:p-8">
+                {faqs.map((faq, i) => (
+                  <div key={i} className={`accordion-item ${i < faqs.length - 1 ? 'border-b border-gray-300' : ''}`}>
+                    <button
+                      onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                      className={`accordion-title w-full py-4 md:py-5 px-3 md:px-4 flex justify-between items-center transition text-left`}
+                      style={{ backgroundColor: openFaq === i ? '#faf6f5' : 'transparent' }}
+                      onMouseEnter={e => { if (openFaq !== i) e.currentTarget.style.backgroundColor = '#faf6f5'; }}
+                      onMouseLeave={e => { if (openFaq !== i) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                    >
+                      <span className="font-medium text-black text-sm md:text-base pr-4">{faq.q}</span>
+                      <span className={`accordion-icon text-gray-400 font-light transition-all duration-300 flex-shrink-0 text-xl ${openFaq === i ? 'rotate-90 scale-110 text-gray-700' : ''}`}>
+                        +
+                      </span>
+                    </button>
+                    <div
+                      className={`accordion-content overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-[1000px] py-6 md:py-8 px-3 md:px-4' : 'max-h-0 py-0 px-3 md:px-4'}`}
+                    >
+                      <p className="text-gray-600 text-sm md:text-[0.95rem]">{faq.a}</p>
+                    </div>
+                  </div>
+                ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
