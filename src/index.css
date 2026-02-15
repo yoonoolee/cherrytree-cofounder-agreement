@@ -582,7 +582,6 @@ select:disabled {
   transition: opacity 0.9s ease-out;
 }
 
-.scroll-section .section-header.content-visible,
 .scroll-section p.content-visible,
 .scroll-section ul.content-visible,
 .scroll-section h3.content-visible {

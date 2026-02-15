@@ -54,9 +54,6 @@ function LandingPage() {
   const [productsHovered, setProductsHovered] = useState(false);
   const [pricingCardAnimated, setPricingCardAnimated] = useState(false);
   const pricingCardRef = useRef(null);
-  const [ctaShinePos, setCtaShinePos] = useState({ x: 0, y: 0, active: false });
-  const ctaCardRef = useRef(null);
-  const [ctaCardTilt, setCtaCardTilt] = useState(15);
   const fullText = 'with great company.';
   const andText = 'and';
   const todayText = 'today.';
@@ -363,27 +360,6 @@ function LandingPage() {
     return () => window.removeEventListener('scroll', handleTiltScroll);
   }, []);
 
-  // CTA card tilt scroll effect
-  useEffect(() => {
-    const handleCtaTiltScroll = () => {
-      if (!ctaCardRef.current) return;
-
-      const rect = ctaCardRef.current.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-
-      // Calculate how far the card has scrolled into view
-      const scrollProgress = Math.max(0, Math.min(1, (windowHeight - rect.top) / (windowHeight * 0.7)));
-
-      // Interpolate tilt from 15deg to 0deg based on scroll progress
-      const tiltValue = 15 * (1 - scrollProgress);
-      setCtaCardTilt(tiltValue);
-    };
-
-    window.addEventListener('scroll', handleCtaTiltScroll);
-    handleCtaTiltScroll();
-
-    return () => window.removeEventListener('scroll', handleCtaTiltScroll);
-  }, []);
 
   // Heading color fill on scroll
   useEffect(() => {
@@ -1619,17 +1595,38 @@ function LandingPage() {
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-              <div style={{ borderRadius: '14px', border: 'none', width: '100%', overflow: 'hidden' }}>
+              <div style={{ borderRadius: '14px', border: 'none', width: '100%', overflow: 'hidden', position: 'relative' }}>
                 <img src="/images/cofounders1.jpg" alt="Cofounders working together" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: '14px' }} />
+                <div style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  width: '280px',
+                  height: '90px',
+                  background: 'rgba(50, 130, 100, 0.45)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  fontSize: '22px',
+                }}>
+                  {'★★★★★'.split('').map((star, i) => (
+                    <span key={i} style={{ color: '#E8B830' }}>{star}</span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="scroll-section pt-12 md:pt-20 pb-24 md:pb-36 px-4 md:px-6 relative" style={{ backgroundColor: '#faf6f5' }}>
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#faf6f5] to-transparent pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#faf6f5] to-transparent pointer-events-none"></div>
+      <section id="pricing" className="scroll-section pt-12 md:pt-20 pb-24 md:pb-36 px-4 md:px-6 relative" style={{ backgroundColor: '#FDECEF' }}>
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#FDECEF] to-transparent pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#FDECEF] to-transparent pointer-events-none"></div>
         <div className="max-w-6xl mx-auto relative">
           <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-center mb-3 md:mb-4 text-black">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
           <p className="text-center text-sm md:text-base mb-12 md:mb-16 font-normal px-4" style={{ color: 'rgba(0,0,0,0.5)' }}>
@@ -1702,11 +1699,9 @@ function LandingPage() {
       {/* FAQ Section */}
       <section id="faq" className="scroll-section py-16 md:py-24 px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row gap-8 md:gap-20 lg:gap-80 items-start md:justify-center md:ml-32">
+          <div className="flex flex-col md:flex-row gap-8 md:gap-28 lg:gap-44 items-center mx-auto w-fit">
             <div className="flex-shrink-0 w-full md:w-auto text-center md:text-left">
-              <div style={{ backgroundColor: '#8B0000', borderRadius: '12px', padding: '16px 24px', display: 'inline-block' }}>
-                <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-white">FAQs<span style={{ marginLeft: '0.05em' }}>.</span></h2>
-              </div>
+              <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-black">Frequently asked<span style={{ marginLeft: '0.05em' }}>.</span></h2>
             </div>
             <div className="flex-1 max-w-[700px] w-full">
               {faqs.map((faq, i) => (
@@ -1732,72 +1727,8 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="scroll-section-full py-16 md:py-24 px-4 md:px-6 bg-white">
-        <div
-          ref={ctaCardRef}
-          className="max-w-6xl mx-auto bg-[#1A1520] rounded-xl md:rounded-2xl py-[3.63rem] sm:py-[4.84rem] md:py-[9.2rem] px-4 sm:px-6 md:px-12 relative overflow-hidden"
-          style={{
-            transform: `perspective(1000px) rotateX(${ctaCardTilt}deg)`,
-            transformOrigin: 'center bottom',
-            transition: 'transform 0.1s ease-out'
-          }}
-          onMouseMove={(e) => {
-            if (!ctaCardRef.current) return;
-            const rect = ctaCardRef.current.getBoundingClientRect();
-            setCtaShinePos({ x: e.clientX - rect.left, y: e.clientY - rect.top, active: true });
-          }}
-          onMouseLeave={() => setCtaShinePos(prev => ({ ...prev, active: false }))}
-        >
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.04) 0%, transparent 60%)' }}></div>
-          <div
-            className="absolute pointer-events-none transition-opacity duration-500"
-            style={{
-              left: ctaShinePos.x - 250,
-              top: ctaShinePos.y - 250,
-              width: 500,
-              height: 500,
-              background: 'radial-gradient(ellipse, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 30%, rgba(255,255,255,0.01) 50%, transparent 80%)',
-              filter: 'blur(20px)',
-              opacity: ctaShinePos.active ? 1 : 0
-            }}
-          />
-          <div className="headline-container">
-            <h1 className="typing-title font-heading text-white">
-              <span className="first-line">Protect your piece of the pie</span>
-              <span className="second-line">
-                <span className="typing-container">
-                  <em className="typing-and">{typedAnd || '\u00A0'}</em>
-                </span> your peace of mind.
-              </span>
-            </h1>
-          </div>
-          <div className="max-w-4xl mx-auto text-center mt-12 md:mt-16">
-            <div className="flex flex-row items-center justify-center gap-4">
-              <button
-                onClick={() => {
-                  // Navigate directly to app domain to avoid double redirect
-                  const isProduction = window.location.hostname.includes('cherrytree.app');
-                  if (isProduction) {
-                    window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
-                  } else {
-                    navigate('/dashboard', { replace: true });
-                  }
-                }}
-                className="button-shimmer-dark bg-white text-[#06271D] px-6 md:px-10 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-gray-100 transition"
-              >
-                Get started
-              </button>
-              <a href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer" className="group text-white hover:text-gray-200 text-sm md:text-base font-normal transition">
-                Book a demo <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
-      <Footer />
+      <Footer bgColor="#06271D" navigate={navigate} />
 
       <style>{`
         /* Disable fadeInDown/fadeInUp animations on landing page only */
