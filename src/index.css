@@ -558,7 +558,18 @@ select:disabled {
 }
 
 /* Content elements fade-in animation */
-.scroll-section .section-header,
+.scroll-section .section-header {
+  opacity: 0;
+  transform: scale(0.85);
+  transform-origin: center center;
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.scroll-section .section-header.content-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
 .scroll-section p,
 .scroll-section ul,
 .scroll-section h3 {
@@ -566,7 +577,6 @@ select:disabled {
   transition: opacity 0.9s ease-out;
 }
 
-.scroll-section .section-header.content-visible,
 .scroll-section p.content-visible,
 .scroll-section ul.content-visible,
 .scroll-section h3.content-visible {
