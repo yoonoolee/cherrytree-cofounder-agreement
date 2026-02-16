@@ -318,6 +318,14 @@ function Header({ variant = 'light', onProductsHover }) {
               <h4 className="font-normal mb-1 flex items-center gap-2 text-black"><span className="w-2 h-2 rounded-full flex-shrink-0 bg-[#06271D]"></span>Coaching</h4>
               <p className="text-sm text-gray-500">Get expert guidance from cofounder coaches</p>
             </a>
+            <div className="col-span-2 border-t border-gray-300 mt-0 pt-2 pb-0 flex justify-end -mb-4">
+              <button
+                onClick={() => { setProductsOpen(false); navigate('/pricing'); }}
+                className="group text-sm text-gray-500 hover:text-black transition"
+              >
+                PRICING <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+              </button>
+            </div>
           </div>
           </div>
         </div>

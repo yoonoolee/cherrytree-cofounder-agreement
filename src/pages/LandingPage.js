@@ -360,9 +360,12 @@ function LandingPage() {
       const pastCard = rect.bottom < windowHeight * 0.85;
       if (pastCard) {
         const slideProgress = Math.min(1, (windowHeight * 0.85 - rect.bottom) / (windowHeight * 0.5));
-        setCardSlideUp(slideProgress * rect.height * 0.35);
+        const slideValue = slideProgress * rect.height * 0.35;
+        setCardSlideUp(slideValue);
+        card.style.setProperty('--card-slide-up', `-${slideValue}px`);
       } else {
         setCardSlideUp(0);
+        card.style.setProperty('--card-slide-up', '0px');
       }
     };
 
@@ -827,15 +830,15 @@ function LandingPage() {
       <section className="px-4 md:px-6 pt-20 md:pt-32 lg:pt-40 pb-8 md:pb-14" style={{ background: 'linear-gradient(to bottom, #06271D 85%, #ffffff 85%)' }}>
         <div className="max-w-6xl mx-auto text-center">
           <div className="hero-content">
-            <h1 className="font-heading text-[3rem] sm:text-[4rem] md:text-[5rem] lg:text-[6rem] font-normal text-white mb-4 md:mb-6 min-h-[110px] sm:min-h-[132px] md:min-h-[154px]" style={{
+            <h1 className="font-heading text-[2rem] sm:text-[4rem] md:text-[5rem] lg:text-[6rem] font-normal text-white mb-4 md:mb-6 h-[100px] sm:h-auto sm:min-h-[132px] md:min-h-[154px] overflow-hidden" style={{
               filter: productsHovered ? 'blur(1.5px)' : 'none',
               transition: 'filter 0.3s ease'
             }}>
               Great companies start
               <br />
-              <em className="italic">{typedText || '\u00A0'}</em>
+              <em className="italic whitespace-nowrap">{typedText || '\u00A0'}</em>
             </h1>
-            <p className="text-sm md:text-base mb-8 md:mb-16 max-w-2xl mx-auto font-normal px-4" style={{ color: 'rgba(255,255,255,0.5)',
+            <p className="text-sm md:text-base mb-8 md:mb-16 max-w-2xl mx-auto font-normal px-4" style={{ color: 'rgba(255,255,255,0.7)',
               filter: productsHovered ? 'blur(1.5px)' : 'none',
               transition: 'filter 0.3s ease'
             }}>
@@ -864,7 +867,7 @@ function LandingPage() {
         </div>
 
           {/* Tilted Cards */}
-          <div className="mt-2 md:mt-4 mx-auto" style={{ perspective: '1000px', maxWidth: '1280px', padding: '0 12px' }}>
+          <div className="mt-2 md:mt-4 -mx-1 md:mx-auto" style={{ perspective: '1000px', maxWidth: '1280px', padding: '0 12px' }}>
             <div
               className="tilty-card"
               style={{
@@ -900,7 +903,7 @@ function LandingPage() {
               }} ref={el => {
                 if (el) {
                   const parent = el.parentElement;
-                  const padding = 20;
+                  const padding = window.innerWidth < 768 ? 6 : 20;
                   const updateScale = () => {
                     const scaleX = (parent.offsetWidth - padding * 2) / 1100;
                     const scaleY = (parent.offsetHeight - padding * 2) / 595;
@@ -1371,12 +1374,8 @@ function LandingPage() {
           <div className="mx-auto" style={{ maxWidth: '720px' }}>
             {/* Heading */}
             <div className="max-w-6xl mx-auto text-center mb-8 md:mb-10">
-              <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium mb-3 md:mb-4">
-                Built for <span className="underline-animate">early-stage
-                  <svg viewBox="0 0 250 12" preserveAspectRatio="none">
-                    <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
-                  </svg>
-                </span> cofounders<span style={{ marginLeft: '0.05em' }}>.</span>
+              <h2 className="section-header font-heading text-[1.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium mb-3 md:mb-4">
+                Built for early-stage cofounders<span style={{ marginLeft: '0.05em' }}>.</span>
               </h2>
               <p className="text-sm md:text-base max-w-3xl mx-auto font-normal px-4" style={{ color: '#716B6B' }}>
                 Get your equity, expectations, and everything else right from the start.
@@ -1505,7 +1504,7 @@ function LandingPage() {
               {logos.map((logo, i) => (
                 <div
                   key={`built-${logo.alt}-${i}`}
-                  className="flex items-center justify-center w-20 md:w-24 transition-opacity duration-500"
+                  className={`flex items-center justify-center w-20 md:w-24 transition-opacity duration-500${i >= 6 ? ' hidden md:flex' : ''}`}
                   style={{
                     opacity: isFading ? 0 : 1,
                     transitionDelay: isFading ? '0ms' : `${logoDelayOrder[i] * 120}ms`
@@ -1528,19 +1527,20 @@ function LandingPage() {
       {/* Features Section */}
       <section id="features" ref={featuresRef} className="scroll-section py-16 md:py-24 px-4 md:px-6" style={{ backgroundColor: '#ffffff' }}>
         <div className="max-w-6xl mx-auto">
-          <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-center mb-14 md:mb-20 px-2">Turn your cofoundership<br />into a company, <em className="italic" style={{ display: 'inline-block', minWidth: '6ch', textAlign: 'left', letterSpacing: '-0.02em' }}>{typedToday || '\u00A0'}</em></h2>
+          <h2 className="section-header font-heading text-[1.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-center mb-14 md:mb-20 px-2 whitespace-nowrap">Cofoundership <span className="font-light" style={{ position: 'relative', top: '-0.15em' }}>&#x27F6;</span> Company<span style={{ marginLeft: '0.05em' }}>.</span></h2>
 
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '140px', maxWidth: '80rem', margin: '0 auto 48px auto', padding: '0 24px' }}>
-            <div ref={featureRow1Ref} data-feature-row="1" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '48px', alignSelf: 'flex-start', width: '100%' }}>
-            <div style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', opacity: featureRow1Visible ? 1 : 0, transform: featureRow1Visible ? 'translateX(0)' : 'translateX(-80px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+          <div className="flex flex-col gap-16 md:gap-[140px]" style={{ maxWidth: '80rem', margin: '0 auto 48px auto', padding: '0 24px' }}>
+            <div ref={featureRow1Ref} data-feature-row="1" className="flex flex-col md:flex-row items-center gap-6 md:gap-12 w-full">
+            <div className="w-full md:w-[33rem] md:max-w-[46%] aspect-square overflow-hidden" style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', opacity: featureRow1Visible ? 1 : 0, transform: featureRow1Visible ? 'translateY(0)' : 'translateY(40px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
               {/* Mini animation preview */}
               <div ref={cardDocRef} style={{ backgroundColor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', width: '100%', aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
                 <div
-                  style={{ width: '65%', height: '85%', backgroundColor: '#ffffff', borderRadius: '0px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '24px' }}
+                  className="p-3 md:p-6"
+                  style={{ width: '65%', height: '85%', backgroundColor: '#ffffff', borderRadius: '0px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start' }}
                 >
-                  <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590', marginBottom: '20px' }}>Cofounder Agreement</span>
-                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 8px' }}>
+                  <span className="text-[9px] md:text-[14px] mb-2 md:mb-5" style={{ fontWeight: 500, color: '#7c8590' }}>Cofounder Agreement</span>
+                  <div className="gap-1 md:gap-2" style={{ width: '100%', display: 'flex', flexDirection: 'column', padding: '0 8px' }}>
                     {[
                       { width: '100%', delay: 0.3 }, { width: '100%', delay: 0.45 }, { width: '100%', delay: 0.6 }, { width: '50%', delay: 0.75 },
                       { width: '100%', delay: 0.9, mt: true }, { width: '100%', delay: 1.05 }, { width: '100%', delay: 1.2 }, { width: '65%', delay: 1.35 },
@@ -1549,12 +1549,12 @@ function LandingPage() {
                       <div
                         key={i}
                         className={`text-line ${cardDocVisible ? 'text-line-visible' : ''}`}
-                        style={{ width: line.width, '--line-delay': `${line.delay}s`, marginTop: line.mt ? '12px' : '0' }}
+                        style={{ width: line.width, '--line-delay': `${line.delay}s`, marginTop: line.mt ? '6px' : '0' }}
                       />
                     ))}
                   </div>
                   <div style={{ width: '100%', marginTop: 'auto', padding: '0 8px' }}>
-                    <svg style={{ width: '140px', height: '50px', '--sig-delay': '2.2s' }} viewBox="0 0 140 50" fill="none">
+                    <svg className="w-[80px] md:w-[140px] h-[30px] md:h-[50px]" style={{ '--sig-delay': '2.2s' }} viewBox="0 0 140 50" fill="none">
                       <path
                         className={`signature-path ${cardDocVisible ? 'signature-draw' : ''}`}
                         d="M 5 35 C 10 20, 15 15, 20 25 C 25 35, 30 40, 35 30 C 40 20, 42 15, 48 20 C 54 25, 56 35, 62 28 C 68 21, 70 18, 78 22 C 86 26, 88 32, 95 25 C 102 18, 105 15, 112 20 C 119 25, 122 30, 130 22 L 135 18"
@@ -1565,21 +1565,21 @@ function LandingPage() {
                         strokeLinejoin="round"
                       />
                     </svg>
-                    <div style={{ width: '140px', height: '1px', backgroundColor: '#e5e7eb', marginTop: '2px' }} />
+                    <div className="w-[80px] md:w-[140px]" style={{ height: '1px', backgroundColor: '#e5e7eb', marginTop: '2px' }} />
                   </div>
                 </div>
               </div>
             </div>
-              <div style={{ maxWidth: '580px', marginLeft: 'auto' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 400, marginBottom: '12px', color: '#000000' }}>Contract Creator</h3>
-                <p style={{ fontSize: '1.1rem', color: '#444', lineHeight: 1.6 }}>Generate a ready-to-use, fully customized document in minutes<br />and start building your partnership with confidence.</p>
+              <div className="text-left" style={{ maxWidth: '580px', marginLeft: 'auto' }}>
+                <h3 className="text-xl md:text-2xl font-medium md:font-normal" style={{ marginBottom: '12px', color: '#333333' }}>Contract Creator</h3>
+                <p className="text-sm md:text-lg" style={{ color: '#444', lineHeight: 1.6 }}>Generate a ready-to-use, fully customized document in minutes<br />and start building your partnership with confidence.</p>
               </div>
             </div>
-            <div ref={featureRow2Ref} data-feature-row="2" style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', gap: '48px', alignSelf: 'flex-end', width: '100%' }}>
-              <div ref={cardEquityRef} style={{ background: 'linear-gradient(45deg, #1a6b52 0%, #042018 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', color: '#ffffff', overflow: 'hidden', position: 'relative', opacity: featureRow2Visible ? 1 : 0, transform: featureRow2Visible ? 'translateX(0)' : 'translateX(80px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
-                  <div style={{ transform: 'scale(1.155)', transformOrigin: 'center top', marginTop: '12px' }}>
+            <div ref={featureRow2Ref} data-feature-row="2" className="flex flex-col md:flex-row-reverse items-center gap-6 md:gap-12 w-full">
+              <div ref={cardEquityRef} className="w-full md:w-[33rem] md:max-w-[46%] aspect-square" style={{ background: 'linear-gradient(45deg, #1a6b52 0%, #042018 100%)', borderRadius: '14px', padding: '24px', border: 'none', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', color: '#ffffff', overflow: 'hidden', position: 'relative', opacity: featureRow2Visible ? 1 : 0, transform: featureRow2Visible ? 'translateY(0)' : 'translateY(40px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+                  <div className="scale-[0.65] md:scale-[1.155]" style={{ transformOrigin: 'center top', marginTop: '12px' }}>
                     <div className={`equity-table ${cardEquityVisible ? 'equity-table-visible' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '100px 50px 50px 50px', gap: '8px', padding: '8px 12px', backgroundColor: '#f7f7f7', borderRadius: '6px 6px 0 0' }}>
+                      <div className="grid gap-1 md:gap-2 px-2 md:px-3 py-1 md:py-2" style={{ gridTemplateColumns: '100px 50px 50px 50px', backgroundColor: '#f7f7f7', borderRadius: '6px 6px 0 0' }}>
                         <span style={{ fontSize: '11px', fontWeight: 600, color: '#666' }}>Category</span>
                         <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SJ</span>
                         <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SW</span>
@@ -1595,7 +1595,7 @@ function LandingPage() {
                         { category: 'Network', scores: [8, 6, 4], delays: [1.15, 1.25, 1.05] },
                         { category: 'Idea Origin', scores: [10, 10, 4], delays: [1.3, 1.2, 1.35] }
                       ].map((row, i, arr) => (
-                        <div key={i} style={{ display: 'grid', gridTemplateColumns: '100px 50px 50px 50px', gap: '8px', padding: '8px 12px', backgroundColor: i % 2 === 0 ? '#fff' : '#fafafa', borderLeft: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderRadius: i === arr.length - 1 ? '0 0 6px 6px' : '0' }}>
+                        <div key={i} className="grid gap-1 md:gap-2 px-2 md:px-3 py-1 md:py-2" style={{ gridTemplateColumns: '100px 50px 50px 50px', backgroundColor: i % 2 === 0 ? '#fff' : '#fafafa', borderLeft: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderRadius: i === arr.length - 1 ? '0 0 6px 6px' : '0' }}>
                           <span style={{ fontSize: '11px', color: '#666' }}>{row.category}</span>
                           {row.scores.map((score, j) => (
                             <span key={j} className={`equity-number ${cardEquityNumbersVisible ? 'equity-fade-in' : ''}`} style={{ fontSize: '11px', fontWeight: 500, color: '#999', textAlign: 'center', '--fade-delay': `${row.delays[j] + 0.3}s` }}>{score}</span>
@@ -1605,48 +1605,48 @@ function LandingPage() {
                     </div>
                   </div>
                   {/* Light green frosted card */}
-                  <div style={{ position: 'absolute', bottom: '6%', left: '15%', right: '15%', height: '14%', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '10px', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', padding: '0 12px', whiteSpace: 'nowrap' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Steve Jobs: 45%</span>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Steve Woz: 45%</span>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Ron Wayne: 10%</span>
+                  <div style={{ position: 'absolute', bottom: '6%', left: '5%', right: '5%', height: '14%', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '10px', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '0 6px', whiteSpace: 'nowrap' }}>
+                    <span className="text-[7px] md:text-[12px]" style={{ fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Steve Jobs: 45%</span>
+                    <span className="text-[7px] md:text-[12px]" style={{ fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Steve Woz: 45%</span>
+                    <span className="text-[7px] md:text-[12px]" style={{ fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Ron Wayne: 10%</span>
                   </div>
               </div>
-              <div style={{ maxWidth: '580px', marginRight: 'auto' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 400, marginBottom: '12px', color: '#000000' }}>Equity Calculator</h3>
-                <p style={{ fontSize: '1.1rem', color: '#444', lineHeight: 1.6 }}>Use our proprietary equity calculator to determine ownership.<br />Instant, precise splits so everyone knows their stake.</p>
+              <div className="text-left" style={{ maxWidth: '580px', marginRight: 'auto' }}>
+                <h3 className="text-xl md:text-2xl font-medium md:font-normal" style={{ marginBottom: '12px', color: '#333333' }}>Equity Calculator</h3>
+                <p className="text-sm md:text-lg" style={{ color: '#444', lineHeight: 1.6 }}>Use our proprietary equity calculator to determine ownership.<br />Instant, precise splits so everyone knows their stake.</p>
               </div>
             </div>
-            <div ref={featureRow3Ref} data-feature-row="3" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '48px', alignSelf: 'flex-start', width: '100%' }}>
-              <div ref={cardExpertRef} style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', overflow: 'hidden', position: 'relative', opacity: featureRow3Visible ? 1 : 0, transform: featureRow3Visible ? 'translateX(0)' : 'translateX(-80px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'stretch', padding: '40px 24px 24px 24px', gap: '20px', width: '100%', height: '100%', position: 'relative' }}>
+            <div ref={featureRow3Ref} data-feature-row="3" className="flex flex-col md:flex-row items-center gap-6 md:gap-12 w-full">
+              <div ref={cardExpertRef} className="w-full md:w-[33rem] md:max-w-[46%] aspect-square" style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', overflow: 'hidden', position: 'relative', opacity: featureRow3Visible ? 1 : 0, transform: featureRow3Visible ? 'translateY(0)' : 'translateY(40px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+                <div className="p-3 gap-3 md:p-6 md:pt-10 md:gap-5" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'stretch', width: '100%', height: '100%', position: 'relative' }}>
                   {/* Contact icons */}
                   <div
                     className={`contact-icons ${cardExpertVisible ? 'contact-icons-visible' : ''}`}
-                    style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}
+                    style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}
                   >
-                    <div className={`contact-icon ${cardExpertVisible ? 'contact-icon-visible' : ''}`} style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', '--icon-delay': '0s' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg>
+                    <div className={`contact-icon ${cardExpertVisible ? 'contact-icon-visible' : ''}`} style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', '--icon-delay': '0s' }}>
+                      <svg className="w-3 h-3 md:w-[18px] md:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg>
                     </div>
-                    <div className={`contact-icon ${cardExpertVisible ? 'contact-icon-visible' : ''}`} style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', '--icon-delay': '0.15s' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <div className={`contact-icon ${cardExpertVisible ? 'contact-icon-visible' : ''}`} style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', '--icon-delay': '0.15s' }}>
+                      <svg className="w-3 h-3 md:w-[18px] md:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     </div>
-                    <div className={`contact-icon ${cardExpertVisible ? 'contact-icon-visible' : ''}`} style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', '--icon-delay': '0.3s' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    <div className={`contact-icon ${cardExpertVisible ? 'contact-icon-visible' : ''}`} style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', '--icon-delay': '0.3s' }}>
+                      <svg className="w-3 h-3 md:w-[18px] md:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                     </div>
                   </div>
                   {/* Question bubble */}
-                  <div className={`speech-box-right ${cardExpertVisible ? 'speech-box-right-visible' : ''}`} style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '16px', alignSelf: 'flex-end', width: '80%' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 500, color: '#7c8590', marginBottom: '8px', display: 'block' }}>Your Question</span>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div className={`speech-box-right ${cardExpertVisible ? 'speech-box-right-visible' : ''} p-2 md:p-4`} style={{ backgroundColor: '#ffffff', borderRadius: '10px', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', alignSelf: 'flex-end', width: '80%' }}>
+                    <span className="text-[9px] md:text-[11px] mb-1 md:mb-2" style={{ fontWeight: 500, color: '#7c8590', display: 'block' }}>Your Question</span>
+                    <div className="gap-1 md:gap-1.5" style={{ display: 'flex', flexDirection: 'column' }}>
                       {[{ width: '100%', delay: 0.3 }, { width: '100%', delay: 0.45 }, { width: '60%', delay: 0.6 }].map((line, i) => (
                         <div key={i} className={`text-line ${cardExpertLinesVisible ? 'text-line-visible' : ''}`} style={{ width: line.width, '--line-delay': `${line.delay}s` }} />
                       ))}
                     </div>
                   </div>
                   {/* Expert response bubble */}
-                  <div className={`speech-box ${cardExpertVisible ? 'speech-box-visible' : ''}`} style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '16px', alignSelf: 'flex-start', width: '80%' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 500, color: '#7c8590', marginBottom: '8px', display: 'block' }}>Expert Answer</span>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div className={`speech-box ${cardExpertVisible ? 'speech-box-visible' : ''} p-2 md:p-4`} style={{ backgroundColor: '#ffffff', borderRadius: '10px', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', alignSelf: 'flex-start', width: '80%' }}>
+                    <span className="text-[9px] md:text-[11px] mb-1 md:mb-2" style={{ fontWeight: 500, color: '#7c8590', display: 'block' }}>Expert Answer</span>
+                    <div className="gap-1 md:gap-1.5" style={{ display: 'flex', flexDirection: 'column' }}>
                       {[{ width: '100%', delay: 1.2 }, { width: '100%', delay: 1.35 }, { width: '100%', delay: 1.5 }, { width: '45%', delay: 1.65 }].map((line, i) => (
                         <div key={i} className={`text-line ${cardExpertLinesVisible ? 'text-line-visible' : ''}`} style={{ width: line.width, '--line-delay': `${line.delay}s` }} />
                       ))}
@@ -1654,9 +1654,9 @@ function LandingPage() {
                   </div>
                 </div>
               </div>
-              <div style={{ maxWidth: '580px', marginLeft: 'auto' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 400, marginBottom: '12px', color: '#000000' }}>Expert Guidance</h3>
-                <p style={{ fontSize: '1.1rem', color: '#444', lineHeight: 1.6 }}>We are a team of cofounder coaches, founders, and attorneys<br />ready to help. You're in good hands every step of the way.</p>
+              <div className="text-left" style={{ maxWidth: '580px', marginLeft: 'auto' }}>
+                <h3 className="text-xl md:text-2xl font-medium md:font-normal" style={{ marginBottom: '12px', color: '#333333' }}>Expert Guidance</h3>
+                <p className="text-sm md:text-lg" style={{ color: '#444', lineHeight: 1.6 }}>We are a team of cofounder coaches, founders, and attorneys<br />ready to help. You're in good hands every step of the way.</p>
               </div>
             </div>
             <div ref={featureRow4Ref} data-feature-row="4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
@@ -1668,11 +1668,11 @@ function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="scroll-section pt-24 md:pt-36 pb-32 md:pb-48 px-4 md:px-6 relative" style={{ backgroundColor: '#06271D' }}>
+      <section id="pricing" className="scroll-section pt-24 md:pt-28 pb-32 md:pb-36 px-4 md:px-6 relative" style={{ backgroundColor: '#06271D' }}>
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#06271D] to-transparent pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#06271D] to-transparent pointer-events-none"></div>
         <div className="max-w-6xl mx-auto relative">
-          <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-center mb-3 md:mb-4 text-white">Founder-friendly pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+          <h2 className="section-header font-heading text-[1.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-center mb-3 md:mb-4 text-white">Founder-friendly pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
           <p className="text-center text-sm md:text-base mb-12 md:mb-16 font-normal px-4" style={{ color: 'rgba(255,255,255,0.65)' }}>
             Choose the plan that's right for your team.{' '}
             <a href="/pricing" className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>
@@ -1763,7 +1763,7 @@ function LandingPage() {
             <div className="flex flex-col md:flex-row items-stretch" style={{ height: '100%' }}>
               <div className="text-center md:text-left flex items-center justify-center" style={{ backgroundColor: '#06271D', flex: faqSectionVisible ? '0 0 420px' : '1 1 100%', transition: 'flex 0.8s cubic-bezier(0.4, 0, 0.2, 1)', overflow: 'hidden', minWidth: '420px' }}>
                 <div className="w-full h-full flex items-center justify-center p-6 md:p-12">
-                  <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-white whitespace-nowrap">Frequently asked<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+                  <h2 className="section-header font-heading text-[1.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-white whitespace-nowrap">Frequently asked<span style={{ marginLeft: '0.05em' }}>.</span></h2>
                 </div>
               </div>
               <div style={{ backgroundColor: '#fff', flex: faqSectionVisible ? '1 1 700px' : '0 0 0px', opacity: faqSectionVisible ? 1 : 0, transition: 'flex 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease 0.3s', overflow: 'hidden' }}>
@@ -1907,9 +1907,9 @@ function LandingPage() {
             100% { transform: translateX(calc(-160px * 7)); }
           }
 
-          /* Reduce tilt effect on mobile */
+          /* Remove tilt but keep slide-up on mobile */
           .tilty-card {
-            transform: rotateX(0deg) !important;
+            transform: rotateX(0deg) translateY(var(--card-slide-up, 0px)) !important;
           }
         }
 
@@ -2056,11 +2056,17 @@ function LandingPage() {
         }
 
         .text-line {
-          height: 6px;
+          height: 3px;
           background-color: #e5e7eb;
           border-radius: 3px;
           transform-origin: left;
           transform: scaleX(0);
+        }
+
+        @media (min-width: 768px) {
+          .text-line {
+            height: 6px;
+          }
         }
 
         .text-line-visible {
