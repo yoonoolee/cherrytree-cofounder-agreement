@@ -129,7 +129,7 @@ function PricingPage() {
       <section className="pt-24 md:pt-32 pb-24 md:pb-32 px-4 md:px-6" style={{ backgroundColor: '#06271D' }}>
         <div className="max-w-6xl mx-auto">
           <div className="hero-content text-center mb-10 md:mb-16">
-            <h1 className="font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium mb-4 md:mb-6 text-white">
+            <h1 className="font-heading text-[1.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium mb-4 md:mb-6 text-white">
               Founder-friendly pricing<span style={{ marginLeft: '0.05em' }}>.</span>
             </h1>
             <p className="text-sm md:text-[16px] font-normal" style={{ color: 'rgba(255,255,255,0.65)' }}>
@@ -140,80 +140,125 @@ function PricingPage() {
             </p>
           </div>
 
-          <div className="max-w-6xl mx-auto" style={{ border: '1px solid rgba(255, 255, 255, 0.2)' }}>
-            {/* Top row: names + descriptions */}
-            <div className="grid grid-cols-1 sm:grid-cols-2">
-              {[
-                { name: 'Bootstrapped', description: 'Ideal for early-stage or bootstrapped teams\nthat need to move fast and start building now.' },
-                { name: 'Scale', description: 'Built for funded teams that need deeper control,\ngreater detail, and stronger foundations.' }
-              ].map((plan, i) => (
-                <div
-                  key={i}
-                  className="text-left p-6 md:p-8 pb-4 md:pb-6"
-                  style={{
-                    borderRight: i === 0 ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
-                  }}
-                >
-                  <h3 className="mb-2 text-white" style={{ fontSize: '1.5rem', fontWeight: 400 }}>{plan.name}</h3>
-                  <p className="text-sm md:text-base whitespace-pre-line" style={{ color: 'rgba(255,255,255,0.5)' }}>{plan.description}</p>
-                </div>
-              ))}
-            </div>
-            {/* Divider */}
-            <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
-            {/* Bottom row: price+button on left, features on right */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 items-stretch">
-              {[
-                { name: 'Bootstrapped', price: '$200', featured: true, features: ['Expert-designed survey', 'Comprehensive agreements', 'Proprietary equity calculator', 'Best practices and tips', 'Up to 5 collaborators'] },
-                { name: 'Scale', price: '$800', featured: false, features: ['Everything in Bootstrapped', 'Final attorney review', 'Personalized onboarding', 'Cofounder coaching', 'Priority support'] }
-              ].map((plan, i) => (
-                <div
-                  key={i}
-                  className="flex flex-row text-left p-6 md:p-8 overflow-hidden"
-                  style={{
-                    borderRight: i === 0 ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
-                  }}
-                >
-                  <div className="flex flex-col justify-between" style={{ minWidth: '180px' }}>
-                    <div className="text-4xl md:text-5xl font-normal text-white">{plan.price}</div>
-                    <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>One-time payment</p>
-                    <button
-                      onClick={() => {
-                        const isProduction = window.location.hostname.includes('cherrytree.app');
-                        if (isProduction) {
-                          window.location.href = 'https://my.cherrytree.app/dashboard';
-                        } else {
-                          navigate('/dashboard', { replace: true });
-                        }
-                      }}
-                      className={`px-6 md:px-10 py-3 md:py-4 rounded-md text-sm md:text-base font-normal transition whitespace-nowrap ${
-                        plan.featured
-                          ? 'button-shimmer-dark bg-white text-[#06271D] hover:bg-gray-100'
-                          : 'bg-white/10 text-white hover:bg-white/20'
-                      }`}
+          {(() => {
+            const plans = [
+              { name: 'Bootstrapped', price: '$200', description: 'Ideal for early-stage or bootstrapped teams\nthat need to move fast and start building now.', featured: true, features: ['Expert-designed survey', 'Comprehensive agreements', 'Proprietary equity calculator', 'Best practices and tips', 'Up to 5 collaborators'] },
+              { name: 'Scale', price: '$800', description: 'Built for funded teams that need deeper control,\ngreater detail, and stronger foundations.', featured: false, features: ['Everything in Bootstrapped', 'Final attorney review', 'Personalized onboarding', 'Cofounder coaching', 'Priority support'] }
+            ];
+            return (
+              <>
+                {/* Mobile: stacked complete cards */}
+                <div className="sm:hidden" style={{ border: '1px solid rgba(255, 255, 255, 0.2)' }}>
+                  {plans.map((plan, i) => (
+                    <div
+                      key={i}
+                      className="text-left p-6"
+                      style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.2)' }}
                     >
-                      Get started
-                    </button>
+                      <h3 className="mb-2 text-white" style={{ fontSize: '1.5rem', fontWeight: 400 }}>{plan.name}</h3>
+                      <p className="text-sm whitespace-pre-line mb-5" style={{ color: 'rgba(255,255,255,0.5)' }}>{plan.description}</p>
+                      <div className="flex items-center justify-between mb-5">
+                        <div>
+                          <div className="text-4xl font-normal text-white">{plan.price}</div>
+                          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>One-time payment</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            const isProduction = window.location.hostname.includes('cherrytree.app');
+                            if (isProduction) {
+                              window.location.href = 'https://my.cherrytree.app/dashboard';
+                            } else {
+                              navigate('/dashboard', { replace: true });
+                            }
+                          }}
+                          className={`px-6 py-3 rounded-md text-sm font-normal transition whitespace-nowrap ${
+                            plan.featured
+                              ? 'button-shimmer-dark bg-white text-[#06271D] hover:bg-gray-100'
+                              : 'bg-white/10 text-white hover:bg-white/20'
+                          }`}
+                        >
+                          Get started
+                        </button>
+                      </div>
+                      <div className="my-5" style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
+                      <ul className="space-y-3">
+                        {plan.features.map((feature, j) => (
+                          <li key={j} className="flex items-center gap-2 text-sm">
+                            <span className="flex items-center justify-center flex-shrink-0" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>✓</span>
+                            <span style={{ color: 'rgba(255,255,255,0.8)' }}>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                  <div className="p-6 text-center" style={{ color: 'rgba(255,255,255,0.65)' }}>
+                    <p className="text-sm">Run a fund or accelerator and want to deploy in bulk? <a href="#" onClick={(e) => { e.preventDefault(); window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>Contact sales</a></p>
                   </div>
-                  <div className="-my-6 md:-my-8 ml-8 mr-6" style={{ width: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
-                  <ul className="space-y-3 text-left">
-                    {plan.features.map((feature, j) => (
-                      <li key={j} className="flex items-center gap-2 text-sm md:text-base">
-                        <span className="flex items-center justify-center flex-shrink-0" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>✓</span>
-                        <span style={{ color: 'rgba(255,255,255,0.8)' }}>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
-              ))}
-            </div>
-            {/* Divider */}
-            <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
-            {/* Third row */}
-            <div className="p-6 md:p-8 text-center" style={{ color: 'rgba(255,255,255,0.65)' }}>
-              <p className="text-sm md:text-base">Running a fund or accelerator and want to deploy in bulk? <a href="#" onClick={(e) => { e.preventDefault(); window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>Contact sales</a></p>
-            </div>
-          </div>
+
+                {/* Desktop: split grid layout */}
+                <div className="hidden sm:block max-w-6xl mx-auto" style={{ border: '1px solid rgba(255, 255, 255, 0.2)' }}>
+                  <div className="grid grid-cols-2">
+                    {plans.map((plan, i) => (
+                      <div
+                        key={i}
+                        className="text-left p-6 md:p-8 pb-4 md:pb-6"
+                        style={{ borderRight: i === 0 ? '1px solid rgba(255, 255, 255, 0.2)' : 'none' }}
+                      >
+                        <h3 className="mb-2 text-white" style={{ fontSize: '1.5rem', fontWeight: 400 }}>{plan.name}</h3>
+                        <p className="text-sm md:text-base whitespace-pre-line" style={{ color: 'rgba(255,255,255,0.5)' }}>{plan.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
+                  <div className="grid grid-cols-2 items-stretch">
+                    {plans.map((plan, i) => (
+                      <div
+                        key={i}
+                        className="flex flex-row text-left p-6 md:p-8 overflow-hidden"
+                        style={{ borderRight: i === 0 ? '1px solid rgba(255, 255, 255, 0.2)' : 'none' }}
+                      >
+                        <div className="flex flex-col justify-between" style={{ minWidth: '180px' }}>
+                          <div className="text-4xl md:text-5xl font-normal text-white">{plan.price}</div>
+                          <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>One-time payment</p>
+                          <button
+                            onClick={() => {
+                              const isProduction = window.location.hostname.includes('cherrytree.app');
+                              if (isProduction) {
+                                window.location.href = 'https://my.cherrytree.app/dashboard';
+                              } else {
+                                navigate('/dashboard', { replace: true });
+                              }
+                            }}
+                            className={`px-6 md:px-10 py-3 md:py-4 rounded-md text-sm md:text-base font-normal transition whitespace-nowrap ${
+                              plan.featured
+                                ? 'button-shimmer-dark bg-white text-[#06271D] hover:bg-gray-100'
+                                : 'bg-white/10 text-white hover:bg-white/20'
+                            }`}
+                          >
+                            Get started
+                          </button>
+                        </div>
+                        <div className="-my-6 md:-my-8 ml-8 mr-6" style={{ width: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
+                        <ul className="space-y-3 text-left">
+                          {plan.features.map((feature, j) => (
+                            <li key={j} className="flex items-center gap-2 text-sm md:text-base">
+                              <span className="flex items-center justify-center flex-shrink-0" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>✓</span>
+                              <span style={{ color: 'rgba(255,255,255,0.8)' }}>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
+                  <div className="p-6 md:p-8 text-center" style={{ color: 'rgba(255,255,255,0.65)' }}>
+                    <p className="text-sm md:text-base">Run a fund or accelerator and want to deploy in bulk? <a href="#" onClick={(e) => { e.preventDefault(); window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>Contact sales</a></p>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
         </div>
       </section>
 
@@ -344,11 +389,11 @@ function PricingPage() {
 
           {/* Logo Grid */}
           <div className="mt-16 max-w-7xl mx-auto">
-            <div className="flex flex-wrap justify-between items-center gap-y-6">
+            <div className="grid grid-cols-3 md:flex md:flex-wrap md:justify-between items-center gap-y-6 justify-items-center">
               {logos.map((logo, i) => (
                 <div
                   key={`${logo.alt}-${i}`}
-                  className="flex items-center justify-center w-20 md:w-24 transition-opacity duration-500"
+                  className={`flex items-center justify-center h-8 md:w-24 transition-opacity duration-500${i >= 6 ? ' hidden md:flex' : ''}`}
                   style={{
                     opacity: isFading ? 0 : 1,
                     transitionDelay: isFading ? '0ms' : `${i * 100}ms`

@@ -593,9 +593,12 @@ function LandingPage() {
         if (entry.isIntersecting) {
           setters[id](true);
         } else {
-          const rect = entry.target.getBoundingClientRect();
-          if (rect.top > window.innerHeight * 0.5) {
-            setters[id](false);
+          // Only reset on desktop to avoid mobile glitching
+          if (window.innerWidth >= 768) {
+            const rect = entry.target.getBoundingClientRect();
+            if (rect.top > window.innerHeight * 0.5) {
+              setters[id](false);
+            }
           }
         }
       });
@@ -607,6 +610,7 @@ function LandingPage() {
     // Observe FAQ section (re-triggers each time scrolled to from above)
     // Use two observers: one to trigger at 40% visible, one to reset when section top enters viewport bottom
     let faqResetTimer;
+    const faqThreshold = window.innerWidth < 768 ? 0.5 : 0.3;
     const faqTriggerObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -614,7 +618,7 @@ function LandingPage() {
           setFaqSectionVisible(true);
         }
       });
-    }, { threshold: 0.3 });
+    }, { threshold: faqThreshold });
 
     const faqResetObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -830,7 +834,7 @@ function LandingPage() {
       <section className="px-4 md:px-6 pt-20 md:pt-32 lg:pt-40 pb-8 md:pb-14" style={{ background: 'linear-gradient(to bottom, #06271D 85%, #ffffff 85%)' }}>
         <div className="max-w-6xl mx-auto text-center">
           <div className="hero-content">
-            <h1 className="font-heading text-[2rem] sm:text-[4rem] md:text-[5rem] lg:text-[6rem] font-normal text-white mb-4 md:mb-6 h-[100px] sm:h-auto sm:min-h-[132px] md:min-h-[154px] overflow-hidden" style={{
+            <h1 className="font-heading text-[2rem] sm:text-[4rem] md:text-[5rem] lg:text-[6rem] font-normal text-white mb-1 md:mb-6 h-[100px] sm:h-auto sm:min-h-[132px] md:min-h-[170px] overflow-hidden pb-2 md:pb-3" style={{
               filter: productsHovered ? 'blur(1.5px)' : 'none',
               transition: 'filter 0.3s ease'
             }}>
@@ -1500,11 +1504,11 @@ function LandingPage() {
 
           {/* Logo Grid */}
           <div className="mt-16 max-w-7xl mx-auto">
-            <div className="flex flex-wrap justify-between items-center gap-y-6">
+            <div className="grid grid-cols-3 md:flex md:flex-wrap md:justify-between items-center gap-y-6 justify-items-center">
               {logos.map((logo, i) => (
                 <div
                   key={`built-${logo.alt}-${i}`}
-                  className={`flex items-center justify-center w-20 md:w-24 transition-opacity duration-500${i >= 6 ? ' hidden md:flex' : ''}`}
+                  className={`flex items-center justify-center h-8 md:w-24 transition-opacity duration-500${i >= 6 ? ' hidden md:flex' : ''}`}
                   style={{
                     opacity: isFading ? 0 : 1,
                     transitionDelay: isFading ? '0ms' : `${logoDelayOrder[i] * 120}ms`
@@ -1532,7 +1536,7 @@ function LandingPage() {
           </div>
           <div className="flex flex-col gap-16 md:gap-[140px]" style={{ maxWidth: '80rem', margin: '0 auto 48px auto', padding: '0 24px' }}>
             <div ref={featureRow1Ref} data-feature-row="1" className="flex flex-col md:flex-row items-center gap-6 md:gap-12 w-full">
-            <div className="w-full md:w-[33rem] md:max-w-[46%] aspect-square overflow-hidden" style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', opacity: featureRow1Visible ? 1 : 0, transform: featureRow1Visible ? 'translateY(0)' : 'translateY(40px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+            <div className={`feature-slide-left${featureRow1Visible ? ' feature-visible' : ''} w-full md:w-[33rem] md:max-w-[46%] aspect-square overflow-hidden`} style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
               {/* Mini animation preview */}
               <div ref={cardDocRef} style={{ backgroundColor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', width: '100%', aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
                 <div
@@ -1576,7 +1580,7 @@ function LandingPage() {
               </div>
             </div>
             <div ref={featureRow2Ref} data-feature-row="2" className="flex flex-col md:flex-row-reverse items-center gap-6 md:gap-12 w-full">
-              <div ref={cardEquityRef} className="w-full md:w-[33rem] md:max-w-[46%] aspect-square" style={{ background: 'linear-gradient(45deg, #1a6b52 0%, #042018 100%)', borderRadius: '14px', padding: '24px', border: 'none', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', color: '#ffffff', overflow: 'hidden', position: 'relative', opacity: featureRow2Visible ? 1 : 0, transform: featureRow2Visible ? 'translateY(0)' : 'translateY(40px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+              <div ref={cardEquityRef} className={`feature-slide-right${featureRow2Visible ? ' feature-visible' : ''} w-full md:w-[33rem] md:max-w-[46%] aspect-square`} style={{ background: 'linear-gradient(45deg, #1a6b52 0%, #042018 100%)', borderRadius: '14px', padding: '24px', border: 'none', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', color: '#ffffff', overflow: 'hidden', position: 'relative' }}>
                   <div className="scale-[0.65] md:scale-[1.155]" style={{ transformOrigin: 'center top', marginTop: '12px' }}>
                     <div className={`equity-table ${cardEquityVisible ? 'equity-table-visible' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                       <div className="grid gap-1 md:gap-2 px-2 md:px-3 py-1 md:py-2" style={{ gridTemplateColumns: '100px 50px 50px 50px', backgroundColor: '#f7f7f7', borderRadius: '6px 6px 0 0' }}>
@@ -1617,7 +1621,7 @@ function LandingPage() {
               </div>
             </div>
             <div ref={featureRow3Ref} data-feature-row="3" className="flex flex-col md:flex-row items-center gap-6 md:gap-12 w-full">
-              <div ref={cardExpertRef} className="w-full md:w-[33rem] md:max-w-[46%] aspect-square" style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', overflow: 'hidden', position: 'relative', opacity: featureRow3Visible ? 1 : 0, transform: featureRow3Visible ? 'translateY(0)' : 'translateY(40px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+              <div ref={cardExpertRef} className={`feature-slide-left${featureRow3Visible ? ' feature-visible' : ''} w-full md:w-[33rem] md:max-w-[46%] aspect-square`} style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', overflow: 'hidden', position: 'relative' }}>
                 <div className="p-3 gap-3 md:p-6 md:pt-10 md:gap-5" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'stretch', width: '100%', height: '100%', position: 'relative' }}>
                   {/* Contact icons */}
                   <div
@@ -1659,8 +1663,8 @@ function LandingPage() {
                 <p className="text-sm md:text-lg" style={{ color: '#444', lineHeight: 1.6 }}>We are a team of cofounder coaches, founders, and attorneys<br />ready to help. You're in good hands every step of the way.</p>
               </div>
             </div>
-            <div ref={featureRow4Ref} data-feature-row="4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-              <div style={{ borderRadius: '14px', border: 'none', width: '100%', overflow: 'hidden', position: 'relative', opacity: featureRow4Visible ? 1 : 0, transform: featureRow4Visible ? 'translateY(0)' : 'translateY(40px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+            <div ref={featureRow4Ref} data-feature-row="4" className="-mx-3 md:mx-0" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 'auto' }}>
+              <div className="w-full" style={{ borderRadius: '14px', border: 'none', overflow: 'hidden', position: 'relative', opacity: featureRow4Visible ? 1 : 0, transform: featureRow4Visible ? 'translateY(0)' : 'translateY(40px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
                 <video src="/images/thiscofoundervideo.mp4" autoPlay muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: '14px', filter: 'saturate(1.5) contrast(1.15)' }} />
               </div>
             </div>
@@ -1679,9 +1683,64 @@ function LandingPage() {
               Compare plans.
             </a>
           </p>
-          <div className="max-w-6xl mx-auto" style={{ border: '1px solid rgba(255, 255, 255, 0.2)' }}>
+          {/* Mobile: stacked complete cards */}
+          <div className="sm:hidden" style={{ border: '1px solid rgba(255, 255, 255, 0.2)' }}>
+            {pricingPlans.map((plan, i) => (
+              <div
+                key={i}
+                ref={plan.featured ? pricingCardRef : null}
+                className="text-left p-6"
+                style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.2)' }}
+              >
+                <h3 className="mb-2 text-white" style={{ fontSize: '1.5rem', fontWeight: 400 }}>{plan.name}</h3>
+                <p className="text-sm whitespace-pre-line mb-5" style={{ color: 'rgba(255,255,255,0.5)' }}>{plan.description}</p>
+                <div className="flex items-center justify-between mb-5">
+                  <div>
+                    <div className="text-4xl font-normal text-white">{plan.price}</div>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>One-time payment</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (plan.name === 'Enterprise') {
+                        window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 });
+                      } else {
+                        const isProduction = window.location.hostname.includes('cherrytree.app');
+                        if (isProduction) {
+                          window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
+                        } else {
+                          navigate('/dashboard', { replace: true });
+                        }
+                      }
+                    }}
+                    className={`px-6 py-3 rounded-md text-sm font-normal transition whitespace-nowrap ${
+                      plan.featured
+                        ? 'button-shimmer-dark bg-white text-[#06271D] hover:bg-gray-100'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                    }`}
+                  >
+                    {plan.name === 'Enterprise' ? 'Contact sales' : 'Get started'}
+                  </button>
+                </div>
+                <div className="my-5" style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
+                <ul className="space-y-3">
+                  {plan.features.map((feature, j) => (
+                    <li key={j} className="flex items-center gap-2 text-sm">
+                      <span className="flex items-center justify-center flex-shrink-0" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>✓</span>
+                      <span style={{ color: 'rgba(255,255,255,0.8)' }}>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+            <div className="p-6 text-center" style={{ color: 'rgba(255,255,255,0.65)' }}>
+              <p className="text-sm content-visible">Run a fund or accelerator and want to deploy in bulk? <a href="#" onClick={(e) => { e.preventDefault(); window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>Contact sales</a></p>
+            </div>
+          </div>
+
+          {/* Desktop: split grid layout */}
+          <div className="hidden sm:block max-w-6xl mx-auto" style={{ border: '1px solid rgba(255, 255, 255, 0.2)' }}>
             {/* Top row: names + descriptions */}
-            <div className="grid grid-cols-1 sm:grid-cols-2">
+            <div className="grid grid-cols-2">
               {pricingPlans.map((plan, i) => (
                 <div
                   key={i}
@@ -1698,11 +1757,11 @@ function LandingPage() {
             {/* Divider */}
             <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
             {/* Bottom row: price+button on left, features on right */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 items-stretch">
+            <div className="grid grid-cols-2 items-stretch">
               {pricingPlans.map((plan, i) => (
                 <div
                   key={i}
-                  ref={plan.featured ? pricingCardRef : null}
+                  ref={plan.featured ? undefined : undefined}
                   className="flex flex-row text-left p-6 md:p-8 overflow-hidden"
                   style={{
                     borderRight: i === 0 ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
@@ -1749,7 +1808,7 @@ function LandingPage() {
             <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
             {/* Third row */}
             <div className="p-6 md:p-8 text-center" style={{ color: 'rgba(255,255,255,0.65)' }}>
-              <p className="text-sm md:text-base content-visible">Running a fund or accelerator and want to deploy in bulk? <a href="#" onClick={(e) => { e.preventDefault(); window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>Contact sales</a></p>
+              <p className="text-sm md:text-base content-visible">Run a fund or accelerator and want to deploy in bulk? <a href="#" onClick={(e) => { e.preventDefault(); window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>Contact sales</a></p>
             </div>
           </div>
 
@@ -1757,17 +1816,18 @@ function LandingPage() {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" ref={faqSectionRef} className="scroll-section py-24 md:py-36 px-4 md:px-6">
+      <section id="faq" ref={faqSectionRef} className="scroll-section py-16 md:py-36 px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="mx-auto" style={{ maxWidth: '1120px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #06271D', height: '580px' }}>
-            <div className="flex flex-col md:flex-row items-stretch" style={{ height: '100%' }}>
-              <div className="text-center md:text-left flex items-center justify-center" style={{ backgroundColor: '#06271D', flex: faqSectionVisible ? '0 0 420px' : '1 1 100%', transition: 'flex 0.8s cubic-bezier(0.4, 0, 0.2, 1)', overflow: 'hidden', minWidth: '420px' }}>
-                <div className="w-full h-full flex items-center justify-center p-6 md:p-12">
-                  <h2 className="section-header font-heading text-[1.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-white whitespace-nowrap">Frequently asked<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+          {/* Desktop FAQ */}
+          <div className="hidden md:block mx-auto" style={{ maxWidth: '1120px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #06271D', height: '580px' }}>
+            <div className="flex flex-row items-stretch" style={{ height: '100%' }}>
+              <div className="text-left flex items-center justify-center" style={{ backgroundColor: '#06271D', flex: faqSectionVisible ? '0 0 420px' : '1 1 100%', transition: 'flex 0.8s cubic-bezier(0.4, 0, 0.2, 1)', overflow: 'hidden', minWidth: '420px' }}>
+                <div className="w-full h-full flex items-center justify-center p-12">
+                  <h2 className="section-header font-heading text-[3.63rem] font-medium text-white whitespace-nowrap">Frequently asked<span style={{ marginLeft: '0.05em' }}>.</span></h2>
                 </div>
               </div>
               <div style={{ backgroundColor: '#fff', flex: faqSectionVisible ? '1 1 700px' : '0 0 0px', opacity: faqSectionVisible ? 1 : 0, transition: 'flex 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease 0.3s', overflow: 'hidden' }}>
-                <div ref={faqContentRef} className="w-full h-full p-6 md:p-8 overflow-y-auto">
+                <div ref={faqContentRef} className="w-full h-full p-8 overflow-y-auto">
                 {faqs.map((faq, i) => (
                   <div key={i} ref={el => faqItemRefs.current[i] = el} className={`accordion-item ${i < faqs.length - 1 ? 'border-b border-gray-300' : ''}`}>
                     <button
@@ -1785,20 +1845,55 @@ function LandingPage() {
                           }, 50);
                         }
                       }}
-                      className={`accordion-title w-full py-4 md:py-5 px-3 md:px-4 flex justify-between items-center transition text-left`}
+                      className="accordion-title w-full py-5 px-4 flex justify-between items-center transition text-left"
                       style={{ backgroundColor: openFaq === i ? '#faf6f5' : 'transparent' }}
                       onMouseEnter={e => { if (openFaq !== i) e.currentTarget.style.backgroundColor = '#faf6f5'; }}
                       onMouseLeave={e => { if (openFaq !== i) e.currentTarget.style.backgroundColor = 'transparent'; }}
                     >
-                      <span className="font-normal text-black text-sm md:text-base pr-4">{faq.q}</span>
+                      <span className="font-normal text-black text-base pr-4">{faq.q}</span>
                       <span className={`accordion-icon text-gray-400 font-light transition-all duration-300 flex-shrink-0 text-xl ${openFaq === i ? 'rotate-90 scale-110 text-gray-700' : ''}`}>
                         +
                       </span>
                     </button>
                     <div
-                      className={`accordion-content overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-[1000px] py-6 md:py-8 px-3 md:px-4' : 'max-h-0 py-0 px-3 md:px-4'}`}
+                      className={`accordion-content overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-[1000px] py-8 px-4' : 'max-h-0 py-0 px-4'}`}
                     >
-                      <p className="text-gray-600 text-sm md:text-[0.95rem]">{faq.a}</p>
+                      <p className="text-gray-600 text-[0.95rem]">{faq.a}</p>
+                    </div>
+                  </div>
+                ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile FAQ */}
+          <div className="md:hidden mx-auto" style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid #06271D' }}>
+            <div className="flex flex-col">
+              <div className="text-center flex items-center justify-center" style={{ backgroundColor: '#06271D', padding: '40px 24px', transition: 'padding 0.6s cubic-bezier(0.4, 0, 0.2, 1)', ...(faqSectionVisible ? { padding: '24px' } : {}) }}>
+                <h2 className="section-header font-heading text-[1.75rem] font-medium text-white">Frequently asked<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+              </div>
+              <div style={{ backgroundColor: '#fff', maxHeight: faqSectionVisible ? '2000px' : '0px', opacity: faqSectionVisible ? 1 : 0, transition: 'max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease 0.2s', overflow: 'hidden' }}>
+                <div className="w-full p-4">
+                {faqs.map((faq, i) => (
+                  <div key={i} className={`accordion-item ${i < faqs.length - 1 ? 'border-b border-gray-300' : ''}`}>
+                    <button
+                      onClick={() => {
+                        const next = openFaq === i ? null : i;
+                        setOpenFaq(next);
+                      }}
+                      className="accordion-title w-full py-4 px-3 flex justify-between items-center transition text-left"
+                      style={{ backgroundColor: openFaq === i ? '#faf6f5' : 'transparent' }}
+                    >
+                      <span className="font-normal text-black text-sm pr-4">{faq.q}</span>
+                      <span className={`accordion-icon text-gray-400 font-light transition-all duration-300 flex-shrink-0 text-xl ${openFaq === i ? 'rotate-90 scale-110 text-gray-700' : ''}`}>
+                        +
+                      </span>
+                    </button>
+                    <div
+                      className={`accordion-content overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-[1000px] py-5 px-3' : 'max-h-0 py-0 px-3'}`}
+                    >
+                      <p className="text-gray-600 text-sm">{faq.a}</p>
                     </div>
                   </div>
                 ))}

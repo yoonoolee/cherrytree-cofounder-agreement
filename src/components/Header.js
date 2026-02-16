@@ -8,6 +8,7 @@ function Header({ variant = 'light', onProductsHover }) {
   const location = useLocation();
   const { currentUser: user, loading } = useUser();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const lastScrollY = useRef(0);
@@ -15,13 +16,25 @@ function Header({ variant = 'light', onProductsHover }) {
 
   useEffect(() => {
     const handleScroll = () => {
+      if (mobileMenuOpen) return;
       const currentScrollY = window.scrollY;
       setHidden(currentScrollY > lastScrollY.current && currentScrollY > 10);
       lastScrollY.current = currentScrollY;
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [mobileMenuOpen]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+      setHidden(false);
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenuOpen]);
 
   const handleProductsEnter = () => {
     clearTimeout(productsTimeout.current);
@@ -39,6 +52,7 @@ function Header({ variant = 'light', onProductsHover }) {
 
   const handleNavigation = (path) => {
     setMobileMenuOpen(false);
+    setMobileProductsOpen(false);
     navigate(path);
   };
 
@@ -65,6 +79,14 @@ function Header({ variant = 'light', onProductsHover }) {
   const headerBg = isDark ? 'bg-[#06271D]' : 'bg-white';
 
   return (
+    <>
+    {/* Backdrop to close mobile menu */}
+    {mobileMenuOpen && (
+      <div
+        className="md:hidden fixed inset-0 z-40"
+        onClick={() => setMobileMenuOpen(false)}
+      />
+    )}
     <div
       className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-200 ${hidden ? '-translate-y-full' : 'translate-y-0'}`}
       style={{ pointerEvents: 'none' }}
@@ -154,14 +176,14 @@ function Header({ variant = 'light', onProductsHover }) {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                     d="M6 18L18 6M6 6l12 12"
                   />
                 ) : (
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                     d="M4 8h16M4 16h16"
                   />
                 )}
@@ -169,91 +191,103 @@ function Header({ variant = 'light', onProductsHover }) {
             </button>
           </div>
 
-          {/* Mobile menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden border-t border-gray-200 bg-white">
-              <nav className="flex flex-col py-4">
-                <div className="px-4 py-2 text-xs text-gray-400 uppercase">Products</div>
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    const isProduction = window.location.hostname.includes('cherrytree.app');
-                    if (isProduction) {
-                      window.location.href = 'https://my.cherrytree.app/dashboard';
-                    } else {
-                      navigate('/dashboard', { replace: true });
-                    }
-                  }}
-                  className="text-[#808080] hover:text-black hover:bg-gray-50 transition px-6 py-3 text-left text-sm"
-                >
-                  Contract Creator
-                </button>
-                <button
-                  onClick={() => handleNavigation('/equity-calculator')}
-                  className={`${location.pathname === '/equity-calculator' ? 'text-black bg-gray-50' : 'text-[#808080]'} hover:text-black hover:bg-gray-50 transition px-6 py-3 text-left text-sm`}
-                >
-                  Equity Calculator
-                </button>
-                <a
-                  href="https://cherrytree.beehiiv.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-[#808080] hover:text-black hover:bg-gray-50 transition px-6 py-3 text-left text-sm"
-                >
-                  Newsletter
-                </a>
-                <a
-                  href="https://app.hubble.social/timhe"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-[#808080] hover:text-black hover:bg-gray-50 transition px-6 py-3 text-left text-sm"
-                >
-                  Coaching
-                </a>
-                <div className="border-t border-gray-200 my-2"></div>
-                <button
-                  onClick={() => handleNavigation('/pricing')}
-                  className={`${location.pathname === '/pricing' ? 'text-black bg-gray-50' : 'text-[#808080]'} hover:text-black hover:bg-gray-50 transition px-4 py-3 text-left text-sm`}
-                >
-                  Pricing
-                </button>
-                <button
-                  onClick={() => handleNavigation('/about')}
-                  className={`${location.pathname === '/about' ? 'text-black bg-gray-50' : 'text-[#808080]'} hover:text-black hover:bg-gray-50 transition px-4 py-3 text-left text-sm`}
-                >
-                  About
-                </button>
-
-                <div className="border-t border-gray-200 mt-2 pt-2">
-                  {!loading && (user ? (
-                    <button
-                      onClick={handleDashboardNavigation}
-                      className="text-[#808080] hover:text-black hover:bg-gray-50 transition px-4 py-3 text-left text-sm w-full"
-                    >
-                      Dashboard
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleLoginNavigation}
-                      className="text-[#808080] hover:text-black hover:bg-gray-50 transition px-4 py-3 text-left text-sm w-full"
-                    >
-                      Login
-                    </button>
-                  ))}
-                  <button
-                    onClick={handleDashboardNavigation}
-                    className="button-shimmer bg-[#000000] text-white px-4 py-3 rounded hover:bg-[#1a1a1a] transition mx-4 mt-2 text-sm w-[calc(100%-2rem)]"
-                  >
-                    Get started
-                  </button>
-                </div>
-              </nav>
-            </div>
-          )}
         </div>
       </header>
+
+      {/* Mobile menu overlay */}
+      <div
+        className={`md:hidden bg-white transition-all duration-300 ease-in-out overflow-hidden ${mobileMenuOpen ? 'max-h-[calc(100vh-64px)] opacity-100' : 'max-h-0 opacity-0'}`}
+        style={{ pointerEvents: mobileMenuOpen ? 'auto' : 'none', borderBottom: mobileMenuOpen ? '1px solid #e5e7eb' : 'none', boxShadow: mobileMenuOpen ? '0 4px 12px rgba(0,0,0,0.08)' : 'none', borderRadius: '0 0 12px 12px' }}
+      >
+        <nav className="flex flex-col py-4 px-2">
+          <button
+            onClick={() => setMobileProductsOpen(!mobileProductsOpen)}
+            className="px-6 py-3 text-sm text-gray-500 uppercase flex items-center gap-1.5 w-full text-left"
+          >
+            Products
+            <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${mobileProductsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${mobileProductsOpen ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setMobileProductsOpen(false);
+                const isProduction = window.location.hostname.includes('cherrytree.app');
+                if (isProduction) {
+                  window.location.href = 'https://my.cherrytree.app/dashboard';
+                } else {
+                  navigate('/dashboard', { replace: true });
+                }
+              }}
+              className="text-gray-600 active:bg-gray-50 transition px-10 py-3 text-left text-base w-full"
+            >
+              Contract Creator
+            </button>
+            <button
+              onClick={() => { setMobileProductsOpen(false); handleNavigation('/equity-calculator'); }}
+              className="text-gray-600 active:bg-gray-50 transition px-10 py-3 text-left text-base w-full"
+            >
+              Equity Calculator
+            </button>
+            <a
+              href="https://cherrytree.beehiiv.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => { setMobileMenuOpen(false); setMobileProductsOpen(false); }}
+              className="text-gray-600 active:bg-gray-50 transition px-10 py-3 text-left text-base block"
+            >
+              Newsletter
+            </a>
+            <a
+              href="https://app.hubble.social/timhe"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => { setMobileMenuOpen(false); setMobileProductsOpen(false); }}
+              className="text-gray-600 active:bg-gray-50 transition px-10 py-3 text-left text-base block"
+            >
+              Coaching
+            </a>
+          </div>
+          <button
+            onClick={() => handleNavigation('/pricing')}
+            className="text-gray-500 active:bg-gray-50 transition px-6 py-3 text-left text-sm uppercase"
+          >
+            Pricing
+          </button>
+          <button
+            onClick={() => handleNavigation('/about')}
+            className="text-gray-500 active:bg-gray-50 transition px-6 py-3 text-left text-sm uppercase"
+          >
+            About
+          </button>
+
+          <div className="mt-2 pt-2">
+            {!loading && (user ? (
+              <button
+                onClick={handleDashboardNavigation}
+                className="text-gray-500 active:bg-gray-50 transition px-6 py-3 text-left text-sm uppercase w-full"
+              >
+                Dashboard
+              </button>
+            ) : (
+              <button
+                onClick={handleLoginNavigation}
+                className="text-gray-500 active:bg-gray-50 transition px-6 py-3 text-left text-sm uppercase w-full"
+              >
+                Login
+              </button>
+            ))}
+            <button
+              onClick={handleDashboardNavigation}
+              className="button-shimmer bg-[#06271D] text-white px-6 py-3 rounded transition mx-6 mt-3 text-base w-[calc(100%-3rem)]"
+            >
+              Get started
+            </button>
+          </div>
+        </nav>
+      </div>
 
       {/* Products mega menu card - detached below header */}
       {productsOpen && (
@@ -331,6 +365,7 @@ function Header({ variant = 'light', onProductsHover }) {
         </div>
       )}
     </div>
+    </>
   );
 }
 
