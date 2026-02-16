@@ -75,7 +75,15 @@ function Footer({ bgColor, navigate: externalNavigate }) {
   }, [showCta]);
 
   return (
-    <footer className="relative pt-32 md:pt-44 pb-16 md:pb-20 mt-auto" style={{ backgroundColor: bgColor || '#ffffff' }}>
+    <footer className="relative pt-32 md:pt-44 pb-16 md:pb-20 mt-auto overflow-hidden" style={{ backgroundColor: bgColor || '#ffffff' }}>
+      {bgColor && (
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" style={{ opacity: 0.08, mixBlendMode: 'overlay' }}>
+          <filter id="footer-grain">
+            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+          </filter>
+          <rect width="100%" height="100%" filter="url(#footer-grain)" />
+        </svg>
+      )}
       <div className="max-w-7xl mx-auto relative z-10 px-4 md:px-6">
         <div className="footer-content bg-[#fbf6f5] rounded-xl md:rounded-2xl p-8 md:p-12 py-12 md:py-20">
           {/* CTA heading */}

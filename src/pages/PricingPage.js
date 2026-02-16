@@ -129,10 +129,10 @@ function PricingPage() {
       <section className="pt-24 md:pt-32 pb-24 md:pb-32 px-4 md:px-6" style={{ backgroundColor: '#06271D' }}>
         <div className="max-w-6xl mx-auto">
           <div className="hero-content text-center mb-10 md:mb-16">
-            <h1 className="font-heading text-3xl sm:text-4xl md:text-[56px] font-normal mb-4 md:mb-6 text-white">
+            <h1 className="font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium mb-4 md:mb-6 text-white">
               Founder-friendly pricing<span style={{ marginLeft: '0.05em' }}>.</span>
             </h1>
-            <p className="text-sm md:text-[16px] font-normal" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            <p className="text-sm md:text-[16px] font-normal" style={{ color: 'rgba(255,255,255,0.65)' }}>
               Choose the plan that's right for your team.{' '}
               <a href="/pricing" className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>
                 Compare plans.
@@ -210,7 +210,7 @@ function PricingPage() {
             {/* Divider */}
             <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
             {/* Third row */}
-            <div className="p-6 md:p-8 text-center" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            <div className="p-6 md:p-8 text-center" style={{ color: 'rgba(255,255,255,0.65)' }}>
               <p className="text-sm md:text-base">Running a fund or accelerator and want to deploy in bulk? <a href="#" onClick={(e) => { e.preventDefault(); window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>Contact sales</a></p>
             </div>
           </div>

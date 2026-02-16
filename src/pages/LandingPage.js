@@ -1673,7 +1673,7 @@ function LandingPage() {
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#06271D] to-transparent pointer-events-none"></div>
         <div className="max-w-6xl mx-auto relative">
           <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-center mb-3 md:mb-4 text-white">Founder-friendly pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
-          <p className="text-center text-sm md:text-base mb-12 md:mb-16 font-normal px-4" style={{ color: 'rgba(255,255,255,0.5)' }}>
+          <p className="text-center text-sm md:text-base mb-12 md:mb-16 font-normal px-4" style={{ color: 'rgba(255,255,255,0.65)' }}>
             Choose the plan that's right for your team.{' '}
             <a href="/pricing" className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>
               Compare plans.
@@ -1748,8 +1748,8 @@ function LandingPage() {
             {/* Divider */}
             <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
             {/* Third row */}
-            <div className="p-6 md:p-8 text-center" style={{ color: 'rgba(255,255,255,0.5)' }}>
-              <p className="text-sm md:text-base">Running a fund or accelerator and want to deploy in bulk? <a href="#" onClick={(e) => { e.preventDefault(); window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>Contact sales</a></p>
+            <div className="p-6 md:p-8 text-center" style={{ color: 'rgba(255,255,255,0.65)' }}>
+              <p className="text-sm md:text-base content-visible">Running a fund or accelerator and want to deploy in bulk? <a href="#" onClick={(e) => { e.preventDefault(); window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>Contact sales</a></p>
             </div>
           </div>
 

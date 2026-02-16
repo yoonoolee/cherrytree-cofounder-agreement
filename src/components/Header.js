@@ -62,9 +62,7 @@ function Header({ variant = 'light', onProductsHover }) {
     }
   };
 
-  const headerBg = productsOpen
-    ? 'bg-[#1A1520]'
-    : isDark ? 'bg-[#06271D]' : 'bg-white';
+  const headerBg = isDark ? 'bg-[#06271D]' : 'bg-white';
 
   return (
     <div
@@ -78,21 +76,21 @@ function Header({ variant = 'light', onProductsHover }) {
               <img
                 src="/images/cherrytree-logo.png"
                 alt="Cherrytree"
-                style={{ height: '32px', width: 'auto', ...((isDark || productsOpen) ? { filter: 'brightness(0) invert(1)' } : {}) }}
+                style={{ height: '32px', width: 'auto', ...(isDark ? { filter: 'brightness(0) invert(1)' } : {}) }}
               />
             </div>
 
             <nav className="hidden md:flex items-center gap-6 absolute left-1/2 transform -translate-x-1/2 text-sm">
               <div className="relative" onMouseEnter={handleProductsEnter}>
-                <button className={`flex items-center gap-1 ${(isDark || productsOpen) ? 'text-white hover:text-gray-200' : 'text-[#808080] hover:text-black'} transition`}>
+                <button className={`flex items-center gap-1 ${isDark ? 'text-white hover:text-gray-200' : 'text-[#808080] hover:text-black'} transition`}>
                   Products
                   <svg className={`w-3 h-3 transition-transform ${productsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
               </div>
-              <button onMouseEnter={() => { clearTimeout(productsTimeout.current); setProductsOpen(false); onProductsHover?.(false); }} onClick={() => navigate('/pricing')} className={`${(isDark || productsOpen) ? 'text-white hover:text-gray-200' : location.pathname === '/pricing' ? 'text-black' : 'text-[#808080] hover:text-black'} transition nav-link-underline`}>Pricing</button>
-              <button onMouseEnter={() => { clearTimeout(productsTimeout.current); setProductsOpen(false); onProductsHover?.(false); }} onClick={() => navigate('/about')} className={`${(isDark || productsOpen) ? 'text-white hover:text-gray-200' : location.pathname === '/about' ? 'text-black' : 'text-[#808080] hover:text-black'} transition nav-link-underline`}>About</button>
+              <button onMouseEnter={() => { clearTimeout(productsTimeout.current); setProductsOpen(false); onProductsHover?.(false); }} onClick={() => navigate('/pricing')} className={`${isDark ? 'text-white hover:text-gray-200' : location.pathname === '/pricing' ? 'text-black' : 'text-[#808080] hover:text-black'} transition nav-link-underline`}>Pricing</button>
+              <button onMouseEnter={() => { clearTimeout(productsTimeout.current); setProductsOpen(false); onProductsHover?.(false); }} onClick={() => navigate('/about')} className={`${isDark ? 'text-white hover:text-gray-200' : location.pathname === '/about' ? 'text-black' : 'text-[#808080] hover:text-black'} transition nav-link-underline`}>About</button>
             </nav>
 
             <div className="hidden md:flex items-center gap-4 text-sm">
@@ -106,7 +104,7 @@ function Header({ variant = 'light', onProductsHover }) {
                       navigate('/dashboard', { replace: true });
                     }
                   }}
-                  className={`${(isDark || productsOpen) ? 'text-white hover:text-gray-200' : 'text-[#808080] hover:text-black'} transition nav-link-underline`}
+                  className={`${isDark ? 'text-white hover:text-gray-200' : 'text-[#808080] hover:text-black'} transition nav-link-underline`}
                 >
                   Dashboard
                 </button>
@@ -120,7 +118,7 @@ function Header({ variant = 'light', onProductsHover }) {
                       navigate('/login');
                     }
                   }}
-                  className={`${(isDark || productsOpen) ? 'text-white hover:text-gray-200' : 'text-[#808080] hover:text-black'} transition nav-link-underline`}
+                  className={`${isDark ? 'text-white hover:text-gray-200' : 'text-[#808080] hover:text-black'} transition nav-link-underline`}
                 >
                   Login
                 </button>
@@ -134,7 +132,7 @@ function Header({ variant = 'light', onProductsHover }) {
                     navigate('/dashboard', { replace: true });
                   }
                 }}
-                className={`${(isDark || productsOpen) ? 'button-shimmer-dark bg-white text-[#06271D] hover:bg-gray-100' : 'button-shimmer bg-[#000000] text-white hover:bg-[#1a1a1a]'} px-5 py-2.5 rounded transition`}
+                className={`${isDark ? 'button-shimmer-dark bg-white text-[#06271D] hover:bg-gray-100' : 'button-shimmer bg-[#000000] text-white hover:bg-[#1a1a1a]'} px-5 py-2.5 rounded transition`}
               >
                 Get started
               </button>
@@ -143,7 +141,7 @@ function Header({ variant = 'light', onProductsHover }) {
             {/* Mobile hamburger menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`md:hidden flex items-center justify-center w-10 h-10 ${(isDark || productsOpen) ? 'text-white hover:text-gray-200' : 'text-gray-700 hover:text-black'} transition`}
+              className={`md:hidden flex items-center justify-center w-10 h-10 ${isDark ? 'text-white hover:text-gray-200' : 'text-gray-700 hover:text-black'} transition`}
               aria-label="Toggle mobile menu"
             >
               <svg
@@ -267,7 +265,8 @@ function Header({ variant = 'light', onProductsHover }) {
             onMouseLeave={handleProductsLeave}
           >
           <div
-            className="bg-[#1A1520] rounded-xl shadow-2xl p-8 w-full grid grid-cols-2 gap-4"
+            className="rounded-lg shadow-2xl p-8 w-full grid grid-cols-2 gap-4"
+            style={{ backgroundColor: '#faf6f5', border: '2px solid #d4d4d4' }}
           >
             <button
               onClick={() => {
@@ -279,37 +278,45 @@ function Header({ variant = 'light', onProductsHover }) {
                   navigate('/dashboard', { replace: true });
                 }
               }}
-              className="text-left p-4 rounded-lg hover:bg-white/10 transition group"
+              className="text-left p-4 rounded-lg transition group"
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#eae6e5'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <h4 className="text-white font-medium mb-1">Contract Creator</h4>
-              <p className="text-gray-400 text-sm">Generate a complete cofounder agreement</p>
+              <h4 className="font-normal mb-1 flex items-center gap-2 text-black"><span className="w-2 h-2 rounded-full flex-shrink-0 bg-[#06271D]"></span>Contract Creator</h4>
+              <p className="text-sm text-gray-500">Generate a complete cofounder agreement</p>
             </button>
             <button
               onClick={() => { setProductsOpen(false); navigate('/equity-calculator'); }}
-              className="text-left p-4 rounded-lg hover:bg-white/10 transition group"
+              className="text-left p-4 rounded-lg transition group"
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#eae6e5'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <h4 className="text-white font-medium mb-1">Equity Calculator</h4>
-              <p className="text-gray-400 text-sm">Determine fair ownership splits instantly</p>
+              <h4 className="font-normal mb-1 flex items-center gap-2 text-black"><span className="w-2 h-2 rounded-full flex-shrink-0 bg-[#06271D]"></span>Equity Calculator</h4>
+              <p className="text-sm text-gray-500">Determine fair ownership splits instantly</p>
             </button>
             <a
               href="https://cherrytree.beehiiv.com/"
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setProductsOpen(false)}
-              className="text-left p-4 rounded-lg hover:bg-white/10 transition group"
+              className="text-left p-4 rounded-lg transition group"
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#eae6e5'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <h4 className="text-white font-medium mb-1">Newsletter</h4>
-              <p className="text-gray-400 text-sm">Stay updated with startup insights and tips</p>
+              <h4 className="font-normal mb-1 flex items-center gap-2 text-black"><span className="w-2 h-2 rounded-full flex-shrink-0 bg-[#06271D]"></span>Newsletter</h4>
+              <p className="text-sm text-gray-500">Stay updated with startup insights and tips</p>
             </a>
             <a
               href="https://app.hubble.social/timhe"
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setProductsOpen(false)}
-              className="text-left p-4 rounded-lg hover:bg-white/10 transition group"
+              className="text-left p-4 rounded-lg transition group"
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#eae6e5'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <h4 className="text-white font-medium mb-1">Coaching</h4>
-              <p className="text-gray-400 text-sm">Get expert guidance from cofounder coaches</p>
+              <h4 className="font-normal mb-1 flex items-center gap-2 text-black"><span className="w-2 h-2 rounded-full flex-shrink-0 bg-[#06271D]"></span>Coaching</h4>
+              <p className="text-sm text-gray-500">Get expert guidance from cofounder coaches</p>
             </a>
           </div>
           </div>
