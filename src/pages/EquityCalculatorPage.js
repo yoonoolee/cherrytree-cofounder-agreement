@@ -498,7 +498,7 @@ function EquityCalculatorPage() {
         </div>
       </section>
 
-      <Footer />
+      <Footer bgColor="#06271D" />
     </div>
   );
 }
