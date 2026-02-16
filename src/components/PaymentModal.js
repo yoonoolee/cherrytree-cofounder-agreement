@@ -202,7 +202,7 @@ function PaymentModal({ onClose, onSuccess }) {
                 <div key={key} className="relative">
                   {/* Coming Soon Badge for Pro */}
                   {isProPlan && (
-                    <div className="absolute -top-2 -right-2 text-white text-xs font-semibold px-3 py-1 rounded-full z-10" style={{ backgroundColor: '#0056D6' }}>
+                    <div className="absolute -top-2 -right-2 text-white text-xs font-semibold px-3 py-1 rounded-full z-10" style={{ backgroundColor: '#eae6e5', color: '#000000' }}>
                       Coming Soon
                     </div>
                   )}
@@ -235,7 +235,7 @@ function PaymentModal({ onClose, onSuccess }) {
           <button
             type="submit"
             disabled={loading}
-            className="button-shimmer w-full bg-[#000000] text-white py-2.5 md:py-3 rounded text-sm md:text-base font-medium hover:bg-[#1a1a1a] transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="button-shimmer w-full bg-[#06271D] text-white py-2.5 md:py-3 rounded text-sm md:text-base font-medium hover:bg-[#0a3d2e] transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Processing...' : 'Continue to Payment'}
           </button>

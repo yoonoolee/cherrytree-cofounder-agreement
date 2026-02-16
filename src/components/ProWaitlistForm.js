@@ -74,7 +74,7 @@ function ProWaitlistForm({ source = 'unknown' }) {
           type="button"
           onClick={handleWaitlistSubmit}
           disabled={waitlistLoading}
-          className="px-4 py-2 bg-black text-white text-sm font-medium rounded hover:bg-gray-800 transition disabled:opacity-50"
+          className="px-4 py-2 bg-[#06271D] text-white text-sm font-medium rounded hover:bg-[#0a3d2e] transition disabled:opacity-50"
         >
           {waitlistLoading ? 'Joining...' : 'Join'}
         </button>
