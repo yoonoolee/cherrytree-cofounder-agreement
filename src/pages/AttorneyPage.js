@@ -76,7 +76,7 @@ function AttorneyPage() {
         </div>
       </section>
 
-      <Footer />
+      <Footer bgColor="#06271D" />
     </div>
   );
 }

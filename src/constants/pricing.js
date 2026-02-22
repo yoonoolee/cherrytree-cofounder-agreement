@@ -18,8 +18,8 @@ export const PRICING_PLANS = [
   {
     name: 'Pro',
     key: 'pro',
-    price: '$800',
-    priceValue: 800,
+    price: '$2000',
+    priceValue: 2000,
     priceId: process.env.REACT_APP_STRIPE_PRO_PRICE_ID,
     description: 'Everything in Starter, plus',
     features: [

@@ -14,8 +14,21 @@ function LandingPage() {
     description: 'Cherrytree makes it easy to create cofounder agreements and determine equity splits.'
   });
   const [openFaq, setOpenFaq] = useState(null);
+  const [faqSectionVisible, setFaqSectionVisible] = useState(false);
+  const faqSectionRef = useRef(null);
+  const faqContentRef = useRef(null);
+  const faqItemRefs = useRef([]);
+  const featureRow1Ref = useRef(null);
+  const featureRow2Ref = useRef(null);
+  const featureRow3Ref = useRef(null);
+  const featureRow4Ref = useRef(null);
+  const [featureRow1Visible, setFeatureRow1Visible] = useState(false);
+  const [featureRow2Visible, setFeatureRow2Visible] = useState(false);
+  const [featureRow3Visible, setFeatureRow3Visible] = useState(false);
+  const [featureRow4Visible, setFeatureRow4Visible] = useState(false);
   const [typedText, setTypedText] = useState('');
   const [cardTilt, setCardTilt] = useState(15);
+  const [cardSlideUp, setCardSlideUp] = useState(0);
   const [activeFeature, setActiveFeature] = useState(0);
   const [contractCardsVisible, setContractCardsVisible] = useState(false);
   const [contractCardsFading, setContractCardsFading] = useState(false);
@@ -27,6 +40,14 @@ function LandingPage() {
   const [expertGuidanceFading, setExpertGuidanceFading] = useState(false);
   const [expertGuidanceAnimationCycle, setExpertGuidanceAnimationCycle] = useState(0);
   const [featuresInView, setFeaturesInView] = useState(false);
+  const [cardDocVisible, setCardDocVisible] = useState(false);
+  const [cardEquityVisible, setCardEquityVisible] = useState(false);
+  const [cardEquityNumbersVisible, setCardEquityNumbersVisible] = useState(false);
+  const [cardExpertVisible, setCardExpertVisible] = useState(false);
+  const [cardExpertLinesVisible, setCardExpertLinesVisible] = useState(false);
+  const cardDocRef = useRef(null);
+  const cardEquityRef = useRef(null);
+  const cardExpertRef = useRef(null);
   const featuresRef = useRef(null);
   const [typedAnd, setTypedAnd] = useState('');
   const [typedToday, setTypedToday] = useState('');
@@ -40,11 +61,11 @@ function LandingPage() {
   const [selectedDate, setSelectedDate] = useState('');
   const [typedDate, setTypedDate] = useState('');
   const [showCalendar, setShowCalendar] = useState(false);
+  const [headingFill, setHeadingFill] = useState(0);
+  const headingRef = useRef(null);
+  const [productsHovered, setProductsHovered] = useState(false);
   const [pricingCardAnimated, setPricingCardAnimated] = useState(false);
   const pricingCardRef = useRef(null);
-  const [ctaShinePos, setCtaShinePos] = useState({ x: 0, y: 0, active: false });
-  const ctaCardRef = useRef(null);
-  const [ctaCardTilt, setCtaCardTilt] = useState(15);
   const fullText = 'with great company.';
   const andText = 'and';
   const todayText = 'today.';
@@ -334,6 +355,18 @@ function LandingPage() {
       // Interpolate tilt from 15deg to 0deg based on scroll progress
       const tiltValue = 15 * (1 - scrollProgress);
       setCardTilt(tiltValue);
+
+      // Slide card up when scrolled past it
+      const pastCard = rect.bottom < windowHeight * 0.85;
+      if (pastCard) {
+        const slideProgress = Math.min(1, (windowHeight * 0.85 - rect.bottom) / (windowHeight * 0.5));
+        const slideValue = slideProgress * rect.height * 0.35;
+        setCardSlideUp(slideValue);
+        card.style.setProperty('--card-slide-up', `-${slideValue}px`);
+      } else {
+        setCardSlideUp(0);
+        card.style.setProperty('--card-slide-up', '0px');
+      }
     };
 
     window.addEventListener('scroll', handleTiltScroll);
@@ -342,33 +375,24 @@ function LandingPage() {
     return () => window.removeEventListener('scroll', handleTiltScroll);
   }, []);
 
-  // CTA card tilt scroll effect
+
+  // Heading color fill on scroll
   useEffect(() => {
-    const handleCtaTiltScroll = () => {
-      if (!ctaCardRef.current) return;
-
-      const rect = ctaCardRef.current.getBoundingClientRect();
+    const handleHeadingScroll = () => {
+      if (!headingRef.current) return;
+      const rect = headingRef.current.getBoundingClientRect();
       const windowHeight = window.innerHeight;
-
-      // Calculate how far the card has scrolled into view
-      const scrollProgress = Math.max(0, Math.min(1, (windowHeight - rect.top) / (windowHeight * 0.7)));
-
-      // Interpolate tilt from 15deg to 0deg based on scroll progress
-      const tiltValue = 15 * (1 - scrollProgress);
-      setCtaCardTilt(tiltValue);
+      const progress = Math.max(0, Math.min(1, (windowHeight * 0.7 - rect.top) / (windowHeight * 0.4)));
+      setHeadingFill(progress * 100);
     };
-
-    window.addEventListener('scroll', handleCtaTiltScroll);
-    handleCtaTiltScroll();
-
-    return () => window.removeEventListener('scroll', handleCtaTiltScroll);
+    window.addEventListener('scroll', handleHeadingScroll);
+    handleHeadingScroll();
+    return () => window.removeEventListener('scroll', handleHeadingScroll);
   }, []);
 
   // Section1 animation with typing and selection
   useEffect(() => {
-    // Reset animation
-    setSection1Fading(false);
-    setSection1Visible(false);
+    // Reset interactive content
     setTypedCompanyName('');
     setShowCursor(false);
     setSelectedEntity('');
@@ -423,11 +447,19 @@ function LandingPage() {
       }, dateStartTime + index * 60));
     });
 
-    // Fade out (adjusted for longer animation)
-    timers.push(setTimeout(() => setSection1Fading(true), 10000));
+    // Clear interactive content instead of fading entire card
+    timers.push(setTimeout(() => {
+      setTypedCompanyName('');
+      setShowCursor(false);
+      setSelectedEntity('');
+      setTypedEntity('');
+      setSelectedDate('');
+      setTypedDate('');
+      setShowCalendar(false);
+    }, 10000));
 
-    // Restart cycle (adjusted for longer animation)
-    timers.push(setTimeout(() => setSection1AnimationCycle(prev => prev + 1), 11000));
+    // Restart cycle
+    timers.push(setTimeout(() => setSection1AnimationCycle(prev => prev + 1), 10500));
 
     return () => timers.forEach(timer => clearTimeout(timer));
   }, [section1AnimationCycle]);
@@ -464,6 +496,79 @@ function LandingPage() {
     const earlySections = document.querySelectorAll('.scroll-section-early');
     earlySections.forEach(section => earlyObserver.observe(section));
 
+    // Observe card doc animation (looping)
+    let cardDocLoopTimer;
+    const cardDocObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const runLoop = () => {
+            setCardDocVisible(true);
+            cardDocLoopTimer = setTimeout(() => {
+              setCardDocVisible(false);
+              cardDocLoopTimer = setTimeout(runLoop, 500);
+            }, 4000);
+          };
+          runLoop();
+          cardDocObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    if (cardDocRef.current) cardDocObserver.observe(cardDocRef.current);
+
+    // Observe card equity animation (looping numbers only, table stays)
+    let cardEquityLoopTimer;
+    const cardEquityObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setCardEquityVisible(true);
+          const runLoop = () => {
+            setCardEquityNumbersVisible(true);
+            cardEquityLoopTimer = setTimeout(() => {
+              setCardEquityNumbersVisible(false);
+              cardEquityLoopTimer = setTimeout(runLoop, 600);
+            }, 6500);
+          };
+          runLoop();
+          cardEquityObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    if (cardEquityRef.current) cardEquityObserver.observe(cardEquityRef.current);
+
+    // Observe card expert animation (looping lines only)
+    let cardExpertLoopTimer;
+    const cardExpertObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setCardExpertVisible(true);
+          const runLoop = () => {
+            // Show lines
+            setCardExpertLinesVisible(true);
+            // After all animations complete + pause, hide then restart
+            cardExpertLoopTimer = setTimeout(() => {
+              setCardExpertLinesVisible(false);
+              // Wait for hide, then force reflow and restart
+              cardExpertLoopTimer = setTimeout(() => {
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => {
+                    runLoop();
+                  });
+                });
+              }, 600);
+            }, 4500);
+          };
+          // Initial start with reflow
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              runLoop();
+            });
+          });
+          cardExpertObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    if (cardExpertRef.current) cardExpertObserver.observe(cardExpertRef.current);
+
     // Observe underline animation
     const underlineObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -480,9 +585,65 @@ function LandingPage() {
     const underline = document.querySelector('.underline-animate');
     if (underline) underlineObserver.observe(underline);
 
+    // Observe feature rows for slide-in animation (re-triggers each time)
+    const setters = { '1': setFeatureRow1Visible, '2': setFeatureRow2Visible, '3': setFeatureRow3Visible, '4': setFeatureRow4Visible };
+    const featureRowObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const id = entry.target.dataset.featureRow;
+        if (entry.isIntersecting) {
+          setters[id](true);
+        } else {
+          // Only reset on desktop to avoid mobile glitching
+          if (window.innerWidth >= 768) {
+            const rect = entry.target.getBoundingClientRect();
+            if (rect.top > window.innerHeight * 0.5) {
+              setters[id](false);
+            }
+          }
+        }
+      });
+    }, { threshold: 0.2 });
+    [featureRow1Ref, featureRow2Ref, featureRow3Ref, featureRow4Ref].forEach(ref => {
+      if (ref.current) featureRowObserver.observe(ref.current);
+    });
+
+    // Observe FAQ section (re-triggers each time scrolled to from above)
+    // Use two observers: one to trigger at 40% visible, one to reset when section top enters viewport bottom
+    let faqResetTimer;
+    const faqThreshold = window.innerWidth < 768 ? 0.5 : 0.3;
+    const faqTriggerObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          clearTimeout(faqResetTimer);
+          setFaqSectionVisible(true);
+        }
+      });
+    }, { threshold: faqThreshold });
+
+    const faqResetObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        // When not intersecting at all AND section is below viewport, reset
+        if (!entry.isIntersecting) {
+          const rect = entry.target.getBoundingClientRect();
+          if (rect.top > window.innerHeight * 0.5) {
+            setFaqSectionVisible(false);
+          }
+        }
+      });
+    }, { threshold: 0.0 });
+
+    if (faqSectionRef.current) {
+      faqTriggerObserver.observe(faqSectionRef.current);
+      faqResetObserver.observe(faqSectionRef.current);
+    }
+
     return () => {
       earlySections.forEach(section => earlyObserver.unobserve(section));
       if (underline) underlineObserver.unobserve(underline);
+      if (faqSectionRef.current) { faqTriggerObserver.unobserve(faqSectionRef.current); faqResetObserver.unobserve(faqSectionRef.current); }
+      clearTimeout(cardDocLoopTimer);
+      clearTimeout(cardEquityLoopTimer);
+      clearTimeout(cardExpertLoopTimer);
     };
   }, []);
 
@@ -517,18 +678,18 @@ function LandingPage() {
     },
     {
       title: 'Expert Guidance',
-      description: 'Cofounder coaches and attorneys ready to help. We are here to guide you every step of the way.',
+      description: 'We are a team of cofounder coaches, founders, and attorneys ready to help. You\'re in good hands every step of the way.',
       id: 'expert-guidance'
     }
   ];
 
   const pricingPlans = [
     {
-      name: 'Starter',
+      name: 'Bootstrapped',
       price: '$200',
-      description: 'For individuals to get started',
+      description: 'Ideal for early-stage or bootstrapped teams\nthat need to move fast and start building now.',
       features: [
-        'Expert-designed guided survey',
+        'Expert-designed survey',
         'Comprehensive agreements',
         'Proprietary equity calculator',
         'Best practices and tips',
@@ -537,22 +698,14 @@ function LandingPage() {
       featured: true
     },
     {
-      name: 'Pro',
-      price: '$800',
-      description: 'Everything in Starter, plus',
+      name: 'Scale',
+      price: '$2000',
+      description: 'Built for funded teams that need deeper control,\ngreater detail, and stronger foundations.',
       features: [
-        'Attorney review',
+        'Everything in Bootstrapped',
+        'Final attorney review',
+        'Personalized onboarding',
         'Cofounder coaching',
-        'Priority support'
-      ]
-    },
-    {
-      name: 'Enterprise',
-      price: 'Custom',
-      description: 'For investors and schools',
-      features: [
-        'Bulk licensing',
-        'White label option',
         'Priority support'
       ]
     }
@@ -568,8 +721,46 @@ function LandingPage() {
     { src: '/images/startupgrind-logo.png', alt: 'Startup Grind', scale: 1 }
   ];
 
+  const [heroLogos] = useState([...allLogos]);
+  const [heroFading, setHeroFading] = useState(false);
+  const [heroDelayOrder, setHeroDelayOrder] = useState(() => {
+    const order = allLogos.map((_, i) => i);
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    return order;
+  });
+
   const [logos, setLogos] = useState([...allLogos]);
   const [isFading, setIsFading] = useState(false);
+  const [logoDelayOrder, setLogoDelayOrder] = useState(() => {
+    const order = allLogos.map((_, i) => i);
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    return order;
+  });
+
+  // Hero logo fade cycle
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHeroFading(true);
+      setTimeout(() => {
+        setHeroDelayOrder(prev => {
+          const order = [...prev];
+          for (let i = order.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [order[i], order[j]] = [order[j], order[i]];
+          }
+          return order;
+        });
+        setTimeout(() => setHeroFading(false), 200);
+      }, 500);
+    }, 5700);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -585,11 +776,21 @@ function LandingPage() {
           return shuffled;
         });
 
+        // Reshuffle delay order
+        setLogoDelayOrder(prev => {
+          const order = [...prev];
+          for (let i = order.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [order[i], order[j]] = [order[j], order[i]];
+          }
+          return order;
+        });
+
         setTimeout(() => {
           setIsFading(false);
         }, 200);
       }, 500);
-    }, 8000);
+    }, 5700);
 
     return () => clearInterval(interval);
   }, []);
@@ -627,21 +828,27 @@ function LandingPage() {
 
   return (
     <div className="landing-page min-h-screen bg-white flex flex-col">
-      <Header />
+      <Header variant="dark" onProductsHover={setProductsHovered} />
 
       {/* Hero Section */}
-      <section className="px-4 md:px-6 pt-20 md:pt-32 lg:pt-40 pb-8 md:pb-14">
+      <section className="px-4 md:px-6 pt-20 md:pt-32 lg:pt-40 pb-8 md:pb-14" style={{ background: 'linear-gradient(to bottom, #06271D 85%, #ffffff 85%)' }}>
         <div className="max-w-6xl mx-auto text-center">
           <div className="hero-content">
-            <h1 className="font-heading text-[2.475rem] sm:text-[3.3rem] md:text-[4.125rem] lg:text-[4.95rem] font-normal text-gray-900 mb-4 md:mb-6 min-h-[110px] sm:min-h-[132px] md:min-h-[154px]">
+            <h1 className="font-heading text-[2rem] sm:text-[4rem] md:text-[5rem] lg:text-[6rem] font-normal text-white mb-1 md:mb-6 h-[100px] sm:h-auto sm:min-h-[132px] md:min-h-[170px] overflow-hidden pb-2 md:pb-3" style={{
+              filter: productsHovered ? 'blur(1.5px)' : 'none',
+              transition: 'filter 0.3s ease'
+            }}>
               Great companies start
               <br />
-              <em className="italic">{typedText || '\u00A0'}</em>
+              <em className="italic whitespace-nowrap">{typedText || '\u00A0'}</em>
             </h1>
-            <p className="text-sm md:text-base mb-8 md:mb-16 max-w-2xl mx-auto font-normal px-4" style={{ color: '#716B6B' }}>
+            <p className="text-sm md:text-base mb-8 md:mb-16 max-w-2xl mx-auto font-normal px-4" style={{ color: 'rgba(255,255,255,0.7)',
+              filter: productsHovered ? 'blur(1.5px)' : 'none',
+              transition: 'filter 0.3s ease'
+            }}>
               Answer guided questions with your cofounders and get a complete<br className="hidden sm:block" /> Cofounder Agreement. No sketchy templates, no overpriced lawyers.
             </p>
-            <div className="flex flex-col items-center gap-3 mb-8 md:mb-12">
+            <div className="flex flex-row items-center justify-center gap-4 mb-8 md:mb-12">
               <button
                 onClick={() => {
                   // Navigate directly to app domain to avoid double redirect
@@ -652,65 +859,72 @@ function LandingPage() {
                     navigate('/dashboard', { replace: true });
                   }
                 }}
-                className="button-shimmer bg-[#000000] text-white px-8 md:px-16 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-[#1a1a1a] transition"
+                className="button-shimmer-dark bg-white text-[#06271D] px-6 md:px-10 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-gray-100 transition"
               >
                 Get started
               </button>
-              <p className="text-xs md:text-sm text-gray-600">
-                or <a href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer" className="text-black underline hover:text-gray-900 font-semibold">Book a Free Consultation</a>
-              </p>
+              <a href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer" className="group text-white hover:text-gray-200 text-sm md:text-base font-normal transition">
+                Book a demo <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+              </a>
             </div>
           </div>
+        </div>
 
-          {/* Logo Carousel */}
-          <div className="logo-scroller">
-            <div className="logo-track">
-              <div className="logo-box"><img src="/images/yc-logo.png" alt="Y Combinator" /></div>
-              <div className="logo-box"><img src="/images/hubble-logo.png" alt="Hubble" style={{ transform: 'scale(1.1)' }} /></div>
-              <div className="logo-box"><img src="/images/a16z-logo.jpg" alt="a16z" style={{ transform: 'scale(1.1)' }} /></div>
-              <div className="logo-box"><img src="/images/berkeley-logo.png" alt="Berkeley" style={{ transform: 'scale(1.43)' }} /></div>
-              <div className="logo-box"><img src="/images/stanford-logo.png" alt="Stanford" /></div>
-              <div className="logo-box"><img src="/images/sequoia-logo.png" alt="Sequoia" style={{ transform: 'scale(0.9)' }} /></div>
-              <div className="logo-box"><img src="/images/startupgrind-logo.png" alt="Startup Grind" /></div>
-
-              {/* duplicate logos for seamless scroll */}
-              <div className="logo-box"><img src="/images/yc-logo.png" alt="Y Combinator" /></div>
-              <div className="logo-box"><img src="/images/hubble-logo.png" alt="Hubble" style={{ transform: 'scale(1.1)' }} /></div>
-              <div className="logo-box"><img src="/images/a16z-logo.jpg" alt="a16z" style={{ transform: 'scale(1.1)' }} /></div>
-              <div className="logo-box"><img src="/images/berkeley-logo.png" alt="Berkeley" style={{ transform: 'scale(1.43)' }} /></div>
-              <div className="logo-box"><img src="/images/stanford-logo.png" alt="Stanford" /></div>
-              <div className="logo-box"><img src="/images/sequoia-logo.png" alt="Sequoia" style={{ transform: 'scale(0.9)' }} /></div>
-              <div className="logo-box"><img src="/images/startupgrind-logo.png" alt="Startup Grind" /></div>
-            </div>
-          </div>
-
-          {/* Tilted Card */}
-          <div className="mt-8 md:mt-12" style={{ perspective: '1000px' }}>
+          {/* Tilted Cards */}
+          <div className="mt-2 md:mt-4 -mx-1 md:mx-auto" style={{ perspective: '1000px', maxWidth: '1280px', padding: '0 12px' }}>
             <div
-              className="tilty-card mx-auto"
+              className="tilty-card"
               style={{
                 width: '100%',
-                maxWidth: 'min(1100px, 90vw)',
-                height: 'auto',
-                aspectRatio: '1100 / 595',
-                background: '#ffffff',
-                borderRadius: '16px',
-                border: '1px solid rgba(0, 0, 0, 0.08)',
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.12)',
-                transform: `rotateX(${cardTilt}deg)`,
+                maxWidth: '1140px',
+                margin: '0 auto',
+                aspectRatio: '1140 / 635',
+                background: 'rgba(240, 254, 234, 0.15)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                borderRadius: '8px',
+                border: '1px solid rgba(240, 254, 234, 0.3)',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                transform: `rotateX(${cardTilt}deg) translateY(-${cardSlideUp}px)`,
                 transformStyle: 'preserve-3d',
-                transition: 'transform 0.8s ease-out',
+                transition: 'transform 0.3s ease-out',
                 padding: '0',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                position: 'relative'
               }}
             >
+              {/* Inner card scaled to fit - original 1100x595 dimensions */}
+              <div style={{
+                width: '1100px',
+                height: '595px',
+                transform: 'scale(var(--card-scale))',
+                transformOrigin: 'center center',
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                marginTop: '-297.5px',
+                marginLeft: '-550px'
+              }} ref={el => {
+                if (el) {
+                  const parent = el.parentElement;
+                  const padding = window.innerWidth < 768 ? 6 : 20;
+                  const updateScale = () => {
+                    const scaleX = (parent.offsetWidth - padding * 2) / 1100;
+                    const scaleY = (parent.offsetHeight - padding * 2) / 595;
+                    el.style.setProperty('--card-scale', Math.min(scaleX, scaleY));
+                  };
+                  updateScale();
+                  const observer = new ResizeObserver(updateScale);
+                  observer.observe(parent);
+                }
+              }}>
               <div
-                className={section1Fading ? 'fade-out' : (section1Visible ? 'fade-in' : '')}
+                className={section1Visible ? 'fade-in' : ''}
                 style={{
                   width: '100%',
                   height: '100%',
                   background: 'linear-gradient(to bottom, #fafbfc, #f5f7fa)',
-                  borderRadius: '16px',
+                  borderRadius: '8px',
                   overflow: 'hidden',
                   display: 'flex',
                   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 20px 40px rgba(0, 0, 0, 0.08)',
@@ -721,12 +935,12 @@ function LandingPage() {
                 <div style={{
                   flex: '1.4',
                   display: 'flex',
-                  background: '#ffffff'
+                  background: '#F9F6F5'
                 }}>
                   {/* Sidebar */}
                   <div style={{
                     width: '220px',
-                    background: '#ffffff',
+                    background: '#F9F6F5',
                     padding: '28px 16px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -762,7 +976,7 @@ function LandingPage() {
                         style={{
                           padding: '10px 12px',
                           borderRadius: '8px',
-                          background: idx === 0 ? '#f3f4f6' : 'transparent',
+                          background: idx === 0 ? '#ECE6E6' : 'transparent',
                           border: idx === 0 ? '1.5px solid #e5e7eb' : 'none',
                           boxShadow: idx === 0 ? '0 2px 4px rgba(0, 0, 0, 0.08)' : 'none',
                           fontSize: '12px',
@@ -885,7 +1099,7 @@ function LandingPage() {
                                 style={{
                                   marginRight: '12px',
                                   cursor: 'pointer',
-                                  accentColor: '#0000FF'
+                                  accentColor: '#000000'
                                 }}
                               />
                               <span style={{
@@ -997,7 +1211,7 @@ function LandingPage() {
                                       fontSize: '14px',
                                       fontWeight: isSelected ? 600 : 400,
                                       color: isSelected ? '#ffffff' : '#0f1419',
-                                      background: isSelected ? '#0056D6' : 'transparent',
+                                      background: isSelected ? '#000000' : 'transparent',
                                       cursor: 'pointer',
                                       transition: 'all 0.15s ease',
                                       fontFamily: 'Inter, system-ui, sans-serif',
@@ -1026,15 +1240,15 @@ function LandingPage() {
                 <div style={{
                   flex: '0.8',
                   padding: '32px',
-                  background: '#f5f7fa',
+                  background: '#ffffff',
                   overflow: 'hidden',
                   display: 'flex',
                   flexDirection: 'column'
                 }}>
                   {/* Document Content */}
                   <div className={section1Visible ? 'visible' : 'invisible'} style={{
-                    background: '#ffffff',
-                    borderRadius: '12px',
+                    background: '#F9F6F5',
+                    borderRadius: '0px',
                     padding: '28px',
                     border: '1px solid #e1e4e8',
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.08)',
@@ -1084,7 +1298,7 @@ function LandingPage() {
                         The undersigned cofounders hereby form <span style={{
                           fontWeight: 600,
                           color: typedCompanyName ? '#0f1419' : '#9ca3af',
-                          background: '#e5e7eb',
+                          background: '#ECE6E6',
                           padding: '2px 6px',
                           borderRadius: '4px'
                         }}>{typedCompanyName || '[Company Name]'}</span>, a company to be organized for the purpose of developing and operating a technology business.
@@ -1113,7 +1327,7 @@ function LandingPage() {
                         The Company shall be organized as a <span style={{
                           fontWeight: 600,
                           color: typedEntity ? '#0f1419' : '#9ca3af',
-                          background: '#e5e7eb',
+                          background: '#ECE6E6',
                           padding: '2px 6px',
                           borderRadius: '4px'
                         }}>{typedEntity || '[Legal Entity]'}</span>, and the cofounders agree to take all necessary steps to effect such organization.
@@ -1142,7 +1356,7 @@ function LandingPage() {
                         This Agreement shall be effective as of <span style={{
                           fontWeight: 600,
                           color: typedDate ? '#0f1419' : '#9ca3af',
-                          background: '#e5e7eb',
+                          background: '#ECE6E6',
                           padding: '2px 6px',
                           borderRadius: '4px'
                         }}>{typedDate || '[Effective Date]'}</span>, and shall remain in effect until terminated in accordance with the terms herein.
@@ -1151,24 +1365,21 @@ function LandingPage() {
                   </div>
                 </div>
               </div>
+              </div>
             </div>
+
           </div>
-        </div>
       </section>
 
       {/* Process Section - Combined heading + cards */}
-      <section className="scroll-section scroll-section-early process-section px-4 md:px-6 pt-20 md:pt-32 lg:pt-36 pb-16 md:pb-24 lg:pb-30 relative" style={{ backgroundImage: 'radial-gradient(#d1d5db 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
+      <section className="scroll-section scroll-section-early process-section px-4 md:px-6 pt-2 md:pt-4 lg:pt-6 pb-16 md:pb-24 lg:pb-30 relative" style={{ backgroundColor: '#ffffff' }}>
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
         <div className="max-w-7xl mx-auto relative">
           <div className="mx-auto" style={{ maxWidth: '720px' }}>
             {/* Heading */}
             <div className="max-w-6xl mx-auto text-center mb-8 md:mb-10">
-              <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium mb-3 md:mb-4">
-                Built for <span className="underline-animate">early-stage
-                  <svg viewBox="0 0 250 12" preserveAspectRatio="none">
-                    <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
-                  </svg>
-                </span> cofounders<span style={{ marginLeft: '0.05em' }}>.</span>
+              <h2 className="section-header font-heading text-[1.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium mb-3 md:mb-4">
+                Built for early-stage cofounders<span style={{ marginLeft: '0.05em' }}>.</span>
               </h2>
               <p className="text-sm md:text-base max-w-3xl mx-auto font-normal px-4" style={{ color: '#716B6B' }}>
                 Get your equity, expectations, and everything else right from the start.
@@ -1179,7 +1390,7 @@ function LandingPage() {
             <div className="space-y-4">
               {steps.map((step, index) => {
                 const cardStyle = {
-                  background: '#fcfcfc',
+                  background: '#faf6f5',
                   border: '1px solid rgba(0, 0, 0, 0.1)',
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
                 };
@@ -1207,7 +1418,7 @@ function LandingPage() {
                             <div className="step1-input h-8 bg-white border border-gray-200 rounded px-2 flex items-center" style={{ minWidth: '160px', flex: '1 1 160px' }}>
                               <span className="step1-email text-sm text-gray-400" style={{ minWidth: '140px' }}>cofounder@email.com</span>
                             </div>
-                            <div className="step1-btn h-8 px-3 bg-gray-200 hover:bg-gray-300 text-gray-600 text-xs rounded flex items-center transition-colors whitespace-nowrap">Add</div>
+                            <div className="step1-btn h-8 px-3 text-gray-600 text-xs rounded flex items-center transition-colors whitespace-nowrap" style={{ backgroundColor: '#e9e6e7' }}>Add</div>
                           </div>
                           <div className="space-y-2">
                             <div className="text-sm text-gray-500">you@email.com</div>
@@ -1219,12 +1430,12 @@ function LandingPage() {
                         /* Step 2: Collab animation */
                         <div className="p-4 h-full relative flex flex-col justify-center">
                           <div className="step2-cursor-black absolute z-20" style={{ width: '18px', height: '18px' }}>
-                            <svg viewBox="0 0 24 24" fill="#0056D6" style={{ width: '18px', height: '18px' }}>
+                            <svg viewBox="0 0 24 24" fill="#000000" style={{ width: '18px', height: '18px' }}>
                               <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
                             </svg>
                           </div>
                           <div className="step2-cursor-white absolute z-20" style={{ width: '18px', height: '18px' }}>
-                            <svg viewBox="0 0 24 24" fill="white" stroke="#0056D6" strokeWidth="1.5" style={{ width: '18px', height: '18px' }}>
+                            <svg viewBox="0 0 24 24" fill="white" stroke="#000000" strokeWidth="1.5" style={{ width: '18px', height: '18px' }}>
                               <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
                             </svg>
                           </div>
@@ -1271,7 +1482,7 @@ function LandingPage() {
                               <div className="h-1 bg-gray-200 rounded w-full"></div>
                             </div>
                             {/* Scanner line */}
-                            <div className="step3-scanner absolute left-2 right-2 h-0.5" style={{ backgroundColor: '#0056D6', boxShadow: '0 0 6px 1px rgba(0, 86, 214, 0.5)' }}></div>
+                            <div className="step3-scanner absolute left-2 right-2 h-0.5" style={{ backgroundColor: '#ffffff', boxShadow: '0 0 6px 1px rgba(0, 0, 0, 0.5)' }}></div>
                           </div>
                         </div>
                       )}
@@ -1290,1082 +1501,17 @@ function LandingPage() {
               })}
             </div>
           </div>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" ref={featuresRef} className="scroll-section py-16 md:py-24 px-4 md:px-6">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium text-center mb-10 md:mb-16 px-2">Turn your cofoundership<br />into a company, <em className="italic" style={{ display: 'inline-block', minWidth: '6ch', textAlign: 'left', letterSpacing: '-0.02em' }}>{typedToday || '\u00A0'}</em></h2>
-
-          <div className="features-container">
-            <div className="features-left">
-              {features.map((feature, i) => (
-                <div
-                  key={i}
-                  className={`feature-card ${activeFeature === i ? 'active' : ''}`}
-                  onClick={() => { setActiveFeature(i); setAnimationCycle(0); }}
-                >
-                  <h3 className="feature-title">{feature.title}</h3>
-                  <p className={`feature-description ${activeFeature === i ? 'active' : ''}`}>
-                    {i === 0 ? (
-                      <>
-                        Generate a <span style={{ backgroundColor: '#E6F0FF', color: '#0056D6', padding: '2px 6px', borderRadius: '4px' }}>ready-to-use, fully customized</span> document in minutes and start building your partnership with confidence.
-                      </>
-                    ) : i === 1 ? (
-                      <>
-                        Use our <span style={{ backgroundColor: '#E6F0FF', color: '#0056D6', padding: '2px 6px', borderRadius: '4px' }}>proprietary equity calculator</span> to determine ownership. Instant, precise splits so everyone knows their stake.
-                      </>
-                    ) : i === 2 ? (
-                      <>
-                        Cofounder coaches and attorneys ready to help. We are here to guide you <span style={{ backgroundColor: '#E6F0FF', color: '#0056D6', padding: '2px 6px', borderRadius: '4px' }}>every step of the way</span>.
-                      </>
-                    ) : (
-                      feature.description
-                    )}
-                  </p>
-                  {/* Mobile animation container */}
-                  <div className="mobile-visual">
-                    {i === 0 && (
-                      <div
-                        className={`visual-content contract-animation-container ${activeFeature === 0 ? 'active' : ''} ${contractCardsFading ? 'contract-animation-fading' : ''}`}
-                        style={{
-                          opacity: 1,
-                          pointerEvents: 'auto',
-                          flexDirection: 'row',
-                          gap: '20px',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          padding: '0',
-                          width: '100%',
-                          height: '100%',
-                          display: 'flex'
-                        }}
-                      >
-                        <div className={contractCardsFading ? 'slide-out-left' : ''} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                          {[
-                            { title: 'Cofounders', content: 'Steve Jobs\u00A0\u00A0Steve Woz\nRon Wayne' },
-                            { title: 'Equity', content: '45% - 45% - 10%' },
-                            { title: 'Vesting', content: '4 years with 1 year cliff' },
-                            { title: 'And more', content: '' }
-                          ].map((card, idx) => (
-                            <div
-                              key={idx}
-                              className={contractCardsVisible ? 'card-visible' : 'card-hidden'}
-                              style={{
-                                width: '200px',
-                                height: '100px',
-                                backgroundColor: '#ffffff',
-                                borderRadius: '8px',
-                                border: '1px solid #e5e7eb',
-                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                                '--delay': `${0.5 + idx * 0.3}s`,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'flex-start',
-                                justifyContent: 'flex-start',
-                                padding: '16px'
-                              }}
-                            >
-                              <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590' }}>{card.title}</span>
-                              {card.content && (
-                                <span style={{ fontSize: '13px', color: '#9ca3af', marginTop: '8px', whiteSpace: 'pre-line' }}>{card.content}</span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                        <svg
-                          className={`${contractCardsVisible ? 'card-visible' : 'card-hidden'} ${contractCardsFading ? 'slide-out-left' : ''}`}
-                          style={{
-                            width: '40px',
-                            height: '436px',
-                            '--delay': '1.7s',
-                            transformOrigin: 'center'
-                          }}
-                          viewBox="0 0 40 436"
-                          fill="none"
-                        >
-                          <path
-                            d="M 0 0 Q 20 0, 20 109 Q 20 218, 40 218 Q 20 218, 20 327 Q 20 436, 0 436"
-                            stroke="#e5e7eb"
-                            strokeWidth="2"
-                            fill="none"
-                          />
-                        </svg>
-                        <div
-                          className={`${contractCardsVisible ? 'card-visible' : 'card-hidden'} ${contractCardsFading ? 'slide-out-right' : ''}`}
-                          style={{
-                            width: '360px',
-                            height: '436px',
-                            backgroundColor: '#ffffff',
-                            borderRadius: '8px',
-                            border: '1px solid #e5e7eb',
-                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                            '--delay': '2.0s',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'flex-start',
-                            padding: '24px'
-                          }}
-                        >
-                          <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590', marginBottom: '20px' }}>Cofounder Agreement</span>
-                          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 8px' }}>
-                            {[
-                              { width: '100%', delay: 2.3, paragraphStart: false },
-                              { width: '100%', delay: 2.45, paragraphStart: false },
-                              { width: '100%', delay: 2.6, paragraphStart: false },
-                              { width: '50%', delay: 2.75, paragraphStart: false },
-                              { width: '100%', delay: 2.9, paragraphStart: true },
-                              { width: '100%', delay: 3.05, paragraphStart: false },
-                              { width: '100%', delay: 3.2, paragraphStart: false },
-                              { width: '65%', delay: 3.35, paragraphStart: false },
-                              { width: '100%', delay: 3.5, paragraphStart: true },
-                              { width: '100%', delay: 3.65, paragraphStart: false },
-                              { width: '100%', delay: 3.8, paragraphStart: false },
-                              { width: '40%', delay: 3.95, paragraphStart: false },
-                            ].map((line, idx) => (
-                              <div
-                                key={idx}
-                                className={`text-line ${contractCardsVisible ? 'text-line-visible' : ''}`}
-                                style={{
-                                  width: line.width,
-                                  '--line-delay': `${line.delay}s`,
-                                  marginTop: line.paragraphStart ? '12px' : '0'
-                                }}
-                              />
-                            ))}
-                          </div>
-                          <div style={{ width: '100%', marginTop: 'auto', padding: '0 8px' }}>
-                            <svg
-                              style={{
-                                width: '140px',
-                                height: '50px',
-                                '--sig-delay': '4.2s'
-                              }}
-                              viewBox="0 0 140 50"
-                              fill="none"
-                            >
-                              <path
-                                className={`signature-path ${contractCardsVisible ? 'signature-draw' : ''}`}
-                                d="M 5 35 C 10 20, 15 15, 20 25 C 25 35, 30 40, 35 30 C 40 20, 42 15, 48 20 C 54 25, 56 35, 62 28 C 68 21, 70 18, 78 22 C 86 26, 88 32, 95 25 C 102 18, 105 15, 112 20 C 119 25, 122 30, 130 22 L 135 18"
-                                stroke="#7c8590"
-                                strokeWidth="2"
-                                fill="none"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                            <div style={{ width: '140px', height: '1px', backgroundColor: '#e5e7eb', marginTop: '2px' }} />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    {i === 1 && (
-                      <div
-                        className={`visual-content ${activeFeature === 1 ? 'active' : ''}`}
-                        id="equity-calculator"
-                        style={{
-                          opacity: 1,
-                          pointerEvents: 'auto',
-                          flexDirection: 'row',
-                          gap: '32px',
-                          padding: '24px'
-                        }}
-                      >
-                        <div className={equityChartFading ? 'fade-out' : ''} style={{ display: 'flex', flexDirection: 'row', gap: '32px' }}>
-                        {/* Score Table */}
-                        <div className={`equity-table ${equityChartVisible ? 'equity-table-visible' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                          {/* Header row */}
-                          <div
-                            style={{
-                              display: 'grid',
-                              gridTemplateColumns: '100px 50px 50px 50px',
-                              gap: '8px',
-                              padding: '8px 12px',
-                              backgroundColor: '#f7f7f7',
-                              borderRadius: '6px 6px 0 0'
-                            }}
-                          >
-                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#666' }}>Category</span>
-                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SJ</span>
-                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SW</span>
-                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>RW</span>
-                          </div>
-                          {/* Data rows */}
-                          {[
-                            { category: 'Cash Invested', scores: [6, 6, 4], delays: [0.2, 0.35, 0.1] },
-                            { category: 'Time Commit', scores: [10, 8, 4], delays: [0.4, 0.25, 0.5] },
-                            { category: 'Leadership', scores: [8, 10, 2], delays: [0.55, 0.7, 0.45] },
-                            { category: 'Engineering', scores: [4, 8, 4], delays: [0.65, 0.8, 0.6] },
-                            { category: 'Sales', scores: [8, 4, 2], delays: [0.75, 0.9, 0.85] },
-                            { category: 'Domain', scores: [6, 8, 6], delays: [1.0, 0.95, 1.1] },
-                            { category: 'Network', scores: [8, 6, 4], delays: [1.15, 1.25, 1.05] },
-                            { category: 'Idea Origin', scores: [10, 10, 4], delays: [1.3, 1.2, 1.35] }
-                          ].map((row, i) => (
-                            <div
-                              key={i}
-                              style={{
-                                display: 'grid',
-                                gridTemplateColumns: '100px 50px 50px 50px',
-                                gap: '8px',
-                                padding: '8px 12px',
-                                backgroundColor: i % 2 === 0 ? '#fff' : '#fafafa',
-                                borderLeft: '1px solid #e5e7eb',
-                                borderRight: '1px solid #e5e7eb',
-                                borderBottom: '1px solid #e5e7eb'
-                              }}
-                            >
-                              <span style={{ fontSize: '11px', color: '#666' }}>{row.category}</span>
-                              {row.scores.map((score, j) => (
-                                <span
-                                  key={j}
-                                  className={`equity-number ${equityChartVisible ? 'equity-fade-in' : ''}`}
-                                  style={{
-                                    fontSize: '11px',
-                                    fontWeight: 500,
-                                    color: '#999',
-                                    textAlign: 'center',
-                                    '--fade-delay': `${row.delays[j] + 0.3}s`
-                                  }}
-                                >
-                                  {score}
-                                </span>
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Pie Chart */}
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                          <div style={{ position: 'relative', width: '180px', height: '180px' }}>
-                            <svg
-                              viewBox="0 0 100 100"
-                              style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}
-                            >
-                              {/* Border circles for each segment */}
-                              <circle
-                                className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
-                                cx="50"
-                                cy="50"
-                                r="35"
-                                fill="none"
-                                stroke="#cccccc"
-                                strokeWidth="13"
-                                strokeDasharray="98.96 120.95"
-                                strokeDashoffset="0"
-                                style={{ '--segment-delay': '1.62s', '--segment-length': '98.96' }}
-                              />
-                              <circle
-                                className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
-                                cx="50"
-                                cy="50"
-                                r="35"
-                                fill="none"
-                                stroke="#cccccc"
-                                strokeWidth="13"
-                                strokeDasharray="98.96 120.95"
-                                strokeDashoffset="-98.96"
-                                style={{ '--segment-delay': '1.89s', '--segment-length': '98.96' }}
-                              />
-                              <circle
-                                className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
-                                cx="50"
-                                cy="50"
-                                r="35"
-                                fill="none"
-                                stroke="#cccccc"
-                                strokeWidth="13"
-                                strokeDasharray="21.99 197.92"
-                                strokeDashoffset="-197.92"
-                                style={{ '--segment-delay': '2.16s', '--segment-length': '21.99' }}
-                              />
-                              {/* Segment 1 - 45% (Steve) */}
-                              <circle
-                                className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
-                                cx="50"
-                                cy="50"
-                                r="35"
-                                fill="none"
-                                stroke="#d0d0d0"
-                                strokeWidth="12"
-                                strokeDasharray="98.96 120.95"
-                                strokeDashoffset="0"
-                                style={{ '--segment-delay': '1.62s', '--segment-length': '98.96' }}
-                              />
-                              {/* Segment 2 - 45% (Woz) */}
-                              <circle
-                                className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
-                                cx="50"
-                                cy="50"
-                                r="35"
-                                fill="none"
-                                stroke="#f0f0f0"
-                                strokeWidth="12"
-                                strokeDasharray="98.96 120.95"
-                                strokeDashoffset="-98.96"
-                                style={{ '--segment-delay': '1.89s', '--segment-length': '98.96' }}
-                              />
-                              {/* Segment 3 - 10% (Ron) */}
-                              <circle
-                                className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
-                                cx="50"
-                                cy="50"
-                                r="35"
-                                fill="none"
-                                stroke="#ffffff"
-                                strokeWidth="12"
-                                strokeDasharray="21.99 197.92"
-                                strokeDashoffset="-197.92"
-                                style={{ '--segment-delay': '2.16s', '--segment-length': '21.99' }}
-                              />
-                            </svg>
-                          </div>
-
-                          {/* Legend */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            {[
-                              { name: 'Steve J.', percent: '45%', color: '#d0d0d0', border: false, delay: '2.43s' },
-                              { name: 'Steve W.', percent: '45%', color: '#f0f0f0', border: false, delay: '2.52s' },
-                              { name: 'Ron W.', percent: '10%', color: '#ffffff', border: true, delay: '2.61s' }
-                            ].map((item, i) => (
-                              <div
-                                key={i}
-                                className={`equity-legend-item ${equityChartVisible ? 'equity-fade-in' : ''}`}
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '8px',
-                                  '--fade-delay': item.delay
-                                }}
-                              >
-                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: item.color, border: item.border ? '1px solid #ccc' : 'none' }} />
-                                <span style={{ fontSize: '11px', color: '#666' }}>{item.name}</span>
-                                <span style={{ fontSize: '11px', fontWeight: 600, color: '#888' }}>{item.percent}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        </div>
-                      </div>
-                    )}
-                    {i === 2 && (
-                      <div
-                        className={`visual-content ${activeFeature === 2 ? 'active' : ''} ${expertGuidanceFading ? 'fade-out' : ''}`}
-                        id="expert-guidance"
-                        style={{
-                          opacity: 1,
-                          pointerEvents: 'auto',
-                          flexDirection: 'column',
-                          justifyContent: 'center',
-                          alignItems: 'stretch',
-                          padding: '40px',
-                          gap: '32px'
-                        }}
-                      >
-                        {/* Question bubble - from right */}
-                        <div
-                          className={`speech-box-right ${expertGuidanceVisible ? 'speech-box-right-visible' : ''}`}
-                          style={{
-                            width: '400px',
-                            backgroundColor: '#ffffff',
-                            borderRadius: '16px',
-                            border: '1px solid #e5e7eb',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                            padding: '24px',
-                            position: 'relative',
-                            alignSelf: 'flex-start'
-                          }}
-                        >
-                          {/* Speech bubble tail - right side */}
-                          <div
-                            style={{
-                              position: 'absolute',
-                              right: '-10px',
-                              top: '24px',
-                              width: '0',
-                              height: '0',
-                              borderTop: '10px solid transparent',
-                              borderBottom: '10px solid transparent',
-                              borderLeft: '10px solid #ffffff',
-                              filter: 'drop-shadow(2px 0 1px rgba(0, 0, 0, 0.05))'
-                            }}
-                          />
-                          <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590', marginBottom: '12px', display: 'block' }}>Your Question</span>
-
-                          {/* Animated text lines */}
-                          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            {[
-                              { width: '100%', delay: 0.3 },
-                              { width: '100%', delay: 0.45 },
-                              { width: '60%', delay: 0.6 }
-                            ].map((line, i) => (
-                              <div
-                                key={i}
-                                className={`text-line ${expertGuidanceVisible ? 'text-line-visible' : ''}`}
-                                style={{
-                                  width: line.width,
-                                  '--line-delay': `${line.delay}s`
-                                }}
-                              />
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Expert response bubble - from left */}
-                        <div
-                          className={`speech-box ${expertGuidanceVisible ? 'speech-box-visible' : ''}`}
-                          style={{
-                            width: '400px',
-                            backgroundColor: '#ffffff',
-                            borderRadius: '16px',
-                            border: '1px solid #e5e7eb',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                            padding: '24px',
-                            position: 'relative',
-                            alignSelf: 'flex-end'
-                          }}
-                        >
-                          {/* Speech bubble tail - left side */}
-                          <div
-                            style={{
-                              position: 'absolute',
-                              left: '-10px',
-                              top: '24px',
-                              width: '0',
-                              height: '0',
-                              borderTop: '10px solid transparent',
-                              borderBottom: '10px solid transparent',
-                              borderRight: '10px solid #ffffff',
-                              filter: 'drop-shadow(-2px 0 1px rgba(0, 0, 0, 0.05))'
-                            }}
-                          />
-                          <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590', marginBottom: '12px', display: 'block' }}>Expert Answer</span>
-
-                          {/* Animated text lines */}
-                          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            {[
-                              { width: '100%', delay: 1.2 },
-                              { width: '100%', delay: 1.35 },
-                              { width: '100%', delay: 1.5 },
-                              { width: '45%', delay: 1.65 }
-                            ].map((line, i) => (
-                              <div
-                                key={i}
-                                className={`text-line ${expertGuidanceVisible ? 'text-line-visible' : ''}`}
-                                style={{
-                                  width: line.width,
-                                  '--line-delay': `${line.delay}s`
-                                }}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="feature-visual">
-              {/* Contract Creator - 4 Cards + Document */}
-              <div
-                className={`visual-content contract-animation-container ${activeFeature === 0 ? 'active' : ''} ${contractCardsFading ? 'contract-animation-fading' : ''}`}
-                id="contract-creator"
-                style={{
-                  opacity: activeFeature === 0 ? 1 : 0,
-                  pointerEvents: activeFeature === 0 ? 'auto' : 'none',
-                  flexDirection: 'row',
-                  gap: '20px',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  padding: '0 40px'
-                }}
-              >
-                {/* Left column - 4 cards */}
-                <div className={contractCardsFading ? 'slide-out-left' : ''} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {[
-                    { title: 'Cofounders', content: 'Steve Jobs\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Steve Woz\nRon Wayne' },
-                    { title: 'Equity', content: '45% - 45% - 10%' },
-                    { title: 'Vesting', content: '4 years with a 1 year cliff' },
-                    { title: 'And more', content: '' }
-                  ].map((card, i) => (
-                    <div
-                      key={i}
-                      className={contractCardsVisible ? 'card-visible' : 'card-hidden'}
-                      style={{
-                        width: '200px',
-                        height: '100px',
-                        backgroundColor: '#ffffff',
-                        borderRadius: '8px',
-                        border: '1px solid #e5e7eb',
-                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                        '--delay': `${0.5 + i * 0.3}s`,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'flex-start',
-                        justifyContent: 'flex-start',
-                        padding: '16px'
-                      }}
-                    >
-                      <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590' }}>{card.title}</span>
-                      {card.content && (
-                        <span style={{ fontSize: '13px', color: '#9ca3af', marginTop: '8px', whiteSpace: 'pre-line' }}>{card.content}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Curly brace connecting cards to document */}
-                <svg
-                  className={`${contractCardsVisible ? 'card-visible' : 'card-hidden'} ${contractCardsFading ? 'slide-out-left' : ''}`}
-                  style={{
-                    width: '40px',
-                    height: '436px',
-                    '--delay': '1.7s',
-                    transformOrigin: 'center'
-                  }}
-                  viewBox="0 0 40 436"
-                  fill="none"
-                >
-                  <path
-                    d="M 0 0 Q 20 0, 20 109 Q 20 218, 40 218 Q 20 218, 20 327 Q 20 436, 0 436"
-                    stroke="#e5e7eb"
-                    strokeWidth="2"
-                    fill="none"
-                  />
-                </svg>
-
-                {/* Right column - Document card */}
-                <div
-                  className={`${contractCardsVisible ? 'card-visible' : 'card-hidden'} ${contractCardsFading ? 'slide-out-right' : ''}`}
-                  style={{
-                    width: '360px',
-                    height: '436px',
-                    backgroundColor: '#ffffff',
-                    borderRadius: '8px',
-                    border: '1px solid #e5e7eb',
-                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                    '--delay': '2.0s',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'flex-start',
-                    padding: '24px'
-                  }}
-                >
-                  <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590', marginBottom: '20px' }}>Cofounder Agreement</span>
-
-                  {/* Animated text lines */}
-                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 8px' }}>
-                    {[
-                      { width: '100%', delay: 2.3, paragraphStart: false },
-                      { width: '100%', delay: 2.45, paragraphStart: false },
-                      { width: '100%', delay: 2.6, paragraphStart: false },
-                      { width: '50%', delay: 2.75, paragraphStart: false },
-                      { width: '100%', delay: 2.9, paragraphStart: true },
-                      { width: '100%', delay: 3.05, paragraphStart: false },
-                      { width: '100%', delay: 3.2, paragraphStart: false },
-                      { width: '65%', delay: 3.35, paragraphStart: false },
-                      { width: '100%', delay: 3.5, paragraphStart: true },
-                      { width: '100%', delay: 3.65, paragraphStart: false },
-                      { width: '100%', delay: 3.8, paragraphStart: false },
-                      { width: '40%', delay: 3.95, paragraphStart: false },
-                    ].map((line, i) => (
-                      <div
-                        key={i}
-                        className={`text-line ${contractCardsVisible ? 'text-line-visible' : ''}`}
-                        style={{
-                          width: line.width,
-                          '--line-delay': `${line.delay}s`,
-                          marginTop: line.paragraphStart ? '12px' : '0'
-                        }}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Signature */}
-                  <div style={{ width: '100%', marginTop: 'auto', padding: '0 8px' }}>
-                    <svg
-                      style={{
-                        width: '140px',
-                        height: '50px',
-                        '--sig-delay': '4.2s'
-                      }}
-                      viewBox="0 0 140 50"
-                      fill="none"
-                    >
-                      <path
-                        className={`signature-path ${contractCardsVisible ? 'signature-draw' : ''}`}
-                        d="M 5 35 C 10 20, 15 15, 20 25 C 25 35, 30 40, 35 30 C 40 20, 42 15, 48 20 C 54 25, 56 35, 62 28 C 68 21, 70 18, 78 22 C 86 26, 88 32, 95 25 C 102 18, 105 15, 112 20 C 119 25, 122 30, 130 22 L 135 18"
-                        stroke="#7c8590"
-                        strokeWidth="2"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    <div style={{ width: '140px', height: '1px', backgroundColor: '#e5e7eb', marginTop: '2px' }} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Equity Calculator */}
-              <div
-                className={`visual-content ${activeFeature === 1 ? 'active' : ''}`}
-                id="equity-calculator"
-                style={{
-                  opacity: activeFeature === 1 ? 1 : 0,
-                  transform: activeFeature === 1 ? 'scale(1)' : 'scale(0.95)',
-                  pointerEvents: activeFeature === 1 ? 'auto' : 'none',
-                  flexDirection: 'row',
-                  gap: '32px',
-                  padding: '24px'
-                }}
-              >
-                <div className={equityChartFading ? 'fade-out' : ''} style={{ display: 'flex', flexDirection: 'row', gap: '32px' }}>
-                {/* Score Table */}
-                <div className={`equity-table ${equityChartVisible ? 'equity-table-visible' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                  {/* Header row */}
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: '100px 50px 50px 50px',
-                      gap: '8px',
-                      padding: '8px 12px',
-                      backgroundColor: '#f7f7f7',
-                      borderRadius: '6px 6px 0 0'
-                    }}
-                  >
-                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#666' }}>Category</span>
-                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SJ</span>
-                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SW</span>
-                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>RW</span>
-                  </div>
-                  {/* Data rows */}
-                  {[
-                    { category: 'Cash Invested', scores: [6, 6, 4], delays: [0.2, 0.35, 0.1] },
-                    { category: 'Time Commit', scores: [10, 8, 4], delays: [0.4, 0.25, 0.5] },
-                    { category: 'Leadership', scores: [8, 10, 2], delays: [0.55, 0.7, 0.45] },
-                    { category: 'Engineering', scores: [4, 8, 4], delays: [0.65, 0.8, 0.6] },
-                    { category: 'Sales', scores: [8, 4, 2], delays: [0.75, 0.9, 0.85] },
-                    { category: 'Domain', scores: [6, 8, 6], delays: [1.0, 0.95, 1.1] },
-                    { category: 'Network', scores: [8, 6, 4], delays: [1.15, 1.25, 1.05] },
-                    { category: 'Idea Origin', scores: [10, 10, 4], delays: [1.3, 1.2, 1.35] }
-                  ].map((row, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '100px 50px 50px 50px',
-                        gap: '8px',
-                        padding: '8px 12px',
-                        backgroundColor: i % 2 === 0 ? '#fff' : '#fafafa',
-                        borderLeft: '1px solid #e5e7eb',
-                        borderRight: '1px solid #e5e7eb',
-                        borderBottom: '1px solid #e5e7eb'
-                      }}
-                    >
-                      <span style={{ fontSize: '11px', color: '#666' }}>{row.category}</span>
-                      {row.scores.map((score, j) => (
-                        <span
-                          key={j}
-                          className={`equity-number ${equityChartVisible ? 'equity-fade-in' : ''}`}
-                          style={{
-                            fontSize: '11px',
-                            fontWeight: 500,
-                            color: '#999',
-                            textAlign: 'center',
-                            '--fade-delay': `${row.delays[j] + 0.3}s`
-                          }}
-                        >
-                          {score}
-                        </span>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Pie Chart */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ position: 'relative', width: '180px', height: '180px' }}>
-                    <svg
-                      viewBox="0 0 100 100"
-                      style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}
-                    >
-                      {/* Border circles for each segment */}
-                      <circle
-                        className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
-                        cx="50"
-                        cy="50"
-                        r="35"
-                        fill="none"
-                        stroke="#cccccc"
-                        strokeWidth="13"
-                        strokeDasharray="98.96 120.95"
-                        strokeDashoffset="0"
-                        style={{ '--segment-delay': '1.62s', '--segment-length': '98.96' }}
-                      />
-                      <circle
-                        className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
-                        cx="50"
-                        cy="50"
-                        r="35"
-                        fill="none"
-                        stroke="#cccccc"
-                        strokeWidth="13"
-                        strokeDasharray="98.96 120.95"
-                        strokeDashoffset="-98.96"
-                        style={{ '--segment-delay': '1.89s', '--segment-length': '98.96' }}
-                      />
-                      <circle
-                        className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
-                        cx="50"
-                        cy="50"
-                        r="35"
-                        fill="none"
-                        stroke="#cccccc"
-                        strokeWidth="13"
-                        strokeDasharray="21.99 197.92"
-                        strokeDashoffset="-197.92"
-                        style={{ '--segment-delay': '2.16s', '--segment-length': '21.99' }}
-                      />
-                      {/* Segment 1 - 45% (Steve) */}
-                      <circle
-                        className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
-                        cx="50"
-                        cy="50"
-                        r="35"
-                        fill="none"
-                        stroke="#d0d0d0"
-                        strokeWidth="12"
-                        strokeDasharray="98.96 120.95"
-                        strokeDashoffset="0"
-                        style={{ '--segment-delay': '1.62s', '--segment-length': '98.96' }}
-                      />
-                      {/* Segment 2 - 45% (Woz) */}
-                      <circle
-                        className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
-                        cx="50"
-                        cy="50"
-                        r="35"
-                        fill="none"
-                        stroke="#f0f0f0"
-                        strokeWidth="12"
-                        strokeDasharray="98.96 120.95"
-                        strokeDashoffset="-98.96"
-                        style={{ '--segment-delay': '1.89s', '--segment-length': '98.96' }}
-                      />
-                      {/* Segment 3 - 10% (Ron) */}
-                      <circle
-                        className={`pie-segment ${equityChartVisible ? 'pie-segment-animate' : ''}`}
-                        cx="50"
-                        cy="50"
-                        r="35"
-                        fill="none"
-                        stroke="#ffffff"
-                        strokeWidth="12"
-                        strokeDasharray="21.99 197.92"
-                        strokeDashoffset="-197.92"
-                        style={{ '--segment-delay': '2.16s', '--segment-length': '21.99' }}
-                      />
-                    </svg>
-                  </div>
-
-                  {/* Legend */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {[
-                      { name: 'Steve J.', percent: '45%', color: '#d0d0d0', border: false, delay: '2.43s' },
-                      { name: 'Steve W.', percent: '45%', color: '#f0f0f0', border: false, delay: '2.52s' },
-                      { name: 'Ron W.', percent: '10%', color: '#ffffff', border: true, delay: '2.61s' }
-                    ].map((item, i) => (
-                      <div
-                        key={i}
-                        className={`equity-legend-item ${equityChartVisible ? 'equity-fade-in' : ''}`}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          '--fade-delay': item.delay
-                        }}
-                      >
-                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: item.color, border: item.border ? '1px solid #ccc' : 'none' }} />
-                        <span style={{ fontSize: '11px', color: '#666' }}>{item.name}</span>
-                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#888' }}>{item.percent}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                </div>
-              </div>
-
-              {/* Expert Guidance */}
-              <div
-                className={`visual-content ${activeFeature === 2 ? 'active' : ''} ${expertGuidanceFading ? 'fade-out' : ''}`}
-                id="expert-guidance"
-                style={{
-                  opacity: activeFeature === 2 ? 1 : 0,
-                  transform: activeFeature === 2 ? 'scale(1)' : 'scale(0.95)',
-                  pointerEvents: activeFeature === 2 ? 'auto' : 'none',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'stretch',
-                  padding: '80px 40px 40px 40px',
-                  gap: '32px'
-                }}
-              >
-                {/* Contact icons - top center */}
-                <div
-                  className={`contact-icons ${expertGuidanceVisible ? 'contact-icons-visible' : ''}`}
-                  style={{
-                    position: 'absolute',
-                    top: '50px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    display: 'flex',
-                    gap: '12px'
-                  }}
-                >
-                  {/* Email icon */}
-                  <div
-                    className={`contact-icon ${expertGuidanceVisible ? 'contact-icon-visible' : ''}`}
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '8px',
-                      backgroundColor: '#ffffff',
-                      border: '1px solid #e5e7eb',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
-                      '--icon-delay': '0s'
-                    }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c8590" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="2" y="4" width="20" height="16" rx="2"/>
-                      <path d="M22 7l-10 7L2 7"/>
-                    </svg>
-                  </div>
-                  {/* Text/Message icon */}
-                  <div
-                    className={`contact-icon ${expertGuidanceVisible ? 'contact-icon-visible' : ''}`}
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '8px',
-                      backgroundColor: '#ffffff',
-                      border: '1px solid #e5e7eb',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
-                      '--icon-delay': '0.15s'
-                    }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c8590" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                  </div>
-                  {/* Call icon */}
-                  <div
-                    className={`contact-icon ${expertGuidanceVisible ? 'contact-icon-visible' : ''}`}
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '8px',
-                      backgroundColor: '#ffffff',
-                      border: '1px solid #e5e7eb',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
-                      '--icon-delay': '0.3s'
-                    }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c8590" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Question bubble - from right */}
-                <div
-                  className={`speech-box-right ${expertGuidanceVisible ? 'speech-box-right-visible' : ''}`}
-                  style={{
-                    width: '400px',
-                    backgroundColor: '#ffffff',
-                    borderRadius: '16px',
-                    border: '1px solid #e5e7eb',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                    padding: '24px',
-                    position: 'relative',
-                    alignSelf: 'flex-end'
-                  }}
-                >
-                  {/* Speech bubble tail - right side */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      right: '-10px',
-                      top: '24px',
-                      width: '0',
-                      height: '0',
-                      borderTop: '10px solid transparent',
-                      borderBottom: '10px solid transparent',
-                      borderLeft: '10px solid #ffffff',
-                      filter: 'drop-shadow(2px 0 1px rgba(0, 0, 0, 0.05))'
-                    }}
-                  />
-                  <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590', marginBottom: '12px', display: 'block' }}>Your Question</span>
-
-                  {/* Animated text lines */}
-                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {[
-                      { width: '100%', delay: 0.3 },
-                      { width: '100%', delay: 0.45 },
-                      { width: '60%', delay: 0.6 }
-                    ].map((line, i) => (
-                      <div
-                        key={i}
-                        className={`text-line ${expertGuidanceVisible ? 'text-line-visible' : ''}`}
-                        style={{
-                          width: line.width,
-                          '--line-delay': `${line.delay}s`
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Expert response bubble - from left */}
-                <div
-                  className={`speech-box ${expertGuidanceVisible ? 'speech-box-visible' : ''}`}
-                  style={{
-                    width: '400px',
-                    backgroundColor: '#ffffff',
-                    borderRadius: '16px',
-                    border: '1px solid #e5e7eb',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                    padding: '24px',
-                    position: 'relative',
-                    alignSelf: 'flex-start'
-                  }}
-                >
-                  {/* Speech bubble tail - left side */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      left: '-10px',
-                      top: '24px',
-                      width: '0',
-                      height: '0',
-                      borderTop: '10px solid transparent',
-                      borderBottom: '10px solid transparent',
-                      borderRight: '10px solid #ffffff',
-                      filter: 'drop-shadow(-2px 0 1px rgba(0, 0, 0, 0.05))'
-                    }}
-                  />
-                  <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590', marginBottom: '12px', display: 'block' }}>Expert Answer</span>
-
-                  {/* Animated text lines */}
-                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {[
-                      { width: '100%', delay: 1.2 },
-                      { width: '100%', delay: 1.35 },
-                      { width: '100%', delay: 1.5 },
-                      { width: '45%', delay: 1.65 }
-                    ].map((line, i) => (
-                      <div
-                        key={i}
-                        className={`text-line ${expertGuidanceVisible ? 'text-line-visible' : ''}`}
-                        style={{
-                          width: line.width,
-                          '--line-delay': `${line.delay}s`
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="scroll-section py-16 md:py-24 px-4 md:px-6 relative" style={{ backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
-        <div className="max-w-6xl mx-auto relative">
-          <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium text-center mb-3 md:mb-4">Pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
-          <p className="text-center text-sm md:text-base mb-12 md:mb-16 font-normal px-4" style={{ color: '#716B6B' }}>
-            Choose the plan that's right for your team.{' '}
-            <a href="/pricing" className="underline hover:text-black transition-colors" style={{ color: '#9CA3AF' }}>
-              Compare plans.
-            </a>
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8 items-stretch max-w-7xl mx-auto">
-            {pricingPlans.map((plan, i) => (
-              <div
-                key={i}
-                ref={plan.featured ? pricingCardRef : null}
-                className={`bg-white p-6 md:p-8 rounded-lg flex flex-col border border-gray-300 ${
-                  plan.featured
-                    ? pricingCardAnimated ? 'pricing-card-bounce-in' : ''
-                    : ''
-                }`}
-                style={plan.featured && !pricingCardAnimated ? {
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
-                } : {}}
-              >
-                <h3 className="text-lg md:text-xl font-normal mb-2 text-[#716B6B]">{plan.name}</h3>
-                <div className="text-3xl md:text-4xl font-bold mb-2">{plan.price}</div>
-                <p className="text-sm md:text-base text-gray-600 mb-6">{plan.description}</p>
-                <button
-                  onClick={() => {
-                    if (plan.name === 'Enterprise') {
-                      window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 });
-                    } else {
-                      // Navigate directly to app domain to avoid double redirect
-                      const isProduction = window.location.hostname.includes('cherrytree.app');
-                      if (isProduction) {
-                        window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
-                      } else {
-                        navigate('/dashboard', { replace: true });
-                      }
-                    }
-                  }}
-                  className={`w-full py-2.5 md:py-3 rounded-lg text-sm md:text-base font-semibold transition mb-6 ${
-                    plan.featured
-                      ? 'button-shimmer bg-[#000000] text-white hover:bg-[#1a1a1a]'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {plan.name === 'Enterprise' ? 'Contact sales' : 'Get started'}
-                </button>
-                <ul className="space-y-3 flex-grow">
-                  {plan.features.map((feature, j) => (
-                    <li key={j} className="flex items-center gap-2 text-sm md:text-base">
-                      <span className="text-[#716B6B]">✓</span>
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
 
           {/* Logo Grid */}
           <div className="mt-16 max-w-7xl mx-auto">
-            <div className="flex flex-wrap justify-between items-center gap-y-6">
+            <div className="grid grid-cols-3 md:flex md:flex-wrap md:justify-between items-center gap-y-6 justify-items-center">
               {logos.map((logo, i) => (
                 <div
-                  key={`${logo.alt}-${i}`}
-                  className="flex items-center justify-center w-20 md:w-24 transition-opacity duration-500"
+                  key={`built-${logo.alt}-${i}`}
+                  className={`flex items-center justify-center h-8 md:w-24 transition-opacity duration-500${i >= 6 ? ' hidden md:flex' : ''}`}
                   style={{
                     opacity: isFading ? 0 : 1,
-                    transitionDelay: isFading ? '0ms' : `${i * 200}ms`
+                    transitionDelay: isFading ? '0ms' : `${logoDelayOrder[i] * 120}ms`
                   }}
                 >
                   <img
@@ -2379,108 +1525,387 @@ function LandingPage() {
             </div>
           </div>
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
       </section>
 
-      {/* FAQ Section */}
-      <section id="faq" className="scroll-section py-16 md:py-24 px-4 md:px-6">
+      {/* Features Section */}
+      <section id="features" ref={featuresRef} className="scroll-section py-16 md:py-24 px-4 md:px-6" style={{ backgroundColor: '#ffffff' }}>
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row gap-8 md:gap-20 lg:gap-80 items-start md:justify-center md:ml-32">
-            <div className="flex-shrink-0 w-full md:w-auto text-center md:text-left">
-              <h2 className="section-header font-heading text-3xl sm:text-4xl md:text-5xl font-medium">FAQs<span style={{ marginLeft: '0.05em', color: '#0056D6' }}>.</span></h2>
-            </div>
-            <div className="flex-1 max-w-[700px] w-full">
-              {faqs.map((faq, i) => (
-                <div key={i} className="accordion-item border-b border-gray-300">
-                  <button
-                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                    className="accordion-title w-full py-4 md:py-5 px-3 md:px-4 flex justify-between items-center transition hover:bg-gray-50 text-left"
-                  >
-                    <span className="font-medium text-black text-sm md:text-base pr-4">{faq.q}</span>
-                    <span className={`accordion-icon text-gray-400 font-light transition-all duration-300 flex-shrink-0 text-xl ${openFaq === i ? 'rotate-90 scale-110 text-gray-700' : ''}`}>
-                      +
-                    </span>
-                  </button>
-                  <div
-                    className={`accordion-content overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-[1000px] py-6 md:py-8 px-3 md:px-4' : 'max-h-0 py-0 px-3 md:px-4'}`}
-                  >
-                    <p className="text-gray-600 text-sm md:text-[0.95rem]">{faq.a}</p>
+          <h2 className="section-header font-heading text-[1.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-center mb-14 md:mb-20 px-2 whitespace-nowrap">Cofoundership <span className="font-light" style={{ position: 'relative', top: '-0.15em' }}>&#x27F6;</span> Company<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+
+          </div>
+          <div className="flex flex-col gap-16 md:gap-[140px]" style={{ maxWidth: '80rem', margin: '0 auto 48px auto', padding: '0 24px' }}>
+            <div ref={featureRow1Ref} data-feature-row="1" className="flex flex-col md:flex-row items-center gap-6 md:gap-12 w-full">
+            <div className={`feature-slide-left${featureRow1Visible ? ' feature-visible' : ''} w-full md:w-[33rem] md:max-w-[46%] aspect-square overflow-hidden`} style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
+              {/* Mini animation preview */}
+              <div ref={cardDocRef} style={{ backgroundColor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', width: '100%', aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
+                <div
+                  className="p-3 md:p-6"
+                  style={{ width: '65%', height: '85%', backgroundColor: '#ffffff', borderRadius: '0px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start' }}
+                >
+                  <span className="text-[9px] md:text-[14px] mb-2 md:mb-5" style={{ fontWeight: 500, color: '#7c8590' }}>Cofounder Agreement</span>
+                  <div className="gap-1 md:gap-2" style={{ width: '100%', display: 'flex', flexDirection: 'column', padding: '0 8px' }}>
+                    {[
+                      { width: '100%', delay: 0.3 }, { width: '100%', delay: 0.45 }, { width: '100%', delay: 0.6 }, { width: '50%', delay: 0.75 },
+                      { width: '100%', delay: 0.9, mt: true }, { width: '100%', delay: 1.05 }, { width: '100%', delay: 1.2 }, { width: '65%', delay: 1.35 },
+                      { width: '100%', delay: 1.5, mt: true }, { width: '100%', delay: 1.65 }, { width: '100%', delay: 1.8 }, { width: '40%', delay: 1.95 }
+                    ].map((line, i) => (
+                      <div
+                        key={i}
+                        className={`text-line ${cardDocVisible ? 'text-line-visible' : ''}`}
+                        style={{ width: line.width, '--line-delay': `${line.delay}s`, marginTop: line.mt ? '6px' : '0' }}
+                      />
+                    ))}
                   </div>
+                  <div style={{ width: '100%', marginTop: 'auto', padding: '0 8px' }}>
+                    <svg className="w-[80px] md:w-[140px] h-[30px] md:h-[50px]" style={{ '--sig-delay': '2.2s' }} viewBox="0 0 140 50" fill="none">
+                      <path
+                        className={`signature-path ${cardDocVisible ? 'signature-draw' : ''}`}
+                        d="M 5 35 C 10 20, 15 15, 20 25 C 25 35, 30 40, 35 30 C 40 20, 42 15, 48 20 C 54 25, 56 35, 62 28 C 68 21, 70 18, 78 22 C 86 26, 88 32, 95 25 C 102 18, 105 15, 112 20 C 119 25, 122 30, 130 22 L 135 18"
+                        stroke="#7c8590"
+                        strokeWidth="2"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    <div className="w-[80px] md:w-[140px]" style={{ height: '1px', backgroundColor: '#e5e7eb', marginTop: '2px' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+              <div className="text-left" style={{ maxWidth: '580px', marginLeft: 'auto' }}>
+                <h3 className="text-xl md:text-2xl font-medium md:font-normal" style={{ marginBottom: '12px', color: '#333333' }}>Contract Creator</h3>
+                <p className="text-sm md:text-lg" style={{ color: '#444', lineHeight: 1.6 }}>Generate a ready-to-use, fully customized document in minutes<br />and start building your partnership with confidence.</p>
+              </div>
+            </div>
+            <div ref={featureRow2Ref} data-feature-row="2" className="flex flex-col md:flex-row-reverse items-center gap-6 md:gap-12 w-full">
+              <div ref={cardEquityRef} className={`feature-slide-right${featureRow2Visible ? ' feature-visible' : ''} w-full md:w-[33rem] md:max-w-[46%] aspect-square`} style={{ background: 'linear-gradient(45deg, #1a6b52 0%, #042018 100%)', borderRadius: '14px', padding: '24px', border: 'none', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', color: '#ffffff', overflow: 'hidden', position: 'relative' }}>
+                  <div className="scale-[0.65] md:scale-[1.155]" style={{ transformOrigin: 'center top', marginTop: '12px' }}>
+                    <div className={`equity-table ${cardEquityVisible ? 'equity-table-visible' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                      <div className="grid gap-1 md:gap-2 px-2 md:px-3 py-1 md:py-2" style={{ gridTemplateColumns: '100px 50px 50px 50px', backgroundColor: '#f7f7f7', borderRadius: '6px 6px 0 0' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#666' }}>Category</span>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SJ</span>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SW</span>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>RW</span>
+                      </div>
+                      {[
+                        { category: 'Cash Invested', scores: [6, 6, 4], delays: [0.2, 0.35, 0.1] },
+                        { category: 'Time Commit', scores: [10, 8, 4], delays: [0.4, 0.25, 0.5] },
+                        { category: 'Leadership', scores: [8, 10, 2], delays: [0.55, 0.7, 0.45] },
+                        { category: 'Engineering', scores: [4, 8, 4], delays: [0.65, 0.8, 0.6] },
+                        { category: 'Sales', scores: [8, 4, 2], delays: [0.75, 0.9, 0.85] },
+                        { category: 'Domain', scores: [6, 8, 6], delays: [1.0, 0.95, 1.1] },
+                        { category: 'Network', scores: [8, 6, 4], delays: [1.15, 1.25, 1.05] },
+                        { category: 'Idea Origin', scores: [10, 10, 4], delays: [1.3, 1.2, 1.35] }
+                      ].map((row, i, arr) => (
+                        <div key={i} className="grid gap-1 md:gap-2 px-2 md:px-3 py-1 md:py-2" style={{ gridTemplateColumns: '100px 50px 50px 50px', backgroundColor: i % 2 === 0 ? '#fff' : '#fafafa', borderLeft: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderRadius: i === arr.length - 1 ? '0 0 6px 6px' : '0' }}>
+                          <span style={{ fontSize: '11px', color: '#666' }}>{row.category}</span>
+                          {row.scores.map((score, j) => (
+                            <span key={j} className={`equity-number ${cardEquityNumbersVisible ? 'equity-fade-in' : ''}`} style={{ fontSize: '11px', fontWeight: 500, color: '#999', textAlign: 'center', '--fade-delay': `${row.delays[j] + 0.3}s` }}>{score}</span>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Light green frosted card */}
+                  <div style={{ position: 'absolute', bottom: '6%', left: '5%', right: '5%', height: '14%', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '10px', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '0 6px', whiteSpace: 'nowrap' }}>
+                    <span className="text-[7px] md:text-[12px]" style={{ fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Steve Jobs: 45%</span>
+                    <span className="text-[7px] md:text-[12px]" style={{ fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Steve Woz: 45%</span>
+                    <span className="text-[7px] md:text-[12px]" style={{ fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Ron Wayne: 10%</span>
+                  </div>
+              </div>
+              <div className="text-left" style={{ maxWidth: '580px', marginRight: 'auto' }}>
+                <h3 className="text-xl md:text-2xl font-medium md:font-normal" style={{ marginBottom: '12px', color: '#333333' }}>Equity Calculator</h3>
+                <p className="text-sm md:text-lg" style={{ color: '#444', lineHeight: 1.6 }}>Use our proprietary equity calculator to determine ownership.<br />Instant, precise splits so everyone knows their stake.</p>
+              </div>
+            </div>
+            <div ref={featureRow3Ref} data-feature-row="3" className="flex flex-col md:flex-row items-center gap-6 md:gap-12 w-full">
+              <div ref={cardExpertRef} className={`feature-slide-left${featureRow3Visible ? ' feature-visible' : ''} w-full md:w-[33rem] md:max-w-[46%] aspect-square`} style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', overflow: 'hidden', position: 'relative' }}>
+                <div className="p-3 gap-3 md:p-6 md:pt-10 md:gap-5" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'stretch', width: '100%', height: '100%', position: 'relative' }}>
+                  {/* Contact icons */}
+                  <div
+                    className={`contact-icons ${cardExpertVisible ? 'contact-icons-visible' : ''}`}
+                    style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}
+                  >
+                    <div className={`contact-icon ${cardExpertVisible ? 'contact-icon-visible' : ''}`} style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', '--icon-delay': '0s' }}>
+                      <svg className="w-3 h-3 md:w-[18px] md:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg>
+                    </div>
+                    <div className={`contact-icon ${cardExpertVisible ? 'contact-icon-visible' : ''}`} style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', '--icon-delay': '0.15s' }}>
+                      <svg className="w-3 h-3 md:w-[18px] md:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </div>
+                    <div className={`contact-icon ${cardExpertVisible ? 'contact-icon-visible' : ''}`} style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', '--icon-delay': '0.3s' }}>
+                      <svg className="w-3 h-3 md:w-[18px] md:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    </div>
+                  </div>
+                  {/* Question bubble */}
+                  <div className={`speech-box-right ${cardExpertVisible ? 'speech-box-right-visible' : ''} p-2 md:p-4`} style={{ backgroundColor: '#ffffff', borderRadius: '10px', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', alignSelf: 'flex-end', width: '80%' }}>
+                    <span className="text-[9px] md:text-[11px] mb-1 md:mb-2" style={{ fontWeight: 500, color: '#7c8590', display: 'block' }}>Your Question</span>
+                    <div className="gap-1 md:gap-1.5" style={{ display: 'flex', flexDirection: 'column' }}>
+                      {[{ width: '100%', delay: 0.3 }, { width: '100%', delay: 0.45 }, { width: '60%', delay: 0.6 }].map((line, i) => (
+                        <div key={i} className={`text-line ${cardExpertLinesVisible ? 'text-line-visible' : ''}`} style={{ width: line.width, '--line-delay': `${line.delay}s` }} />
+                      ))}
+                    </div>
+                  </div>
+                  {/* Expert response bubble */}
+                  <div className={`speech-box ${cardExpertVisible ? 'speech-box-visible' : ''} p-2 md:p-4`} style={{ backgroundColor: '#ffffff', borderRadius: '10px', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', alignSelf: 'flex-start', width: '80%' }}>
+                    <span className="text-[9px] md:text-[11px] mb-1 md:mb-2" style={{ fontWeight: 500, color: '#7c8590', display: 'block' }}>Expert Answer</span>
+                    <div className="gap-1 md:gap-1.5" style={{ display: 'flex', flexDirection: 'column' }}>
+                      {[{ width: '100%', delay: 1.2 }, { width: '100%', delay: 1.35 }, { width: '100%', delay: 1.5 }, { width: '45%', delay: 1.65 }].map((line, i) => (
+                        <div key={i} className={`text-line ${cardExpertLinesVisible ? 'text-line-visible' : ''}`} style={{ width: line.width, '--line-delay': `${line.delay}s` }} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="text-left" style={{ maxWidth: '580px', marginLeft: 'auto' }}>
+                <h3 className="text-xl md:text-2xl font-medium md:font-normal" style={{ marginBottom: '12px', color: '#333333' }}>Expert Guidance</h3>
+                <p className="text-sm md:text-lg" style={{ color: '#444', lineHeight: 1.6 }}>We are a team of cofounder coaches, founders, and attorneys<br />ready to help. You're in good hands every step of the way.</p>
+              </div>
+            </div>
+            <div ref={featureRow4Ref} data-feature-row="4" className="-mx-3 md:mx-0" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 'auto' }}>
+              <div className="w-full" style={{ borderRadius: '14px', border: 'none', overflow: 'hidden', position: 'relative', opacity: featureRow4Visible ? 1 : 0, transform: featureRow4Visible ? 'translateY(0)' : 'translateY(40px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
+                <video src="/images/thiscofoundervideo.mp4" autoPlay muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: '14px', filter: 'saturate(1.5) contrast(1.15)' }} />
+              </div>
+            </div>
+          </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="scroll-section pt-24 md:pt-28 pb-32 md:pb-36 px-4 md:px-6 relative" style={{ backgroundColor: '#06271D' }}>
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#06271D] to-transparent pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#06271D] to-transparent pointer-events-none"></div>
+        <div className="max-w-6xl mx-auto relative">
+          <h2 className="section-header font-heading text-[1.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-center mb-3 md:mb-4 text-white">Founder-friendly pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+          <p className="text-center text-sm md:text-base mb-12 md:mb-16 font-normal px-4" style={{ color: 'rgba(255,255,255,0.65)' }}>
+            Choose the plan that's right for your team.{' '}
+            <a href="/pricing" className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              Compare plans.
+            </a>
+          </p>
+          {/* Mobile: stacked complete cards */}
+          <div className="sm:hidden" style={{ border: '1px solid rgba(255, 255, 255, 0.2)' }}>
+            {pricingPlans.map((plan, i) => (
+              <div
+                key={i}
+                ref={plan.featured ? pricingCardRef : null}
+                className="text-left p-6"
+                style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.2)' }}
+              >
+                <h3 className="mb-2 text-white" style={{ fontSize: '1.5rem', fontWeight: 400 }}>{plan.name}</h3>
+                <p className="text-sm whitespace-pre-line mb-5" style={{ color: 'rgba(255,255,255,0.5)' }}>{plan.description}</p>
+                <div className="flex items-center justify-between mb-5">
+                  <div>
+                    <div className="text-4xl font-normal text-white">{plan.price}</div>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>One-time payment</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (plan.name === 'Enterprise') {
+                        window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 });
+                      } else {
+                        const isProduction = window.location.hostname.includes('cherrytree.app');
+                        if (isProduction) {
+                          window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
+                        } else {
+                          navigate('/dashboard', { replace: true });
+                        }
+                      }
+                    }}
+                    className={`px-6 py-3 rounded-md text-sm font-normal transition whitespace-nowrap ${
+                      plan.featured
+                        ? 'button-shimmer-dark bg-white text-[#06271D] hover:bg-gray-100'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                    }`}
+                  >
+                    {plan.name === 'Enterprise' ? 'Contact sales' : 'Get started'}
+                  </button>
+                </div>
+                <div className="my-5" style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
+                <ul className="space-y-3">
+                  {plan.features.map((feature, j) => (
+                    <li key={j} className="flex items-center gap-2 text-sm">
+                      <span className="flex items-center justify-center flex-shrink-0" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>✓</span>
+                      <span style={{ color: 'rgba(255,255,255,0.8)' }}>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+            <div className="p-6 text-center" style={{ color: 'rgba(255,255,255,0.65)' }}>
+              <p className="text-sm content-visible">Run a fund or accelerator and want to deploy in bulk? <a href="#" onClick={(e) => { e.preventDefault(); window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>Contact sales</a></p>
+            </div>
+          </div>
+
+          {/* Desktop: split grid layout */}
+          <div className="hidden sm:block max-w-6xl mx-auto" style={{ border: '1px solid rgba(255, 255, 255, 0.2)' }}>
+            {/* Top row: names + descriptions */}
+            <div className="grid grid-cols-2">
+              {pricingPlans.map((plan, i) => (
+                <div
+                  key={i}
+                  className="text-left p-6 md:p-8 pb-4 md:pb-6"
+                  style={{
+                    borderRight: i === 0 ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
+                  }}
+                >
+                  <h3 className="mb-2 text-white" style={{ fontSize: '1.5rem', fontWeight: 400 }}>{plan.name}</h3>
+                  <p className="text-sm md:text-base whitespace-pre-line" style={{ color: 'rgba(255,255,255,0.5)' }}>{plan.description}</p>
                 </div>
               ))}
             </div>
+            {/* Divider */}
+            <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
+            {/* Bottom row: price+button on left, features on right */}
+            <div className="grid grid-cols-2 items-stretch">
+              {pricingPlans.map((plan, i) => (
+                <div
+                  key={i}
+                  ref={plan.featured ? undefined : undefined}
+                  className="flex flex-row text-left p-6 md:p-8 overflow-hidden"
+                  style={{
+                    borderRight: i === 0 ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
+                  }}
+                >
+                  <div className="flex flex-col justify-between" style={{ minWidth: '180px' }}>
+                    <div className="text-4xl md:text-5xl font-normal text-white">{plan.price}</div>
+                    <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>One-time payment</p>
+                    <button
+                      onClick={() => {
+                        if (plan.name === 'Enterprise') {
+                          window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 });
+                        } else {
+                          const isProduction = window.location.hostname.includes('cherrytree.app');
+                          if (isProduction) {
+                            window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
+                          } else {
+                            navigate('/dashboard', { replace: true });
+                          }
+                        }
+                      }}
+                      className={`px-6 md:px-10 py-3 md:py-4 rounded-md text-sm md:text-base font-normal transition whitespace-nowrap ${
+                        plan.featured
+                          ? 'button-shimmer-dark bg-white text-[#06271D] hover:bg-gray-100'
+                          : 'bg-white/10 text-white hover:bg-white/20'
+                      }`}
+                    >
+                      {plan.name === 'Enterprise' ? 'Contact sales' : 'Get started'}
+                    </button>
+                  </div>
+                  <div className="-my-6 md:-my-8 ml-8 mr-6" style={{ width: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
+                  <ul className="space-y-3 text-left">
+                    {plan.features.map((feature, j) => (
+                      <li key={j} className="flex items-center gap-2 text-sm md:text-base">
+                        <span className="flex items-center justify-center flex-shrink-0" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>✓</span>
+                        <span style={{ color: 'rgba(255,255,255,0.8)' }}>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+            {/* Divider */}
+            <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
+            {/* Third row */}
+            <div className="p-6 md:p-8 text-center" style={{ color: 'rgba(255,255,255,0.65)' }}>
+              <p className="text-sm md:text-base content-visible">Run a fund or accelerator and want to deploy in bulk? <a href="#" onClick={(e) => { e.preventDefault(); window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>Contact sales</a></p>
+            </div>
           </div>
+
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="scroll-section-full py-16 md:py-24 px-4 md:px-6 bg-white">
-        <div
-          ref={ctaCardRef}
-          className="max-w-6xl mx-auto bg-[#1a1a1a] rounded-xl md:rounded-2xl py-[3.63rem] sm:py-[4.84rem] md:py-[9.2rem] px-4 sm:px-6 md:px-12 relative overflow-hidden"
-          style={{
-            backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 2.4px, transparent 2.4px), radial-gradient(rgba(255,255,255,0.04) 2.4px, transparent 2.4px)',
-            backgroundSize: '15px 15px',
-            backgroundPosition: '0 0, 7.5px 7.5px',
-            transform: `perspective(1000px) rotateX(${ctaCardTilt}deg)`,
-            transformOrigin: 'center bottom',
-            transition: 'transform 0.1s ease-out'
-          }}
-          onMouseMove={(e) => {
-            if (!ctaCardRef.current) return;
-            const rect = ctaCardRef.current.getBoundingClientRect();
-            setCtaShinePos({ x: e.clientX - rect.left, y: e.clientY - rect.top, active: true });
-          }}
-          onMouseLeave={() => setCtaShinePos(prev => ({ ...prev, active: false }))}
-        >
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 60%)' }}></div>
-          <div
-            className="absolute pointer-events-none transition-opacity duration-500"
-            style={{
-              left: ctaShinePos.x - 250,
-              top: ctaShinePos.y - 250,
-              width: 500,
-              height: 500,
-              background: 'radial-gradient(ellipse, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.02) 50%, transparent 80%)',
-              filter: 'blur(20px)',
-              opacity: ctaShinePos.active ? 1 : 0
-            }}
-          />
-          <div className="headline-container">
-            <h1 className="typing-title font-heading text-white">
-              <span className="first-line">Protect your piece of the pie</span>
-              <span className="second-line">
-                <span className="typing-container">
-                  <em className="typing-and">{typedAnd || '\u00A0'}</em>
-                </span> your peace of mind.
-              </span>
-            </h1>
+      {/* FAQ Section */}
+      <section id="faq" ref={faqSectionRef} className="scroll-section py-16 md:py-36 px-4 md:px-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Desktop FAQ */}
+          <div className="hidden md:block mx-auto" style={{ maxWidth: '1120px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #06271D', height: '580px' }}>
+            <div className="flex flex-row items-stretch" style={{ height: '100%' }}>
+              <div className="text-left flex items-center justify-center" style={{ backgroundColor: '#06271D', flex: faqSectionVisible ? '0 0 420px' : '1 1 100%', transition: 'flex 0.8s cubic-bezier(0.4, 0, 0.2, 1)', overflow: 'hidden', minWidth: '420px' }}>
+                <div className="w-full h-full flex items-center justify-center p-12">
+                  <h2 className="section-header font-heading text-[3.63rem] font-medium text-white whitespace-nowrap">Frequently asked<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+                </div>
+              </div>
+              <div style={{ backgroundColor: '#fff', flex: faqSectionVisible ? '1 1 700px' : '0 0 0px', opacity: faqSectionVisible ? 1 : 0, transition: 'flex 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease 0.3s', overflow: 'hidden' }}>
+                <div ref={faqContentRef} className="w-full h-full p-8 overflow-y-auto">
+                {faqs.map((faq, i) => (
+                  <div key={i} ref={el => faqItemRefs.current[i] = el} className={`accordion-item ${i < faqs.length - 1 ? 'border-b border-gray-300' : ''}`}>
+                    <button
+                      onClick={() => {
+                        const next = openFaq === i ? null : i;
+                        setOpenFaq(next);
+                        if (next !== null) {
+                          setTimeout(() => {
+                            const item = faqItemRefs.current[next];
+                            const container = faqContentRef.current;
+                            if (item && container) {
+                              const itemTop = item.offsetTop - container.offsetTop;
+                              container.scrollTo({ top: itemTop, behavior: 'smooth' });
+                            }
+                          }, 50);
+                        }
+                      }}
+                      className="accordion-title w-full py-5 px-4 flex justify-between items-center transition text-left"
+                      style={{ backgroundColor: openFaq === i ? '#faf6f5' : 'transparent' }}
+                      onMouseEnter={e => { if (openFaq !== i) e.currentTarget.style.backgroundColor = '#faf6f5'; }}
+                      onMouseLeave={e => { if (openFaq !== i) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                    >
+                      <span className="font-normal text-black text-base pr-4">{faq.q}</span>
+                      <span className={`accordion-icon text-gray-400 font-light transition-all duration-300 flex-shrink-0 text-xl ${openFaq === i ? 'rotate-90 scale-110 text-gray-700' : ''}`}>
+                        +
+                      </span>
+                    </button>
+                    <div
+                      className={`accordion-content overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-[1000px] py-8 px-4' : 'max-h-0 py-0 px-4'}`}
+                    >
+                      <p className="text-gray-600 text-[0.95rem]">{faq.a}</p>
+                    </div>
+                  </div>
+                ))}
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="max-w-4xl mx-auto text-center mt-12 md:mt-16">
-            <div className="flex flex-col items-center gap-3">
-              <button
-                onClick={() => {
-                  // Navigate directly to app domain to avoid double redirect
-                  const isProduction = window.location.hostname.includes('cherrytree.app');
-                  if (isProduction) {
-                    window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
-                  } else {
-                    navigate('/dashboard', { replace: true });
-                  }
-                }}
-                className="button-shimmer-dark bg-white text-[#1a1a1a] px-8 md:px-16 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-gray-100 transition"
-              >
-                Get started
-              </button>
-              <p className="text-xs md:text-sm text-gray-300">
-                or <a href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer" className="text-white underline hover:text-gray-200 font-semibold">Book a Free Consultation</a>
-              </p>
+
+          {/* Mobile FAQ */}
+          <div className="md:hidden mx-auto" style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid #06271D' }}>
+            <div className="flex flex-col">
+              <div className="text-center flex items-center justify-center" style={{ backgroundColor: '#06271D', padding: '40px 24px', transition: 'padding 0.6s cubic-bezier(0.4, 0, 0.2, 1)', ...(faqSectionVisible ? { padding: '24px' } : {}) }}>
+                <h2 className="section-header font-heading text-[1.75rem] font-medium text-white">Frequently asked<span style={{ marginLeft: '0.05em' }}>.</span></h2>
+              </div>
+              <div style={{ backgroundColor: '#fff', maxHeight: faqSectionVisible ? '2000px' : '0px', opacity: faqSectionVisible ? 1 : 0, transition: 'max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease 0.2s', overflow: 'hidden' }}>
+                <div className="w-full p-4">
+                {faqs.map((faq, i) => (
+                  <div key={i} className={`accordion-item ${i < faqs.length - 1 ? 'border-b border-gray-300' : ''}`}>
+                    <button
+                      onClick={() => {
+                        const next = openFaq === i ? null : i;
+                        setOpenFaq(next);
+                      }}
+                      className="accordion-title w-full py-4 px-3 flex justify-between items-center transition text-left"
+                      style={{ backgroundColor: openFaq === i ? '#faf6f5' : 'transparent' }}
+                    >
+                      <span className="font-normal text-black text-sm pr-4">{faq.q}</span>
+                      <span className={`accordion-icon text-gray-400 font-light transition-all duration-300 flex-shrink-0 text-xl ${openFaq === i ? 'rotate-90 scale-110 text-gray-700' : ''}`}>
+                        +
+                      </span>
+                    </button>
+                    <div
+                      className={`accordion-content overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-[1000px] py-5 px-3' : 'max-h-0 py-0 px-3'}`}
+                    >
+                      <p className="text-gray-600 text-sm">{faq.a}</p>
+                    </div>
+                  </div>
+                ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <Footer />
+      <Footer bgColor="#06271D" navigate={navigate} />
 
       <style>{`
         /* Disable fadeInDown/fadeInUp animations on landing page only */
@@ -2525,7 +1950,7 @@ function LandingPage() {
           position: relative;
           overflow: hidden;
           width: 100%;
-          background: #fff;
+          background: #06271D;
           -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
           mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
           padding: 20px 0;
@@ -2550,6 +1975,7 @@ function LandingPage() {
           max-height: 36px;
           max-width: 120px;
           object-fit: contain;
+          filter: brightness(0) invert(1);
         }
 
         @keyframes scroll {
@@ -2576,9 +2002,9 @@ function LandingPage() {
             100% { transform: translateX(calc(-160px * 7)); }
           }
 
-          /* Reduce tilt effect on mobile */
+          /* Remove tilt but keep slide-up on mobile */
           .tilty-card {
-            transform: rotateX(0deg) !important;
+            transform: rotateX(0deg) translateY(var(--card-slide-up, 0px)) !important;
           }
         }
 
@@ -2604,7 +2030,7 @@ function LandingPage() {
         }
 
         .feature-card {
-          background: #f7f7f7;
+          background: transparent;
           border: 1px solid transparent;
           border-radius: 8px;
           padding: 32px;
@@ -2619,14 +2045,14 @@ function LandingPage() {
 
         .feature-card:hover {
           transform: translateX(4px);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-          border-color: #e8e8e8;
+          box-shadow: none;
+          border-color: transparent;
         }
 
         .feature-card.active {
-          border-color: #e8e8e8;
-          background: #ffffff;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+          border-color: transparent;
+          background: transparent;
+          box-shadow: none;
         }
 
         .feature-title {
@@ -2661,15 +2087,15 @@ function LandingPage() {
         }
 
         .feature-visual {
-          background: #fefefe;
+          background: #06271D;
           border-radius: 8px;
-          box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+          box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
           overflow: hidden;
           align-items: center;
           justify-content: center;
           position: relative;
           padding: 16px 32px;
-          border: 12px solid #f7f7f7;
+          border: 12px solid #06271D;
           height: calc(160px*3 + 24px);
           display: flex;
         }
@@ -2725,11 +2151,17 @@ function LandingPage() {
         }
 
         .text-line {
-          height: 6px;
+          height: 3px;
           background-color: #e5e7eb;
           border-radius: 3px;
           transform-origin: left;
           transform: scaleX(0);
+        }
+
+        @media (min-width: 768px) {
+          .text-line {
+            height: 6px;
+          }
         }
 
         .text-line-visible {

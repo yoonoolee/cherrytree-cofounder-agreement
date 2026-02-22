@@ -4,8 +4,8 @@ import Header from '../components/Header';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { usePageMeta } from '../hooks/usePageMeta';
 import Footer from '../components/Footer';
-import PricingCard from '../components/PricingCard';
-import { PRICING_PLANS } from '../constants/pricing';
+
+
 
 function PricingPage() {
   const navigate = useNavigate();
@@ -50,8 +50,8 @@ function PricingPage() {
 
   // SEO meta tags
   usePageMeta({
-    title: 'Pricing - Cherrytree | Starter $200, Pro $800',
-    description: 'Affordable cofounder agreement pricing for startups. Starter plan at $200 includes real-time collaboration and instant agreements. Pro plan at $800 adds attorney review and coaching.',
+    title: 'Pricing - Cherrytree | Starter $200, Pro $2000',
+    description: 'Affordable cofounder agreement pricing for startups. Starter plan at $200 includes real-time collaboration and instant agreements. Pro plan at $2000 adds attorney review and coaching.',
     breadcrumbs: [
       { name: 'Home', url: '/' },
       { name: 'Pricing' }
@@ -123,50 +123,277 @@ function PricingPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <Header />
+      <Header variant="dark" />
 
       {/* Pricing Section */}
-      <section className="pt-24 md:pt-32 pb-16 md:pb-20 px-4 md:px-6">
+      <section className="pt-24 md:pt-32 pb-24 md:pb-32 px-4 md:px-6" style={{ backgroundColor: '#06271D' }}>
         <div className="max-w-6xl mx-auto">
           <div className="hero-content text-center mb-10 md:mb-16">
-            <h1 className="font-heading text-3xl sm:text-4xl md:text-[56px] font-normal mb-4 md:mb-6">
-              Simple, transparent pricing<span style={{ marginLeft: '0.05em' }}>.</span>
+            <h1 className="font-heading text-[1.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium mb-4 md:mb-6 text-white">
+              Founder-friendly pricing<span style={{ marginLeft: '0.05em' }}>.</span>
             </h1>
-            <p className="text-sm md:text-[16px] font-normal" style={{ color: '#716B6B' }}>
-              Choose the plan that's right for your team.
+            <p className="text-sm md:text-[16px] font-normal" style={{ color: 'rgba(255,255,255,0.65)' }}>
+              Choose the plan that's right for your team.{' '}
+              <a href="/pricing" className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                Compare plans.
+              </a>
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 items-stretch max-w-7xl mx-auto">
-            {PRICING_PLANS.map((plan, i) => (
-              <PricingCard
-                key={i}
-                plan={plan}
-                buttonText={plan.name === 'Enterprise' ? 'Contact sales' : 'Get started'}
-                onButtonClick={() => {
-                  if (plan.name === 'Enterprise') {
-                    window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 });
-                  } else {
-                    // Navigate directly to my.cherrytree.app to avoid double redirect
-                    const isProduction = window.location.hostname.includes('cherrytree.app');
-                    if (isProduction) {
-                      window.location.href = 'https://my.cherrytree.app/dashboard';
-                    } else {
-                      navigate('/dashboard', { replace: true });
-                    }
-                  }
-                }}
-              />
-            ))}
+          {(() => {
+            const plans = [
+              { name: 'Bootstrapped', price: '$200', description: 'Ideal for early-stage or bootstrapped teams\nthat need to move fast and start building now.', featured: true, features: ['Expert-designed survey', 'Comprehensive agreements', 'Proprietary equity calculator', 'Best practices and tips', 'Up to 5 collaborators'] },
+              { name: 'Scale', price: '$2000', description: 'Built for funded teams that need deeper control,\ngreater detail, and stronger foundations.', featured: false, features: ['Everything in Bootstrapped', 'Final attorney review', 'Personalized onboarding', 'Cofounder coaching', 'Priority support'] }
+            ];
+            return (
+              <>
+                {/* Mobile: stacked complete cards */}
+                <div className="sm:hidden" style={{ border: '1px solid rgba(255, 255, 255, 0.2)' }}>
+                  {plans.map((plan, i) => (
+                    <div
+                      key={i}
+                      className="text-left p-6"
+                      style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.2)' }}
+                    >
+                      <h3 className="mb-2 text-white" style={{ fontSize: '1.5rem', fontWeight: 400 }}>{plan.name}</h3>
+                      <p className="text-sm whitespace-pre-line mb-5" style={{ color: 'rgba(255,255,255,0.5)' }}>{plan.description}</p>
+                      <div className="flex items-center justify-between mb-5">
+                        <div>
+                          <div className="text-4xl font-normal text-white">{plan.price}</div>
+                          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>One-time payment</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            const isProduction = window.location.hostname.includes('cherrytree.app');
+                            if (isProduction) {
+                              window.location.href = 'https://my.cherrytree.app/dashboard';
+                            } else {
+                              navigate('/dashboard', { replace: true });
+                            }
+                          }}
+                          className={`px-6 py-3 rounded-md text-sm font-normal transition whitespace-nowrap ${
+                            plan.featured
+                              ? 'button-shimmer-dark bg-white text-[#06271D] hover:bg-gray-100'
+                              : 'bg-white/10 text-white hover:bg-white/20'
+                          }`}
+                        >
+                          Get started
+                        </button>
+                      </div>
+                      <div className="my-5" style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
+                      <ul className="space-y-3">
+                        {plan.features.map((feature, j) => (
+                          <li key={j} className="flex items-center gap-2 text-sm">
+                            <span className="flex items-center justify-center flex-shrink-0" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>✓</span>
+                            <span style={{ color: 'rgba(255,255,255,0.8)' }}>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                  <div className="p-6 text-center" style={{ color: 'rgba(255,255,255,0.65)' }}>
+                    <p className="text-sm">Run a fund or accelerator and want to deploy in bulk? <a href="#" onClick={(e) => { e.preventDefault(); window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>Contact sales</a></p>
+                  </div>
+                </div>
+
+                {/* Desktop: split grid layout */}
+                <div className="hidden sm:block max-w-6xl mx-auto" style={{ border: '1px solid rgba(255, 255, 255, 0.2)' }}>
+                  <div className="grid grid-cols-2">
+                    {plans.map((plan, i) => (
+                      <div
+                        key={i}
+                        className="text-left p-6 md:p-8 pb-4 md:pb-6"
+                        style={{ borderRight: i === 0 ? '1px solid rgba(255, 255, 255, 0.2)' : 'none' }}
+                      >
+                        <h3 className="mb-2 text-white" style={{ fontSize: '1.5rem', fontWeight: 400 }}>{plan.name}</h3>
+                        <p className="text-sm md:text-base whitespace-pre-line" style={{ color: 'rgba(255,255,255,0.5)' }}>{plan.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
+                  <div className="grid grid-cols-2 items-stretch">
+                    {plans.map((plan, i) => (
+                      <div
+                        key={i}
+                        className="flex flex-row text-left p-6 md:p-8 overflow-hidden"
+                        style={{ borderRight: i === 0 ? '1px solid rgba(255, 255, 255, 0.2)' : 'none' }}
+                      >
+                        <div className="flex flex-col justify-between" style={{ minWidth: '180px' }}>
+                          <div className="text-4xl md:text-5xl font-normal text-white">{plan.price}</div>
+                          <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>One-time payment</p>
+                          <button
+                            onClick={() => {
+                              const isProduction = window.location.hostname.includes('cherrytree.app');
+                              if (isProduction) {
+                                window.location.href = 'https://my.cherrytree.app/dashboard';
+                              } else {
+                                navigate('/dashboard', { replace: true });
+                              }
+                            }}
+                            className={`px-6 md:px-10 py-3 md:py-4 rounded-md text-sm md:text-base font-normal transition whitespace-nowrap ${
+                              plan.featured
+                                ? 'button-shimmer-dark bg-white text-[#06271D] hover:bg-gray-100'
+                                : 'bg-white/10 text-white hover:bg-white/20'
+                            }`}
+                          >
+                            Get started
+                          </button>
+                        </div>
+                        <div className="-my-6 md:-my-8 ml-8 mr-6" style={{ width: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
+                        <ul className="space-y-3 text-left">
+                          {plan.features.map((feature, j) => (
+                            <li key={j} className="flex items-center gap-2 text-sm md:text-base">
+                              <span className="flex items-center justify-center flex-shrink-0" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>✓</span>
+                              <span style={{ color: 'rgba(255,255,255,0.8)' }}>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
+                  <div className="p-6 md:p-8 text-center" style={{ color: 'rgba(255,255,255,0.65)' }}>
+                    <p className="text-sm md:text-base">Run a fund or accelerator and want to deploy in bulk? <a href="#" onClick={(e) => { e.preventDefault(); window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>Contact sales</a></p>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      </section>
+
+      <section className="pb-24 md:pb-32 px-4 md:px-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Feature Comparison Table */}
+          <div className="mt-24">
+            <h2 className="font-heading text-3xl sm:text-4xl md:text-[56px] font-normal text-center mb-4">
+              Compare plans<span style={{ marginLeft: '0.05em' }}>.</span>
+            </h2>
+            <p className="text-center text-[16px] mb-12 font-normal" style={{ color: '#716B6B' }}>
+              Each pricing plan covers one cofounder agreement. Fill out the survey<br />and equity calculator to get a ready-to-use cofounder agreement.
+            </p>
+
+            <div className="overflow-x-auto rounded-lg" style={{ border: '1px solid #06271D' }}>
+              <table className="w-full border-collapse">
+                <thead className="sticky top-0 z-10">
+                  <tr className="border-b-2 border-gray-200" style={{ backgroundColor: '#06271D' }}>
+                    <th className="text-left py-4 px-6 font-normal text-white" style={{ width: '40%' }}>Features</th>
+                    <th className="text-center py-4 px-6 font-normal text-white" style={{ width: '20%' }}>Bootstrapped</th>
+                    <th className="text-center py-4 px-6 font-normal text-white" style={{ width: '20%' }}>Scale</th>
+                    <th className="text-center py-4 px-6 font-normal text-white" style={{ width: '20%' }}>Custom</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Agreement Features */}
+                  <tr className="border-b border-gray-100">
+                    <td colSpan="4" className="py-4 px-6 font-semibold text-gray-900 bg-white">
+                      Agreement Features
+                    </td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-6 text-gray-700">Equity & vesting schedules</td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                    <td className="text-center py-4 px-6 bg-white"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-6 text-gray-700">Roles & responsibilities</td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                    <td className="text-center py-4 px-6 bg-white"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-6 text-gray-700">Intellectual property</td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                    <td className="text-center py-4 px-6 bg-white"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-6 text-gray-700">Decision-making & voting</td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                    <td className="text-center py-4 px-6 bg-white"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-6 text-gray-700">Priority support</td>
+                    <td className="text-center py-4 px-6">-</td>
+                    <td className="text-center py-4 px-6 bg-white"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                  </tr>
+
+                  {/* Support */}
+                  <tr className="border-b border-gray-100">
+                    <td colSpan="4" className="py-4 px-6 font-semibold text-gray-900 bg-white">
+                      Support
+                    </td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-6 text-gray-700">Email support</td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                    <td className="text-center py-4 px-6 bg-white"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-6 text-gray-700">Priority support</td>
+                    <td className="text-center py-4 px-6">-</td>
+                    <td className="text-center py-4 px-6 bg-white"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-6 text-gray-700">Attorney review</td>
+                    <td className="text-center py-4 px-6">-</td>
+                    <td className="text-center py-4 px-6 bg-white"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-6 text-gray-700">Cofounder coaching</td>
+                    <td className="text-center py-4 px-6">-</td>
+                    <td className="text-center py-4 px-6 bg-white"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-6 text-gray-700">Dedicated account manager</td>
+                    <td className="text-center py-4 px-6">-</td>
+                    <td className="text-center py-4 px-6 bg-white">-</td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                  </tr>
+
+                  {/* Enterprise Features */}
+                  <tr className="border-b border-gray-100">
+                    <td colSpan="4" className="py-4 px-6 font-semibold text-gray-900 bg-white">
+                      Enterprise Features
+                    </td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-6 text-gray-700">Bulk licensing</td>
+                    <td className="text-center py-4 px-6">-</td>
+                    <td className="text-center py-4 px-6 bg-white">-</td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-6 text-gray-700">White-label options</td>
+                    <td className="text-center py-4 px-6">-</td>
+                    <td className="text-center py-4 px-6 bg-white">-</td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-6 text-gray-700">Custom integrations</td>
+                    <td className="text-center py-4 px-6">-</td>
+                    <td className="text-center py-4 px-6 bg-white">-</td>
+                    <td className="text-center py-4 px-6"><span className="inline-flex items-center justify-center" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(6,39,29,0.08)', border: '1px solid rgba(6,39,29,0.15)', color: '#06271D', fontSize: '12px' }}>✓</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Logo Grid */}
           <div className="mt-16 max-w-7xl mx-auto">
-            <div className="flex flex-wrap justify-between items-center gap-y-6">
+            <div className="grid grid-cols-3 md:flex md:flex-wrap md:justify-between items-center gap-y-6 justify-items-center">
               {logos.map((logo, i) => (
                 <div
                   key={`${logo.alt}-${i}`}
-                  className="flex items-center justify-center w-20 md:w-24 transition-opacity duration-500"
+                  className={`flex items-center justify-center h-8 md:w-24 transition-opacity duration-500${i >= 6 ? ' hidden md:flex' : ''}`}
                   style={{
                     opacity: isFading ? 0 : 1,
                     transitionDelay: isFading ? '0ms' : `${i * 100}ms`
@@ -183,153 +410,26 @@ function PricingPage() {
             </div>
           </div>
 
-          {/* Feature Comparison Table */}
-          <div className="mt-24">
-            <h2 className="font-heading text-[46px] font-normal text-center mb-4">
-              Compare plans<span style={{ marginLeft: '0.05em' }}>.</span>
-            </h2>
-            <p className="text-center text-[16px] mb-12 font-normal" style={{ color: '#716B6B' }}>
-              Each pricing plan covers one cofounder agreement. Fill out the survey<br />and equity calculator to get a ready-to-use cofounder agreement.
-            </p>
+        </div>
+      </section>
 
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead className="sticky top-0 z-10 bg-white">
-                  <tr className="border-b-2 border-gray-200">
-                    <th className="text-left py-4 px-6 font-semibold text-gray-900 bg-white">Features</th>
-                    <th className="text-center py-4 px-6 font-semibold text-gray-900 bg-white">Starter</th>
-                    <th className="text-center py-4 px-6 font-semibold text-gray-900 bg-gray-50">Pro</th>
-                    <th className="text-center py-4 px-6 font-semibold text-gray-900 bg-white">Enterprise</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* Agreement Features */}
-                  <tr className="border-b border-gray-100">
-                    <td colSpan="4" className="py-4 px-6 font-semibold text-gray-900 bg-gray-50">
-                      Agreement Features
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-gray-700">Equity & vesting schedules</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                    <td className="text-center py-4 px-6 bg-gray-50">✓</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-gray-700">Roles & responsibilities</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                    <td className="text-center py-4 px-6 bg-gray-50">✓</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-gray-700">Intellectual property</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                    <td className="text-center py-4 px-6 bg-gray-50">✓</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-gray-700">Decision-making & voting</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                    <td className="text-center py-4 px-6 bg-gray-50">✓</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-gray-700">Priority support</td>
-                    <td className="text-center py-4 px-6">-</td>
-                    <td className="text-center py-4 px-6 bg-gray-50">✓</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                  </tr>
-
-                  {/* Support */}
-                  <tr className="border-b border-gray-100">
-                    <td colSpan="4" className="py-4 px-6 font-semibold text-gray-900 bg-gray-50">
-                      Support
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-gray-700">Email support</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                    <td className="text-center py-4 px-6 bg-gray-50">✓</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-gray-700">Priority support</td>
-                    <td className="text-center py-4 px-6">-</td>
-                    <td className="text-center py-4 px-6 bg-gray-50">✓</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-gray-700">Attorney review</td>
-                    <td className="text-center py-4 px-6">-</td>
-                    <td className="text-center py-4 px-6 bg-gray-50">✓</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-gray-700">Cofounder coaching</td>
-                    <td className="text-center py-4 px-6">-</td>
-                    <td className="text-center py-4 px-6 bg-gray-50">✓</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-gray-700">Dedicated account manager</td>
-                    <td className="text-center py-4 px-6">-</td>
-                    <td className="text-center py-4 px-6 bg-gray-50">-</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                  </tr>
-
-                  {/* Enterprise Features */}
-                  <tr className="border-b border-gray-100">
-                    <td colSpan="4" className="py-4 px-6 font-semibold text-gray-900 bg-gray-50">
-                      Enterprise Features
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-gray-700">Bulk licensing</td>
-                    <td className="text-center py-4 px-6">-</td>
-                    <td className="text-center py-4 px-6 bg-gray-50">-</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-gray-700">White-label options</td>
-                    <td className="text-center py-4 px-6">-</td>
-                    <td className="text-center py-4 px-6 bg-gray-50">-</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-6 text-gray-700">Custom integrations</td>
-                    <td className="text-center py-4 px-6">-</td>
-                    <td className="text-center py-4 px-6 bg-gray-50">-</td>
-                    <td className="text-center py-4 px-6">✓</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
+      <section className="px-4 md:px-6" style={{ backgroundColor: '#faf6f5' }}>
+        <div className="max-w-6xl mx-auto">
           {/* FAQ Section */}
-          <div className="mt-48 pb-24 relative">
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                backgroundImage: 'radial-gradient(#d1d5db 1px, transparent 1px)',
-                backgroundSize: '20px 20px',
-                maskImage: 'radial-gradient(ellipse at center, black 60%, transparent 90%)',
-                WebkitMaskImage: 'radial-gradient(ellipse at center, black 60%, transparent 90%)'
-              }}
-            />
-            <h2 className="font-heading text-[46px] font-normal text-center mb-16 relative">
-              FAQs<span style={{ marginLeft: '0.05em', color: '#0056D6' }}>.</span>
+          <div className="pt-32 md:pt-40 pb-32 md:pb-40 relative">
+            <h2 className="font-heading text-3xl sm:text-4xl md:text-[56px] font-normal text-center mb-16 relative">
+              FAQs<span style={{ marginLeft: '0.05em' }}>.</span>
             </h2>
 
-            <div className="max-w-3xl mx-auto relative bg-white">
+            <div className="max-w-3xl mx-auto relative bg-white rounded-xl overflow-hidden" style={{ border: '1px solid rgba(0,0,0,0.1)' }}>
               {faqs.map((faq, i) => (
                 <div key={i} className="accordion-item border-b border-gray-300">
                   <button
                     onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                    className="accordion-title w-full py-5 px-4 flex justify-between items-center transition hover:bg-gray-50 text-left"
+                    className={`group accordion-title w-full py-5 px-4 flex justify-between items-center transition text-left hover:bg-[#06271D] ${openFaq === i ? 'bg-[#06271D]' : ''}`}
                   >
-                    <span className="font-medium text-black">{faq.q}</span>
-                    <span className={`accordion-icon text-gray-400 font-light transition-all duration-300 flex-shrink-0 ${openFaq === i ? 'rotate-90 scale-110 text-gray-700' : ''}`}>
+                    <span className={`font-normal transition group-hover:text-white ${openFaq === i ? 'text-white' : 'text-black'}`}>{faq.q}</span>
+                    <span className={`accordion-icon font-light transition-all duration-300 flex-shrink-0 group-hover:text-white ${openFaq === i ? 'rotate-90 scale-110 text-white' : 'text-gray-400'}`}>
                       +
                     </span>
                   </button>
@@ -345,7 +445,7 @@ function PricingPage() {
         </div>
       </section>
 
-      <Footer />
+      <Footer bgColor="#06271D" navigate={navigate} />
 
       <style>{`
         .logo-flip {

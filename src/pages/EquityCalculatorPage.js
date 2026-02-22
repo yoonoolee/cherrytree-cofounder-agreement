@@ -298,15 +298,13 @@ function EquityCalculatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <Header />
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#06271D' }}>
+      <Header variant="dark" />
 
-      <section className="pt-24 md:pt-32 pb-24 md:pb-48 px-4 md:px-6 relative" style={{ backgroundImage: 'radial-gradient(#d1d5db 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
-        <div className="absolute top-0 left-0 right-0 h-32 md:h-48 bg-gradient-to-b from-white to-transparent pointer-events-none z-10"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 md:h-48 bg-gradient-to-t from-white to-transparent pointer-events-none z-10"></div>
-        <div className="max-w-xl mx-auto relative">
+      <section className="pt-24 md:pt-32 pb-24 md:pb-48 px-4 md:px-6 relative">
+        <div className="max-w-3xl mx-auto relative">
           <div
-            className="rounded-lg p-4 sm:p-6 md:p-12"
+            className="rounded-lg p-6 sm:p-10 md:p-16 md:py-24"
             style={{
               background: '#fcfcfc',
               border: '1px solid rgba(0, 0, 0, 0.1)',
@@ -498,7 +496,7 @@ function EquityCalculatorPage() {
         </div>
       </section>
 
-      <Footer />
+      <Footer bgColor="#06271D" />
     </div>
   );
 }

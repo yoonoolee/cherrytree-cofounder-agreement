@@ -520,7 +520,9 @@ function TermsPage() {
         </div>
       </section>
 
-      <Footer />
+      <div className="pb-16 md:pb-24"></div>
+
+      <Footer bgColor="#06271D" />
     </div>
   );
 }

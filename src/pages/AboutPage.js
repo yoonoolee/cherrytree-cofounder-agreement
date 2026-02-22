@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { usePageMeta } from '../hooks/usePageMeta';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 function AboutPage() {
+  const navigate = useNavigate();
   // SEO meta tags
   usePageMeta({
     title: 'About Cherrytree | Fair Cofounder Agreements for Startups',
@@ -62,7 +64,7 @@ function AboutPage() {
       <Header />
 
       {/* Hero */}
-      <section className="pt-32 pb-20 px-6">
+      <section className="pt-24 md:pt-32 pb-12 md:pb-20 px-4 md:px-6">
         <div className="hero-content">
           <div className="headline-container-about">
             <h1 className="typing-title-about font-heading">
@@ -79,22 +81,22 @@ function AboutPage() {
       </section>
 
       {/* The Backstory Section */}
-      <section className="scroll-section py-24 px-6">
+      <section className="scroll-section py-12 md:py-24 px-4 md:px-6">
         <div className="flex justify-center">
-          <div className="flex gap-24 items-start" style={{ maxWidth: '1200px' }}>
-            <div className="flex-shrink-0" style={{ minWidth: '280px' }}>
+          <div className="flex flex-col md:flex-row gap-4 md:gap-24 items-start w-full" style={{ maxWidth: '1200px' }}>
+            <div className="flex-shrink-0 md:min-w-[280px]">
               <p className="text-sm tracking-wider" style={{ color: '#999999', fontFamily: 'Inter, sans-serif', margin: '0 0 16px 0', padding: 0 }}>
                 NOTE FROM OUR CEO
               </p>
-              <h2 className="font-heading text-[46px] font-normal leading-tight" style={{ margin: 0, padding: 0 }}>
+              <h2 className="font-heading text-[2rem] md:text-[46px] font-normal leading-tight" style={{ margin: 0, padding: 0 }}>
                 The Backstory
               </h2>
             </div>
             <div className="flex-1 max-w-[620px]">
-              <p className="text-[16px] leading-relaxed mb-6" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+              <p className="text-sm md:text-[16px] leading-relaxed mb-6" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
                 Hey, I'm Tim. I started Cherrytree after learning firsthand how challenging yet rewarding it is to build something with cofounders. Since then, I've taught over a thousand entrepreneurship students, written a book on cofounder dynamics, and teamed up with seasoned coaches, attorneys, and AI experts. We've now worked with hundreds of teams just like yours across a dozen industries.
               </p>
-              <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+              <p className="text-sm md:text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
                 Our mission is simple: <em>to create cofounder magic.</em>
               </p>
             </div>
@@ -103,25 +105,25 @@ function AboutPage() {
       </section>
 
       {/* Work With Us Section */}
-      <section className="scroll-section pt-24 pb-40 px-6">
+      <section className="scroll-section pt-12 md:pt-24 pb-24 md:pb-40 px-4 md:px-6">
         <div className="flex justify-center">
-          <div className="flex gap-24 items-start" style={{ maxWidth: '1200px' }}>
-            <div className="flex-shrink-0" style={{ minWidth: '280px' }}>
+          <div className="flex flex-col md:flex-row gap-4 md:gap-24 items-start w-full" style={{ maxWidth: '1200px' }}>
+            <div className="flex-shrink-0 md:min-w-[280px]">
               <p className="text-sm tracking-wider" style={{ color: '#999999', fontFamily: 'Inter, sans-serif', margin: '0 0 16px 0', padding: 0 }}>
                 WE'RE HIRING
               </p>
-              <h2 className="font-heading text-[46px] font-normal leading-tight" style={{ margin: 0, padding: 0 }}>
+              <h2 className="font-heading text-[2rem] md:text-[46px] font-normal leading-tight" style={{ margin: 0, padding: 0 }}>
                 Work With Us
               </h2>
             </div>
             <div className="flex-1 max-w-[620px]">
-              <h3 className="text-[15px] tracking-wide mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 500 }}>
+              <h3 className="text-[13px] md:text-[15px] tracking-wide mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 500 }}>
                 STUDENT INTERNSHIP (part-time)
               </h3>
-              <p className="text-[16px] leading-relaxed mb-6" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+              <p className="text-sm md:text-[16px] leading-relaxed mb-6" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
                 We're looking for an intern who's genuinely excited about startups and building things from the ground up. You'll work closely with our CEO & Founder, getting hands-on experience across the business from research and growth strategies to operations, project coordination, and fundraising. This is a remote role, but bonus points if you're in SF or Berkeley.
               </p>
-              <p className="text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+              <p className="text-sm md:text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
                 <em>Apply here.</em>
               </p>
             </div>
@@ -130,7 +132,7 @@ function AboutPage() {
       </section>
 
       {/* Footer */}
-      <Footer />
+      <Footer bgColor="#06271D" navigate={navigate} />
 
       <style jsx>{`
         .headline-container-about {
@@ -182,6 +184,12 @@ function AboutPage() {
           display: inline-block;
           font-style: inherit;
           font-weight: inherit;
+        }
+
+        @media (max-width: 767px) {
+          .typing-title-about {
+            font-size: 1.75rem;
+          }
         }
       `}</style>
     </div>

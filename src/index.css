@@ -2,6 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Feature card slide-in: up on mobile, from side on desktop */
+.feature-slide-left,
+.feature-slide-right {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.feature-slide-left.feature-visible,
+.feature-slide-right.feature-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (min-width: 768px) {
+  .feature-slide-left,
+  .feature-slide-right {
+    opacity: 1;
+  }
+  .feature-slide-left {
+    transform: translateX(-60px);
+  }
+  .feature-slide-right {
+    transform: translateX(60px);
+  }
+  .feature-slide-left.feature-visible,
+  .feature-slide-right.feature-visible {
+    transform: translateX(0);
+  }
+}
+
+/* Pricing grid border: bottom on mobile, right on sm+ */
+.pricing-border-first {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+@media (min-width: 640px) {
+  .pricing-border-first {
+    border-bottom: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}
+
 /* That That New Roman font */
 @font-face {
   font-family: 'That That New Roman';
@@ -18,10 +58,19 @@
 }
 
 /* Reduce overscroll bounce effect */
-body {
+html {
   overscroll-behavior-y: contain;
+}
+body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 400;
+}
+/* Prevent horizontal scroll on mobile only */
+@media (max-width: 767px) {
+  html, body {
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+  }
 }
 
 /* Heading font utility */
@@ -87,7 +136,7 @@ input[type="checkbox"] {
 input[type="radio"] {
   width: 0.75rem !important;
   height: 0.75rem !important;
-  accent-color: #0056D6 !important;
+  accent-color: #000000 !important;
 }
 
 /* Style text inputs with underline instead of box */
@@ -558,7 +607,18 @@ select:disabled {
 }
 
 /* Content elements fade-in animation */
-.scroll-section .section-header,
+.scroll-section .section-header {
+  opacity: 0;
+  transform: scale(0.85);
+  transform-origin: center center;
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.scroll-section .section-header.content-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
 .scroll-section p,
 .scroll-section ul,
 .scroll-section h3 {
@@ -566,7 +626,6 @@ select:disabled {
   transition: opacity 0.9s ease-out;
 }
 
-.scroll-section .section-header.content-visible,
 .scroll-section p.content-visible,
 .scroll-section ul.content-visible,
 .scroll-section h3.content-visible {
@@ -756,9 +815,9 @@ select:disabled {
 }
 
 @keyframes step1BtnClick {
-  0%, 48% { transform: scale(1); background: #e5e7eb; }
-  50% { transform: scale(0.95); background: #d1d5db; }
-  52%, 100% { transform: scale(1); background: #e5e7eb; }
+  0%, 48% { transform: scale(1); background: #e9e6e7; }
+  50% { transform: scale(0.95); background: #dbd8d9; }
+  52%, 100% { transform: scale(1); background: #e9e6e7; }
 }
 
 /* Step 2: Collab animation */
@@ -861,7 +920,7 @@ select:disabled {
 
 @keyframes step2Option {
   0%, 44% { background: white; }
-  45%, 55% { background: #F3F4F6; }
+  45%, 55% { background: #e9e6e7; }
   60%, 100% { background: white; }
 }
 
