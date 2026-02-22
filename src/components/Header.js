@@ -116,7 +116,9 @@ function Header({ variant = 'light', onProductsHover }) {
             </nav>
 
             <div className="hidden md:flex items-center gap-4 text-sm">
-              {!loading && (user ? (
+              {loading ? (
+                <span className="invisible text-sm">Login</span>
+              ) : user ? (
                 <button
                   onClick={() => {
                     const isProduction = window.location.hostname.includes('cherrytree.app');
@@ -144,7 +146,7 @@ function Header({ variant = 'light', onProductsHover }) {
                 >
                   Login
                 </button>
-              ))}
+              )}
               <button
                 onClick={() => {
                   const isProduction = window.location.hostname.includes('cherrytree.app');

@@ -12,6 +12,8 @@ function DashboardPage() {
   const { currentUser, loading: authLoading, userMemberships, orgsLoaded } = useUser();
   const { openUserProfile } = useClerk();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showReferPopup, setShowReferPopup] = useState(false);
+  const [referLinkCopied, setReferLinkCopied] = useState(false);
   const [displayedTagline, setDisplayedTagline] = useState('\u00A0'); // Non-breaking space to reserve height
 
   // Constants
@@ -69,8 +71,8 @@ function DashboardPage() {
           </button>
 
           <div className="flex items-center gap-6">
-            <button onClick={() => navigate('/dashboard')} className="text-xs font-medium text-gray-900 tracking-widest uppercase">Dashboard</button>
-            <button onClick={() => navigate('/refer')} className="text-xs font-medium text-gray-400 tracking-widest uppercase hover:text-gray-900 transition">Refer a Friend</button>
+            <button onClick={() => navigate('/dashboard')} className="hidden md:block text-xs font-medium text-gray-900 tracking-widest uppercase">Dashboard</button>
+            <button onClick={() => setShowReferPopup(true)} className="hidden md:block text-xs font-medium text-gray-400 tracking-widest uppercase hover:text-gray-900 transition">Refer a Friend</button>
             {/* UserButton - Clerk's built-in user menu with sign-out */}
             <UserButton
               appearance={{
@@ -93,7 +95,7 @@ function DashboardPage() {
               <button onClick={() => navigate('/dashboard')} className="text-sm font-medium text-gray-900 text-left px-3 py-2 rounded-lg flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#06271D] shrink-0"></span>Dashboard</button>
               <button className="text-sm font-medium text-gray-500 text-left px-3 py-2 rounded-lg hover:bg-[#fbf6f5] transition">Projects</button>
               <button className="text-sm font-medium text-gray-500 text-left px-3 py-2 rounded-lg hover:bg-[#fbf6f5] transition">Billing</button>
-              <button onClick={() => navigate('/refer')} className="text-sm font-medium text-gray-500 text-left px-3 py-2 rounded-lg hover:bg-[#fbf6f5] transition">Refer a Friend</button>
+              <button onClick={() => setShowReferPopup(true)} className="text-sm font-medium text-gray-500 text-left px-3 py-2 rounded-lg hover:bg-[#fbf6f5] transition">Refer a Friend</button>
             </nav>
 
             <div className="mt-6 pt-4 border-t border-[#eae6e5]">
@@ -110,23 +112,20 @@ function DashboardPage() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 min-w-0 bg-white rounded-lg border border-[#eae6e5] p-6 md:p-10">
+        <div className="flex-1 min-w-0 bg-white rounded-lg border border-[#eae6e5] p-6 md:p-10 flex flex-col">
           {/* Greeting */}
-          <div className="mb-8 md:mb-10 text-left">
+          <div className="mb-4 md:mb-6 text-left">
             <h1 className="font-heading-transform-origin-left text-3xl md:text-4xl font-medium text-gray-900">
               Welcome{currentUser?.firstName ? `, ${currentUser.firstName}` : ''}!
             </h1>
             <p className="text-sm md:text-lg mt-1 text-gray-500 min-h-[1.5em]">{displayedTagline}</p>
           </div>
 
-          {/* Your Projects */}
-          <h2 className="text-lg md:text-xl font-normal text-gray-900 mb-4">Your Projects</h2>
-
         {/* Projects Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-3" style={{ gridAutoRows: 'minmax(252px, auto)' }}>
           {/* Projects */}
           {projects.length > 0 ? (
-            projects.map((project) => {
+            projects.map((project, _index) => {
               const progress = calculateProjectProgress(project);
 
               // Calculate time since last edit
@@ -175,7 +174,7 @@ function DashboardPage() {
                   className="w-full h-full bg-[#fbf6f5] rounded-lg border border-[#eae6e5] hover:border-[#d5d1d0] hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col"
                 >
                   <div className="py-6 sm:py-8 px-4 sm:px-6 flex-grow">
-                    <h2 className="text-base font-semibold text-gray-900 mb-2 text-left">
+<h2 className="text-base font-semibold text-gray-900 mb-2 text-left">
                       {project.name || 'Untitled Project'}
                     </h2>
                     <p className="text-sm text-gray-500 text-left mb-4">
@@ -208,12 +207,30 @@ function DashboardPage() {
               );
             })
           ) : (
-            <div className="w-full h-full bg-[#fbf6f5] rounded-lg border border-gray-200 p-6 sm:p-8 flex items-center justify-center">
-              <p className="text-sm text-gray-500">No projects found</p>
+            <>
+              {/* Create New Button first when no projects */}
+              <button
+            onClick={() => setShowPaymentModal(true)}
+            className="group w-full h-full py-6 sm:py-8 px-4 sm:px-6 bg-[#fbf6f5] rounded-lg border-2 border-dotted border-[#eae6e5] hover:border-[#d5d1d0] hover:shadow-lg transition-all duration-200 flex items-center justify-center"
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="w-10 h-10 rounded-full bg-[#eae6e5] group-hover:bg-[#d5d1d0] flex items-center justify-center mb-3 sm:mb-4 transition-colors">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-gray-400">
+                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
+                </svg>
+              </div>
+              <h3 className="text-sm font-medium text-gray-900 mb-1">Create a new Cofounder Agreement</h3>
+              <p className="text-xs text-gray-500">One agreement per company.</p>
             </div>
+          </button>
+              <div className="w-full h-full bg-[#fbf6f5] rounded-lg border border-gray-200 p-6 sm:p-8 flex items-center justify-center">
+                <p className="text-xs text-gray-500">No projects found</p>
+              </div>
+            </>
           )}
 
-          {/* Create New Button */}
+          {/* Create New Button (shown after projects when projects exist) */}
+          {projects.length > 0 && (
           <button
             onClick={() => setShowPaymentModal(true)}
             className="group w-full h-full py-6 sm:py-8 px-4 sm:px-6 bg-[#fbf6f5] rounded-lg border-2 border-dotted border-[#eae6e5] hover:border-[#d5d1d0] hover:shadow-lg transition-all duration-200 flex items-center justify-center"
@@ -228,10 +245,95 @@ function DashboardPage() {
               <p className="text-xs text-gray-500">One agreement per company.</p>
             </div>
           </button>
+          )}
         </div>
+
+          {/* AI Chat Card */}
+          <div className="mt-4 md:mt-3 w-full rounded-lg border border-[#eae6e5] flex-1 relative overflow-hidden flex items-center" style={{ backgroundColor: '#e8ede9', minHeight: '160px' }}>
+            {/* Left content */}
+            <div className="relative z-10 p-6 sm:p-8 max-w-lg flex-shrink-0">
+              <h2 className="text-sm font-medium text-gray-900">Chat with our AI</h2>
+              <p className="text-sm text-gray-600 mt-2">Trained on hundreds of real cofounder coaching conversations and broader startup data, with access to your project context.</p>
+              <p className="mt-4 text-sm text-gray-400">*coming soon</p>
+            </div>
+
+            {/* Chat mockup - corner peek */}
+            <div className="absolute bottom-0 right-0 w-[560px] h-[420px]" style={{ transform: 'translate(45%, 45%)' }}>
+              <div className="bg-white rounded-tl-xl shadow-xl border border-gray-200 w-full h-full flex flex-col overflow-hidden">
+                <div className="flex items-center gap-4 px-3 py-2 border-b border-gray-100 flex-shrink-0">
+                  <span className="text-xs font-medium text-gray-700">Chat</span>
+                  <span className="text-xs text-gray-300">History</span>
+                </div>
+                <div className="flex-1 p-3 flex flex-col gap-2.5 overflow-hidden">
+                  <div className="flex gap-2 items-start">
+                    <div className="w-4 h-4 rounded-full flex-shrink-0 mt-0.5" style={{ backgroundColor: '#c5d0c8' }}></div>
+                    <div className="flex flex-col gap-1 flex-1">
+                      <div className="h-1.5 rounded-full w-3/4" style={{ backgroundColor: '#e0e7e1' }}></div>
+                      <div className="h-1.5 rounded-full w-1/2" style={{ backgroundColor: '#e0e7e1' }}></div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <div className="flex flex-col gap-1 items-end w-2/3">
+                      <div className="h-1.5 rounded-full w-full" style={{ backgroundColor: '#c5d0c8' }}></div>
+                      <div className="h-1.5 rounded-full w-2/3" style={{ backgroundColor: '#c5d0c8' }}></div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 items-start">
+                    <div className="w-4 h-4 rounded-full flex-shrink-0 mt-0.5" style={{ backgroundColor: '#c5d0c8' }}></div>
+                    <div className="flex flex-col gap-1 flex-1">
+                      <div className="h-1.5 rounded-full w-full" style={{ backgroundColor: '#e0e7e1' }}></div>
+                      <div className="h-1.5 rounded-full w-3/5" style={{ backgroundColor: '#e0e7e1' }}></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-3 py-2 border-t border-gray-100 flex items-center gap-1.5 flex-shrink-0">
+                  <div className="flex-1 rounded-full px-2 py-1" style={{ backgroundColor: '#f0f4f0' }}>
+                    <div className="h-1.5 rounded-full w-1/3" style={{ backgroundColor: '#d0d9d2' }}></div>
+                  </div>
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#c5d0c8' }}>
+                    <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5h6M6 3l2 2-2 2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
         </div>
       </div>
+
+      {/* Refer a Friend Popup */}
+      {showReferPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50" onClick={() => { setShowReferPopup(false); setReferLinkCopied(false); }}>
+          <div className="bg-white rounded-lg shadow-xl p-10 max-w-lg w-full mx-4 relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => { setShowReferPopup(false); setReferLinkCopied(false); }} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Refer a Friend</h3>
+            </div>
+            <p className="text-sm text-gray-500 mb-6">Share Cherrytree with a friend. When they sign up, you both get a reward.</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                readOnly
+                value={`${window.location.origin}?ref=${currentUser?.id || ''}`}
+                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-600"
+              />
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}?ref=${currentUser?.id || ''}`);
+                  setReferLinkCopied(true);
+                }}
+                className="py-2 bg-[#06271D] text-white text-sm rounded-lg hover:bg-[#0a3d2b] transition w-20 text-center flex-shrink-0"
+              >
+                {referLinkCopied ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Payment Modal */}
       {showPaymentModal && (

@@ -50,8 +50,8 @@ function PricingPage() {
 
   // SEO meta tags
   usePageMeta({
-    title: 'Pricing - Cherrytree | Starter $200, Pro $800',
-    description: 'Affordable cofounder agreement pricing for startups. Starter plan at $200 includes real-time collaboration and instant agreements. Pro plan at $800 adds attorney review and coaching.',
+    title: 'Pricing - Cherrytree | Starter $200, Pro $2000',
+    description: 'Affordable cofounder agreement pricing for startups. Starter plan at $200 includes real-time collaboration and instant agreements. Pro plan at $2000 adds attorney review and coaching.',
     breadcrumbs: [
       { name: 'Home', url: '/' },
       { name: 'Pricing' }
@@ -143,7 +143,7 @@ function PricingPage() {
           {(() => {
             const plans = [
               { name: 'Bootstrapped', price: '$200', description: 'Ideal for early-stage or bootstrapped teams\nthat need to move fast and start building now.', featured: true, features: ['Expert-designed survey', 'Comprehensive agreements', 'Proprietary equity calculator', 'Best practices and tips', 'Up to 5 collaborators'] },
-              { name: 'Scale', price: '$800', description: 'Built for funded teams that need deeper control,\ngreater detail, and stronger foundations.', featured: false, features: ['Everything in Bootstrapped', 'Final attorney review', 'Personalized onboarding', 'Cofounder coaching', 'Priority support'] }
+              { name: 'Scale', price: '$2000', description: 'Built for funded teams that need deeper control,\ngreater detail, and stronger foundations.', featured: false, features: ['Everything in Bootstrapped', 'Final attorney review', 'Personalized onboarding', 'Cofounder coaching', 'Priority support'] }
             ];
             return (
               <>

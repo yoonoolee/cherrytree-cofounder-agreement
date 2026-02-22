@@ -699,7 +699,7 @@ function LandingPage() {
     },
     {
       name: 'Scale',
-      price: '$800',
+      price: '$2000',
       description: 'Built for funded teams that need deeper control,\ngreater detail, and stronger foundations.',
       features: [
         'Everything in Bootstrapped',
