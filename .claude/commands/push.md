@@ -15,6 +15,6 @@ Do the following steps in order:
 
 5. Push to the current branch's remote tracking branch. If no upstream is set, push and set it: `git push -u origin <branch>`.
 
-6. After pushing, check if a PR already exists for this branch using `gh pr view --json url 2>/dev/null`. If one exists, open it in the browser with `open "<url>"`. If no PR exists, create one automatically with `gh pr create --fill` and open the resulting URL with `open "<url>"`. Do not ask — always create and open the PR.
+6. After pushing, check if an open PR exists for the current branch using `gh pr list --head <branch> --state open --json url`. If one exists, open it. If not, create one with `gh pr create --fill` and open the new URL. Always fetch fresh — never reuse a URL from earlier in the conversation.
 
 7. After opening the PR, poll for merge status by running `gh pr view --json state,mergedAt` every 15 seconds (up to 10 minutes). As soon as the PR is merged, run `gh run list --repo <owner>/<repo> --limit 1 --json url` to get the specific Actions run URL, then open it with `open "<url>"`. Tell the user the PR was merged and that the deploy is now running.
