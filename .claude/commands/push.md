@@ -1,4 +1,4 @@
-Stage all changes, generate a commit message for approval, commit, push, and open any resulting PR in the browser.
+Stage all changes, commit, push, and open a PR targeting `master` for prod deployment. Prod deploys to Firebase Hosting + Cloud Functions happen automatically via GitHub Actions when `master` is updated.
 
 Do the following steps in order:
 
@@ -15,6 +15,6 @@ Do the following steps in order:
 
 5. Push to the current branch: `git push`. If no upstream is set, use `git push -u origin <branch>`. Never create a new branch — always push to whatever branch we're already on.
 
-6. After pushing, check if an open PR exists for the current branch using `gh pr list --head <branch> --state open --json url`. If one exists, open it. If not, create one with `gh pr create --fill` and open the new URL. Always fetch fresh — never reuse a URL from earlier in the conversation.
+6. After pushing, check if an open PR targeting `master` exists for the current branch using `gh pr list --head <branch> --base master --state open --json url`. If one exists, open it. If not, create one with `gh pr create --base master --fill` and open the new URL. Always fetch fresh — never reuse a URL from earlier in the conversation.
 
-7. After opening the PR, poll for merge status by running `gh pr view --json state,mergedAt` every 15 seconds (up to 10 minutes). As soon as the PR is merged, run `gh run list --repo <owner>/<repo> --limit 1 --json url` to get the specific Actions run URL, then open it with `open "<url>"`. Tell the user the PR was merged and that the deploy is now running.
+7. After opening the PR, poll for merge status by running `gh pr view --json state,mergedAt` every 15 seconds (up to 10 minutes). As soon as the PR is merged, run `gh run list --repo <owner>/<repo> --limit 1 --json url` to get the specific Actions run URL, then open it with `open "<url>"`. Tell the user the PR was merged and that the prod deploy is now running via GitHub Actions.
