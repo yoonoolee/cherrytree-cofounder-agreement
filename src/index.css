@@ -87,7 +87,7 @@ input[type="checkbox"] {
 input[type="radio"] {
   width: 0.75rem !important;
   height: 0.75rem !important;
-  accent-color: #0056D6 !important;
+  accent-color: #000000 !important;
 }
 
 /* Style text inputs with underline instead of box */
@@ -582,7 +582,6 @@ select:disabled {
   transition: opacity 0.9s ease-out;
 }
 
-.scroll-section .section-header.content-visible,
 .scroll-section p.content-visible,
 .scroll-section ul.content-visible,
 .scroll-section h3.content-visible {
@@ -772,9 +771,9 @@ select:disabled {
 }
 
 @keyframes step1BtnClick {
-  0%, 48% { transform: scale(1); background: #e5e7eb; }
-  50% { transform: scale(0.95); background: #d1d5db; }
-  52%, 100% { transform: scale(1); background: #e5e7eb; }
+  0%, 48% { transform: scale(1); background: #e9e6e7; }
+  50% { transform: scale(0.95); background: #dbd8d9; }
+  52%, 100% { transform: scale(1); background: #e9e6e7; }
 }
 
 /* Step 2: Collab animation */
@@ -877,7 +876,7 @@ select:disabled {
 
 @keyframes step2Option {
   0%, 44% { background: white; }
-  45%, 55% { background: #F3F4F6; }
+  45%, 55% { background: #e9e6e7; }
   60%, 100% { background: white; }
 }
 
