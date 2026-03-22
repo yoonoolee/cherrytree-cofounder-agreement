@@ -38,6 +38,13 @@ service cloud.firestore {
                       resource.data.admin == request.auth.uid;
     }
 
+    // Chats subcollection — managed server-side via admin SDK only
+    // The chat agent reads/writes chats using a service account (bypasses these rules).
+    // No client-side access is ever needed.
+    match /projects/{projectId}/chats/{chatId} {
+      allow read, write: if false;
+    }
+
     // Pro waitlist collection
     match /proWaitlist/{docId} {
       allow create: if true;
