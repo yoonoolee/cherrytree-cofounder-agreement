@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(wc:*)",
+      "Bash(ls:*)",
+      "Bash(npm run *)",
+      "Bash(npm install*)",
+      "Bash(npm start*)",
+      "Bash(npm build*)",
+      "Bash(python *)",
+      "Bash(uvicorn *)",
+      "Bash(pip install*)",
+      "Bash(firebase *)",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git add *)",
+      "Bash(git commit*)"
+    ]
+  }
+}
