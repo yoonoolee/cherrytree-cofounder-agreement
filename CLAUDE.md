@@ -83,9 +83,8 @@ users/{userId}/
 # Dev
 npm start                          # localhost:3000, uses .env.development
 
-# Deploy
+# Deploy to dev (local is fine)
 npm run deploy:dev                 # everything to dev
-npm run deploy:prod                # everything to prod
 npm run deploy:hosting:dev         # frontend only
 npm run deploy:functions:dev       # Cloud Functions only
 firebase deploy --only firestore:rules
@@ -95,6 +94,14 @@ firebase use dev / firebase use prod   # switch environment
 firebase functions:log                  # view logs
 firebase functions:secrets:set X       # set a secret (then redeploy functions)
 ```
+
+## Prod Deployment Policy
+
+**Prod deploys only happen through GitHub Actions** (push/merge to `master`). Never deploy to prod locally.
+
+The `deploy:prod` npm scripts have been intentionally removed. You can still run `firebase deploy --project cherrytree-cofounder-agreement` directly from the CLI, but **don't** — it bypasses git history, CI checks, and can overwrite work that isn't committed.
+
+**Before launch:** revoke prod Firebase access from developer accounts so only the GitHub Actions service account can deploy to prod. See `TODO.md` for details.
 
 ## Environment Files
 
