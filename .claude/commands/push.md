@@ -13,7 +13,7 @@ Do the following steps in order:
    git commit -m "<approved message>"
    ```
 
-5. Push to the current branch's remote tracking branch. If no upstream is set, push and set it: `git push -u origin <branch>`.
+5. Push to the current branch: `git push`. If no upstream is set, use `git push -u origin <branch>`. Never create a new branch — always push to whatever branch we're already on.
 
 6. After pushing, check if an open PR exists for the current branch using `gh pr list --head <branch> --state open --json url`. If one exists, open it. If not, create one with `gh pr create --fill` and open the new URL. Always fetch fresh — never reuse a URL from earlier in the conversation.
 
