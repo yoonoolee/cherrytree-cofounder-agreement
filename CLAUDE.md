@@ -1,5 +1,64 @@
 # cherrytree-cofounder-agreement — Claude Context
 
+## Platform Overview
+
+Cherrytree is a SaaS platform for startup cofounders to create legally sound cofounder agreements. Two subprojects work together:
+
+| Directory | Role | Stack |
+|-----------|------|-------|
+| `cherrytree-cofounder-agreement/` | Main web app (frontend + backend) | React 19, Firebase, Clerk, Stripe |
+| `cherrytree-chat-agent/` | AI advisor chatbot service | Python, FastAPI, LangGraph, Claude, Pinecone |
+
+The web app embeds the chat agent as a sidebar. The agent reads the user's in-progress agreement from Firestore and advises on equity, vesting, IP, decision-making, etc.
+
+## High-Level Architecture
+
+```
+User → React app (Firebase Hosting)
+         ├── Firestore (form data, chat history, orgs)
+         ├── Cloud Functions (Node.js, us-west2) — business logic, webhooks
+         └── Chat sidebar → Cloud Run (Python FastAPI) — LangGraph agent
+                               ├── Claude Sonnet 4.5 (LLM)
+                               ├── Pinecone (RAG knowledge base)
+                               └── Firestore (chat history)
+```
+
+## Environments
+
+| Env | Firebase Project | Frontend URL |
+|-----|-----------------|-------------|
+| Dev | `cherrytree-cofounder-agree-dev` | cherrytree-cofounder-agree-dev.web.app |
+| Prod | `cherrytree-cofounder-agreement` | cherrytree.app / my.cherrytree.app |
+
+Switch with: `firebase use dev` or `firebase use prod`
+
+## Secrets
+
+Never commit API keys. All keys are in:
+- `.env.development` / `.env.production` (frontend, git-ignored)
+- Firebase Secret Manager (Cloud Functions)
+- Cloud Run Secret Manager (Python agent: Anthropic, Pinecone, LangSmith keys)
+
+## Code Standards (Apply to Every Task)
+
+**No hardcoded local paths:** Never hardcode user-specific paths in any committed file — commands, configs, or docs. Always use relative paths or project-root-relative paths so everything works for any teammate on any machine.
+
+**No duplicate work:** Before suggesting or creating anything (commands, files, functions, configs), check if it already exists. If something exists but the user can't find it, help them locate or access it — don't recreate it.
+
+**Best practices:** Always flag if something deviates from best practices — naming conventions, code structure, anti-patterns, performance issues, or anything that would be considered poor engineering. Don't just complete the task silently; call it out and suggest the better approach.
+
+**Security:** On every task, do a quick security check on any code touched — exposed secrets, injection vulnerabilities (NoSQL/SQL/XSS), unauthenticated endpoints, insecure Firestore rules, CORS misconfiguration, hardcoded credentials. Flag anything suspicious even if outside the immediate scope of the change.
+
+## Team Collaboration
+
+Two people actively pushing to this repo. When working with Claude:
+
+- **Always confirm the Firebase environment** before deploying — `firebase use` to check current target. Default to dev unless explicitly deploying to prod.
+- **Don't assume solo context** — changes may affect the other developer. Flag anything that would break shared state (Firestore schema changes, Cloud Function renames, config changes).
+- **Coordinate on secrets** — both devs need matching `.env.development` / `.env.production` files locally. These are gitignored; share keys out-of-band.
+- **`.claude/settings.json` is committed** — changes to Claude permissions/commands apply to both teammates. Don't add personal preferences here; use `settings.local.json` (gitignored) for those.
+- **`.claude/commands/` is committed** — shared slash commands available to both teammates.
+
 React 19 frontend + Firebase backend for the Cherrytree cofounder agreement SaaS platform.
 
 ## Stack
@@ -83,9 +142,8 @@ users/{userId}/
 # Dev
 npm start                          # localhost:3000, uses .env.development
 
-# Deploy
+# Deploy to dev (local is fine)
 npm run deploy:dev                 # everything to dev
-npm run deploy:prod                # everything to prod
 npm run deploy:hosting:dev         # frontend only
 npm run deploy:functions:dev       # Cloud Functions only
 firebase deploy --only firestore:rules
@@ -95,6 +153,14 @@ firebase use dev / firebase use prod   # switch environment
 firebase functions:log                  # view logs
 firebase functions:secrets:set X       # set a secret (then redeploy functions)
 ```
+
+## Prod Deployment Policy
+
+**Prod deploys only happen through GitHub Actions** (push/merge to `master`). Never deploy to prod locally.
+
+The `deploy:prod` npm scripts have been intentionally removed. You can still run `firebase deploy --project cherrytree-cofounder-agreement` directly from the CLI, but **don't** — it bypasses git history, CI checks, and can overwrite work that isn't committed.
+
+**Before launch:** revoke prod Firebase access from developer accounts so only the GitHub Actions service account can deploy to prod. See `TODO.md` for details.
 
 ## Environment Files
 

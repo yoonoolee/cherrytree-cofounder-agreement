@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: https://my.cherrytree.app
+      url: https://cherrytree.app
 
     steps:
       - name: Checkout code

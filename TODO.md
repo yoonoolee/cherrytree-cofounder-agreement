@@ -4,6 +4,19 @@ Outstanding tasks for Cherrytree Cofounder Agreement Platform.
 
 ---
 
+## Before Launch
+
+### Lock Down Prod Deployments
+Currently anyone with Firebase CLI auth can run `firebase deploy --project cherrytree-cofounder-agreement` and push to prod, bypassing git entirely. The `deploy:prod` npm scripts have been removed as a deterrent, but the underlying access still exists.
+
+**Proper fix before launch:**
+1. Create a dedicated service account in Google Cloud Console with deploy-only permissions, scoped to prod
+2. Give that service account key only to GitHub Actions (already done via `FIREBASE_SERVICE_ACCOUNT_PROD` secret)
+3. Revoke prod Firebase deploy access from all developer personal accounts: Google Cloud Console → IAM → remove `Firebase Hosting Admin` and `Cloud Functions Admin` roles from developer emails for the prod project
+4. Developers keep full access to the dev project for local testing
+
+---
+
 ## High Priority
 
 ### BigQuery Integration
