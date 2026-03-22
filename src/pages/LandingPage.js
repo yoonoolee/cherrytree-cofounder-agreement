@@ -30,14 +30,14 @@ function LandingPage() {
   const [cardTilt, setCardTilt] = useState(15);
   const [cardSlideUp, setCardSlideUp] = useState(0);
   const [activeFeature, setActiveFeature] = useState(0);
-  const [contractCardsVisible, setContractCardsVisible] = useState(false);
-  const [contractCardsFading, setContractCardsFading] = useState(false);
+  const [, setContractCardsVisible] = useState(false);
+  const [, setContractCardsFading] = useState(false);
   const [animationCycle, setAnimationCycle] = useState(0);
-  const [equityChartVisible, setEquityChartVisible] = useState(false);
-  const [equityChartFading, setEquityChartFading] = useState(false);
+  const [, setEquityChartVisible] = useState(false);
+  const [, setEquityChartFading] = useState(false);
   const [equityAnimationCycle, setEquityAnimationCycle] = useState(0);
-  const [expertGuidanceVisible, setExpertGuidanceVisible] = useState(false);
-  const [expertGuidanceFading, setExpertGuidanceFading] = useState(false);
+  const [, setExpertGuidanceVisible] = useState(false);
+  const [, setExpertGuidanceFading] = useState(false);
   const [expertGuidanceAnimationCycle, setExpertGuidanceAnimationCycle] = useState(0);
   const [featuresInView, setFeaturesInView] = useState(false);
   const [cardDocVisible, setCardDocVisible] = useState(false);
@@ -49,10 +49,9 @@ function LandingPage() {
   const cardEquityRef = useRef(null);
   const cardExpertRef = useRef(null);
   const featuresRef = useRef(null);
-  const [typedAnd, setTypedAnd] = useState('');
+  const [, setTypedAnd] = useState('');
   const [typedToday, setTypedToday] = useState('');
   const [section1Visible, setSection1Visible] = useState(false);
-  const [section1Fading, setSection1Fading] = useState(false);
   const [section1AnimationCycle, setSection1AnimationCycle] = useState(0);
   const [typedCompanyName, setTypedCompanyName] = useState('');
   const [showCursor, setShowCursor] = useState(false);
@@ -61,10 +60,10 @@ function LandingPage() {
   const [selectedDate, setSelectedDate] = useState('');
   const [typedDate, setTypedDate] = useState('');
   const [showCalendar, setShowCalendar] = useState(false);
-  const [headingFill, setHeadingFill] = useState(0);
+  const [, setHeadingFill] = useState(0);
   const headingRef = useRef(null);
   const [productsHovered, setProductsHovered] = useState(false);
-  const [pricingCardAnimated, setPricingCardAnimated] = useState(false);
+  const [, setPricingCardAnimated] = useState(false);
   const pricingCardRef = useRef(null);
   const fullText = 'with great company.';
   const andText = 'and';
@@ -625,15 +624,16 @@ function LandingPage() {
       });
     }, { threshold: 0.0 });
 
-    if (faqSectionRef.current) {
-      faqTriggerObserver.observe(faqSectionRef.current);
-      faqResetObserver.observe(faqSectionRef.current);
+    const faqSectionEl = faqSectionRef.current;
+    if (faqSectionEl) {
+      faqTriggerObserver.observe(faqSectionEl);
+      faqResetObserver.observe(faqSectionEl);
     }
 
     return () => {
       earlySections.forEach(section => earlyObserver.unobserve(section));
       if (underline) underlineObserver.unobserve(underline);
-      if (faqSectionRef.current) { faqTriggerObserver.unobserve(faqSectionRef.current); faqResetObserver.unobserve(faqSectionRef.current); }
+      if (faqSectionEl) { faqTriggerObserver.unobserve(faqSectionEl); faqResetObserver.unobserve(faqSectionEl); }
       clearTimeout(cardDocLoopTimer);
       clearTimeout(cardEquityLoopTimer);
       clearTimeout(cardExpertLoopTimer);
@@ -655,24 +655,6 @@ function LandingPage() {
       step: '3',
       title: 'Do a final review',
       desc: 'We take your responses and turn them into a Cofounder Agreement, ready for your final review and signature.'
-    }
-  ];
-
-  const features = [
-    {
-      title: 'Contract Creator',
-      description: 'Generate a ready-to-use, fully customized document in minutes and start building your partnership with confidence.',
-      id: 'contract-creator'
-    },
-    {
-      title: 'Equity Calculator',
-      description: 'Use our proprietary equity calculator to determine ownership. Instant, precise splits so everyone knows their stake.',
-      id: 'equity-calculator'
-    },
-    {
-      title: 'Expert Guidance',
-      description: 'We are a team of cofounder coaches, founders, and attorneys ready to help. You\'re in good hands every step of the way.',
-      id: 'expert-guidance'
     }
   ];
 
@@ -714,9 +696,8 @@ function LandingPage() {
     { src: '/images/startupgrind-logo.png', alt: 'Startup Grind', scale: 1 }
   ];
 
-  const [heroLogos] = useState([...allLogos]);
-  const [heroFading, setHeroFading] = useState(false);
-  const [heroDelayOrder, setHeroDelayOrder] = useState(() => {
+  const [, setHeroFading] = useState(false);
+  const [, setHeroDelayOrder] = useState(() => {
     const order = allLogos.map((_, i) => i);
     for (let i = order.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -1749,7 +1730,7 @@ function LandingPage() {
             <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
             {/* Third row */}
             <div className="p-6 md:p-8 text-center" style={{ color: 'rgba(255,255,255,0.65)' }}>
-              <p className="text-sm md:text-base content-visible">Running a fund or accelerator and want to deploy in bulk? <a href="#" onClick={(e) => { e.preventDefault(); window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>Contact sales</a></p>
+              <p className="text-sm md:text-base content-visible">Running a fund or accelerator and want to deploy in bulk? <button onClick={() => { window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}>Contact sales</button></p>
             </div>
           </div>
 

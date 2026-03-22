@@ -211,7 +211,7 @@ function PricingPage() {
             <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
             {/* Third row */}
             <div className="p-6 md:p-8 text-center" style={{ color: 'rgba(255,255,255,0.65)' }}>
-              <p className="text-sm md:text-base">Running a fund or accelerator and want to deploy in bulk? <a href="#" onClick={(e) => { e.preventDefault(); window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>Contact sales</a></p>
+              <p className="text-sm md:text-base">Running a fund or accelerator and want to deploy in bulk? <button onClick={() => { window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}>Contact sales</button></p>
             </div>
           </div>
         </div>
