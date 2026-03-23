@@ -85,17 +85,17 @@ function Footer({ bgColor, navigate: externalNavigate }) {
         </svg>
       )}
       <div className="max-w-7xl mx-auto relative z-10 px-4 md:px-6">
-        <div className="footer-content bg-[#fbf6f5] rounded-xl md:rounded-2xl p-8 md:p-12 py-12 md:py-20">
+        <div className="footer-content bg-[#fbf6f5] rounded-xl md:rounded-2xl p-5 md:p-12 py-10 md:py-20">
           {/* CTA heading */}
           {showCta && (
             <div className="mb-16 md:mb-20 text-center">
-              <h1 className="font-heading text-black text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium leading-tight" style={{ margin: 0 }}>
+              <h1 className="font-heading text-black text-[1.35rem] sm:text-[3rem] md:text-[3.63rem] font-medium leading-tight whitespace-nowrap" style={{ margin: 0 }}>
                 Protect your piece of the pie<br />
                 <span className="inline-block" style={{ width: '3ch' }}>
                   <em className="italic">{typedAnd || '\u00A0'}</em>
                 </span> your peace of mind.
               </h1>
-              <div className="flex items-center justify-center gap-4 mt-10 md:mt-12">
+              <div className="flex flex-row items-center justify-center gap-4 mt-10 md:mt-12">
                 <button
                   onClick={() => {
                     const isProduction = window.location.hostname.includes('cherrytree.app');
@@ -105,7 +105,7 @@ function Footer({ bgColor, navigate: externalNavigate }) {
                       navigate('/dashboard', { replace: true });
                     }
                   }}
-                  className="bg-[#06271D] text-white px-6 md:px-10 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-[#0a3d2e] transition"
+                  className="button-shimmer bg-[#06271D] text-white px-6 md:px-10 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-[#0a3d2e] transition"
                 >
                   Get started
                 </button>
@@ -132,7 +132,7 @@ function Footer({ bgColor, navigate: externalNavigate }) {
               <p className="text-gray-500 text-sm">© 2026 Cherrytree, LLC</p>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-16 w-full md:w-auto justify-items-start text-left">
+            <div className="grid grid-cols-3 gap-0 md:gap-16 w-full md:w-auto justify-items-center md:justify-items-start text-center md:text-left">
               <div className="footer-cascade-2 text-left">
                 <h4 className="text-black text-sm mb-4 uppercase text-left">Product</h4>
                 <ul className="space-y-4 text-sm text-left">

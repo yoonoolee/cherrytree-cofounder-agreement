@@ -589,9 +589,12 @@ function LandingPage() {
         if (entry.isIntersecting) {
           setters[id](true);
         } else {
-          const rect = entry.target.getBoundingClientRect();
-          if (rect.top > window.innerHeight * 0.5) {
-            setters[id](false);
+          // Only reset on desktop to avoid mobile glitching
+          if (window.innerWidth >= 768) {
+            const rect = entry.target.getBoundingClientRect();
+            if (rect.top > window.innerHeight * 0.5) {
+              setters[id](false);
+            }
           }
         }
       });
@@ -603,6 +606,7 @@ function LandingPage() {
     // Observe FAQ section (re-triggers each time scrolled to from above)
     // Use two observers: one to trigger at 40% visible, one to reset when section top enters viewport bottom
     let faqResetTimer;
+    const faqThreshold = window.innerWidth < 768 ? 0.5 : 0.3;
     const faqTriggerObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -610,7 +614,7 @@ function LandingPage() {
           setFaqSectionVisible(true);
         }
       });
-    }, { threshold: 0.3 });
+    }, { threshold: faqThreshold });
 
     const faqResetObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -674,7 +678,7 @@ function LandingPage() {
     },
     {
       name: 'Scale',
-      price: '$800',
+      price: '$2000',
       description: 'Built for funded teams that need deeper control,\ngreater detail, and stronger foundations.',
       features: [
         'Everything in Bootstrapped',
@@ -808,7 +812,7 @@ function LandingPage() {
       <section className="px-4 md:px-6 pt-20 md:pt-32 lg:pt-40 pb-8 md:pb-14" style={{ background: 'linear-gradient(to bottom, #06271D 85%, #ffffff 85%)' }}>
         <div className="max-w-6xl mx-auto text-center">
           <div className="hero-content">
-            <h1 className="font-heading text-[3rem] sm:text-[4rem] md:text-[5rem] lg:text-[6rem] font-normal text-white mb-4 md:mb-6 min-h-[110px] sm:min-h-[132px] md:min-h-[154px]" style={{
+            <h1 className="font-heading text-[2rem] sm:text-[4rem] md:text-[5rem] lg:text-[6rem] font-normal text-white mb-1 md:mb-6 h-[100px] sm:h-auto sm:min-h-[132px] md:min-h-[170px] overflow-hidden pb-2 md:pb-3" style={{
               filter: productsHovered ? 'blur(1.5px)' : 'none',
               transition: 'filter 0.3s ease'
             }}>

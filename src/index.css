@@ -2,6 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Feature card slide-in: up on mobile, from side on desktop */
+.feature-slide-left,
+.feature-slide-right {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.feature-slide-left.feature-visible,
+.feature-slide-right.feature-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (min-width: 768px) {
+  .feature-slide-left,
+  .feature-slide-right {
+    opacity: 1;
+  }
+  .feature-slide-left {
+    transform: translateX(-60px);
+  }
+  .feature-slide-right {
+    transform: translateX(60px);
+  }
+  .feature-slide-left.feature-visible,
+  .feature-slide-right.feature-visible {
+    transform: translateX(0);
+  }
+}
+
+/* Pricing grid border: bottom on mobile, right on sm+ */
+.pricing-border-first {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+@media (min-width: 640px) {
+  .pricing-border-first {
+    border-bottom: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}
+
 /* That That New Roman font */
 @font-face {
   font-family: 'That That New Roman';
@@ -18,10 +58,19 @@
 }
 
 /* Reduce overscroll bounce effect */
-body {
+html {
   overscroll-behavior-y: contain;
+}
+body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 400;
+}
+/* Prevent horizontal scroll on mobile only */
+@media (max-width: 767px) {
+  html, body {
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+  }
 }
 
 /* Heading font utility */
@@ -558,21 +607,16 @@ select:disabled {
 }
 
 /* Content elements fade-in animation */
-@keyframes sectionHeaderIn {
-  0%   { opacity: 0; transform: scale(0.85); }
-  70%  { opacity: 1; transform: scale(1.03); }
-  85%  { transform: scale(0.985); }
-  100% { opacity: 1; transform: scale(1); }
-}
-
 .scroll-section .section-header {
   opacity: 0;
   transform: scale(0.85);
   transform-origin: center center;
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
 }
 
 .scroll-section .section-header.content-visible {
-  animation: sectionHeaderIn 0.45s ease-out forwards;
+  opacity: 1;
+  transform: scale(1);
 }
 
 .scroll-section p,
@@ -923,4 +967,3 @@ select:disabled {
   0%, 60% { opacity: 0; transform: scale(0); }
   70%, 100% { opacity: 1; transform: scale(1); }
 }
-
