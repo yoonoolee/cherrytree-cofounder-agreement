@@ -50,8 +50,8 @@ function PricingPage() {
 
   // SEO meta tags
   usePageMeta({
-    title: 'Pricing - Cherrytree | Starter $200, Pro $800',
-    description: 'Affordable cofounder agreement pricing for startups. Starter plan at $200 includes real-time collaboration and instant agreements. Pro plan at $800 adds attorney review and coaching.',
+    title: 'Pricing - Cherrytree | Starter $200, Pro $2000',
+    description: 'Affordable cofounder agreement pricing for startups. Starter plan at $200 includes real-time collaboration and instant agreements. Pro plan at $2000 adds attorney review and coaching.',
     breadcrumbs: [
       { name: 'Home', url: '/' },
       { name: 'Pricing' }
@@ -129,7 +129,7 @@ function PricingPage() {
       <section className="pt-24 md:pt-32 pb-24 md:pb-32 px-4 md:px-6" style={{ backgroundColor: '#06271D' }}>
         <div className="max-w-6xl mx-auto">
           <div className="hero-content text-center mb-10 md:mb-16">
-            <h1 className="font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium mb-4 md:mb-6 text-white">
+            <h1 className="font-heading text-[1.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium mb-4 md:mb-6 text-white">
               Founder-friendly pricing<span style={{ marginLeft: '0.05em' }}>.</span>
             </h1>
             <p className="text-sm md:text-[16px] font-normal" style={{ color: 'rgba(255,255,255,0.65)' }}>
@@ -165,7 +165,7 @@ function PricingPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 items-stretch">
               {[
                 { name: 'Bootstrapped', price: '$200', featured: true, features: ['Expert-designed survey', 'Comprehensive agreements', 'Proprietary equity calculator', 'Best practices and tips', 'Up to 5 collaborators'] },
-                { name: 'Scale', price: '$800', featured: false, features: ['Everything in Bootstrapped', 'Final attorney review', 'Personalized onboarding', 'Cofounder coaching', 'Priority support'] }
+                { name: 'Scale', price: '$2000', featured: false, features: ['Everything in Bootstrapped', 'Final attorney review', 'Personalized onboarding', 'Cofounder coaching', 'Priority support'] }
               ].map((plan, i) => (
                 <div
                   key={i}
