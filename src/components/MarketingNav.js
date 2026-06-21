@@ -19,7 +19,7 @@ function MarketingNav() {
       </button>
       <ul className="lp-nav-links">
         <li className="lp-has-dd">
-          <a href="#">Products <span className="lp-chevron">▾</span></a>
+          <button type="button">Products <span className="lp-chevron">▾</span></button>
           <div className="lp-dd">
             <div className="lp-dd-inner">
               <button className="lp-dd-item" onClick={() => navigate('/equity-calculator')}><span className="lp-dd-name">Equity Calculator</span><span className="lp-dd-sub">Fair splits, instantly</span></button>
@@ -29,7 +29,7 @@ function MarketingNav() {
           </div>
         </li>
         <li className="lp-has-dd">
-          <a href="#">Resources <span className="lp-chevron">▾</span></a>
+          <button type="button">Resources <span className="lp-chevron">▾</span></button>
           <div className="lp-dd">
             <div className="lp-dd-inner">
               <a className="lp-dd-item" href="https://app.hubble.social/timhe" target="_blank" rel="noopener noreferrer"><span className="lp-dd-name">Coaching</span><span className="lp-dd-sub">1-on-1 cofounder guidance</span></a>

@@ -78,6 +78,7 @@ function PanelCollab({ active }) {
     };
     run();
     return () => refs.current.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
   return (
@@ -129,6 +130,7 @@ function PanelEquity({ active }) {
     };
     run(0);
     return () => refs.current.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
   const cat = cats[idx];
@@ -185,6 +187,7 @@ function PanelReview({ active }) {
     };
     run();
     return () => refs.current.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
   const pct = (done.length / sections.length) * 100;
@@ -232,6 +235,7 @@ function PanelExpert({ active }) {
     };
     run();
     return () => refs.current.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
   return (
