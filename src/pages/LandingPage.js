@@ -1,2446 +1,620 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { usePageMeta } from '../hooks/usePageMeta';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import MarketingNav from '../components/MarketingNav';
+import MarketingFooter from '../components/MarketingFooter';
+import MarketingGrain from '../components/MarketingGrain';
+
+// ── Panel sub-components ───────────────────────────────────────────────────────
+
+function PanelInvite({ active }) {
+  const [typed, setTyped] = useState('');
+  const [showNew, setShowNew] = useState(false);
+  const [pressed, setPressed] = useState(false);
+  const email = 'sam@startup.co';
+  const refs = useRef([]);
+
+  useEffect(() => {
+    refs.current.forEach(clearTimeout);
+    refs.current = [];
+    if (!active) { setTyped(''); setShowNew(false); setPressed(false); return; }
+    const t = (fn, ms) => { const id = setTimeout(fn, ms); refs.current.push(id); };
+    const run = () => {
+      setTyped(''); setShowNew(false); setPressed(false);
+      email.split('').forEach((_, i) => t(() => setTyped(email.slice(0, i + 1)), 800 + i * 55));
+      t(() => setPressed(true), 800 + email.length * 55 + 200);
+      t(() => { setShowNew(true); setPressed(false); setTyped(''); }, 800 + email.length * 55 + 600);
+      t(run, 800 + email.length * 55 + 4000);
+    };
+    run();
+    return () => refs.current.forEach(clearTimeout);
+  }, [active]);
+
+  return (
+    <div className="lp-fp" style={{ backgroundImage: "url('/images/ambient.png?v=2')" }}>
+      <div className="lp-fp-overlay" />
+      <div className="lp-fp-content">
+        <div className="lp-fp-tag">Step 1</div>
+        <div className="lp-fp-title">Invite your cofounders</div>
+        <div className="lp-s1-card">
+          <div className="lp-s1-label">Team</div>
+          <div className="lp-s1-row"><span className="lp-dot green"/><span className="lp-s1-email">you@email.com</span><span className="lp-badge owner">Owner</span></div>
+          <div className="lp-s1-row"><span className="lp-dot light"/><span className="lp-s1-email">alex@startup.co</span><span className="lp-badge added">Added</span></div>
+          {showNew && <div className="lp-s1-row lp-s1-new"><span className="lp-dot light"/><span className="lp-s1-email">{email}</span><span className="lp-badge added">Added</span></div>}
+          <div className="lp-s1-input-row">
+            <div className="lp-s1-input"><span>{typed}</span>{!showNew && <span className="lp-icursor"/>}</div>
+            <button className={`lp-s1-btn${pressed ? ' pressed' : ''}`}>+ Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PanelCollab({ active }) {
+  const [answered, setAnswered] = useState([]);
+  const [activeQ, setActiveQ] = useState(0);
+  const [typed, setTyped] = useState('');
+  const refs = useRef([]);
+  const qs = [
+    { q: "What's your company name?", a: 'Cherrytree' },
+    { q: 'Legal structure?', a: 'C-Corp' },
+    { q: 'State of formation?', a: 'Delaware' },
+  ];
+
+  useEffect(() => {
+    refs.current.forEach(clearTimeout);
+    refs.current = [];
+    if (!active) { setAnswered([]); setActiveQ(0); setTyped(''); return; }
+    const t = (fn, ms) => { const id = setTimeout(fn, ms); refs.current.push(id); };
+    const run = () => {
+      setAnswered([]); setActiveQ(0); setTyped('');
+      qs.forEach((q, i) => {
+        const base = 400 + i * 2600;
+        q.a.split('').forEach((_, ci) => t(() => setTyped(q.a.slice(0, ci + 1)), base + ci * 80));
+        t(() => { setAnswered(p => [...p, i]); setActiveQ(i + 1); setTyped(''); }, base + q.a.length * 80 + 400);
+      });
+      t(run, 400 + qs.length * 2600 + 1500);
+    };
+    run();
+    return () => refs.current.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
+
+  return (
+    <div className="lp-fp" style={{ backgroundImage: "url('/images/wall.png?v=2')" }}>
+      <div className="lp-fp-overlay" />
+      <div className="lp-fp-content">
+        <div className="lp-fp-tag">Step 2</div>
+        <div className="lp-fp-title">Collab on the agreement</div>
+        <div className="lp-s2-card">
+          <div className="lp-s1-label">Formation &amp; Purpose</div>
+          {qs.map((q, i) => (
+            <div key={i} className={`lp-s2-q${answered.includes(i) ? ' answered' : ''}${activeQ === i ? ' active' : ''}`}>
+              <div className="lp-s2-q-row">
+                <span className="lp-s2-q-text">{q.q}</span>
+                {answered.includes(i) && <><span className="lp-s2-q-answer">{q.a}</span><span className="lp-s2-check">✓</span></>}
+              </div>
+              {activeQ === i && !answered.includes(i) && (
+                <div className="lp-s2-body"><div className="lp-s2-input"><span>{typed}</span><span className="lp-icursor lp-dark"/></div></div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PanelEquity({ active }) {
+  const cats = [
+    { name: 'Cash Invested', count: '1 / 18', imp: 60, scores: [7, 4] },
+    { name: 'Time Commitment', count: '2 / 18', imp: 90, scores: [9, 6] },
+    { name: 'Domain Expertise', count: '3 / 18', imp: 75, scores: [5, 8] },
+  ];
+  const [idx, setIdx] = useState(0);
+  const [sliderPct, setSliderPct] = useState(0);
+  const [dots, setDots] = useState([0, 0]);
+  const refs = useRef([]);
+
+  useEffect(() => {
+    refs.current.forEach(clearTimeout);
+    refs.current = [];
+    if (!active) { setIdx(0); setSliderPct(0); setDots([0, 0]); return; }
+    const t = (fn, ms) => { const id = setTimeout(fn, ms); refs.current.push(id); };
+    const run = (i) => {
+      setIdx(i); setSliderPct(0); setDots([0, 0]);
+      t(() => setSliderPct(cats[i].imp), 80);
+      t(() => setDots(cats[i].scores), 350);
+      t(() => run((i + 1) % cats.length), 2600);
+    };
+    run(0);
+    return () => refs.current.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
+
+  const cat = cats[idx];
+  return (
+    <div className="lp-fp" style={{ backgroundImage: "url('/images/leaf.png?v=2')" }}>
+      <div className="lp-fp-overlay" />
+      <div className="lp-fp-content">
+        <div className="lp-fp-tag">Equity</div>
+        <div className="lp-fp-title">Equity Calculator</div>
+        <div className="lp-s3-card">
+          <div className="lp-s3-top">
+            <span className="lp-s3-category">{cat.name}</span>
+            <span className="lp-s3-counter">{cat.count}</span>
+          </div>
+          <div className="lp-s1-label">How important is this?</div>
+          <div className="lp-s3-slider-row">
+            <div className="lp-s3-track">
+              <div className="lp-s3-fill" style={{ width: `${sliderPct}%` }}/>
+              <div className="lp-s3-thumb" style={{ left: `${sliderPct}%` }}/>
+            </div>
+            <span className="lp-s3-val">{Math.round(sliderPct / 10)}</span>
+          </div>
+          <div className="lp-s1-label" style={{ marginTop: 10 }}>Score each cofounder</div>
+          {['Alex', 'Jordan'].map((name, i) => (
+            <div key={i} className="lp-s3-cf">
+              <div className="lp-s3-cf-name">{name}</div>
+              <div className="lp-s3-dots">
+                {[...Array(10)].map((_, d) => (
+                  <div key={d} className={`lp-s3-dot${d < dots[i] ? ' on' : ''}`} style={{ transition: `background 0.12s ${d * 0.04}s` }}/>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PanelReview({ active }) {
+  const sections = ['Formation & Purpose', 'Cofounder Info', 'Equity Allocation', 'Vesting', 'Decision-Making'];
+  const [done, setDone] = useState([]);
+  const refs = useRef([]);
+
+  useEffect(() => {
+    refs.current.forEach(clearTimeout);
+    refs.current = [];
+    if (!active) { setDone([]); return; }
+    const t = (fn, ms) => { const id = setTimeout(fn, ms); refs.current.push(id); };
+    const run = () => {
+      setDone([]);
+      sections.forEach((_, i) => t(() => setDone(p => [...p, i]), 500 + i * 650));
+      t(run, 500 + sections.length * 650 + 2000);
+    };
+    run();
+    return () => refs.current.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
+
+  const pct = (done.length / sections.length) * 100;
+  return (
+    <div className="lp-fp" style={{ backgroundImage: "url('/images/chalk.png?v=2')" }}>
+      <div className="lp-fp-overlay" />
+      <div className="lp-fp-content">
+        <div className="lp-fp-tag">Step 3</div>
+        <div className="lp-fp-title">Do a final review</div>
+        <div className="lp-s2r-card">
+          <div className="lp-s1-label">Cofounder Agreement</div>
+          <div className="lp-s2r-track"><div className="lp-s2r-fill" style={{ width: `${pct}%` }}/></div>
+          <div className="lp-s2r-list">
+            {sections.map((s, i) => (
+              <div key={i} className={`lp-s2r-row${done.includes(i) ? ' done' : ''}`}>
+                <span className="lp-s2r-check">{done.includes(i) ? '✓' : ''}</span>
+                <span>{s}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PanelExpert({ active }) {
+  const msgs = [
+    { from: 'expert', text: "Hey — I noticed you're working on equity. Have you tried our calculator?" },
+    { from: 'user', text: "We tried 50/50 but it doesn't feel right." },
+    { from: 'expert', text: "That's common. Let's walk through each contribution area — it takes 10 minutes and the result is much more defensible." },
+  ];
+  const [shown, setShown] = useState(0);
+  const refs = useRef([]);
+
+  useEffect(() => {
+    refs.current.forEach(clearTimeout);
+    refs.current = [];
+    if (!active) { setShown(0); return; }
+    const t = (fn, ms) => { const id = setTimeout(fn, ms); refs.current.push(id); };
+    const run = () => {
+      setShown(0);
+      msgs.forEach((_, i) => t(() => setShown(i + 1), 500 + i * 1600));
+      t(run, 500 + msgs.length * 1600 + 2000);
+    };
+    run();
+    return () => refs.current.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
+
+  return (
+    <div className="lp-fp" style={{ backgroundImage: "url('/images/paper.png?v=2')" }}>
+      <div className="lp-fp-overlay" />
+      <div className="lp-fp-content">
+        <div className="lp-fp-tag">Support</div>
+        <div className="lp-fp-title">Expert Guidance</div>
+        <div className="lp-s4-card">
+          <div className="lp-s4-expert-row">
+            <div className="lp-s4-avatar">T</div>
+            <div><div className="lp-s4-name">Tim</div><div className="lp-s4-role">Cofounder Coach</div></div>
+          </div>
+          <div className="lp-s4-msgs">
+            {msgs.slice(0, shown).map((m, i) => (
+              <div key={i} className={`lp-s4-msg${m.from === 'user' ? ' user' : ''}`}>{m.text}</div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const PANELS = [PanelInvite, PanelCollab, PanelEquity, PanelReview, PanelExpert];
+
+const FEATURES = [
+  { num: '01', panel: 0, title: 'Invite your cofounders', desc: 'Add your cofounders as collaborators. They must be added to be included in the Cofounder Agreement.' },
+  { num: '02', panel: 1, title: 'Collab on the agreement', desc: 'You and your cofounders answer a set of guided questions together. Nobody has to play "project manager" or relay answers.' },
+  { num: '03', panel: 2, title: 'Equity Calculator', desc: 'Use our proprietary equity calculator to determine ownership. Instant, precise splits so everyone knows their stake.' },
+  { num: '04', panel: 3, title: 'Do a final review', desc: 'We take your responses and turn them into a Cofounder Agreement, ready for your final review and signature.' },
+  { num: '05', panel: 4, title: 'Expert Guidance', desc: 'We are a team of cofounder coaches, founders, and attorneys ready to help. You\'re in good hands every step of the way.' },
+];
+
+const CAROUSEL_SLIDES = [
+  { img: '/images/universities.png', tag: 'Universities', title: 'Help student teams start right.', desc: 'Give entrepreneurship programs a structured tool for the conversations students skip.' },
+  { img: '/images/individuals.png', tag: 'Individuals', title: 'Know what you\'re getting into.', desc: 'Think through every dimension of the partnership before you commit to a cofounder.' },
+  { img: '/images/accelerators.png', tag: 'Accelerators', title: 'Give your cohort a foundation.', desc: 'Surface cofounder misalignment in your portfolio before Demo Day pressure takes over.' },
+  { img: '/images/first-time-founders.png', tag: 'First-time founders', title: 'You don\'t know what you don\'t know.', desc: 'Walk through every section with the context you need — no legal background required.' },
+  { img: '/images/serial-founders.png', tag: 'Serial founders', title: 'You\'ve been burned before.', desc: 'A fast, structured way to get alignment on paper — without going back to lawyers for the basics.' },
+];
+
+const PRICING = [
+  {
+    tier: 'Bootstrapped', price: '$200', period: 'One-time payment',
+    desc: 'Ideal for early-stage or bootstrapped teams that need to move fast and start building now.',
+    features: ['Expert-designed survey', 'Comprehensive agreements', 'Proprietary equity calculator', 'Best practices and tips', 'Up to 5 collaborators'],
+    cta: 'Get started', ctaStyle: 'outline',
+  },
+  {
+    tier: 'Scale', price: '$2,000', period: 'One-time payment', badge: 'Most popular',
+    desc: 'Built for funded teams that need deeper control, greater detail, and stronger foundations.',
+    features: ['Everything in Bootstrapped', 'Final attorney review', 'Personalized onboarding', 'Cofounder coaching', 'Priority support'],
+    cta: 'Get started', ctaStyle: 'filled', featured: true,
+  },
+  {
+    tier: 'Enterprise', price: 'Custom', period: 'Contact for volume pricing',
+    desc: 'Running a fund or accelerator and want to deploy in bulk? We\'ll set you up.',
+    features: ['Everything in Scale, for your cohort', 'Cohort dashboard and progress tracking', 'Branded experience for your program', 'Dedicated account support'],
+    cta: 'Contact sales', ctaStyle: 'solid', enterprise: true,
+  },
+];
+
+const FAQS = [
+  { q: "What's a cofounder agreement, and why do I need one?", a: "It's basically a prenup for your startup. It spells out equity, roles, and expectations so you don't end up in a messy breakup later. Think of it as cheap insurance against expensive fights." },
+  { q: "When's the right time to create a cofounder agreement?", a: "As early as possible. Day 1 is ideal, but day 100 is still better than never. The earlier you do it, the easier (and less awkward) it is." },
+  { q: "How long does it take to complete with Cherrytree?", a: "Around 30–60 minutes. That's less time than a pitch deck tweak or your daily doomscroll." },
+  { q: "Can I update the agreement later if things change?", a: "Absolutely. Startups evolve, and so can your agreement. You can revisit and revise as roles, equity, or goals shift." },
+  { q: "How is Cherrytree different from free templates online?", a: "Templates are generic and don't ask the hard questions. Cherrytree guides you step by step, highlights differences in answers, and gives you a founder-friendly, investor-ready document." },
+  { q: "Do both cofounders need to be present at the same time?", a: "Nope. You can each fill it out separately, then compare and finalize together." },
+];
+
+const STATS = [
+  { num: 2400, suffix: '+', label: 'Founding teams have started\ntheir agreement' },
+  { num: 6100, suffix: '+', label: 'Founders have used\nCherrytree' },
+  { num: 10, suffix: '', label: 'Sections covering every angle\nof your cofounder agreement' },
+  { num: 0, prefix: '$', suffix: '', label: 'To get started.\nNo lawyer required.' },
+];
+
+// ── Main component ─────────────────────────────────────────────────────────────
 
 function LandingPage() {
   const navigate = useNavigate();
-
-  // SEO meta tags for homepage
   usePageMeta({
-    title: 'Cherrytree - Create Cofounder Agreements',
-    description: 'Cherrytree makes it easy to create cofounder agreements and determine equity splits.'
+    title: 'Cherrytree — Build your cofounder agreement',
+    description: 'Answer guided questions with your cofounders and get a complete Cofounder Agreement. No sketchy templates, no overpriced lawyers.',
   });
+
+  const [typedHero, setTypedHero] = useState('');
   const [openFaq, setOpenFaq] = useState(null);
-  const [faqSectionVisible, setFaqSectionVisible] = useState(false);
-  const faqSectionRef = useRef(null);
-  const faqContentRef = useRef(null);
-  const faqItemRefs = useRef([]);
-  const featureRow1Ref = useRef(null);
-  const featureRow2Ref = useRef(null);
-  const featureRow3Ref = useRef(null);
-  const featureRow4Ref = useRef(null);
-  const [featureRow1Visible, setFeatureRow1Visible] = useState(false);
-  const [featureRow2Visible, setFeatureRow2Visible] = useState(false);
-  const [featureRow3Visible, setFeatureRow3Visible] = useState(false);
-  const [featureRow4Visible, setFeatureRow4Visible] = useState(false);
-  const [typedText, setTypedText] = useState('');
-  const [cardTilt, setCardTilt] = useState(15);
-  const [cardSlideUp, setCardSlideUp] = useState(0);
   const [activeFeature, setActiveFeature] = useState(0);
-  const [, setContractCardsVisible] = useState(false);
-  const [, setContractCardsFading] = useState(false);
-  const [animationCycle, setAnimationCycle] = useState(0);
-  const [, setEquityChartVisible] = useState(false);
-  const [, setEquityChartFading] = useState(false);
-  const [equityAnimationCycle, setEquityAnimationCycle] = useState(0);
-  const [, setExpertGuidanceVisible] = useState(false);
-  const [, setExpertGuidanceFading] = useState(false);
-  const [expertGuidanceAnimationCycle, setExpertGuidanceAnimationCycle] = useState(0);
-  const [featuresInView, setFeaturesInView] = useState(false);
-  const [cardDocVisible, setCardDocVisible] = useState(false);
-  const [cardEquityVisible, setCardEquityVisible] = useState(false);
-  const [cardEquityNumbersVisible, setCardEquityNumbersVisible] = useState(false);
-  const [cardExpertVisible, setCardExpertVisible] = useState(false);
-  const [cardExpertLinesVisible, setCardExpertLinesVisible] = useState(false);
-  const cardDocRef = useRef(null);
-  const cardEquityRef = useRef(null);
-  const cardExpertRef = useRef(null);
-  const featuresRef = useRef(null);
-  const [, setTypedAnd] = useState('');
-  const [typedToday, setTypedToday] = useState('');
-  const [section1Visible, setSection1Visible] = useState(false);
-  const [section1AnimationCycle, setSection1AnimationCycle] = useState(0);
-  const [typedCompanyName, setTypedCompanyName] = useState('');
-  const [showCursor, setShowCursor] = useState(false);
-  const [selectedEntity, setSelectedEntity] = useState('');
-  const [typedEntity, setTypedEntity] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
-  const [typedDate, setTypedDate] = useState('');
-  const [showCalendar, setShowCalendar] = useState(false);
-  const [, setHeadingFill] = useState(0);
-  const headingRef = useRef(null);
-  const [productsHovered, setProductsHovered] = useState(false);
-  const [, setPricingCardAnimated] = useState(false);
-  const pricingCardRef = useRef(null);
-  const fullText = 'with great company.';
-  const andText = 'and';
-  const todayText = 'today.';
+  const [carouselIdx, setCarouselIdx] = useState(0);
+  const [counts, setCounts] = useState(STATS.map(() => 0));
+  const statsRef = useRef(null);
+  const featItemRefs = useRef([]);
 
-  // Typewriter effect for second line with loop
+  const goToDashboard = () => {
+    const isProd = window.location.hostname.includes('cherrytree.app');
+    if (isProd) window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
+    else navigate('/dashboard', { replace: true });
+  };
+
+  // Hero typewriter — types once, cursor stays
   useEffect(() => {
-    if (typedText.length < fullText.length) {
-      const timeout = setTimeout(() => {
-        setTypedText(fullText.slice(0, typedText.length + 1));
-      }, 80);
-      return () => clearTimeout(timeout);
-    } else {
-      // Reset after completion and pause
-      const resetTimeout = setTimeout(() => {
-        setTypedText('');
-      }, 2000);
-      return () => clearTimeout(resetTimeout);
-    }
-  }, [typedText]);
-
-  // Intersection Observer for features section
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setFeaturesInView(true);
-            setActiveFeature(0); // Reset to first tab when section comes into view
-          } else {
-            setFeaturesInView(false);
-            setContractCardsVisible(false);
-          }
-        });
-      },
-      { threshold: 0.3 }
-    );
-
-    if (featuresRef.current) {
-      observer.observe(featuresRef.current);
-    }
-
-    return () => observer.disconnect();
+    const target = 'with great company.';
+    let i = 0;
+    const tick = () => {
+      if (i >= target.length) return;
+      i++;
+      setTypedHero(target.slice(0, i));
+      setTimeout(tick, 60);
+    };
+    setTimeout(tick, 600);
   }, []);
 
-  // Contract Creator animation with 2 cycles then auto-advance
+  // Feature switching via scroll
   useEffect(() => {
-    if (activeFeature !== 0 || !featuresInView) {
-      setContractCardsVisible(false);
-      setContractCardsFading(false);
-      setAnimationCycle(0);
-      return;
-    }
-
-    // Start animation
-    setContractCardsFading(false);
-    setContractCardsVisible(false);
-    const startTimer = setTimeout(() => {
-      setContractCardsVisible(true);
-    }, 50);
-
-    // After animation completes (5.4s), start fade out
-    const fadeTimer = setTimeout(() => {
-      setContractCardsFading(true);
-    }, 5500);
-
-    // After slide out (0.8s), either restart or advance
-    const cycleTimer = setTimeout(() => {
-      if (animationCycle < 1) {
-        // Restart for second cycle
-        setAnimationCycle(prev => prev + 1);
-      } else {
-        // After 2 cycles, move to next tab
-        setActiveFeature(1);
-        setAnimationCycle(0);
-      }
-    }, 6300);
-
-    return () => {
-      clearTimeout(startTimer);
-      clearTimeout(fadeTimer);
-      clearTimeout(cycleTimer);
-    };
-  }, [activeFeature, featuresInView, animationCycle]);
-
-  // Equity Calculator animation with 2 cycles then auto-advance
-  useEffect(() => {
-    if (activeFeature !== 1 || !featuresInView) {
-      setEquityChartVisible(false);
-      setEquityChartFading(false);
-      setEquityAnimationCycle(0);
-      return;
-    }
-
-    // Start animation
-    setEquityChartFading(false);
-    setEquityChartVisible(false);
-    const startTimer = setTimeout(() => {
-      setEquityChartVisible(true);
-    }, 50);
-
-    // After animation completes (4s), start fade out
-    const fadeTimer = setTimeout(() => {
-      setEquityChartFading(true);
-    }, 4000);
-
-    // After fade out (0.8s), either restart or advance
-    const cycleTimer = setTimeout(() => {
-      if (equityAnimationCycle < 1) {
-        // Restart for second cycle
-        setEquityAnimationCycle(prev => prev + 1);
-      } else {
-        // After 2 cycles, move to next tab
-        setActiveFeature(2);
-        setEquityAnimationCycle(0);
-      }
-    }, 4800);
-
-    return () => {
-      clearTimeout(startTimer);
-      clearTimeout(fadeTimer);
-      clearTimeout(cycleTimer);
-    };
-  }, [activeFeature, featuresInView, equityAnimationCycle]);
-
-  // Expert Guidance animation with 2 cycles then auto-advance
-  useEffect(() => {
-    if (activeFeature !== 2 || !featuresInView) {
-      setExpertGuidanceVisible(false);
-      setExpertGuidanceFading(false);
-      setExpertGuidanceAnimationCycle(0);
-      return;
-    }
-
-    // Start animation
-    setExpertGuidanceFading(false);
-    setExpertGuidanceVisible(false);
-    const startTimer = setTimeout(() => {
-      setExpertGuidanceVisible(true);
-    }, 50);
-
-    // After animation completes (4s), start fade out
-    const fadeTimer = setTimeout(() => {
-      setExpertGuidanceFading(true);
-    }, 4000);
-
-    // After fade out (0.8s), either restart or advance
-    const cycleTimer = setTimeout(() => {
-      if (expertGuidanceAnimationCycle < 1) {
-        // Restart for second cycle
-        setExpertGuidanceAnimationCycle(prev => prev + 1);
-      } else {
-        // After 2 cycles, move to first tab
-        setActiveFeature(0);
-        setExpertGuidanceAnimationCycle(0);
-      }
-    }, 4800);
-
-    return () => {
-      clearTimeout(startTimer);
-      clearTimeout(fadeTimer);
-      clearTimeout(cycleTimer);
-    };
-  }, [activeFeature, featuresInView, expertGuidanceAnimationCycle]);
-
-  // Typing animation for "and"
-  const andTimeoutsRef = useRef([]);
-  useEffect(() => {
-    // Clear any existing timeouts
-    andTimeoutsRef.current.forEach(id => clearTimeout(id));
-    andTimeoutsRef.current = [];
-
-    let isMounted = true;
-
-    const addTimeout = (fn, delay) => {
-      const id = setTimeout(fn, delay);
-      andTimeoutsRef.current.push(id);
-      return id;
-    };
-
-    const typeLoop = () => {
-      let index = 0;
-      const type = () => {
-        if (!isMounted) return;
-        if (index < andText.length) {
-          index++;
-          setTypedAnd(andText.slice(0, index));
-          addTimeout(type, 200);
-        } else {
-          addTimeout(() => {
-            if (!isMounted) return;
-            setTypedAnd('');
-            addTimeout(typeLoop, 200);
-          }, 1750);
-        }
-      };
-      type();
-    };
-
-    addTimeout(typeLoop, 50);
-    return () => {
-      isMounted = false;
-      andTimeoutsRef.current.forEach(id => clearTimeout(id));
-      andTimeoutsRef.current = [];
-    };
-  }, []);
-
-  // Typewriter effect for "today" with loop
-  useEffect(() => {
-    if (typedToday.length < todayText.length) {
-      const timeout = setTimeout(() => {
-        setTypedToday(todayText.slice(0, typedToday.length + 1));
-      }, 80);
-      return () => clearTimeout(timeout);
-    } else {
-      // Reset after completion and pause
-      const resetTimeout = setTimeout(() => {
-        setTypedToday('');
-      }, 2000);
-      return () => clearTimeout(resetTimeout);
-    }
-  }, [typedToday]);
-
-  // Scroll-based card reveal
-  const [revealedCards, setRevealedCards] = useState([false, false, false]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const cards = document.querySelectorAll('.process-card');
-      const windowHeight = window.innerHeight;
-
-      setRevealedCards(prev => {
-        const newRevealed = [...prev];
-        cards.forEach((card, index) => {
-          const rect = card.getBoundingClientRect();
-          // Reveal when card is 80% into viewport, hide when scrolled out
-          if (rect.top < windowHeight * 0.8 && rect.bottom > 0) {
-            newRevealed[index] = true;
-          } else {
-            newRevealed[index] = false;
-          }
-        });
-        return newRevealed;
+    const handle = () => {
+      const mid = window.innerHeight / 2;
+      let best = 0, bestDist = Infinity;
+      featItemRefs.current.forEach((el, i) => {
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        const dist = Math.abs(r.top + r.height / 2 - mid);
+        if (dist < bestDist) { bestDist = dist; best = i; }
       });
+      setActiveFeature(best);
     };
-
-    window.addEventListener('scroll', handleScroll);
-    // Delay initial check to ensure cards are rendered
-    setTimeout(handleScroll, 100);
-
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handle, { passive: true });
+    return () => window.removeEventListener('scroll', handle);
   }, []);
 
-  // Pricing card animation - triggers every time on scroll
+  // Count-up for stats
   useEffect(() => {
-    const handleScroll = () => {
-      if (!pricingCardRef.current) return;
-      const rect = pricingCardRef.current.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-
-      // Show when card is 80% into viewport, hide when scrolled out
-      if (rect.top < windowHeight * 0.8 && rect.bottom > 0) {
-        setPricingCardAnimated(true);
-      } else {
-        setPricingCardAnimated(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Check initial state
-
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Tilt card scroll effect
-  useEffect(() => {
-    const handleTiltScroll = () => {
-      const card = document.querySelector('.tilty-card');
-      if (!card) return;
-
-      const rect = card.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-
-      // Calculate how far the card has scrolled into view
-      // Fully straight when card is fully visible in viewport
-      const scrollProgress = Math.max(0, Math.min(1, (windowHeight - rect.top) / (windowHeight * 0.7)));
-
-      // Interpolate tilt from 15deg to 0deg based on scroll progress
-      const tiltValue = 15 * (1 - scrollProgress);
-      setCardTilt(tiltValue);
-
-      // Slide card up when scrolled past it
-      const pastCard = rect.bottom < windowHeight * 0.85;
-      if (pastCard) {
-        const slideProgress = Math.min(1, (windowHeight * 0.85 - rect.bottom) / (windowHeight * 0.5));
-        setCardSlideUp(slideProgress * rect.height * 0.35);
-      } else {
-        setCardSlideUp(0);
-      }
-    };
-
-    window.addEventListener('scroll', handleTiltScroll);
-    handleTiltScroll(); // Call once on mount
-
-    return () => window.removeEventListener('scroll', handleTiltScroll);
-  }, []);
-
-
-  // Heading color fill on scroll
-  useEffect(() => {
-    const handleHeadingScroll = () => {
-      if (!headingRef.current) return;
-      const rect = headingRef.current.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      const progress = Math.max(0, Math.min(1, (windowHeight * 0.7 - rect.top) / (windowHeight * 0.4)));
-      setHeadingFill(progress * 100);
-    };
-    window.addEventListener('scroll', handleHeadingScroll);
-    handleHeadingScroll();
-    return () => window.removeEventListener('scroll', handleHeadingScroll);
-  }, []);
-
-  // Section1 animation with typing and selection
-  useEffect(() => {
-    // Reset interactive content
-    setTypedCompanyName('');
-    setShowCursor(false);
-    setSelectedEntity('');
-    setTypedEntity('');
-    setSelectedDate('');
-    setTypedDate('');
-    setShowCalendar(false);
-
-    const timers = [];
-
-    // Show form
-    timers.push(setTimeout(() => setSection1Visible(true), 100));
-
-    // Show cursor in company name field
-    timers.push(setTimeout(() => setShowCursor(true), 800));
-
-    // Type company name
-    const companyName = 'Cherrytree';
-    companyName.split('').forEach((char, index) => {
-      timers.push(setTimeout(() => {
-        setTypedCompanyName(prev => prev + char);
-      }, 1200 + index * 100));
-    });
-
-    // Hide cursor after typing
-    timers.push(setTimeout(() => setShowCursor(false), 1200 + companyName.length * 100 + 300));
-
-    // Select C-Corp after typing finishes (increased delay)
-    timers.push(setTimeout(() => setSelectedEntity('C-Corp'), 1200 + companyName.length * 100 + 1500));
-
-    // Type C-Corp in the agreement
-    const entity = 'C-Corp';
-    const entityStartTime = 1200 + companyName.length * 100 + 1550;
-    entity.split('').forEach((char, index) => {
-      timers.push(setTimeout(() => {
-        setTypedEntity(prev => prev + char);
-      }, entityStartTime + index * 60));
-    });
-
-    // Show calendar (increased delay)
-    timers.push(setTimeout(() => setShowCalendar(true), 1200 + companyName.length * 100 + 3200));
-
-    // Select date after calendar appears (increased delay)
-    const dateText = 'January 8, 2025';
-    timers.push(setTimeout(() => setSelectedDate(dateText), 1200 + companyName.length * 100 + 5000));
-
-    // Type date in the agreement
-    const dateStartTime = 1200 + companyName.length * 100 + 5050;
-    dateText.split('').forEach((char, index) => {
-      timers.push(setTimeout(() => {
-        setTypedDate(prev => prev + char);
-      }, dateStartTime + index * 60));
-    });
-
-    // Clear interactive content instead of fading entire card
-    timers.push(setTimeout(() => {
-      setTypedCompanyName('');
-      setShowCursor(false);
-      setSelectedEntity('');
-      setTypedEntity('');
-      setSelectedDate('');
-      setTypedDate('');
-      setShowCalendar(false);
-    }, 10000));
-
-    // Restart cycle
-    timers.push(setTimeout(() => setSection1AnimationCycle(prev => prev + 1), 10500));
-
-    return () => timers.forEach(timer => clearTimeout(timer));
-  }, [section1AnimationCycle]);
-
-  // Scroll-triggered section animations
-  useScrollAnimation();
-
-  // Trigger hero content fade-in on mount
-  useEffect(() => {
-    const heroContent = document.querySelector('.hero-content');
-    if (heroContent) {
-      setTimeout(() => {
-        heroContent.classList.add('section-visible');
-      }, 100);
-    }
-  }, []);
-
-  // Special early trigger for process section
-  useEffect(() => {
-    const earlyObserverOptions = {
-      threshold: 0.2,
-      rootMargin: '0px 0px -100px 0px'
-    };
-
-    const earlyObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('section-visible');
-          earlyObserver.unobserve(entry.target);
-        }
-      });
-    }, earlyObserverOptions);
-
-    const earlySections = document.querySelectorAll('.scroll-section-early');
-    earlySections.forEach(section => earlyObserver.observe(section));
-
-    // Observe card doc animation (looping)
-    let cardDocLoopTimer;
-    const cardDocObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const runLoop = () => {
-            setCardDocVisible(true);
-            cardDocLoopTimer = setTimeout(() => {
-              setCardDocVisible(false);
-              cardDocLoopTimer = setTimeout(runLoop, 500);
-            }, 4000);
-          };
-          runLoop();
-          cardDocObserver.unobserve(entry.target);
-        }
+    if (!statsRef.current) return;
+    const obs = new IntersectionObserver(entries => {
+      if (!entries[0].isIntersecting) return;
+      obs.disconnect();
+      STATS.forEach((s, i) => {
+        if (s.num === 0) return;
+        const dur = 1600, start = Date.now();
+        const tick = () => {
+          const elapsed = Date.now() - start;
+          const pct = Math.min(elapsed / dur, 1);
+          const ease = 1 - Math.pow(1 - pct, 3);
+          setCounts(prev => { const n = [...prev]; n[i] = Math.round(ease * s.num); return n; });
+          if (pct < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
       });
     }, { threshold: 0.3 });
-    if (cardDocRef.current) cardDocObserver.observe(cardDocRef.current);
-
-    // Observe card equity animation (looping numbers only, table stays)
-    let cardEquityLoopTimer;
-    const cardEquityObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          setCardEquityVisible(true);
-          const runLoop = () => {
-            setCardEquityNumbersVisible(true);
-            cardEquityLoopTimer = setTimeout(() => {
-              setCardEquityNumbersVisible(false);
-              cardEquityLoopTimer = setTimeout(runLoop, 600);
-            }, 6500);
-          };
-          runLoop();
-          cardEquityObserver.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.3 });
-    if (cardEquityRef.current) cardEquityObserver.observe(cardEquityRef.current);
-
-    // Observe card expert animation (looping lines only)
-    let cardExpertLoopTimer;
-    const cardExpertObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          setCardExpertVisible(true);
-          const runLoop = () => {
-            // Show lines
-            setCardExpertLinesVisible(true);
-            // After all animations complete + pause, hide then restart
-            cardExpertLoopTimer = setTimeout(() => {
-              setCardExpertLinesVisible(false);
-              // Wait for hide, then force reflow and restart
-              cardExpertLoopTimer = setTimeout(() => {
-                requestAnimationFrame(() => {
-                  requestAnimationFrame(() => {
-                    runLoop();
-                  });
-                });
-              }, 600);
-            }, 4500);
-          };
-          // Initial start with reflow
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              runLoop();
-            });
-          });
-          cardExpertObserver.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.3 });
-    if (cardExpertRef.current) cardExpertObserver.observe(cardExpertRef.current);
-
-    // Observe underline animation
-    const underlineObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          // Only start the delay timer when section is visible
-          setTimeout(() => {
-            entry.target.classList.add('underline-visible');
-          }, 500);
-          underlineObserver.unobserve(entry.target);
-        }
-      });
-    }, earlyObserverOptions);
-
-    const underline = document.querySelector('.underline-animate');
-    if (underline) underlineObserver.observe(underline);
-
-    // Observe feature rows for slide-in animation (re-triggers each time)
-    const setters = { '1': setFeatureRow1Visible, '2': setFeatureRow2Visible, '3': setFeatureRow3Visible, '4': setFeatureRow4Visible };
-    const featureRowObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        const id = entry.target.dataset.featureRow;
-        if (entry.isIntersecting) {
-          setters[id](true);
-        } else {
-          // Only reset on desktop to avoid mobile glitching
-          if (window.innerWidth >= 768) {
-            const rect = entry.target.getBoundingClientRect();
-            if (rect.top > window.innerHeight * 0.5) {
-              setters[id](false);
-            }
-          }
-        }
-      });
-    }, { threshold: 0.2 });
-    [featureRow1Ref, featureRow2Ref, featureRow3Ref, featureRow4Ref].forEach(ref => {
-      if (ref.current) featureRowObserver.observe(ref.current);
-    });
-
-    // Observe FAQ section (re-triggers each time scrolled to from above)
-    // Use two observers: one to trigger at 40% visible, one to reset when section top enters viewport bottom
-    let faqResetTimer;
-    const faqThreshold = window.innerWidth < 768 ? 0.5 : 0.3;
-    const faqTriggerObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          clearTimeout(faqResetTimer);
-          setFaqSectionVisible(true);
-        }
-      });
-    }, { threshold: faqThreshold });
-
-    const faqResetObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        // When not intersecting at all AND section is below viewport, reset
-        if (!entry.isIntersecting) {
-          const rect = entry.target.getBoundingClientRect();
-          if (rect.top > window.innerHeight * 0.5) {
-            setFaqSectionVisible(false);
-          }
-        }
-      });
-    }, { threshold: 0.0 });
-
-    const faqSectionEl = faqSectionRef.current;
-    if (faqSectionEl) {
-      faqTriggerObserver.observe(faqSectionEl);
-      faqResetObserver.observe(faqSectionEl);
-    }
-
-    return () => {
-      earlySections.forEach(section => earlyObserver.unobserve(section));
-      if (underline) underlineObserver.unobserve(underline);
-      if (faqSectionEl) { faqTriggerObserver.unobserve(faqSectionEl); faqResetObserver.unobserve(faqSectionEl); }
-      clearTimeout(cardDocLoopTimer);
-      clearTimeout(cardEquityLoopTimer);
-      clearTimeout(cardExpertLoopTimer);
-    };
+    obs.observe(statsRef.current);
+    return () => obs.disconnect();
   }, []);
 
-  const steps = [
-    {
-      step: '1',
-      title: 'Invite your cofounders',
-      desc: 'Add your cofounders as collaborators. They must be added to be included in the Cofounder Agreement.'
-    },
-    {
-      step: '2',
-      title: 'Collab on the agreement',
-      desc: 'You and your cofounders answer a set of guided questions together. Nobody has to play "project manager" or relay answers.'
-    },
-    {
-      step: '3',
-      title: 'Do a final review',
-      desc: 'We take your responses and turn them into a Cofounder Agreement, ready for your final review and signature.'
-    }
-  ];
-
-  const pricingPlans = [
-    {
-      name: 'Bootstrapped',
-      price: '$200',
-      description: 'Ideal for early-stage or bootstrapped teams\nthat need to move fast and start building now.',
-      features: [
-        'Expert-designed survey',
-        'Comprehensive agreements',
-        'Proprietary equity calculator',
-        'Best practices and tips',
-        'Up to 5 collaborators'
-      ],
-      featured: true
-    },
-    {
-      name: 'Scale',
-      price: '$2000',
-      description: 'Built for funded teams that need deeper control,\ngreater detail, and stronger foundations.',
-      features: [
-        'Everything in Bootstrapped',
-        'Final attorney review',
-        'Personalized onboarding',
-        'Cofounder coaching',
-        'Priority support'
-      ]
-    }
-  ];
-
-  const allLogos = [
-    { src: '/images/yc-logo.png', alt: 'Y Combinator', scale: 1 },
-    { src: '/images/hubble-logo.png', alt: 'Hubble', scale: 1.1 },
-    { src: '/images/a16z-logo.jpg', alt: 'a16z', scale: 1.1 },
-    { src: '/images/berkeley-logo.png', alt: 'Berkeley', scale: 1.43 },
-    { src: '/images/stanford-logo.png', alt: 'Stanford', scale: 1 },
-    { src: '/images/sequoia-logo.png', alt: 'Sequoia', scale: 0.9 },
-    { src: '/images/startupgrind-logo.png', alt: 'Startup Grind', scale: 1 }
-  ];
-
-  const [, setHeroFading] = useState(false);
-  const [, setHeroDelayOrder] = useState(() => {
-    const order = allLogos.map((_, i) => i);
-    for (let i = order.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [order[i], order[j]] = [order[j], order[i]];
-    }
-    return order;
-  });
-
-  const [logos, setLogos] = useState([...allLogos]);
-  const [isFading, setIsFading] = useState(false);
-  const [logoDelayOrder, setLogoDelayOrder] = useState(() => {
-    const order = allLogos.map((_, i) => i);
-    for (let i = order.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [order[i], order[j]] = [order[j], order[i]];
-    }
-    return order;
-  });
-
-  // Hero logo fade cycle
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setHeroFading(true);
-      setTimeout(() => {
-        setHeroDelayOrder(prev => {
-          const order = [...prev];
-          for (let i = order.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [order[i], order[j]] = [order[j], order[i]];
-          }
-          return order;
-        });
-        setTimeout(() => setHeroFading(false), 200);
-      }, 500);
-    }, 5700);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsFading(true);
-
-      setTimeout(() => {
-        setLogos(prev => {
-          const shuffled = [...prev];
-          for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-          }
-          return shuffled;
-        });
-
-        // Reshuffle delay order
-        setLogoDelayOrder(prev => {
-          const order = [...prev];
-          for (let i = order.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [order[i], order[j]] = [order[j], order[i]];
-          }
-          return order;
-        });
-
-        setTimeout(() => {
-          setIsFading(false);
-        }, 200);
-      }, 500);
-    }, 5700);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const faqs = [
-    {
-      q: 'What\'s a cofounder agreement, and why do I need one?',
-      a: 'It\'s basically a prenup for your startup. It spells out equity, roles, and expectations so you don\'t end up in a messy breakup later. Think of it as cheap insurance against expensive fights.'
-    },
-    {
-      q: 'When\'s the right time to create a cofounder agreement?',
-      a: 'As early as possible. Day 1 is ideal, but day 100 is still better than never. The earlier you do it, the easier (and less awkward) it is.'
-    },
-    {
-      q: 'How long does it take to complete with Cherrytree?',
-      a: 'Around 30-60 minutes. That\'s less time than a pitch deck tweak or your daily doomscroll.'
-    },
-    {
-      q: 'Can I update the agreement later if things change?',
-      a: 'Absolutely. Startups evolve, and so can your agreement. You can revisit and revise as roles, equity, or goals shift.'
-    },
-    {
-      q: 'How is Cherrytree different from free templates online?',
-      a: 'Templates are generic and don\'t ask the hard questions. Cherrytree guides you step by step, highlights differences in answers, and gives you a founder-friendly, investor-ready document.'
-    },
-    {
-      q: 'Do both cofounders need to be present at the same time?',
-      a: 'Nope. You can each fill it out separately, then compare and finalize together.'
-    },
-    {
-      q: 'Can we e-sign the agreement once it\'s done?',
-      a: 'Yes. You\'ll get a ready-to-sign document you can execute digitally. No printer required.'
-    }
-  ];
+  const ActivePanel = PANELS[FEATURES[activeFeature].panel];
 
   return (
-    <div className="landing-page min-h-screen bg-white flex flex-col">
-      <Header variant="dark" onProductsHover={setProductsHovered} />
+    <div className="lp">
+      <MarketingGrain />
+      <MarketingNav />
 
-      {/* Hero Section */}
-      <section className="px-4 md:px-6 pt-20 md:pt-32 lg:pt-40 pb-8 md:pb-14" style={{ background: 'linear-gradient(to bottom, #06271D 85%, #ffffff 85%)' }}>
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="hero-content">
-            <h1 className="font-heading text-[2rem] sm:text-[4rem] md:text-[5rem] lg:text-[6rem] font-normal text-white mb-1 md:mb-6 h-[100px] sm:h-auto sm:min-h-[132px] md:min-h-[170px] overflow-hidden pb-2 md:pb-3" style={{
-              filter: productsHovered ? 'blur(1.5px)' : 'none',
-              transition: 'filter 0.3s ease'
-            }}>
-              Great companies start
-              <br />
-              <em className="italic">{typedText || '\u00A0'}</em>
-            </h1>
-            <p className="text-sm md:text-base mb-8 md:mb-16 max-w-2xl mx-auto font-normal px-4" style={{ color: 'rgba(255,255,255,0.5)',
-              filter: productsHovered ? 'blur(1.5px)' : 'none',
-              transition: 'filter 0.3s ease'
-            }}>
-              Answer guided questions with your cofounders and get a complete<br className="hidden sm:block" /> Cofounder Agreement. No sketchy templates, no overpriced lawyers.
-            </p>
-            <div className="flex flex-row items-center justify-center gap-4 mb-8 md:mb-12">
-              <button
-                onClick={() => {
-                  // Navigate directly to app domain to avoid double redirect
-                  const isProduction = window.location.hostname.includes('cherrytree.app');
-                  if (isProduction) {
-                    window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
-                  } else {
-                    navigate('/dashboard', { replace: true });
-                  }
-                }}
-                className="button-shimmer-dark bg-white text-[#06271D] px-6 md:px-10 py-3 md:py-4 rounded-md text-sm md:text-base font-normal hover:bg-gray-100 transition"
-              >
-                Get started
-              </button>
-              <a href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer" className="group text-white hover:text-gray-200 text-sm md:text-base font-normal transition">
-                Book a demo <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
-              </a>
-            </div>
-          </div>
+      {/* ── Hero ── */}
+      <section className="lp-hero">
+        <div className="lp-orb lp-orb-1"/><div className="lp-orb lp-orb-2"/><div className="lp-orb lp-orb-3"/>
+        <h1 className="lp-hero-headline">
+          <span className="lp-hl-line"><span className="lp-hl-inner">Great companies start</span></span>
+          <span className="lp-hl-line lp-d1"><span className="lp-hl-inner"><em>{typedHero}<span className="lp-cursor"/></em></span></span>
+        </h1>
+        <p className="lp-hero-sub">Answer guided questions with your cofounders and get a complete Cofounder Agreement. No sketchy templates, no overpriced lawyers.</p>
+        <div className="lp-hero-actions">
+          <button className="lp-btn-primary" onClick={goToDashboard}>Get started</button>
+          <a className="lp-btn-ghost" href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer">Book a demo →</a>
         </div>
 
-          {/* Tilted Cards */}
-          <div className="mt-2 md:mt-4 mx-auto" style={{ perspective: '1000px', maxWidth: '1280px', padding: '0 12px' }}>
-            <div
-              className="tilty-card"
-              style={{
-                width: '100%',
-                maxWidth: '1140px',
-                margin: '0 auto',
-                aspectRatio: '1140 / 635',
-                background: 'rgba(240, 254, 234, 0.15)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                borderRadius: '8px',
-                border: '1px solid rgba(240, 254, 234, 0.3)',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-                transform: `rotateX(${cardTilt}deg) translateY(-${cardSlideUp}px)`,
-                transformStyle: 'preserve-3d',
-                transition: 'transform 0.3s ease-out',
-                padding: '0',
-                overflow: 'hidden',
-                position: 'relative'
-              }}
-            >
-              {/* Inner card scaled to fit - original 1100x595 dimensions */}
-              <div style={{
-                width: '1100px',
-                height: '595px',
-                transform: 'scale(var(--card-scale))',
-                transformOrigin: 'center center',
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                marginTop: '-297.5px',
-                marginLeft: '-550px'
-              }} ref={el => {
-                if (el) {
-                  const parent = el.parentElement;
-                  const padding = 20;
-                  const updateScale = () => {
-                    const scaleX = (parent.offsetWidth - padding * 2) / 1100;
-                    const scaleY = (parent.offsetHeight - padding * 2) / 595;
-                    el.style.setProperty('--card-scale', Math.min(scaleX, scaleY));
-                  };
-                  updateScale();
-                  const observer = new ResizeObserver(updateScale);
-                  observer.observe(parent);
-                }
-              }}>
-              <div
-                className={section1Visible ? 'fade-in' : ''}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  background: 'linear-gradient(to bottom, #fafbfc, #f5f7fa)',
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 20px 40px rgba(0, 0, 0, 0.08)',
-                  opacity: 0
-                }}
-              >
-                {/* LEFT SIDE - Survey Interface */}
-                <div style={{
-                  flex: '1.4',
-                  display: 'flex',
-                  background: '#F9F6F5'
-                }}>
-                  {/* Sidebar */}
-                  <div style={{
-                    width: '220px',
-                    background: '#F9F6F5',
-                    padding: '28px 16px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px',
-                    borderRight: '1px solid #e1e4e8'
-                  }}>
-                    <div className={section1Visible ? 'visible' : 'invisible'} style={{ padding: '0 12px', marginBottom: '16px', textAlign: 'left' }}>
-                      <span style={{
-                        fontSize: '11px',
-                        fontWeight: 600,
-                        color: '#6b7789',
-                        textTransform: 'uppercase',
-                        letterSpacing: '1px'
-                      }}>
-                        Sections
-                      </span>
-                    </div>
-                    {[
-                      { id: 1, name: 'Formation & Purpose' },
-                      { id: 2, name: 'Cofounder Info' },
-                      { id: 3, name: 'Equity Allocation' },
-                      { id: 4, name: 'Vesting Schedule' },
-                      { id: 5, name: 'Decision-Making' },
-                      { id: 6, name: 'Intellectual Property' },
-                      { id: 7, name: 'Roles & Responsibilities' },
-                      { id: 8, name: 'Compensation' },
-                      { id: 9, name: 'Conflict Resolution' },
-                      { id: 10, name: 'Exit & Termination' }
-                    ].map((section, idx) => (
-                      <div
-                        key={section.id}
-                        className={section1Visible ? 'visible' : 'invisible'}
-                        style={{
-                          padding: '10px 12px',
-                          borderRadius: '8px',
-                          background: idx === 0 ? '#ECE6E6' : 'transparent',
-                          border: idx === 0 ? '1.5px solid #e5e7eb' : 'none',
-                          boxShadow: idx === 0 ? '0 2px 4px rgba(0, 0, 0, 0.08)' : 'none',
-                          fontSize: '12px',
-                          color: idx === 0 ? '#0f1419' : '#6b7789',
-                          fontWeight: idx === 0 ? 600 : 400,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'flex-start',
-                          gap: '10px',
-                          transition: 'all 0.15s ease',
-                          textAlign: 'left'
-                        }}
-                      >
-                        <span style={{
-                          fontSize: '11px',
-                          opacity: 0.5,
-                          fontWeight: 600,
-                          minWidth: '16px',
-                          textAlign: 'left',
-                          flexShrink: 0
-                        }}>{section.id}</span>
-                        <span style={{
-                          textAlign: 'left',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis'
-                        }}>{section.name}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Survey Questions */}
-                  <div style={{
-                    flex: 1,
-                    padding: '40px 48px',
-                    overflow: 'hidden',
-                    background: 'transparent'
-                  }}>
-                    <div className={`${section1Visible ? 'visible' : 'invisible'}`} style={{ display: 'flex', flexDirection: 'column', gap: '32px', alignItems: 'flex-start' }}>
-                      {/* Question 1 - Company Name */}
-                      <div style={{ width: '100%', textAlign: 'left' }}>
-                        <label style={{
-                          display: 'block',
-                          fontSize: '14px',
-                          fontWeight: 500,
-                          color: '#4a5568',
-                          marginBottom: '10px',
-                          letterSpacing: '-0.01em',
-                          textAlign: 'left'
-                        }}>
-                          What's your company's name?
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="text"
-                            readOnly
-                            value={typedCompanyName}
-                            style={{
-                              width: '100%',
-                              padding: '12px 0',
-                              border: 'none',
-                              borderBottom: '2px solid',
-                              borderBottomColor: showCursor || typedCompanyName ? '#000000' : '#d1d5db',
-                              borderRadius: '0',
-                              fontSize: '15px',
-                              color: '#374151',
-                              background: 'transparent',
-                              outline: 'none',
-                              transition: 'all 0.2s ease',
-                              fontFamily: 'Inter, system-ui, sans-serif'
-                            }}
-                          />
-                          {showCursor && (
-                            <span
-                              className="absolute"
-                              style={{
-                                left: `${typedCompanyName.length * 8.8}px`,
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                width: '2px',
-                                height: '20px',
-                                backgroundColor: '#0f1419',
-                                animation: 'blink 1s step-end infinite',
-                                borderRadius: '1px'
-                              }}
-                            />
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Question 2 - Entity Type */}
-                      <div style={{ width: '100%', textAlign: 'left' }}>
-                        <label style={{
-                          display: 'block',
-                          fontSize: '14px',
-                          fontWeight: 500,
-                          color: '#4a5568',
-                          marginBottom: '10px',
-                          letterSpacing: '-0.01em',
-                          textAlign: 'left'
-                        }}>
-                          Legal structure?
-                        </label>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          {['C-Corp', 'S-Corp', 'LLC'].map((type) => (
-                            <label
-                              key={type}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                cursor: 'pointer',
-                                fontFamily: 'Inter, system-ui, sans-serif'
-                              }}
-                            >
-                              <input
-                                type="radio"
-                                name="entityType"
-                                checked={selectedEntity === type}
-                                readOnly
-                                style={{
-                                  marginRight: '12px',
-                                  cursor: 'pointer',
-                                  accentColor: '#000000'
-                                }}
-                              />
-                              <span style={{
-                                fontSize: '15px',
-                                color: '#374151',
-                                fontFamily: 'Inter, system-ui, sans-serif'
-                              }}>{type}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Question 3 - Effective Date */}
-                      <div style={{ width: '100%', textAlign: 'left', position: 'relative' }}>
-                        <label style={{
-                          display: 'block',
-                          fontSize: '14px',
-                          fontWeight: 500,
-                          color: '#4a5568',
-                          marginBottom: '10px',
-                          letterSpacing: '-0.01em',
-                          textAlign: 'left'
-                        }}>
-                          Effective date of agreement?
-                        </label>
-                        <input
-                          type="text"
-                          readOnly
-                          value={selectedDate}
-                          style={{
-                            width: '100%',
-                            padding: '12px 0',
-                            border: 'none',
-                            borderBottom: '2px solid',
-                            borderBottomColor: showCalendar || selectedDate ? '#000000' : '#d1d5db',
-                            borderRadius: '0',
-                            fontSize: '15px',
-                            color: '#374151',
-                            background: 'transparent',
-                            outline: 'none',
-                            transition: 'all 0.2s ease',
-                            fontFamily: 'Inter, system-ui, sans-serif',
-                            cursor: 'pointer'
-                          }}
-                          placeholder="Select date"
-                        />
-                        {showCalendar && (
-                          <div style={{
-                            position: 'absolute',
-                            top: 'calc(100% + 8px)',
-                            left: 0,
-                            background: '#ffffff',
-                            border: '1.5px solid #e1e4e8',
-                            borderRadius: '12px',
-                            padding: '16px',
-                            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
-                            zIndex: 10,
-                            animation: 'fadeIn 0.2s ease-out',
-                            width: '320px'
-                          }}>
-                            {/* Calendar Header */}
-                            <div style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              marginBottom: '16px',
-                              paddingBottom: '12px',
-                              borderBottom: '1px solid #e1e4e8'
-                            }}>
-                              <span style={{
-                                fontSize: '15px',
-                                fontWeight: 600,
-                                color: '#0f1419',
-                                fontFamily: 'Inter, system-ui, sans-serif'
-                              }}>January 2025</span>
-                            </div>
-                            {/* Calendar Grid */}
-                            <div style={{
-                              display: 'grid',
-                              gridTemplateColumns: 'repeat(7, 1fr)',
-                              gap: '4px'
-                            }}>
-                              {/* Day headers */}
-                              {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day, idx) => (
-                                <div key={idx} style={{
-                                  textAlign: 'center',
-                                  fontSize: '11px',
-                                  fontWeight: 600,
-                                  color: '#6b7789',
-                                  padding: '8px 0',
-                                  fontFamily: 'Inter, system-ui, sans-serif'
-                                }}>{day}</div>
-                              ))}
-                              {/* Empty cells for padding */}
-                              {[...Array(3)].map((_, idx) => (
-                                <div key={`empty-${idx}`} />
-                              ))}
-                              {/* Date cells */}
-                              {[...Array(31)].map((_, idx) => {
-                                const date = idx + 1;
-                                const isSelected = date === 8 && selectedDate;
-                                return (
-                                  <div
-                                    key={date}
-                                    style={{
-                                      textAlign: 'center',
-                                      padding: '8px',
-                                      borderRadius: '6px',
-                                      fontSize: '14px',
-                                      fontWeight: isSelected ? 600 : 400,
-                                      color: isSelected ? '#ffffff' : '#0f1419',
-                                      background: isSelected ? '#000000' : 'transparent',
-                                      cursor: 'pointer',
-                                      transition: 'all 0.15s ease',
-                                      fontFamily: 'Inter, system-ui, sans-serif',
-                                      animation: isSelected ? 'scaleIn 0.2s ease-out' : 'none'
-                                    }}
-                                  >
-                                    {date}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Divider */}
-                <div style={{
-                  width: '1px',
-                  background: 'linear-gradient(to bottom, transparent, #e1e4e8 20%, #e1e4e8 80%, transparent)'
-                }} />
-
-                {/* RIGHT SIDE - Generated Agreement */}
-                <div style={{
-                  flex: '0.8',
-                  padding: '32px',
-                  background: '#ffffff',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}>
-                  {/* Document Content */}
-                  <div className={section1Visible ? 'visible' : 'invisible'} style={{
-                    background: '#F9F6F5',
-                    borderRadius: '0px',
-                    padding: '28px',
-                    border: '1px solid #e1e4e8',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.08)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '20px',
-                    flex: 1
-                  }}>
-                    {/* Document Header */}
-                    <div style={{
-                      textAlign: 'center',
-                      paddingBottom: '20px',
-                      borderBottom: '2px solid #e1e4e8',
-                      marginBottom: '8px'
-                    }}>
-                      <h3 style={{
-                        fontSize: '20px',
-                        fontWeight: 700,
-                        color: '#0f1419',
-                        margin: 0,
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                        fontFamily: 'Georgia, serif'
-                      }}>
-                        Cofounder Agreement
-                      </h3>
-                    </div>
-                    {/* 1. Company Name */}
-                    <div style={{ textAlign: 'left' }}>
-                      <div style={{
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        color: '#0f1419',
-                        marginBottom: '10px',
-                        letterSpacing: '-0.01em',
-                        textAlign: 'left'
-                      }}>
-                        Article I: Formation
-                      </div>
-                      <div style={{
-                        fontSize: '13px',
-                        lineHeight: '1.7',
-                        color: '#4a5568',
-                        fontFamily: 'Inter, system-ui, sans-serif',
-                        textAlign: 'left'
-                      }}>
-                        The undersigned cofounders hereby form <span style={{
-                          fontWeight: 600,
-                          color: typedCompanyName ? '#0f1419' : '#9ca3af',
-                          background: '#ECE6E6',
-                          padding: '2px 6px',
-                          borderRadius: '4px'
-                        }}>{typedCompanyName || '[Company Name]'}</span>, a company to be organized for the purpose of developing and operating a technology business.
-                      </div>
-                    </div>
-
-                    {/* 2. Legal Structure */}
-                    <div style={{ textAlign: 'left', marginTop: '20px' }}>
-                      <div style={{
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        color: '#0f1419',
-                        marginBottom: '10px',
-                        letterSpacing: '-0.01em',
-                        textAlign: 'left'
-                      }}>
-                        Article II: Corporate Structure
-                      </div>
-                      <div style={{
-                        fontSize: '13px',
-                        lineHeight: '1.7',
-                        color: '#4a5568',
-                        fontFamily: 'Inter, system-ui, sans-serif',
-                        textAlign: 'left'
-                      }}>
-                        The Company shall be organized as a <span style={{
-                          fontWeight: 600,
-                          color: typedEntity ? '#0f1419' : '#9ca3af',
-                          background: '#ECE6E6',
-                          padding: '2px 6px',
-                          borderRadius: '4px'
-                        }}>{typedEntity || '[Legal Entity]'}</span>, and the cofounders agree to take all necessary steps to effect such organization.
-                      </div>
-                    </div>
-
-                    {/* 3. Effective Date */}
-                    <div style={{ textAlign: 'left', marginTop: '20px' }}>
-                      <div style={{
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        color: '#0f1419',
-                        marginBottom: '10px',
-                        letterSpacing: '-0.01em',
-                        textAlign: 'left'
-                      }}>
-                        Article III: Effective Date
-                      </div>
-                      <div style={{
-                        fontSize: '13px',
-                        lineHeight: '1.7',
-                        color: '#4a5568',
-                        fontFamily: 'Inter, system-ui, sans-serif',
-                        textAlign: 'left'
-                      }}>
-                        This Agreement shall be effective as of <span style={{
-                          fontWeight: 600,
-                          color: typedDate ? '#0f1419' : '#9ca3af',
-                          background: '#ECE6E6',
-                          padding: '2px 6px',
-                          borderRadius: '4px'
-                        }}>{typedDate || '[Effective Date]'}</span>, and shall remain in effect until terminated in accordance with the terms herein.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              </div>
-            </div>
-
+        {/* Product mockup */}
+        <div className="lp-hero-visual lp-rv">
+          <div className="lp-hv-bar">
+            <span className="lp-dot-r"/><span className="lp-dot-y"/><span className="lp-dot-g"/>
+            <div className="lp-hv-url">cherrytree.app / agreement</div>
           </div>
-      </section>
-
-      {/* Process Section - Combined heading + cards */}
-      <section className="scroll-section scroll-section-early process-section px-4 md:px-6 pt-2 md:pt-4 lg:pt-6 pb-16 md:pb-24 lg:pb-30 relative" style={{ backgroundColor: '#ffffff' }}>
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
-        <div className="max-w-7xl mx-auto relative">
-          <div className="mx-auto" style={{ maxWidth: '720px' }}>
-            {/* Heading */}
-            <div className="max-w-6xl mx-auto text-center mb-8 md:mb-10">
-              <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium mb-3 md:mb-4">
-                Built for <span className="underline-animate">early-stage
-                  <svg viewBox="0 0 250 12" preserveAspectRatio="none">
-                    <path d="M 3,10 Q 60,6 125,4 Q 190,3 245,3 Q 250,4 228,6" />
-                  </svg>
-                </span> cofounders<span style={{ marginLeft: '0.05em' }}>.</span>
-              </h2>
-              <p className="text-sm md:text-base max-w-3xl mx-auto font-normal px-4" style={{ color: '#716B6B' }}>
-                Get your equity, expectations, and everything else right from the start.
-              </p>
-            </div>
-
-            {/* Cards - Simple vertical stack */}
-            <div className="space-y-4">
-              {steps.map((step, index) => {
-                const cardStyle = {
-                  background: '#faf6f5',
-                  border: '1px solid rgba(0, 0, 0, 0.1)',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
-                };
-                return (
-                  <div
-                    key={index}
-                    className={`process-card rounded-lg p-6 md:p-12 py-10 md:py-20 ${
-                      revealedCards[index]
-                        ? 'card-bounce-in'
-                        : 'opacity-0 translate-y-8'
-                    }`}
-                    style={{
-                      background: cardStyle.background,
-                      border: cardStyle.border,
-                      boxShadow: cardStyle.boxShadow
-                    }}
-                  >
-                  <div className="flex flex-col-reverse md:flex-row items-center gap-6 md:gap-8">
-                    {/* Animation area */}
-                    <div className="relative rounded-lg flex-shrink-0 w-full md:w-[280px]" style={{ height: '160px' }}>
-                      {index === 0 && (
-                        /* Step 1: Invite animation */
-                        <div className="p-4 h-full flex flex-col justify-center">
-                          <div className="flex gap-2 mb-3">
-                            <div className="step1-input h-8 bg-white border border-gray-200 rounded px-2 flex items-center" style={{ minWidth: '160px', flex: '1 1 160px' }}>
-                              <span className="step1-email text-sm text-gray-400" style={{ minWidth: '140px' }}>cofounder@email.com</span>
-                            </div>
-                            <div className="step1-btn h-8 px-3 text-gray-600 text-xs rounded flex items-center transition-colors whitespace-nowrap" style={{ backgroundColor: '#e9e6e7' }}>Add</div>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="text-sm text-gray-500">you@email.com</div>
-                            <div className="step1-user2 text-sm text-gray-500 opacity-0">cofounder@email.com</div>
-                          </div>
-                        </div>
-                      )}
-                      {index === 1 && (
-                        /* Step 2: Collab animation */
-                        <div className="p-4 h-full relative flex flex-col justify-center">
-                          <div className="step2-cursor-black absolute z-20" style={{ width: '18px', height: '18px' }}>
-                            <svg viewBox="0 0 24 24" fill="#000000" style={{ width: '18px', height: '18px' }}>
-                              <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
-                            </svg>
-                          </div>
-                          <div className="step2-cursor-white absolute z-20" style={{ width: '18px', height: '18px' }}>
-                            <svg viewBox="0 0 24 24" fill="white" stroke="#000000" strokeWidth="1.5" style={{ width: '18px', height: '18px' }}>
-                              <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
-                            </svg>
-                          </div>
-                          <div className="mb-3">
-                            <p className="text-xs text-gray-500 mb-1">Company Name</p>
-                            <div className="bg-white border border-gray-200 rounded px-2 py-1.5 text-sm h-7">
-                              <span className="step2-typing text-gray-700"></span>
-                              <span className="step2-caret"></span>
-                            </div>
-                          </div>
-                          <div className="relative">
-                            <p className="text-xs text-gray-500 mb-1">Industry</p>
-                            <div className="bg-white border border-gray-200 rounded px-2 py-1.5 text-sm h-7 flex items-center justify-between">
-                              <span className="step2-industry text-gray-400"></span>
-                              <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                              </svg>
-                            </div>
-                            <div className="step2-dropdown absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded shadow-lg overflow-hidden">
-                              <div className="step2-option px-2 py-1.5 text-xs text-gray-700">AI / ML</div>
-                              <div className="px-2 py-1.5 text-xs text-gray-700">Fintech</div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      {index === 2 && (
-                        /* Step 3: Review animation - document scanner */
-                        <div className="p-4 h-full flex items-center justify-center relative">
-                          <div className="bg-white rounded border border-gray-200 p-3 w-full h-full relative">
-                            <p className="text-xs text-gray-500 mb-2">Cofounder Agreement</p>
-                            <div className="space-y-1.5">
-                              {/* Paragraph 1 */}
-                              <div className="h-1 bg-gray-200 rounded w-full"></div>
-                              <div className="h-1 bg-gray-200 rounded w-11/12"></div>
-                              <div className="h-1 bg-gray-200 rounded w-3/4"></div>
-
-                              {/* Paragraph 2 */}
-                              <div className="h-1 bg-gray-200 rounded w-full mt-3"></div>
-                              <div className="h-1 bg-gray-200 rounded w-4/5"></div>
-                              <div className="h-1 bg-gray-200 rounded w-full"></div>
-
-                              {/* Paragraph 3 */}
-                              <div className="h-1 bg-gray-200 rounded w-5/6 mt-3"></div>
-                              <div className="h-1 bg-gray-200 rounded w-full"></div>
-                            </div>
-                            {/* Scanner line */}
-                            <div className="step3-scanner absolute left-2 right-2 h-0.5" style={{ backgroundColor: '#ffffff', boxShadow: '0 0 6px 1px rgba(0, 0, 0, 0.5)' }}></div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    {/* Text content */}
-                    <div className="flex-1 text-center md:text-left">
-                      <div className="font-medium text-base md:text-lg mb-2" style={{ color: '#666' }}>
-                        Step {step.step}
-                      </div>
-                      <h3 className="text-xl md:text-[22px] font-medium mb-2" style={{ color: '#333333' }}>{step.title}</h3>
-                      <p className="text-sm md:text-[14px]" style={{ color: '#666', lineHeight: '1.4' }}>{step.desc}</p>
-                    </div>
-                  </div>
-                </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Logo Grid */}
-          <div className="mt-16 max-w-7xl mx-auto">
-            <div className="flex flex-wrap justify-between items-center gap-y-6">
-              {logos.map((logo, i) => (
-                <div
-                  key={`built-${logo.alt}-${i}`}
-                  className="flex items-center justify-center w-20 md:w-24 transition-opacity duration-500"
-                  style={{
-                    opacity: isFading ? 0 : 1,
-                    transitionDelay: isFading ? '0ms' : `${logoDelayOrder[i] * 120}ms`
-                  }}
-                >
-                  <img
-                    src={logo.src}
-                    alt={logo.alt}
-                    className="max-h-7 md:max-h-8 w-auto"
-                    style={{ transform: `scale(${logo.scale * 1.1})` }}
-                  />
+          <div className="lp-hv-body">
+            <div className="lp-hv-sidebar">
+              <div className="lp-hv-prog-lbl">40% Complete</div>
+              <div className="lp-hv-prog-bar"><div className="lp-hv-prog-fill" style={{ width: '40%' }}/></div>
+              {['Formation', 'Cofounder Info', 'Equity', 'Vesting', 'Decision-Making', 'IP & Ownership'].map((s, i) => (
+                <div key={i} className={`lp-hv-nav-item${i === 3 ? ' active' : ''}`}>
+                  <span className={`lp-hv-dot${i < 3 ? ' done' : i === 3 ? ' act' : ''}`}/>{s}
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" ref={featuresRef} className="scroll-section py-16 md:py-24 px-4 md:px-6" style={{ backgroundColor: '#ffffff' }}>
-        <div className="max-w-6xl mx-auto">
-          <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-center mb-14 md:mb-20 px-2">Turn your cofoundership<br />into a company, <em className="italic" style={{ display: 'inline-block', minWidth: '6ch', textAlign: 'left', letterSpacing: '-0.02em' }}>{typedToday || '\u00A0'}</em></h2>
-
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '140px', maxWidth: '80rem', margin: '0 auto 48px auto', padding: '0 24px' }}>
-            <div ref={featureRow1Ref} data-feature-row="1" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '48px', alignSelf: 'flex-start', width: '100%' }}>
-            <div style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', opacity: featureRow1Visible ? 1 : 0, transform: featureRow1Visible ? 'translateX(0)' : 'translateX(-80px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
-              {/* Mini animation preview */}
-              <div ref={cardDocRef} style={{ backgroundColor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', width: '100%', aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
-                <div
-                  style={{ width: '65%', height: '85%', backgroundColor: '#ffffff', borderRadius: '0px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '24px' }}
-                >
-                  <span style={{ fontSize: '14px', fontWeight: 500, color: '#7c8590', marginBottom: '20px' }}>Cofounder Agreement</span>
-                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 8px' }}>
-                    {[
-                      { width: '100%', delay: 0.3 }, { width: '100%', delay: 0.45 }, { width: '100%', delay: 0.6 }, { width: '50%', delay: 0.75 },
-                      { width: '100%', delay: 0.9, mt: true }, { width: '100%', delay: 1.05 }, { width: '100%', delay: 1.2 }, { width: '65%', delay: 1.35 },
-                      { width: '100%', delay: 1.5, mt: true }, { width: '100%', delay: 1.65 }, { width: '100%', delay: 1.8 }, { width: '40%', delay: 1.95 }
-                    ].map((line, i) => (
-                      <div
-                        key={i}
-                        className={`text-line ${cardDocVisible ? 'text-line-visible' : ''}`}
-                        style={{ width: line.width, '--line-delay': `${line.delay}s`, marginTop: line.mt ? '12px' : '0' }}
-                      />
-                    ))}
-                  </div>
-                  <div style={{ width: '100%', marginTop: 'auto', padding: '0 8px' }}>
-                    <svg style={{ width: '140px', height: '50px', '--sig-delay': '2.2s' }} viewBox="0 0 140 50" fill="none">
-                      <path
-                        className={`signature-path ${cardDocVisible ? 'signature-draw' : ''}`}
-                        d="M 5 35 C 10 20, 15 15, 20 25 C 25 35, 30 40, 35 30 C 40 20, 42 15, 48 20 C 54 25, 56 35, 62 28 C 68 21, 70 18, 78 22 C 86 26, 88 32, 95 25 C 102 18, 105 15, 112 20 C 119 25, 122 30, 130 22 L 135 18"
-                        stroke="#7c8590"
-                        strokeWidth="2"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    <div style={{ width: '140px', height: '1px', backgroundColor: '#e5e7eb', marginTop: '2px' }} />
-                  </div>
-                </div>
-              </div>
-            </div>
-              <div style={{ maxWidth: '580px', marginLeft: 'auto' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 400, marginBottom: '12px', color: '#000000' }}>Contract Creator</h3>
-                <p style={{ fontSize: '1.1rem', color: '#444', lineHeight: 1.6 }}>Generate a ready-to-use, fully customized document in minutes<br />and start building your partnership with confidence.</p>
-              </div>
-            </div>
-            <div ref={featureRow2Ref} data-feature-row="2" style={{ display: 'flex', flexDirection: 'row-reverse', alignItems: 'center', gap: '48px', alignSelf: 'flex-end', width: '100%' }}>
-              <div ref={cardEquityRef} style={{ background: 'linear-gradient(45deg, #1a6b52 0%, #042018 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', color: '#ffffff', overflow: 'hidden', position: 'relative', opacity: featureRow2Visible ? 1 : 0, transform: featureRow2Visible ? 'translateX(0)' : 'translateX(80px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
-                  <div style={{ transform: 'scale(1.155)', transformOrigin: 'center top', marginTop: '12px' }}>
-                    <div className={`equity-table ${cardEquityVisible ? 'equity-table-visible' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '100px 50px 50px 50px', gap: '8px', padding: '8px 12px', backgroundColor: '#f7f7f7', borderRadius: '6px 6px 0 0' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#666' }}>Category</span>
-                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SJ</span>
-                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>SW</span>
-                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#666', textAlign: 'center' }}>RW</span>
-                      </div>
-                      {[
-                        { category: 'Cash Invested', scores: [6, 6, 4], delays: [0.2, 0.35, 0.1] },
-                        { category: 'Time Commit', scores: [10, 8, 4], delays: [0.4, 0.25, 0.5] },
-                        { category: 'Leadership', scores: [8, 10, 2], delays: [0.55, 0.7, 0.45] },
-                        { category: 'Engineering', scores: [4, 8, 4], delays: [0.65, 0.8, 0.6] },
-                        { category: 'Sales', scores: [8, 4, 2], delays: [0.75, 0.9, 0.85] },
-                        { category: 'Domain', scores: [6, 8, 6], delays: [1.0, 0.95, 1.1] },
-                        { category: 'Network', scores: [8, 6, 4], delays: [1.15, 1.25, 1.05] },
-                        { category: 'Idea Origin', scores: [10, 10, 4], delays: [1.3, 1.2, 1.35] }
-                      ].map((row, i, arr) => (
-                        <div key={i} style={{ display: 'grid', gridTemplateColumns: '100px 50px 50px 50px', gap: '8px', padding: '8px 12px', backgroundColor: i % 2 === 0 ? '#fff' : '#fafafa', borderLeft: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderRadius: i === arr.length - 1 ? '0 0 6px 6px' : '0' }}>
-                          <span style={{ fontSize: '11px', color: '#666' }}>{row.category}</span>
-                          {row.scores.map((score, j) => (
-                            <span key={j} className={`equity-number ${cardEquityNumbersVisible ? 'equity-fade-in' : ''}`} style={{ fontSize: '11px', fontWeight: 500, color: '#999', textAlign: 'center', '--fade-delay': `${row.delays[j] + 0.3}s` }}>{score}</span>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  {/* Light green frosted card */}
-                  <div style={{ position: 'absolute', bottom: '6%', left: '15%', right: '15%', height: '14%', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '10px', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', padding: '0 12px', whiteSpace: 'nowrap' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Steve Jobs: 45%</span>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Steve Woz: 45%</span>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Ron Wayne: 10%</span>
-                  </div>
-              </div>
-              <div style={{ maxWidth: '580px', marginRight: 'auto' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 400, marginBottom: '12px', color: '#000000' }}>Equity Calculator</h3>
-                <p style={{ fontSize: '1.1rem', color: '#444', lineHeight: 1.6 }}>Use our proprietary equity calculator to determine ownership.<br />Instant, precise splits so everyone knows their stake.</p>
-              </div>
-            </div>
-            <div ref={featureRow3Ref} data-feature-row="3" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '48px', alignSelf: 'flex-start', width: '100%' }}>
-              <div ref={cardExpertRef} style={{ background: 'linear-gradient(135deg, #042018 0%, #1a6b52 100%)', borderRadius: '14px', padding: '24px', border: 'none', width: '33rem', maxWidth: '46%', flexShrink: 0, aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', overflow: 'hidden', position: 'relative', opacity: featureRow3Visible ? 1 : 0, transform: featureRow3Visible ? 'translateX(0)' : 'translateX(-80px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'stretch', padding: '40px 24px 24px 24px', gap: '20px', width: '100%', height: '100%', position: 'relative' }}>
-                  {/* Contact icons */}
-                  <div
-                    className={`contact-icons ${cardExpertVisible ? 'contact-icons-visible' : ''}`}
-                    style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}
-                  >
-                    <div className={`contact-icon ${cardExpertVisible ? 'contact-icon-visible' : ''}`} style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', '--icon-delay': '0s' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg>
-                    </div>
-                    <div className={`contact-icon ${cardExpertVisible ? 'contact-icon-visible' : ''}`} style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', '--icon-delay': '0.15s' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    </div>
-                    <div className={`contact-icon ${cardExpertVisible ? 'contact-icon-visible' : ''}`} style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(144, 238, 144, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(144, 238, 144, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', '--icon-delay': '0.3s' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    </div>
-                  </div>
-                  {/* Question bubble */}
-                  <div className={`speech-box-right ${cardExpertVisible ? 'speech-box-right-visible' : ''}`} style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '16px', alignSelf: 'flex-end', width: '80%' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 500, color: '#7c8590', marginBottom: '8px', display: 'block' }}>Your Question</span>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {[{ width: '100%', delay: 0.3 }, { width: '100%', delay: 0.45 }, { width: '60%', delay: 0.6 }].map((line, i) => (
-                        <div key={i} className={`text-line ${cardExpertLinesVisible ? 'text-line-visible' : ''}`} style={{ width: line.width, '--line-delay': `${line.delay}s` }} />
-                      ))}
-                    </div>
-                  </div>
-                  {/* Expert response bubble */}
-                  <div className={`speech-box ${cardExpertVisible ? 'speech-box-visible' : ''}`} style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '16px', alignSelf: 'flex-start', width: '80%' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 500, color: '#7c8590', marginBottom: '8px', display: 'block' }}>Expert Answer</span>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {[{ width: '100%', delay: 1.2 }, { width: '100%', delay: 1.35 }, { width: '100%', delay: 1.5 }, { width: '45%', delay: 1.65 }].map((line, i) => (
-                        <div key={i} className={`text-line ${cardExpertLinesVisible ? 'text-line-visible' : ''}`} style={{ width: line.width, '--line-delay': `${line.delay}s` }} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div style={{ maxWidth: '580px', marginLeft: 'auto' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 400, marginBottom: '12px', color: '#000000' }}>Expert Guidance</h3>
-                <p style={{ fontSize: '1.1rem', color: '#444', lineHeight: 1.6 }}>We are a team of cofounder coaches, founders, and attorneys<br />ready to help. You're in good hands every step of the way.</p>
-              </div>
-            </div>
-            <div ref={featureRow4Ref} data-feature-row="4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-              <div style={{ borderRadius: '14px', border: 'none', width: '100%', overflow: 'hidden', position: 'relative', opacity: featureRow4Visible ? 1 : 0, transform: featureRow4Visible ? 'translateY(0)' : 'translateY(40px)', transition: 'opacity 0.7s ease, transform 0.7s ease' }}>
-                <video src="/images/thiscofoundervideo.mp4" autoPlay muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: '14px', filter: 'saturate(1.5) contrast(1.15)' }} />
-              </div>
-            </div>
-          </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="scroll-section pt-24 md:pt-36 pb-32 md:pb-48 px-4 md:px-6 relative" style={{ backgroundColor: '#06271D' }}>
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#06271D] to-transparent pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#06271D] to-transparent pointer-events-none"></div>
-        <div className="max-w-6xl mx-auto relative">
-          <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-center mb-3 md:mb-4 text-white">Founder-friendly pricing<span style={{ marginLeft: '0.05em' }}>.</span></h2>
-          <p className="text-center text-sm md:text-base mb-12 md:mb-16 font-normal px-4" style={{ color: 'rgba(255,255,255,0.65)' }}>
-            Choose the plan that's right for your team.{' '}
-            <a href="/pricing" className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)' }}>
-              Compare plans.
-            </a>
-          </p>
-          <div className="max-w-6xl mx-auto" style={{ border: '1px solid rgba(255, 255, 255, 0.2)' }}>
-            {/* Top row: names + descriptions */}
-            <div className="grid grid-cols-1 sm:grid-cols-2">
-              {pricingPlans.map((plan, i) => (
-                <div
-                  key={i}
-                  className="text-left p-6 md:p-8 pb-4 md:pb-6"
-                  style={{
-                    borderRight: i === 0 ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
-                  }}
-                >
-                  <h3 className="mb-2 text-white" style={{ fontSize: '1.5rem', fontWeight: 400 }}>{plan.name}</h3>
-                  <p className="text-sm md:text-base whitespace-pre-line" style={{ color: 'rgba(255,255,255,0.5)' }}>{plan.description}</p>
-                </div>
-              ))}
-            </div>
-            {/* Divider */}
-            <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
-            {/* Bottom row: price+button on left, features on right */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 items-stretch">
-              {pricingPlans.map((plan, i) => (
-                <div
-                  key={i}
-                  ref={plan.featured ? pricingCardRef : null}
-                  className="flex flex-row text-left p-6 md:p-8 overflow-hidden"
-                  style={{
-                    borderRight: i === 0 ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
-                  }}
-                >
-                  <div className="flex flex-col justify-between" style={{ minWidth: '180px' }}>
-                    <div className="text-4xl md:text-5xl font-normal text-white">{plan.price}</div>
-                    <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>One-time payment</p>
-                    <button
-                      onClick={() => {
-                        if (plan.name === 'Enterprise') {
-                          window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 });
-                        } else {
-                          const isProduction = window.location.hostname.includes('cherrytree.app');
-                          if (isProduction) {
-                            window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
-                          } else {
-                            navigate('/dashboard', { replace: true });
-                          }
-                        }
-                      }}
-                      className={`px-6 md:px-10 py-3 md:py-4 rounded-md text-sm md:text-base font-normal transition whitespace-nowrap ${
-                        plan.featured
-                          ? 'button-shimmer-dark bg-white text-[#06271D] hover:bg-gray-100'
-                          : 'bg-white/10 text-white hover:bg-white/20'
-                      }`}
-                    >
-                      {plan.name === 'Enterprise' ? 'Contact sales' : 'Get started'}
-                    </button>
-                  </div>
-                  <div className="-my-6 md:-my-8 ml-8 mr-6" style={{ width: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
-                  <ul className="space-y-3 text-left">
-                    {plan.features.map((feature, j) => (
-                      <li key={j} className="flex items-center gap-2 text-sm md:text-base">
-                        <span className="flex items-center justify-center flex-shrink-0" style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>✓</span>
-                        <span style={{ color: 'rgba(255,255,255,0.8)' }}>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-            {/* Divider */}
-            <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)' }}></div>
-            {/* Third row */}
-            <div className="p-6 md:p-8 text-center" style={{ color: 'rgba(255,255,255,0.65)' }}>
-              <p className="text-sm md:text-base content-visible">Running a fund or accelerator and want to deploy in bulk? <button onClick={() => { window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }); }} className="underline hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.7)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}>Contact sales</button></p>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section id="faq" ref={faqSectionRef} className="scroll-section py-24 md:py-36 px-4 md:px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="mx-auto" style={{ maxWidth: '1120px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #06271D', height: '580px' }}>
-            <div className="flex flex-col md:flex-row items-stretch" style={{ height: '100%' }}>
-              <div className="text-center md:text-left flex items-center justify-center" style={{ backgroundColor: '#06271D', flex: faqSectionVisible ? '0 0 420px' : '1 1 100%', transition: 'flex 0.8s cubic-bezier(0.4, 0, 0.2, 1)', overflow: 'hidden', minWidth: '420px' }}>
-                <div className="w-full h-full flex items-center justify-center p-6 md:p-12">
-                  <h2 className="section-header font-heading text-[2.75rem] sm:text-[3rem] md:text-[3.63rem] font-medium text-white whitespace-nowrap">Frequently asked<span style={{ marginLeft: '0.05em' }}>.</span></h2>
-                </div>
-              </div>
-              <div style={{ backgroundColor: '#fff', flex: faqSectionVisible ? '1 1 700px' : '0 0 0px', opacity: faqSectionVisible ? 1 : 0, transition: 'flex 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease 0.3s', overflow: 'hidden' }}>
-                <div ref={faqContentRef} className="w-full h-full p-6 md:p-8 overflow-y-auto">
-                {faqs.map((faq, i) => (
-                  <div key={i} ref={el => faqItemRefs.current[i] = el} className={`accordion-item ${i < faqs.length - 1 ? 'border-b border-gray-300' : ''}`}>
-                    <button
-                      onClick={() => {
-                        const next = openFaq === i ? null : i;
-                        setOpenFaq(next);
-                        if (next !== null) {
-                          setTimeout(() => {
-                            const item = faqItemRefs.current[next];
-                            const container = faqContentRef.current;
-                            if (item && container) {
-                              const itemTop = item.offsetTop - container.offsetTop;
-                              container.scrollTo({ top: itemTop, behavior: 'smooth' });
-                            }
-                          }, 50);
-                        }
-                      }}
-                      className={`accordion-title w-full py-4 md:py-5 px-3 md:px-4 flex justify-between items-center transition text-left`}
-                      style={{ backgroundColor: openFaq === i ? '#faf6f5' : 'transparent' }}
-                      onMouseEnter={e => { if (openFaq !== i) e.currentTarget.style.backgroundColor = '#faf6f5'; }}
-                      onMouseLeave={e => { if (openFaq !== i) e.currentTarget.style.backgroundColor = 'transparent'; }}
-                    >
-                      <span className="font-normal text-black text-sm md:text-base pr-4">{faq.q}</span>
-                      <span className={`accordion-icon text-gray-400 font-light transition-all duration-300 flex-shrink-0 text-xl ${openFaq === i ? 'rotate-90 scale-110 text-gray-700' : ''}`}>
-                        +
-                      </span>
-                    </button>
-                    <div
-                      className={`accordion-content overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-[1000px] py-6 md:py-8 px-3 md:px-4' : 'max-h-0 py-0 px-3 md:px-4'}`}
-                    >
-                      <p className="text-gray-600 text-sm md:text-[0.95rem]">{faq.a}</p>
-                    </div>
+            <div className="lp-hv-main">
+              <div className="lp-hv-sec-lbl">Section 4 of 10 · Vesting Schedule</div>
+              <div className="lp-hv-q-title">What vesting schedule will you use?</div>
+              <div className="lp-hv-q-hint">Vesting protects everyone — it ensures each founder earns their equity over time and gives the team a path forward if someone leaves early.</div>
+              <div className="lp-hv-card">
+                <div className="lp-hv-card-lbl">Select a schedule</div>
+                {['4 years with 1-year cliff', '3 years with 1-year cliff', 'Immediate'].map((opt, i) => (
+                  <div key={i} className="lp-hv-row" style={{ marginBottom: i === 2 ? 0 : 6 }}>
+                    <span style={{ width: 13, height: 13, borderRadius: '50%', border: `1.5px solid ${i === 0 ? 'var(--lp-green)' : 'rgba(0,0,0,0.15)'}`, background: i === 0 ? 'var(--lp-green)' : 'transparent', flexShrink: 0, display: 'inline-block', boxSizing: 'border-box' }}/>
+                    <div className="lp-hv-name" style={{ background: i === 0 ? 'var(--lp-green-bg)' : '#fff', borderColor: i === 0 ? 'rgba(75,114,99,0.2)' : 'rgba(0,0,0,0.1)', color: i === 0 ? 'var(--lp-green)' : 'var(--lp-ink)', fontWeight: i === 0 ? 400 : 300 }}>{opt}</div>
                   </div>
                 ))}
-                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <Footer bgColor="#06271D" navigate={navigate} />
-
-      <style>{`
-        /* Disable fadeInDown/fadeInUp animations on landing page only */
-        .scroll-section .text-3xl,
-        .scroll-section .leading-relaxed,
-        .scroll-section .space-y-6 > div,
-        .scroll-section .space-y-8 > div,
-        .scroll-section .space-y-10 > div,
-        .scroll-section .space-y-12 > div,
-        .scroll-section .animate-fade-up,
-        .scroll-section .animate-fade-down,
-        .scroll-section [class*="animate-fade"] {
-          animation: none !important;
-          opacity: 1 !important;
-          transform: none !important;
-        }
-
-        .logo-flip {
-          animation: logoChange 0.6s ease-in-out;
-        }
-
-        @keyframes logoChange {
-          0% {
-            transform: translateY(0);
-            opacity: 1;
-          }
-          50% {
-            transform: translateY(-8px);
-            opacity: 0;
-          }
-          51% {
-            transform: translateY(8px);
-            opacity: 0;
-          }
-          100% {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-
-        .logo-scroller {
-          position: relative;
-          overflow: hidden;
-          width: 100%;
-          background: #06271D;
-          -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-          mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-          padding: 20px 0;
-        }
-
-        .logo-track {
-          display: flex;
-          width: fit-content;
-          animation: scroll 30s linear infinite;
-          will-change: transform;
-        }
-
-        .logo-box {
-          flex: 0 0 auto;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width: 200px;
-        }
-
-        .logo-box img {
-          max-height: 36px;
-          max-width: 120px;
-          object-fit: contain;
-          filter: brightness(0) invert(1);
-        }
-
-        @keyframes scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(calc(-200px * 7)); }
-        }
-
-        @media (max-width: 768px) {
-          .logo-box {
-            width: 160px;
-          }
-
-          .logo-box img {
-            max-height: 28px;
-            max-width: 100px;
-          }
-
-          .logo-track {
-            animation: scrollMobile 20s linear infinite;
-          }
-
-          @keyframes scrollMobile {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(calc(-160px * 7)); }
-          }
-
-          /* Reduce tilt effect on mobile */
-          .tilty-card {
-            transform: rotateX(0deg) !important;
-          }
-        }
-
-        /* Features Section Styles */
-        .features-container {
-          max-width: 1300px;
-          margin: 0 auto;
-          display: flex;
-          gap: 12px;
-          flex-wrap: wrap;
-        }
-
-        .features-left, .feature-visual {
-          flex: 1 1 0;
-          min-width: 300px;
-          display: flex;
-          flex-direction: column;
-          position: relative;
-        }
-
-        .features-left {
-          gap: 12px;
-        }
-
-        .feature-card {
-          background: transparent;
-          border: 1px solid transparent;
-          border-radius: 8px;
-          padding: 32px;
-          cursor: pointer;
-          transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-          min-height: 160px;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-          text-align: left;
-        }
-
-        .feature-card:hover {
-          transform: translateX(4px);
-          box-shadow: none;
-          border-color: transparent;
-        }
-
-        .feature-card.active {
-          border-color: transparent;
-          background: transparent;
-          box-shadow: none;
-        }
-
-        .feature-title {
-          font-family: 'Inter', sans-serif;
-          font-size: 24px;
-          font-weight: 500;
-          color: #888888;
-          margin: 0 0 16px 0;
-          text-align: left;
-          transition: color 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .feature-card.active .feature-title {
-          color: #333333;
-        }
-
-        .feature-description {
-          font-family: 'Inter', sans-serif;
-          font-size: 15px;
-          color: #666;
-          line-height: 1.3;
-          margin: 0 0 8px 0;
-          opacity: 0;
-          display: none;
-          text-align: left;
-          transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .feature-description.active {
-          display: block;
-          opacity: 1;
-        }
-
-        .feature-visual {
-          background: #06271D;
-          border-radius: 8px;
-          box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
-          overflow: hidden;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          padding: 16px 32px;
-          border: 12px solid #06271D;
-          height: calc(160px*3 + 24px);
-          display: flex;
-        }
-
-        .visual-content {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          opacity: 0;
-          pointer-events: none;
-          transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4,0,0.2,1);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        .card-hidden {
-          opacity: 0;
-          transform: scale(0.8);
-        }
-
-        .card-visible {
-          opacity: 1;
-          transform: scale(1);
-          transition: opacity 0.25s ease-out var(--delay), transform 0.25s ease-out var(--delay);
-        }
-
-        .slide-out-left {
-          transform: translateX(-400px) !important;
-          transition: transform 0.8s ease-in-out !important;
-        }
-
-        .slide-out-right {
-          transform: translateX(500px) !important;
-          transition: transform 0.8s ease-in-out !important;
-        }
-
-        .slide-out-up {
-          transform: translateY(-500px) !important;
-          transition: transform 0.8s ease-in-out !important;
-        }
-
-        .fade-in {
-          opacity: 1 !important;
-          transition: opacity 0.8s ease-in-out !important;
-        }
-
-        .fade-out {
-          opacity: 0 !important;
-          transition: opacity 0.8s ease-in-out !important;
-        }
-
-        .text-line {
-          height: 6px;
-          background-color: #e5e7eb;
-          border-radius: 3px;
-          transform-origin: left;
-          transform: scaleX(0);
-        }
-
-        .text-line-visible {
-          animation: drawLine 0.4s ease-out forwards;
-          animation-delay: var(--line-delay);
-        }
-
-        /* Document lines for the transformation animation */
-        .doc-line {
-          height: 4px;
-          background-color: #e5e7eb;
-          border-radius: 2px;
-          transform-origin: left;
-          transform: scaleX(0);
-        }
-
-        .doc-line-visible {
-          animation: drawDocLine 0.3s ease-out forwards;
-          animation-delay: var(--line-delay);
-        }
-
-        @keyframes drawLine {
-          from {
-            transform: scaleX(0);
-          }
-          to {
-            transform: scaleX(1);
-          }
-        }
-
-        @keyframes drawDocLine {
-          from {
-            transform: scaleX(0);
-            opacity: 0;
-          }
-          to {
-            transform: scaleX(1);
-            opacity: 1;
-          }
-        }
-
-        @keyframes blink {
-          0%, 50% { opacity: 1; }
-          51%, 100% { opacity: 0; }
-        }
-
-        @keyframes scaleIn {
-          from {
-            transform: scale(0);
-            opacity: 0;
-          }
-          to {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(8px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.6;
-          }
-        }
-
-        .signature-path {
-          stroke-dasharray: 400;
-          stroke-dashoffset: 400;
-        }
-
-        .signature-draw {
-          animation: drawSignature 1.2s ease-out forwards;
-          animation-delay: var(--sig-delay);
-        }
-
-        @keyframes drawSignature {
-          to {
-            stroke-dashoffset: 0;
-          }
-        }
-
-        .arrow-hidden {
-          stroke-dasharray: 300;
-          stroke-dashoffset: 300;
-        }
-
-        .arrow-draw {
-          stroke-dasharray: 300;
-          stroke-dashoffset: 0;
-          transition: stroke-dashoffset 0.5s ease-out var(--arrow-delay);
-        }
-
-        /* Speech box fade animations */
-        .speech-box {
-          opacity: 0;
-          transition: opacity 0.5s ease-out 1.1s;
-        }
-
-        .speech-box-visible {
-          opacity: 1;
-        }
-
-        .speech-box-right {
-          opacity: 0;
-          transition: opacity 0.5s ease-out;
-        }
-
-        /* Typing text animation */
-        .typing-text {
-          opacity: 0;
-          animation: typeIn 0.5s ease-out forwards;
-          animation-delay: var(--typing-delay);
-        }
-
-        /* Typing input animation */
-        .typing-input {
-          opacity: 0;
-          animation: typeIn 0.5s ease-out forwards;
-          animation-delay: var(--typing-delay);
-        }
-
-        @keyframes typeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        .speech-box-right-visible {
-          opacity: 1;
-        }
-
-        .contact-icon {
-          opacity: 0;
-          transform: scale(0) translateY(-10px);
-          transition: opacity 0.5s ease-out;
-        }
-
-        .contact-icon-visible {
-          animation: iconBounce 0.5s ease-out forwards;
-          animation-delay: var(--icon-delay);
-        }
-
-        .contact-icon-visible.fade-out-icon {
-          opacity: 0;
-          transform: scale(1) translateY(0);
-          animation: none;
-        }
-
-        @keyframes iconBounce {
-          0% {
-            opacity: 0;
-            transform: scale(0) translateY(-10px);
-          }
-          60% {
-            opacity: 1;
-            transform: scale(1.15) translateY(0);
-          }
-          80% {
-            transform: scale(0.95) translateY(0);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-        }
-
-        #expert-guidance.fade-out .speech-box,
-        #expert-guidance.fade-out .speech-box-right {
-          opacity: 0;
-          transition: opacity 0.5s ease-out;
-        }
-
-        #expert-guidance.fade-out .contact-icon {
-          animation: iconFadeOut 0.5s ease-out forwards;
-        }
-
-        @keyframes iconFadeOut {
-          0% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-          100% {
-            opacity: 0;
-            transform: scale(1) translateY(0);
-          }
-        }
-
-        /* Equity Calculator Pie Chart Animations */
-        .pie-border {
-          opacity: 0;
-        }
-
-        .pie-border-animate {
-          animation: equityFadeIn 0.3s ease-out forwards;
-          animation-delay: 1.7s;
-        }
-
-        .pie-segment {
-          stroke-dasharray: 0 219.91;
-          transition: stroke-dasharray 0.8s ease-out;
-        }
-
-        .pie-segment-animate {
-          animation: drawSegment 0.8s ease-out forwards;
-          animation-delay: var(--segment-delay);
-        }
-
-        @keyframes drawSegment {
-          from {
-            stroke-dasharray: 0 219.91;
-          }
-          to {
-            stroke-dasharray: var(--segment-length) 219.91;
-          }
-        }
-
-        .equity-center-text,
-        .equity-legend-item,
-        .equity-number {
-          opacity: 0;
-        }
-
-        .equity-table {
-          opacity: 0;
-        }
-
-        .equity-table-visible {
-          animation: equityTableFadeIn 1.2s ease-in-out forwards;
-        }
-
-        @keyframes equityTableFadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        .equity-fade-in {
-          animation: equityFadeIn 0.15s ease-out forwards;
-          animation-delay: var(--fade-delay);
-        }
-
-        @keyframes equityFadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        /* Hide mobile animations on desktop */
-        .mobile-visual {
-          display: none !important;
-        }
-
-        @media (max-width: 968px) {
-          .features-container {
-            flex-direction: column;
-            gap: 12px;
-          }
-          .features-left {
-            order: 1;
-          }
-          .feature-visual {
-            display: none;
-          }
-          .feature-card {
-            padding: 20px;
-            min-height: 120px;
-            position: relative;
-            transition: all 0.3s ease;
-          }
-          .feature-card.active {
-            min-height: 380px;
-            padding-bottom: 20px;
-          }
-          .feature-card .mobile-visual {
-            display: none;
-          }
-          .feature-card.active .mobile-visual {
-            display: flex !important;
-            width: 100%;
-            height: 220px;
-            margin-top: 16px;
-            align-items: center;
-            justify-content: center;
-            background: #fefefe;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-            overflow: hidden;
-            position: relative;
-          }
-          .feature-title {
-            font-size: 20px;
-            margin-bottom: 12px;
-          }
-          .feature-description {
-            font-size: 14px;
-          }
-          .feature-description.active {
-            margin-bottom: 0;
-          }
-          /* Scale down animations for mobile */
-          .mobile-visual .contract-animation-container,
-          .mobile-visual .visual-content {
-            transform: translate(-50%, -50%) scale(0.4);
-            padding: 0 !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
-            opacity: 1 !important;
-            left: 50%;
-            top: 50%;
-          }
-          .mobile-visual #equity-calculator {
-            transform: translate(-50%, -50%) scale(0.4) !important;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-          }
-          .mobile-visual #expert-guidance {
-            transform: translate(-50%, -50%) scale(0.4) !important;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-          }
-        }
-
-        /* Typing Headline Styles */
-        .headline-container {
-          width: 100%;
-          max-width: 90ch;
-          padding: 0 1rem;
-          margin: 0 auto;
-          display: flex;
-          justify-content: center;
-          align-items: flex-start;
-          text-align: center;
-        }
-
-        .typing-title {
-          font-size: clamp(1.6rem, 5vw, 2.8rem);
-          font-weight: 400;
-          line-height: 1.2;
-          margin: 0;
-        }
-
-        .first-line {
-          display: block;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .second-line {
-          display: block;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .typing-container {
-          display: inline-block;
-          width: 3ch;
-          vertical-align: baseline;
-        }
-
-        .typing-and {
-          display: inline-block;
-          font-style: italic;
-          font-family: inherit;
-          font-weight: inherit;
-          visibility: visible;
-        }
-
-      `}</style>
+      {/* ── Features ── */}
+      <section className="lp-features" id="features">
+        <div className="lp-feat-header">
+          <div className="lp-overline lp-rv">How it works</div>
+          <h2 className="lp-rv lp-d1">Built for <br/><em>early-stage</em> cofounders.</h2>
+          <p className="lp-rv lp-d2">Get your equity, expectations, and everything else right from the start.</p>
+        </div>
+        <div className="lp-feat-body">
+          <div className="lp-feat-visual">
+            <ActivePanel active={true} key={activeFeature} />
+          </div>
+          <div className="lp-feat-list">
+            {FEATURES.map((f, i) => (
+              <div
+                key={i}
+                ref={el => featItemRefs.current[i] = el}
+                className={`lp-feat-item${activeFeature === i ? ' active' : ''}`}
+              >
+                <div className="lp-feat-item-line"/>
+                <div className="lp-feat-item-num">{f.num}</div>
+                <div className="lp-feat-item-title">{f.title}</div>
+                <p className="lp-feat-item-desc">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Stats ── */}
+      <section className="lp-stats" ref={statsRef}>
+        <div className="lp-stats-inner">
+          <div className="lp-stats-left">
+            <div className="lp-overline lp-rv">By the numbers</div>
+            <h2 className="lp-rv lp-d1">The proof is in the<br/><em>partnership.</em></h2>
+            <p className="lp-rv lp-d2">Founding teams across the country have used Cherrytree to get aligned before they build. No lawyers required. No legal background needed.</p>
+          </div>
+          <div className="lp-stats-right">
+            {STATS.map((s, i) => (
+              <div key={i} className={`lp-stat-row lp-rv lp-d${i}`}>
+                <div className="lp-stat-num">{s.prefix || ''}{counts[i].toLocaleString()}{s.suffix}</div>
+                <div className="lp-stat-label">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Testimonials ── */}
+      <section className="lp-testi">
+        <div className="lp-testi-header">
+          <div className="lp-overline lp-rv">Testimonials</div>
+          <h2 className="lp-rv lp-d1">What founders are saying.</h2>
+        </div>
+        <div className="lp-testi-grid">
+          {[
+            { init: 'M', name: 'Maya R.', role: 'Co-founder, Stealth startup', quote: '"We thought we were aligned on equity until Cherrytree showed us we weren\'t. It surfaced a real disagreement before it became a real problem. Worth every minute."' },
+            { init: 'J', name: 'James T.', role: 'Founder, YC S24', quote: '"Our accelerator recommended this and I\'m glad they did. We got through IP and vesting in one sitting and actually understood what we were agreeing to."' },
+            { init: 'S', name: 'Sarah K.', role: 'Co-founder, FinTech startup', quote: '"The equity calculator alone is worth it. We scored each other independently and compared — it was the most honest conversation we\'d had about the company."' },
+          ].map((t, i) => (
+            <div key={i} className={`lp-testi-card lp-rv lp-d${i}`}>
+              <p className="lp-testi-quote">{t.quote}</p>
+              <div className="lp-testi-author">
+                <div><div className="lp-testi-name">{t.name}</div><div className="lp-testi-role">{t.role}</div></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Carousel ── */}
+      <section className="lp-carousel" id="who">
+        <div className="lp-carousel-header lp-rv">
+          <div>
+            <div className="lp-overline" style={{ marginBottom: 12 }}>Who it's for</div>
+            <h2 className="lp-carousel-title">Built for every kind of <em>founding team.</em></h2>
+          </div>
+          <div className="lp-carousel-nav">
+            <button className="lp-carousel-btn" onClick={() => setCarouselIdx(i => (i - 1 + CAROUSEL_SLIDES.length) % CAROUSEL_SLIDES.length)}>←</button>
+            <button className="lp-carousel-btn" onClick={() => setCarouselIdx(i => (i + 1) % CAROUSEL_SLIDES.length)}>→</button>
+          </div>
+        </div>
+        <div className="lp-carousel-track-wrap">
+          <div className="lp-carousel-track" style={{ transform: `translateX(calc(-${carouselIdx} * (min(520px, 90vw) + 16px)))` }}>
+            {CAROUSEL_SLIDES.map((s, i) => (
+              <div key={i} className={`lp-cs-slide${i === carouselIdx ? ' active' : ''}`} style={{ backgroundImage: `url('${s.img}')` }}>
+                <div className="lp-cs-overlay"/>
+                <div className="lp-cs-label">
+                  <div className="lp-cs-tag">{s.tag}</div>
+                  <div className="lp-cs-title">{s.title}</div>
+                  <div className="lp-cs-desc">{s.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="lp-carousel-dots">
+          {CAROUSEL_SLIDES.map((_, i) => (
+            <button key={i} className={`lp-cs-dot${i === carouselIdx ? ' active' : ''}`} onClick={() => setCarouselIdx(i)}/>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Pricing ── */}
+      <section className="lp-pricing" id="pricing">
+        <div className="lp-pricing-header">
+          <div className="lp-overline lp-rv">Pricing</div>
+          <h2 className="lp-rv lp-d1">Founder-friendly pricing.</h2>
+          <p className="lp-rv lp-d2">Choose the plan that's right for your team.</p>
+        </div>
+        <div className="lp-pricing-grid">
+          {PRICING.map((p, i) => (
+            <div key={i} className={`lp-pricing-card lp-rv lp-d${i}${p.featured ? ' featured' : ''}`}>
+              {p.badge && <div className="lp-pricing-badge">{p.badge}</div>}
+              <div className="lp-pricing-tier">{p.tier}</div>
+              <div className="lp-pricing-price">{p.price}</div>
+              <div className="lp-pricing-period">{p.period}</div>
+              <div className="lp-pricing-divider"/>
+              <p className="lp-pricing-desc">{p.desc}</p>
+              <ul className="lp-pricing-features">
+                {p.features.map((f, j) => (
+                  <li key={j} className="lp-pricing-feat">
+                    <span className="lp-pf-check"><svg viewBox="0 0 8 8" fill="none"><path d="M1.5 4l2 2 3-3" stroke={p.featured ? '#6a9e8a' : '#4B7263'} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg></span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <button
+                className={`lp-pricing-cta ${p.ctaStyle}`}
+                onClick={() => p.enterprise ? window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }) : goToDashboard()}
+              >
+                {p.cta}
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section className="lp-faq" id="faq">
+        <div className="lp-faq-inner">
+          <div className="lp-faq-header">
+            <div className="lp-overline lp-rv">FAQ</div>
+            <h2 className="lp-rv lp-d1">Questions founders ask.</h2>
+          </div>
+          <div className="lp-faq-list">
+            {FAQS.map((f, i) => (
+              <div key={i} className={`lp-faq-item lp-rv lp-d${Math.min(i, 4)}`}>
+                <button className="lp-faq-btn" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                  <span className="lp-faq-q">{f.q}</span>
+                  <span className={`lp-faq-icon${openFaq === i ? ' open' : ''}`}>+</span>
+                </button>
+                <div className={`lp-faq-body${openFaq === i ? ' open' : ''}`}>
+                  <div className="lp-faq-body-inner"><p className="lp-faq-a">{f.a}</p></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Protect CTA ── */}
+      <section className="lp-protect-cta">
+        <h2 className="lp-rv">Protect your piece of the pie<br/><em>and</em> your peace of mind.</h2>
+        <div className="lp-protect-cta-actions lp-rv lp-d1">
+          <button className="lp-btn-primary" onClick={goToDashboard}>Get started</button>
+          <a className="lp-btn-ghost" href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer">Book a demo →</a>
+        </div>
+      </section>
+
+      <MarketingFooter />
     </div>
   );
 }

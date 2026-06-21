@@ -1,197 +1,96 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { usePageMeta } from '../hooks/usePageMeta';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import MarketingNav from '../components/MarketingNav';
+import MarketingFooter from '../components/MarketingFooter';
+import MarketingGrain from '../components/MarketingGrain';
 
 function AboutPage() {
-  const navigate = useNavigate();
-  // SEO meta tags
   usePageMeta({
-    title: 'About Cherrytree | Fair Cofounder Agreements for Startups',
+    title: 'About Cherrytree — Fair Cofounder Agreements for Startups',
     description: 'Learn how Cherrytree helps early-stage cofounders create fair agreements that protect both equity stakes and relationships. Built by founders, for founders.',
-    breadcrumbs: [
-      { name: 'Home', url: '/' },
-      { name: 'About' }
-    ]
+    breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'About' }],
   });
+
   const [typedCompany, setTypedCompany] = useState('');
-  const [showPeriod, setShowPeriod] = useState(false);
   const companyText = 'with the right company';
 
-  // Scroll-triggered section animations
-  useScrollAnimation();
-
-  // Trigger hero content fade-in on mount
+  // Typing animation for "with the right company", loops like the hero typewriter
   useEffect(() => {
-    const heroContent = document.querySelector('.hero-content');
-    if (heroContent) {
-      setTimeout(() => {
-        heroContent.classList.add('section-visible');
-      }, 100);
-    }
-  }, []);
+    let cancelled = false;
+    const timeouts = [];
+    const schedule = (fn, ms) => { const t = setTimeout(fn, ms); timeouts.push(t); return t; };
 
-  // Typing animation for "with the right company"
-  useEffect(() => {
     const typeLoop = () => {
       let index = 0;
-      setShowPeriod(false);
+      setTypedCompany('');
       const type = () => {
+        if (cancelled) return;
         if (index < companyText.length) {
           index++;
           setTypedCompany(companyText.slice(0, index));
-          setTimeout(type, 100);
+          schedule(type, 60);
         } else {
-          setShowPeriod(true);
-          setTimeout(() => {
+          schedule(() => {
             setTypedCompany('');
-            setShowPeriod(false);
-            setTimeout(typeLoop, 200);
-          }, 1000);
+            schedule(typeLoop, 400);
+          }, 1400);
         }
       };
       type();
     };
 
-    const initialTimeout = setTimeout(typeLoop, 50);
-    return () => clearTimeout(initialTimeout);
+    schedule(typeLoop, 600);
+    return () => { cancelled = true; timeouts.forEach(clearTimeout); };
   }, []);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <Header />
+    <div className="lp" style={{ minHeight: '100vh' }}>
+      <MarketingGrain />
+      <MarketingNav />
 
       {/* Hero */}
-      <section className="pt-24 md:pt-32 pb-12 md:pb-20 px-4 md:px-6">
-        <div className="hero-content">
-          <div className="headline-container-about">
-            <h1 className="typing-title-about font-heading">
-              <span className="first-line-about">Big ideas grow</span>
-              <span className="second-line-about">
-                <span className="typing-container-about">
-                  <em className="typing-company">{typedCompany || '\u00A0'}</em>
-                </span>
-                <span className="typing-period">{showPeriod ? '.' : '\u00A0'}</span>
-              </span>
-            </h1>
+      <section className="lp-page-hero">
+        <div className="lp-overline">About</div>
+        <h1 className="lp-hero-headline" style={{ fontSize: 'clamp(36px,6vw,68px)', margin: '0 auto 28px', textAlign: 'center' }}>
+          <span className="lp-hl-line"><span className="lp-hl-inner">Big ideas grow</span></span>
+          <span className="lp-hl-line"><span className="lp-hl-inner"><em>{typedCompany}<span className="lp-cursor"/></em></span></span>
+        </h1>
+      </section>
+
+      {/* Backstory */}
+      <section className="lp-page-section">
+        <div className="lp-about-row">
+          <div className="lp-about-row-label">
+            <div className="lp-overline">Note from our CEO</div>
+            <h2 className="lp-about-row-title">The Backstory</h2>
+          </div>
+          <div className="lp-about-row-body">
+            <p>
+              Hey, I'm Tim. I started Cherrytree after learning firsthand how challenging yet rewarding it is to build something with cofounders. Since then, I've taught over a thousand entrepreneurship students, written a book on cofounder dynamics, and teamed up with seasoned coaches, attorneys, and AI experts. We've now worked with hundreds of teams just like yours across a dozen industries.
+            </p>
+            <p>Our mission is simple: <em>to create cofounder magic.</em></p>
           </div>
         </div>
       </section>
 
-      {/* The Backstory Section */}
-      <section className="scroll-section py-12 md:py-24 px-4 md:px-6">
-        <div className="flex justify-center">
-          <div className="flex flex-col md:flex-row gap-4 md:gap-24 items-start w-full" style={{ maxWidth: '1200px' }}>
-            <div className="flex-shrink-0 md:min-w-[280px]">
-              <p className="text-sm tracking-wider" style={{ color: '#999999', fontFamily: 'Inter, sans-serif', margin: '0 0 16px 0', padding: 0 }}>
-                NOTE FROM OUR CEO
-              </p>
-              <h2 className="font-heading text-[2rem] md:text-[46px] font-normal leading-tight" style={{ margin: 0, padding: 0 }}>
-                The Backstory
-              </h2>
-            </div>
-            <div className="flex-1 max-w-[620px]">
-              <p className="text-sm md:text-[16px] leading-relaxed mb-6" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-                Hey, I'm Tim. I started Cherrytree after learning firsthand how challenging yet rewarding it is to build something with cofounders. Since then, I've taught over a thousand entrepreneurship students, written a book on cofounder dynamics, and teamed up with seasoned coaches, attorneys, and AI experts. We've now worked with hundreds of teams just like yours across a dozen industries.
-              </p>
-              <p className="text-sm md:text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-                Our mission is simple: <em>to create cofounder magic.</em>
-              </p>
-            </div>
+      {/* Work with us */}
+      <section className="lp-page-section" style={{ paddingTop: 0 }}>
+        <div className="lp-about-row">
+          <div className="lp-about-row-label">
+            <div className="lp-overline">We're hiring</div>
+            <h2 className="lp-about-row-title">Work With Us</h2>
+          </div>
+          <div className="lp-about-row-body">
+            <h3 className="lp-about-role">Student Internship (part-time)</h3>
+            <p>
+              We're looking for an intern who's genuinely excited about startups and building things from the ground up. You'll work closely with our CEO &amp; Founder, getting hands-on experience across the business from research and growth strategies to operations, project coordination, and fundraising. This is a remote role, but bonus points if you're in SF or Berkeley.
+            </p>
+            <p><em>Apply here.</em></p>
           </div>
         </div>
       </section>
 
-      {/* Work With Us Section */}
-      <section className="scroll-section pt-12 md:pt-24 pb-24 md:pb-40 px-4 md:px-6">
-        <div className="flex justify-center">
-          <div className="flex flex-col md:flex-row gap-4 md:gap-24 items-start w-full" style={{ maxWidth: '1200px' }}>
-            <div className="flex-shrink-0 md:min-w-[280px]">
-              <p className="text-sm tracking-wider" style={{ color: '#999999', fontFamily: 'Inter, sans-serif', margin: '0 0 16px 0', padding: 0 }}>
-                WE'RE HIRING
-              </p>
-              <h2 className="font-heading text-[2rem] md:text-[46px] font-normal leading-tight" style={{ margin: 0, padding: 0 }}>
-                Work With Us
-              </h2>
-            </div>
-            <div className="flex-1 max-w-[620px]">
-              <h3 className="text-[13px] md:text-[15px] tracking-wide mb-4" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 500 }}>
-                STUDENT INTERNSHIP (part-time)
-              </h3>
-              <p className="text-sm md:text-[16px] leading-relaxed mb-6" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-                We're looking for an intern who's genuinely excited about startups and building things from the ground up. You'll work closely with our CEO & Founder, getting hands-on experience across the business from research and growth strategies to operations, project coordination, and fundraising. This is a remote role, but bonus points if you're in SF or Berkeley.
-              </p>
-              <p className="text-sm md:text-[16px] leading-relaxed" style={{ color: '#716B6B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-                <em>Apply here.</em>
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <Footer bgColor="#06271D" navigate={navigate} />
-
-      <style jsx>{`
-        .headline-container-about {
-          margin: 0 auto;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 0;
-        }
-
-        .typing-title-about {
-          font-size: 3.5rem;
-          font-weight: 400;
-          line-height: 1.25;
-          margin: 0;
-          width: fit-content;
-          padding-bottom: 0.05em;
-          text-align: center;
-        }
-
-        .first-line-about, .second-line-about {
-          display: block;
-          white-space: nowrap;
-          text-align: center;
-          margin: 0;
-          overflow: visible;
-        }
-
-        .second-line-about {
-          margin-top: -0.1em;
-        }
-
-        .typing-container-about {
-          display: inline-block;
-          width: auto;
-          vertical-align: baseline;
-          min-width: 0;
-        }
-
-        .typing-company {
-          display: inline-block;
-          font-style: italic;
-          font-family: inherit;
-          font-weight: inherit;
-          visibility: visible;
-        }
-
-        .typing-period {
-          display: inline-block;
-          font-style: inherit;
-          font-weight: inherit;
-        }
-
-        @media (max-width: 767px) {
-          .typing-title-about {
-            font-size: 1.75rem;
-          }
-        }
-      `}</style>
+      <MarketingFooter />
     </div>
   );
 }

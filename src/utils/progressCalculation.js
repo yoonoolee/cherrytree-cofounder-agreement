@@ -1,4 +1,5 @@
 import { FIELDS, COLLABORATOR_FIELDS } from '../config/surveySchema';
+import { SECTION_IDS, SECTION_ORDER } from '../config/sectionConfig';
 
 /**
  * Standalone progress calculation utility
@@ -193,4 +194,99 @@ export const calculateProjectProgress = (project) => {
   totalRequired++;
 
   return totalRequired > 0 ? Math.round((completed / totalRequired) * 100) : 0;
+};
+
+/**
+ * Count how many of the 10 sections are fully completed.
+ * Mirrors isSectionCompleted from useValidation as a standalone utility.
+ */
+export const countCompletedSections = (project) => {
+  const formData = project?.surveyData || {};
+  const collaboratorIds = Object.entries(project?.collaborators || {})
+    .filter(([_, data]) => data[COLLABORATOR_FIELDS.IS_ACTIVE] !== false)
+    .map(([userId]) => userId);
+
+  const isSectionDone = (sectionId) => {
+    switch (sectionId) {
+      case SECTION_IDS.FORMATION:
+        return !!(formData[FIELDS.COMPANY_NAME] &&
+          isOtherFieldValid(formData[FIELDS.ENTITY_TYPE], formData[FIELDS.ENTITY_TYPE_OTHER]) &&
+          formData[FIELDS.REGISTERED_STATE] &&
+          formData[FIELDS.MAILING_STREET] && formData[FIELDS.MAILING_CITY] &&
+          formData[FIELDS.MAILING_STATE] && formData[FIELDS.MAILING_ZIP] &&
+          formData[FIELDS.COMPANY_DESCRIPTION] &&
+          isOtherArrayFieldValid(formData[FIELDS.INDUSTRIES], formData[FIELDS.INDUSTRY_OTHER]));
+
+      case SECTION_IDS.COFOUNDERS:
+        if (!formData[FIELDS.COFOUNDER_COUNT]) return false;
+        if ((formData[FIELDS.COFOUNDERS] || []).length > collaboratorIds.length) return false;
+        if (formData[FIELDS.COFOUNDERS]?.length > 0) {
+          return formData[FIELDS.COFOUNDERS].every(cf =>
+            cf[FIELDS.COFOUNDER_FULL_NAME] && cf[FIELDS.COFOUNDER_TITLE] &&
+            cf[FIELDS.COFOUNDER_EMAIL] && cf[FIELDS.COFOUNDER_ROLES]?.length > 0
+          );
+        }
+        return true;
+
+      case SECTION_IDS.EQUITY_ALLOCATION: {
+        const entries = formData[FIELDS.EQUITY_ENTRIES] || [];
+        if (!entries.length) return false;
+        if (!entries.every(e => e[FIELDS.EQUITY_ENTRY_NAME] && e[FIELDS.EQUITY_ENTRY_PERCENTAGE] !== '')) return false;
+        const total = entries.reduce((s, e) => s + (parseFloat(e[FIELDS.EQUITY_ENTRY_PERCENTAGE]) || 0), 0);
+        if (Math.abs(total - 100) > 0.01) return false;
+        return collaboratorIds.length > 0 && collaboratorIds.every(id => formData[FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION]?.[id]);
+      }
+
+      case SECTION_IDS.VESTING:
+        return !!(formData[FIELDS.VESTING_START_DATE] &&
+          isOtherFieldValid(formData[FIELDS.VESTING_SCHEDULE], formData[FIELDS.VESTING_SCHEDULE_OTHER]) &&
+          formData[FIELDS.CLIFF_PERCENTAGE] && formData[FIELDS.ACCELERATION_TRIGGER] &&
+          formData[FIELDS.SHARES_SELL_NOTICE_DAYS] && formData[FIELDS.SHARES_BUYBACK_DAYS] &&
+          collaboratorIds.every(id => formData[FIELDS.ACKNOWLEDGE_FORFEITURE]?.[id]) &&
+          formData[FIELDS.VESTED_SHARES_DISPOSAL]);
+
+      case SECTION_IDS.DECISION_MAKING: {
+        const shotgunOk = formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === 'Yes'
+          ? collaboratorIds.length > 0 && collaboratorIds.every(id => formData[FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE]?.[id])
+          : true;
+        return !!(isOtherArrayFieldValid(formData[FIELDS.MAJOR_DECISIONS], formData[FIELDS.MAJOR_DECISIONS_OTHER]) &&
+          formData[FIELDS.EQUITY_VOTING_POWER] && formData[FIELDS.TIE_RESOLUTION] &&
+          collaboratorIds.every(id => formData[FIELDS.ACKNOWLEDGE_TIE_RESOLUTION]?.[id]) &&
+          formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] && shotgunOk);
+      }
+
+      case SECTION_IDS.IP:
+        return !!(formData[FIELDS.HAS_PRE_EXISTING_IP] &&
+          collaboratorIds.length > 0 && collaboratorIds.every(id => formData[FIELDS.ACKNOWLEDGE_IP_OWNERSHIP]?.[id]));
+
+      case SECTION_IDS.COMPENSATION:
+        return !!(formData[FIELDS.TAKING_COMPENSATION] && formData[FIELDS.SPENDING_LIMIT]);
+
+      case SECTION_IDS.PERFORMANCE:
+        return !!(formData[FIELDS.PERFORMANCE_CONSEQUENCES]?.length > 0 &&
+          formData[FIELDS.REMEDY_PERIOD_DAYS] &&
+          isOtherArrayFieldValid(formData[FIELDS.TERMINATION_WITH_CAUSE], formData[FIELDS.TERMINATION_WITH_CAUSE_OTHER]) &&
+          formData[FIELDS.VOLUNTARY_NOTICE_DAYS]);
+
+      case SECTION_IDS.NON_COMPETITION:
+        return !!(collaboratorIds.length > 0 && collaboratorIds.every(id => formData[FIELDS.ACKNOWLEDGE_CONFIDENTIALITY]?.[id]) &&
+          isOtherFieldValid(formData[FIELDS.NON_COMPETE_DURATION], formData[FIELDS.NON_COMPETE_DURATION_OTHER]) &&
+          isOtherFieldValid(formData[FIELDS.NON_SOLICIT_DURATION], formData[FIELDS.NON_SOLICIT_DURATION_OTHER]));
+
+      case SECTION_IDS.GENERAL_PROVISIONS:
+        return !!(isOtherFieldValid(formData[FIELDS.DISPUTE_RESOLUTION], formData[FIELDS.DISPUTE_RESOLUTION_OTHER]) &&
+          formData[FIELDS.GOVERNING_LAW] &&
+          isOtherFieldValid(formData[FIELDS.AMENDMENT_PROCESS], formData[FIELDS.AMENDMENT_PROCESS_OTHER]) &&
+          formData[FIELDS.REVIEW_FREQUENCY_MONTHS] &&
+          collaboratorIds.every(id => formData[FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW]?.[id]) &&
+          collaboratorIds.every(id => formData[FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST]?.[id]) &&
+          collaboratorIds.every(id => formData[FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT]?.[id]) &&
+          collaboratorIds.every(id => formData[FIELDS.ACKNOWLEDGE_SEVERABILITY]?.[id]));
+
+      default:
+        return false;
+    }
+  };
+
+  return SECTION_ORDER.filter(isSectionDone).length;
 };

@@ -2,11 +2,32 @@ import React, { useState, useEffect, useRef } from 'react';
 import { US_STATES } from '../config/surveySchema';
 import CustomSelect from './CustomSelect';
 import QuestionRenderer from './QuestionRenderer';
+import QuestionCard from './QuestionCard';
 import { QUESTION_CONFIG } from '../config/questionConfig';
 import { FIELDS } from '../config/surveySchema';
 
 // Constants
 const ADDRESS_SEARCH_MIN_LENGTH = 3; // Minimum characters before triggering address autocomplete
+
+// Returns a short display string for a field's current value
+function getPreview(fieldName, formData) {
+  const val = formData[fieldName];
+  if (!val) return '';
+  if (Array.isArray(val)) {
+    if (val.length === 0) return '';
+    return val.length <= 2 ? val.join(', ') : `${val[0]} +${val.length - 1} more`;
+  }
+  return String(val);
+}
+
+const FIELD_ORDER = [
+  FIELDS.COMPANY_NAME,
+  FIELDS.ENTITY_TYPE,
+  FIELDS.REGISTERED_STATE,
+  'mailing_address', // custom card key
+  FIELDS.COMPANY_DESCRIPTION,
+  FIELDS.INDUSTRIES,
+];
 
 function SectionFormation({ formData, handleChange, isReadOnly, showValidation }) {
   const [suggestions, setSuggestions] = useState([]);
@@ -15,6 +36,18 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const autocompleteSuggestion = useRef(null);
   const isInitialMount = useRef(true);
+
+  // Start on first unanswered field
+  const firstUnanswered = FIELD_ORDER.find(f => {
+    if (f === 'mailing_address') return !formData[FIELDS.MAILING_STREET];
+    return !formData[f];
+  });
+  const [expandedField, setExpandedField] = useState(firstUnanswered || FIELD_ORDER[0]);
+
+  const advanceTo = (currentKey) => {
+    const idx = FIELD_ORDER.indexOf(currentKey);
+    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1]);
+  };
 
   useEffect(() => {
     // Only sync formData to inputValue on initial mount
@@ -169,61 +202,102 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
   };
 
 
+  const addressPreview = formData[FIELDS.MAILING_STREET]
+    ? [formData[FIELDS.MAILING_STREET], formData[FIELDS.MAILING_CITY]].filter(Boolean).join(', ')
+    : '';
+  const addressAnswered = !!(formData[FIELDS.MAILING_STREET] && formData[FIELDS.MAILING_CITY] && formData[FIELDS.MAILING_STATE] && formData[FIELDS.MAILING_ZIP]);
+
   return (
     <div>
-      <h2 className="text-3xl font-medium text-gray-800 mb-6">Formation & Purpose</h2>
-
-      <p className="mb-16 leading-relaxed" style={{ color: '#6B7280' }}>
+      <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '42px', fontWeight: 400, letterSpacing: '-0.5px', marginBottom: '14px', lineHeight: 1.1, color: '#1a1a1a' }}>
+        Formation &amp; Purpose
+      </h2>
+      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', maxWidth: '820px', lineHeight: 1.65, marginBottom: '32px' }}>
         You've been talking about this idea for weeks, maybe months. Now you're sitting with your cofounder, naming the company, buying the domain, imagining what it could become. Coffee in hand, takeout on the table. Creating a cofounder agreement is what makes it real. Let's get started.
       </p>
 
+      <div style={{ overflow: 'visible' }}>
 
-      <div className="space-y-12" style={{ overflow: 'visible' }}>
         {/* Company Name */}
-        <QuestionRenderer
-          fieldName={FIELDS.COMPANY_NAME}
-          config={QUESTION_CONFIG[FIELDS.COMPANY_NAME]}
-          formData={formData}
-          handleChange={handleChange}
-          isReadOnly={isReadOnly}
-          showValidation={showValidation}
-        />
-
-        {/* Entity Type */}
-        <QuestionRenderer
-          fieldName={FIELDS.ENTITY_TYPE}
-          config={QUESTION_CONFIG[FIELDS.ENTITY_TYPE]}
-          formData={formData}
-          handleChange={handleChange}
-          isReadOnly={isReadOnly}
-          showValidation={showValidation}
-        />
-
-        {/* Registered State */}
-        <div style={{ overflow: 'visible', position: 'relative', zIndex: 100, marginBottom: '3rem' }}>
+        <QuestionCard
+          question={QUESTION_CONFIG[FIELDS.COMPANY_NAME].question}
+          answerPreview={getPreview(FIELDS.COMPANY_NAME, formData)}
+          hint={QUESTION_CONFIG[FIELDS.COMPANY_NAME].tooltip}
+          isExpanded={expandedField === FIELDS.COMPANY_NAME}
+          isAnswered={!!formData[FIELDS.COMPANY_NAME]}
+          onExpand={() => setExpandedField(FIELDS.COMPANY_NAME)}
+          onAdvance={() => advanceTo(FIELDS.COMPANY_NAME)}
+        >
           <QuestionRenderer
-            fieldName={FIELDS.REGISTERED_STATE}
-            config={QUESTION_CONFIG[FIELDS.REGISTERED_STATE]}
+            fieldName={FIELDS.COMPANY_NAME}
+            config={QUESTION_CONFIG[FIELDS.COMPANY_NAME]}
             formData={formData}
             handleChange={handleChange}
             isReadOnly={isReadOnly}
             showValidation={showValidation}
+            hideLabel
           />
+        </QuestionCard>
+
+        {/* Entity Type */}
+        <QuestionCard
+          question={QUESTION_CONFIG[FIELDS.ENTITY_TYPE].question}
+          answerPreview={getPreview(FIELDS.ENTITY_TYPE, formData)}
+          hint={QUESTION_CONFIG[FIELDS.ENTITY_TYPE].tooltip}
+          isExpanded={expandedField === FIELDS.ENTITY_TYPE}
+          isAnswered={!!formData[FIELDS.ENTITY_TYPE]}
+          onExpand={() => setExpandedField(FIELDS.ENTITY_TYPE)}
+          onAdvance={() => advanceTo(FIELDS.ENTITY_TYPE)}
+        >
+          <QuestionRenderer
+            fieldName={FIELDS.ENTITY_TYPE}
+            config={QUESTION_CONFIG[FIELDS.ENTITY_TYPE]}
+            formData={formData}
+            handleChange={handleChange}
+            isReadOnly={isReadOnly}
+            showValidation={showValidation}
+            hideLabel
+          />
+        </QuestionCard>
+
+        {/* Registered State */}
+        <div style={{ overflow: 'visible', position: 'relative', zIndex: 100 }}>
+          <QuestionCard
+            question={QUESTION_CONFIG[FIELDS.REGISTERED_STATE].question}
+            answerPreview={getPreview(FIELDS.REGISTERED_STATE, formData)}
+            hint={QUESTION_CONFIG[FIELDS.REGISTERED_STATE].tooltip}
+            isExpanded={expandedField === FIELDS.REGISTERED_STATE}
+            isAnswered={!!formData[FIELDS.REGISTERED_STATE]}
+            onExpand={() => setExpandedField(FIELDS.REGISTERED_STATE)}
+            onAdvance={() => advanceTo(FIELDS.REGISTERED_STATE)}
+          >
+            <QuestionRenderer
+              fieldName={FIELDS.REGISTERED_STATE}
+              config={QUESTION_CONFIG[FIELDS.REGISTERED_STATE]}
+              formData={formData}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              showValidation={showValidation}
+              hideLabel
+            />
+          </QuestionCard>
         </div>
 
-        {/* Mailing Address - Custom (Google Places autocomplete) */}
-        <div>
-          <label className="block text-base font-medium text-gray-900 mb-3">
-            What's your company mailing address?
-            {showValidation && (!formData[FIELDS.MAILING_STREET] || !formData[FIELDS.MAILING_CITY] || !formData[FIELDS.MAILING_STATE] || !formData[FIELDS.MAILING_ZIP]) && <span className="text-red-700 ml-0.5">*</span>}
-          </label>
-
-          <div className="space-y-3">
-            {/* Street Address */}
+        {/* Mailing Address */}
+        <QuestionCard
+          question="What's your company mailing address?"
+          answerPreview={addressPreview}
+          isExpanded={expandedField === 'mailing_address'}
+          isAnswered={addressAnswered}
+          onExpand={() => setExpandedField('mailing_address')}
+          onAdvance={() => advanceTo('mailing_address')}
+        >
+          {showValidation && (!formData[FIELDS.MAILING_STREET] || !formData[FIELDS.MAILING_CITY] || !formData[FIELDS.MAILING_STATE] || !formData[FIELDS.MAILING_ZIP]) && (
+            <span className="text-red-700 text-xs">* Required</span>
+          )}
+          <div className="space-y-3" style={{ marginTop: '14px' }}>
             <div className="relative">
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                Street Address
-              </label>
+              <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.02em', display: 'block', marginBottom: '4px' }}>Street Address</label>
               <input
                 type="text"
                 value={inputValue}
@@ -231,10 +305,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                   if (!isReadOnly) {
                     const newValue = e.target.value;
                     handleInputChange(newValue);
-                    // If user clears the input, also clear the formData
-                    if (!newValue) {
-                      handleChange(FIELDS.MAILING_STREET, '');
-                    }
+                    if (!newValue) handleChange(FIELDS.MAILING_STREET, '');
                   }
                 }}
                 onKeyDown={handleAddressKeyDown}
@@ -242,138 +313,108 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                 autoComplete="chrome-off"
                 onFocus={() => !isReadOnly && inputValue.length >= ADDRESS_SEARCH_MIN_LENGTH && setShowSuggestions(true)}
                 onBlur={handleStreetBlur}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
                 placeholder="Start typing address..."
               />
-
-              {/* Autocomplete Dropdown */}
               {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                   {suggestions.map((suggestion, index) => {
                     const placePrediction = suggestion.placePrediction;
                     return (
                       <div
                         key={index}
-                        className={`px-4 py-3 cursor-pointer border-b border-gray-100 last:border-b-0 ${
-                          index === highlightedIndex ? 'bg-gray-100' : 'hover:bg-gray-50'
-                        }`}
+                        className={`px-4 py-3 cursor-pointer border-b border-gray-100 last:border-b-0 ${index === highlightedIndex ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
                         onMouseDown={() => handleSelectAddress(placePrediction.placeId)}
                         onMouseEnter={() => setHighlightedIndex(index)}
                       >
-                        <div className="text-sm text-gray-900">
-                          {placePrediction.structuredFormat?.mainText?.text || placePrediction.text?.text}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {placePrediction.structuredFormat?.secondaryText?.text}
-                        </div>
+                        <div className="text-sm text-gray-900">{placePrediction.structuredFormat?.mainText?.text || placePrediction.text?.text}</div>
+                        <div className="text-xs text-gray-500">{placePrediction.structuredFormat?.secondaryText?.text}</div>
                       </div>
                     );
                   })}
                 </div>
               )}
             </div>
-
-            {/* Address Line 2 */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                Address Line 2 (Optional)
+              <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.02em', display: 'block', marginBottom: '4px' }}>
+                Address Line 2 <span style={{ fontWeight: 300, color: '#bbb', textTransform: 'none' }}>(Optional)</span>
               </label>
-              <input
-                type="text"
-                value={formData[FIELDS.MAILING_STREET2] || ''}
-                onChange={(e) => handleChange(FIELDS.MAILING_STREET2, e.target.value)}
-                disabled={isReadOnly}
-                autoComplete="chrome-off"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-                placeholder="Apt, Suite, Floor, etc."
-              />
+              <input type="text" value={formData[FIELDS.MAILING_STREET2] || ''} onChange={(e) => handleChange(FIELDS.MAILING_STREET2, e.target.value)} disabled={isReadOnly} autoComplete="chrome-off" placeholder="Apt, Suite, Floor, etc." />
             </div>
-
-            {/* City, State, ZIP */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2 sm:col-span-1">
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  City
-                </label>
-                <input
-                  type="text"
-                  value={formData[FIELDS.MAILING_CITY] || ''}
-                  onChange={(e) => handleChange(FIELDS.MAILING_CITY, e.target.value)}
-                  disabled={isReadOnly}
-                  autoComplete="chrome-off"
-                  className="w-full bg-transparent border-none border-b-2 border-gray-300 py-3 text-gray-700 focus:outline-none focus:border-black disabled:opacity-60 disabled:cursor-not-allowed"
-                  placeholder="San Francisco"
-                  style={{
-                    paddingLeft: 0,
-                    borderBottom: '2px solid #D1D5DB',
-                  }}
-                />
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.02em', display: 'block', marginBottom: '4px' }}>City</label>
+                <input type="text" value={formData[FIELDS.MAILING_CITY] || ''} onChange={(e) => handleChange(FIELDS.MAILING_CITY, e.target.value)} disabled={isReadOnly} autoComplete="chrome-off" placeholder="San Francisco" />
               </div>
-
-              <div className="col-span-1 sm:col-span-1">
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  State
-                </label>
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.02em', display: 'block', marginBottom: '4px' }}>State</label>
                 <CustomSelect
                   value={formData[FIELDS.MAILING_STATE] || ''}
                   onChange={(value) => handleChange(FIELDS.MAILING_STATE, value)}
-                  options={US_STATES.map(state => ({
-                    value: state.label,
-                    label: `${state.label} (${state.value})`
-                  }))}
+                  options={US_STATES.map(state => ({ value: state.label, label: `${state.label} (${state.value})` }))}
                   placeholder="Select state"
                   disabled={isReadOnly}
                   displayValue={formData[FIELDS.MAILING_STATE] ? US_STATES.find(s => s.label === formData[FIELDS.MAILING_STATE])?.value : ''}
                 />
               </div>
             </div>
-
             <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-1">
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  ZIP Code
-                </label>
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.02em', display: 'block', marginBottom: '4px' }}>ZIP Code</label>
                 <input
                   type="text"
                   value={formData[FIELDS.MAILING_ZIP] || ''}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^\d-]/g, '');
-                    handleChange(FIELDS.MAILING_ZIP, value);
-                  }}
+                  onChange={(e) => handleChange(FIELDS.MAILING_ZIP, e.target.value.replace(/[^\d-]/g, ''))}
                   disabled={isReadOnly}
                   autoComplete="chrome-off"
-                  className="w-full bg-transparent border-none border-b-2 border-gray-300 py-3 text-gray-700 focus:outline-none focus:border-black disabled:opacity-60 disabled:cursor-not-allowed"
                   placeholder="94102"
                   maxLength="10"
-                  style={{
-                    paddingLeft: 0,
-                    borderBottom: '2px solid #D1D5DB',
-                  }}
                 />
               </div>
             </div>
           </div>
-        </div>
+        </QuestionCard>
 
         {/* Company Description */}
-        <QuestionRenderer
-          fieldName={FIELDS.COMPANY_DESCRIPTION}
-          config={QUESTION_CONFIG[FIELDS.COMPANY_DESCRIPTION]}
-          formData={formData}
-          handleChange={handleChange}
-          isReadOnly={isReadOnly}
-          showValidation={showValidation}
-        />
+        <QuestionCard
+          question={QUESTION_CONFIG[FIELDS.COMPANY_DESCRIPTION].question}
+          answerPreview={getPreview(FIELDS.COMPANY_DESCRIPTION, formData)}
+          hint={QUESTION_CONFIG[FIELDS.COMPANY_DESCRIPTION].tooltip}
+          isExpanded={expandedField === FIELDS.COMPANY_DESCRIPTION}
+          isAnswered={!!formData[FIELDS.COMPANY_DESCRIPTION]}
+          onExpand={() => setExpandedField(FIELDS.COMPANY_DESCRIPTION)}
+          onAdvance={() => advanceTo(FIELDS.COMPANY_DESCRIPTION)}
+        >
+          <QuestionRenderer
+            fieldName={FIELDS.COMPANY_DESCRIPTION}
+            config={QUESTION_CONFIG[FIELDS.COMPANY_DESCRIPTION]}
+            formData={formData}
+            handleChange={handleChange}
+            isReadOnly={isReadOnly}
+            showValidation={showValidation}
+            hideLabel
+          />
+        </QuestionCard>
 
         {/* Industry */}
-        <QuestionRenderer
-          fieldName={FIELDS.INDUSTRIES}
-          config={QUESTION_CONFIG[FIELDS.INDUSTRIES]}
-          formData={formData}
-          handleChange={handleChange}
-          isReadOnly={isReadOnly}
-          showValidation={showValidation}
-        />
+        <QuestionCard
+          question={QUESTION_CONFIG[FIELDS.INDUSTRIES].question}
+          answerPreview={getPreview(FIELDS.INDUSTRIES, formData)}
+          hint={QUESTION_CONFIG[FIELDS.INDUSTRIES].tooltip}
+          isExpanded={expandedField === FIELDS.INDUSTRIES}
+          isAnswered={!!(formData[FIELDS.INDUSTRIES]?.length)}
+          onExpand={() => setExpandedField(FIELDS.INDUSTRIES)}
+          onAdvance={() => advanceTo(FIELDS.INDUSTRIES)}
+        >
+          <QuestionRenderer
+            fieldName={FIELDS.INDUSTRIES}
+            config={QUESTION_CONFIG[FIELDS.INDUSTRIES]}
+            formData={formData}
+            handleChange={handleChange}
+            isReadOnly={isReadOnly}
+            showValidation={showValidation}
+            hideLabel
+          />
+        </QuestionCard>
 
       </div>
     </div>

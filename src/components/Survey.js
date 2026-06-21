@@ -5,7 +5,7 @@ import { db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useAuth } from '@clerk/clerk-react';
-import { SECTION_IDS, SECTION_ORDER, SECTIONS as SECTION_CONFIG, getNextSection, getPreviousSection, isFirstSection, isLastSection } from '../config/sectionConfig';
+import { SECTION_IDS, SECTION_ORDER, SECTIONS as SECTION_CONFIG, getNextSection, isLastSection } from '../config/sectionConfig';
 import { getQuestionsBySection } from '../config/questionConfig';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useProjectSync } from '../hooks/useProjectSync';
@@ -51,8 +51,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
 
   // Custom hooks for managing survey state and logic
   const isSavingRef = useRef(false);
-  const { project, formData, setFormData, accessDenied } = useProjectSync(projectId, isSavingRef);
-  const { saveStatus, saveFormData, createChangeHandler } = useAutoSave(projectId, project, currentUser);
+  const { project, formData, setFormData, accessDenied, lastSaved } = useProjectSync(projectId, isSavingRef);
+  const { saveStatus, lastSaved: autoSaveLastSaved, saveFormData, createChangeHandler } = useAutoSave(projectId, project, currentUser);
   const { isSectionCompleted } = useValidation(formData, project);
   const handleChange = createChangeHandler(setFormData);
 
@@ -324,13 +324,41 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
   }
 
   return (
-    <div className="min-h-screen flex bg-white">
+    <div className="min-h-screen flex survey-bg">
 
       {/* Welcome Popup */}
       <WelcomePopup isOpen={showWelcomePopup} onClose={dismissWelcomePopup} />
 
       {/* Top Header */}
-      <div className="fixed top-0 left-0 right-0 h-16 bg-white flex items-center gap-4" style={{ zIndex: 50, paddingLeft: '270px' }}>
+      <div className="fixed top-0 left-0 right-0 h-16 flex items-center gap-4 px-4 md:pl-[262px] md:pr-[52px]" style={{ zIndex: 50, background: 'var(--ct-bg)', fontFamily: "'Outfit', sans-serif" }}>
+        {/* Back to Dashboard + Save Status */}
+        <div className="flex items-center" style={{ gap: '14px' }}>
+          <button
+            onClick={() => navigate('/dashboard')}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '6px',
+              fontSize: '13px', fontWeight: 300, color: '#666',
+              fontFamily: 'Outfit, sans-serif', transition: 'color 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = '#1a1a1a'}
+            onMouseLeave={e => e.currentTarget.style.color = '#666'}
+          >
+            ← Back to Dashboard
+          </button>
+          {saveStatus === 'saving' && (
+            <span style={{ fontSize: '11px', color: '#aaa', fontWeight: 300 }}>Saving...</span>
+          )}
+          {saveStatus === 'saved' && (autoSaveLastSaved || lastSaved) && (
+            <span style={{ fontSize: '11px', color: '#4B7263', fontWeight: 300 }}>
+              Saved {(autoSaveLastSaved || lastSaved).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+            </span>
+          )}
+          {saveStatus === 'error' && (
+            <span style={{ fontSize: '11px', color: '#b97070', fontWeight: 300 }}>Error saving</span>
+          )}
+        </div>
+
         {/* Search Bar */}
         <div className="flex-1 flex justify-center items-center">
         <div className="max-w-lg w-full relative" style={{ maxWidth: '512px' }}>
@@ -388,19 +416,21 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
         </div>
         </div>
 
-        {/* Right side icons */}
-        <div className="flex items-center gap-4 pr-6 relative">
-          {/* Add Collaborators */}
-          <button
-            onClick={() => setShowCollaborators(true)}
-            className="text-gray-700 hover:bg-gray-100 px-4 py-2 rounded transition flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
-            <span className="text-sm font-medium">Add Collaborators</span>
-          </button>
+        {/* Avatar */}
+        <div
+          style={{
+            width: '34px', height: '34px', borderRadius: '50%',
+            background: '#ccc9c0', display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.5">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" strokeLinecap="round" />
+          </svg>
         </div>
+
       </div>
 
       {/* Sidebar Navigation - self-contained with all hooks */}
@@ -418,34 +448,21 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
         onCreateProject={onCreateProject}
         isMobileNavOpen={isMobileNavOpen}
         setIsMobileNavOpen={setIsMobileNavOpen}
+        onManageCollaborators={() => setShowCollaborators(true)}
       />
 
       {/* Collaborators Modal */}
       {showCollaborators && (
         <>
-          {/* Overlay */}
-          <div
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm"
-            style={{ zIndex: 10000 }}
-            onClick={() => setShowCollaborators(false)}
-          />
-
-          {/* Modal */}
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl border border-gray-200 w-[90vw] max-w-lg max-h-[90vh] overflow-hidden flex flex-col" style={{ zIndex: 10001 }}>
-            <div className="p-6 border-b border-gray-200 flex-shrink-0">
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold text-gray-900">Collaborators</h3>
-                <button
-                  onClick={() => setShowCollaborators(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" style={{ zIndex: 10000 }} onClick={() => setShowCollaborators(false)} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 10001, background: '#F6F3EE', borderRadius: '8px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', width: '90vw', maxWidth: '480px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', fontFamily: 'Outfit, sans-serif' }}>
+            <div style={{ padding: '22px 26px 18px', borderBottom: '1px solid #d6d2c9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+              <h3 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '22px', fontWeight: 400, color: '#1a1a1a' }}>Collaborators</h3>
+              <button onClick={() => setShowCollaborators(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#aaa', lineHeight: 1 }}>
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
             </div>
-            <div className="overflow-y-auto flex-1 p-6">
+            <div style={{ overflowY: 'auto', flex: 1, padding: '22px 26px 26px' }}>
               <CollaboratorManager project={{ ...project, id: projectId }} />
             </div>
           </div>
@@ -454,10 +471,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
 
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto md:ml-[270px] mt-16 bg-white">
-        <div className="max-w-5xl mx-auto pt-6 px-4 md:px-6 md:pr-12 pb-20" key={currentSection}>
-          {/* Content Container */}
-          <div className="px-4 md:px-20 pt-8 pb-8">
+      <div className="flex-1 overflow-y-auto md:ml-[210px] mt-16 survey-bg">
+        <div className="px-4 md:px-[52px] pt-7 pb-[60px]" key={currentSection}>
           {/* Section Content */}
           {currentSection === SECTION_IDS.FORMATION && (
             <div className="animate-fade-down">
@@ -578,31 +593,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
 
           {/* Next Button */}
           {!isReadOnly && (
-            <div className={`mt-16 flex justify-between`}>
-              {!isFirstSection(currentSection) && (
-                <button
-                  onClick={() => {
-                    // If on equity allocation in results view, go back to edit view (spreadsheet)
-                    if (currentSection === SECTION_IDS.EQUITY_ALLOCATION && section3InResultsView && section3Ref.current) {
-                      section3Ref.current.backToEdit();
-                    } else {
-                      const prevSection = getPreviousSection(currentSection);
-                      if (prevSection) {
-                        setCurrentSection(prevSection);
-                        setSearchParams({ section: prevSection });
-                      }
-                    }
-                  }}
-                  className="pr-6 py-2 text-gray-400 hover:text-gray-600 font-normal flex items-center gap-2"
-                >
-                  <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 8L2 8M2 8L8 2M2 8L8 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Previous
-                </button>
-              )}
-              {isFirstSection(currentSection) && <div />}
-
+            <div className="mt-16 flex justify-end">
               {!isLastSection(currentSection) ? (
                 <button
                   onClick={() => {
@@ -636,10 +627,12 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
                       setSearchParams({ section: nextSection });
                     }
                   }}
-                  className="next-button bg-black text-white px-7 py-2 rounded font-normal hover:bg-[#1a1a1a] transition flex items-center gap-2"
+                  style={{ background: '#4B7263', color: '#fff', border: 'none', borderRadius: '6px', padding: '10px 20px', fontSize: '13px', fontWeight: 400, fontFamily: 'Outfit, sans-serif', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'background 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#3d5f52'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#4B7263'}
                 >
-                  Next
-                  <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  Continue
+                  <svg width="16" height="13" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </button>
@@ -647,18 +640,18 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
                 <button
                   onClick={handlePreviewClick}
                   disabled={saveStatus === 'saving'}
-                  className="next-button bg-black text-white px-10 py-2 rounded font-normal hover:bg-[#1a1a1a] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  style={{ background: '#4B7263', color: '#fff', border: 'none', borderRadius: '6px', padding: '10px 20px', fontSize: '13px', fontWeight: 400, fontFamily: 'Outfit, sans-serif', cursor: saveStatus === 'saving' ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'background 0.15s', opacity: saveStatus === 'saving' ? 0.5 : 1 }}
+                  onMouseEnter={e => { if (saveStatus !== 'saving') e.currentTarget.style.background = '#3d5f52'; }}
+                  onMouseLeave={e => e.currentTarget.style.background = '#4B7263'}
                 >
-                  Next: Preview & Approve
-                  <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  Review &amp; Approve
+                  <svg width="16" height="13" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </button>
               )}
             </div>
           )}
-          </div>
-          {/* End White Card Container */}
         </div>
       </div>
 

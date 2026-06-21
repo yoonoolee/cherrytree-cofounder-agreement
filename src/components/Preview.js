@@ -5,6 +5,7 @@ import { httpsCallable } from 'firebase/functions';
 import ApprovalSection from './ApprovalSection';
 import SurveyNavigation from './SurveyNavigation';
 import AgreementHeader from './AgreementHeader';
+import CollaboratorManager from './CollaboratorManager';
 import { useUser } from '../contexts/UserContext';
 import { useAuth } from '@clerk/clerk-react';
 import { isProjectReadOnly } from '../utils/dateUtils';
@@ -19,6 +20,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
 
   // UI state
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [showCollaborators, setShowCollaborators] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [pdfUrl, setPdfUrl] = useState(null);
@@ -209,10 +211,65 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
         onCreateProject={onCreateProject}
         isMobileNavOpen={isMobileNavOpen}
         setIsMobileNavOpen={setIsMobileNavOpen}
+        onManageCollaborators={() => setShowCollaborators(true)}
       />
 
+      {/* Collaborators Modal */}
+      {showCollaborators && (
+        <>
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" style={{ zIndex: 10000 }} onClick={() => setShowCollaborators(false)} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 10001, background: '#F6F3EE', borderRadius: '8px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', width: '90vw', maxWidth: '480px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', fontFamily: 'Outfit, sans-serif' }}>
+            <div style={{ padding: '22px 26px 18px', borderBottom: '1px solid #d6d2c9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+              <h3 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '22px', fontWeight: 400, color: '#1a1a1a' }}>Collaborators</h3>
+              <button onClick={() => setShowCollaborators(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#aaa', lineHeight: 1 }}>
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div style={{ overflowY: 'auto', flex: 1, padding: '22px 26px 26px' }}>
+              <CollaboratorManager project={{ ...project, id: projectId }} />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Top Header */}
+      <div className="fixed top-0 left-0 right-0 h-16 flex items-center" style={{ zIndex: 50, paddingLeft: '210px', paddingRight: '32px', background: '#fff', fontFamily: "'Outfit', sans-serif" }}>
+        <button
+          onClick={() => navigate('/dashboard')}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: '6px',
+            fontSize: '13px', fontWeight: 300, color: '#666',
+            fontFamily: 'Outfit, sans-serif', transition: 'color 0.15s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = '#1a1a1a'}
+          onMouseLeave={e => e.currentTarget.style.color = '#666'}
+        >
+          ← Back to Dashboard
+        </button>
+        {project?.lastUpdated && (
+          <span style={{ fontSize: '11px', color: '#4B7263', fontWeight: 300, marginLeft: '14px' }}>
+            Saved {project.lastUpdated.toDate().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+          </span>
+        )}
+        <div style={{ flex: 1 }} />
+        <div
+          style={{
+            width: '34px', height: '34px', borderRadius: '50%',
+            background: '#ccc9c0', display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.5">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" strokeLinecap="round" />
+          </svg>
+        </div>
+      </div>
+
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto ml-[270px]" style={{ marginTop: '0' }}>
+      <div className="flex-1 overflow-y-auto ml-[270px] mt-16">
         <div className="max-w-6xl mx-auto pt-6 px-6 pr-12 pb-20">
           {/* Content Container */}
           <div className="px-20 pt-8 pb-20">

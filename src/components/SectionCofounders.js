@@ -1,204 +1,216 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ROLES, FIELDS } from '../config/surveySchema';
 import { useCollaborators } from '../hooks/useCollaborators';
 
+const EMPTY_CF = { fullName: '', title: '', email: '', roles: [], rolesOther: '' };
+
+function CofounderForm({ values, onChange, onSubmit, onCancel, onRemove, submitLabel, isReadOnly }) {
+  return (
+    <div className="cf-form-fields">
+      <div className="cf-inline-form-grid">
+        <div>
+          <span className="cf-field-label">Full Name</span>
+          <input type="text" value={values.fullName} onChange={e => onChange('fullName', e.target.value)} disabled={isReadOnly} placeholder="First Last" />
+        </div>
+        <div>
+          <span className="cf-field-label">Title</span>
+          <input type="text" value={values.title} onChange={e => onChange('title', e.target.value)} disabled={isReadOnly} placeholder="Chief Executive Officer" />
+        </div>
+        <div>
+          <span className="cf-field-label">Email</span>
+          <input type="email" value={values.email} onChange={e => onChange('email', e.target.value)} disabled={isReadOnly} placeholder="first@company.com" />
+        </div>
+      </div>
+
+      <div style={{ marginTop: '22px' }}>
+        <span className="cf-field-label" style={{ marginTop: 0 }}>Roles and Responsibilities</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
+          {ROLES.map(role => (
+            <label key={role} className="card-checkbox-option">
+              <input
+                type="checkbox"
+                checked={(values.roles || []).includes(role)}
+                onChange={e => {
+                  const next = e.target.checked
+                    ? [...(values.roles || []), role]
+                    : (values.roles || []).filter(r => r !== role);
+                  onChange('roles', next);
+                  if (role === 'Other' && !e.target.checked) onChange('rolesOther', '');
+                }}
+                disabled={isReadOnly}
+              />
+              <span className="checkbox-box" />
+              {role}
+            </label>
+          ))}
+        </div>
+        {(values.roles || []).includes('Other') && (
+          <input type="text" value={values.rolesOther || ''} onChange={e => onChange('rolesOther', e.target.value)} disabled={isReadOnly} placeholder="Please specify" style={{ marginTop: '8px' }} />
+        )}
+      </div>
+
+      <div className="cf-form-footer">
+        {onRemove && <button className="cf-remove-btn" type="button" onClick={onRemove} disabled={isReadOnly}>Remove</button>}
+        <button className="cf-cancel-btn" type="button" onClick={onCancel}>Cancel</button>
+        <button className="cf-submit-btn" type="button" onClick={onSubmit} disabled={isReadOnly}>{submitLabel}</button>
+      </div>
+    </div>
+  );
+}
+
 function SectionCofounders({ formData, handleChange, isReadOnly, showValidation, project }) {
-  // Only used for max count cap
   const { collaboratorIds } = useCollaborators(project);
   const maxCofounders = collaboratorIds.length;
-
   const cofounders = formData[FIELDS.COFOUNDERS] || [];
   const canAddMore = cofounders.length < maxCofounders;
   const hasExtraCofounders = cofounders.length > maxCofounders;
 
-  const handleAddCofounder = () => {
-    if (!canAddMore) return;
-    const newCofounders = [...cofounders, {
-      [FIELDS.COFOUNDER_ID]: crypto.randomUUID(),
-      [FIELDS.COFOUNDER_FULL_NAME]: '',
-      [FIELDS.COFOUNDER_TITLE]: '',
-      [FIELDS.COFOUNDER_EMAIL]: '',
-      [FIELDS.COFOUNDER_ROLES]: [],
-      [FIELDS.COFOUNDER_ROLES_OTHER]: ''
-    }];
-    handleChange(FIELDS.COFOUNDERS, newCofounders);
-    handleChange(FIELDS.COFOUNDER_COUNT, newCofounders.length.toString());
+  const [expandedIndex, setExpandedIndex] = useState(-1);
+  const [addingNew, setAddingNew] = useState(false);
+  const [newCf, setNewCf] = useState(EMPTY_CF);
+
+  const commitCofounderChange = (index, field, value) => {
+    const updated = [...cofounders];
+    const fieldMap = { fullName: FIELDS.COFOUNDER_FULL_NAME, title: FIELDS.COFOUNDER_TITLE, email: FIELDS.COFOUNDER_EMAIL, roles: FIELDS.COFOUNDER_ROLES, rolesOther: FIELDS.COFOUNDER_ROLES_OTHER };
+    updated[index] = { ...updated[index], [fieldMap[field]]: value };
+    handleChange(FIELDS.COFOUNDERS, updated);
   };
 
   const handleRemoveCofounder = (index) => {
-    const newCofounders = cofounders.filter((_, i) => i !== index);
-    handleChange(FIELDS.COFOUNDERS, newCofounders);
-    handleChange(FIELDS.COFOUNDER_COUNT, newCofounders.length.toString());
+    const next = cofounders.filter((_, i) => i !== index);
+    handleChange(FIELDS.COFOUNDERS, next);
+    handleChange(FIELDS.COFOUNDER_COUNT, next.length.toString());
+    setExpandedIndex(-1);
   };
 
-  const handleCofounderChange = (index, field, value) => {
-    const newCofounders = [...cofounders];
-    newCofounders[index] = {
-      ...newCofounders[index],
-      [field]: value
-    };
-    handleChange(FIELDS.COFOUNDERS, newCofounders);
+  const handleAddSubmit = () => {
+    const next = [...cofounders, {
+      [FIELDS.COFOUNDER_ID]: crypto.randomUUID(),
+      [FIELDS.COFOUNDER_FULL_NAME]: newCf.fullName,
+      [FIELDS.COFOUNDER_TITLE]: newCf.title,
+      [FIELDS.COFOUNDER_EMAIL]: newCf.email,
+      [FIELDS.COFOUNDER_ROLES]: newCf.roles,
+      [FIELDS.COFOUNDER_ROLES_OTHER]: newCf.rolesOther,
+    }];
+    handleChange(FIELDS.COFOUNDERS, next);
+    handleChange(FIELDS.COFOUNDER_COUNT, next.length.toString());
+    setNewCf(EMPTY_CF);
+    setAddingNew(false);
   };
+
+  const getDisplayValues = (cf) => ({
+    fullName: cf[FIELDS.COFOUNDER_FULL_NAME] || '',
+    title: cf[FIELDS.COFOUNDER_TITLE] || '',
+    email: cf[FIELDS.COFOUNDER_EMAIL] || '',
+    roles: cf[FIELDS.COFOUNDER_ROLES] || [],
+    rolesOther: cf[FIELDS.COFOUNDER_ROLES_OTHER] || '',
+  });
+
+  const isAnswered = (cf) =>
+    !!(cf[FIELDS.COFOUNDER_FULL_NAME] && cf[FIELDS.COFOUNDER_TITLE] && cf[FIELDS.COFOUNDER_EMAIL] && (cf[FIELDS.COFOUNDER_ROLES] || []).length);
 
   return (
     <div>
-      <h2 className="text-3xl font-medium text-gray-800 mb-6">Cofounder Info</h2>
-
-      <p className="mb-16 leading-relaxed" style={{ color: '#6B7280' }}>
+      <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '42px', fontWeight: 400, letterSpacing: '-0.5px', marginBottom: '14px', lineHeight: 1.1, color: '#1a1a1a' }}>
+        Cofounder Information
+      </h2>
+      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', maxWidth: '820px', lineHeight: 1.65, marginBottom: '32px' }}>
         Whether it's just the two of you or if there's a dozen of you, this is the crew that decided to go for it. Names, roles, contact info, sure. But it's also a snapshot of the team before the world knows your name. Someday, this will be the "garage team" story you tell in interviews.
       </p>
 
-      <div className="space-y-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <label className="block text-base font-medium text-gray-900">
-              Cofounders
-            </label>
-            {hasExtraCofounders ? (
-              <p className="text-xs text-red-500 mt-1 validation-error">
-                Please remove cofounders deleted from the project.
-              </p>
-            ) : !canAddMore && cofounders.length > 0 ? (
-              <p className="text-xs text-gray-500 mt-1">
-                All collaborators have been added
-              </p>
-            ) : null}
-          </div>
-          <button
-            type="button"
-            onClick={handleAddCofounder}
-            disabled={isReadOnly || !canAddMore}
-            className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+      {hasExtraCofounders && (
+        <p className="text-red-500 text-xs mb-4 validation-error">Please remove cofounders deleted from the project.</p>
+      )}
+
+      {/* One card per cofounder */}
+      {cofounders.map((cf, index) => {
+        const isExpanded = expandedIndex === index;
+        const answered = isAnswered(cf);
+        const values = getDisplayValues(cf);
+        const missing = showValidation && !answered;
+        return (
+          <div
+            key={cf[FIELDS.COFOUNDER_ID] || index}
+            className={`question-card${isExpanded ? ' expanded' : ''}${answered ? ' answered' : ''}`}
+            onClick={() => { if (!isExpanded) { setExpandedIndex(index); setAddingNew(false); } }}
+            style={{ marginBottom: '8px', cursor: isExpanded ? 'default' : 'pointer' }}
           >
-            + Add Cofounder
-          </button>
-        </div>
+            <div className="card-row">
+              <div className="card-question">
+                {cf[FIELDS.COFOUNDER_FULL_NAME] || 'New Cofounder'}
+                {missing && <span style={{ color: '#b97070', marginLeft: '6px', fontSize: '14px' }}>*</span>}
+              </div>
+              {cf[FIELDS.COFOUNDER_TITLE] && (
+                <span className="card-answer-preview">{cf[FIELDS.COFOUNDER_TITLE]}</span>
+              )}
+            </div>
 
-        {cofounders.length === 0 ? (
-          <p className="text-gray-500 text-sm">Click "+ Add Cofounder" to add entries</p>
-        ) : (
-          <div className="space-y-12">
-            {cofounders.map((cofounder, index) => (
-                <div key={index} className="py-4">
-                  <div className="flex justify-end mb-2">
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveCofounder(index)}
-                      disabled={isReadOnly}
-                      className="text-red-500 hover:text-red-700 text-sm disabled:text-gray-400"
-                    >
-                      Remove
-                    </button>
-                  </div>
-
-                  <div className="space-y-4">
-                    {/* Full Name */}
-                    <div>
-                      <label className="block text-base font-medium text-gray-900 mb-2">
-                        Full Name
-                        {showValidation && !cofounder[FIELDS.COFOUNDER_FULL_NAME] && <span className="text-red-700 ml-0.5">*</span>}
-                      </label>
-                      <input
-                        type="text"
-                        value={cofounder[FIELDS.COFOUNDER_FULL_NAME] || ''}
-                        onChange={(e) => handleCofounderChange(index, FIELDS.COFOUNDER_FULL_NAME, e.target.value)}
-                        disabled={isReadOnly}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-                        placeholder="Tim He"
-                      />
-                    </div>
-
-                    {/* Title */}
-                    <div>
-                      <label className="block text-base font-medium text-gray-900 mb-2">
-                        Title
-                        {showValidation && !cofounder[FIELDS.COFOUNDER_TITLE] && <span className="text-red-700 ml-0.5">*</span>}
-                      </label>
-                      <input
-                        type="text"
-                        value={cofounder[FIELDS.COFOUNDER_TITLE] || ''}
-                        onChange={(e) => handleCofounderChange(index, FIELDS.COFOUNDER_TITLE, e.target.value)}
-                        disabled={isReadOnly}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-                        placeholder="Chief Executive Officer"
-                      />
-                    </div>
-
-                    {/* Email */}
-                    <div>
-                      <label className="block text-base font-medium text-gray-900 mb-2">
-                        Email
-                        {showValidation && !cofounder[FIELDS.COFOUNDER_EMAIL] && <span className="text-red-700 ml-0.5">*</span>}
-                      </label>
-                      <input
-                        type="email"
-                        value={cofounder[FIELDS.COFOUNDER_EMAIL] || ''}
-                        onChange={(e) => handleCofounderChange(index, FIELDS.COFOUNDER_EMAIL, e.target.value)}
-                        disabled={isReadOnly}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-                        placeholder="tim@cherrytree.app"
-                      />
-                    </div>
-
-                    {/* Roles & Responsibilities */}
-                    <div>
-                      <label className="block text-base font-medium text-gray-900 mb-2">
-                        Roles & Responsibilities
-                        {showValidation && (!cofounder[FIELDS.COFOUNDER_ROLES] || cofounder[FIELDS.COFOUNDER_ROLES].length === 0) && <span className="text-red-700 ml-0.5">*</span>}
-                      </label>
-                      <p className="text-sm text-gray-500 mb-3">Select all that apply</p>
-                      <div className="space-y-2">
-                        {ROLES.map((role) => (
-                          <label key={role} className="flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={(cofounder[FIELDS.COFOUNDER_ROLES] || []).includes(role)}
-                              onChange={(e) => {
-                                const currentRoles = cofounder[FIELDS.COFOUNDER_ROLES] || [];
-                                const newRoles = e.target.checked
-                                  ? [...currentRoles, role]
-                                  : currentRoles.filter(r => r !== role);
-                                if (role === 'Other' && !e.target.checked) {
-                                  // Update both fields at once to avoid stale state
-                                  const newCofounders = [...cofounders];
-                                  newCofounders[index] = {
-                                    ...newCofounders[index],
-                                    [FIELDS.COFOUNDER_ROLES]: newRoles,
-                                    [FIELDS.COFOUNDER_ROLES_OTHER]: ''
-                                  };
-                                  handleChange(FIELDS.COFOUNDERS, newCofounders);
-                                } else {
-                                  handleCofounderChange(index, FIELDS.COFOUNDER_ROLES, newRoles);
-                                }
-                              }}
-                              disabled={isReadOnly}
-                              className="mr-3"
-                            />
-                            <span className="text-gray-700">{role}</span>
-                          </label>
-                        ))}
-                      </div>
-
-                      {(cofounder[FIELDS.COFOUNDER_ROLES] || []).includes('Other') && (
-                        <input
-                          type="text"
-                          value={cofounder[FIELDS.COFOUNDER_ROLES_OTHER] || ''}
-                          onChange={(e) => handleCofounderChange(index, FIELDS.COFOUNDER_ROLES_OTHER, e.target.value)}
-                          disabled={isReadOnly}
-                          className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-                          placeholder="Please specify"
-                        />
-                      )}
-                    </div>
-                  </div>
-                </div>
-            ))}
+            <div className="card-bottom">
+              <div className="card-bottom-inner">
+                <CofounderForm
+                  values={values}
+                  onChange={(field, value) => commitCofounderChange(index, field, value)}
+                  onSubmit={() => setExpandedIndex(-1)}
+                  onCancel={() => setExpandedIndex(-1)}
+                  onRemove={!isReadOnly ? () => handleRemoveCofounder(index) : null}
+                  submitLabel="Done"
+                  isReadOnly={isReadOnly}
+                />
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+        );
+      })}
+
+      {/* Add new cofounder card */}
+      {addingNew && (
+        <div
+          className="question-card expanded"
+          style={{ marginBottom: '8px', cursor: 'default' }}
+        >
+          <div className="card-row">
+            <div className="card-question">New Cofounder</div>
+          </div>
+          <div className="card-bottom">
+            <div className="card-bottom-inner">
+              <CofounderForm
+                values={newCf}
+                onChange={(field, value) => setNewCf(prev => ({ ...prev, [field]: value }))}
+                onSubmit={handleAddSubmit}
+                onCancel={() => { setAddingNew(false); setNewCf(EMPTY_CF); }}
+                submitLabel="Add Cofounder"
+                isReadOnly={isReadOnly}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add button */}
+      {!isReadOnly && canAddMore && !addingNew && (
+        <button
+          type="button"
+          onClick={() => { setAddingNew(true); setExpandedIndex(-1); }}
+          style={{
+            marginTop: '8px',
+            display: 'flex', alignItems: 'center', gap: '8px',
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: '13px', fontWeight: 300, color: '#888',
+            fontFamily: 'Outfit, sans-serif', padding: 0, transition: 'color 0.15s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = '#1a1a1a'}
+          onMouseLeave={e => e.currentTarget.style.color = '#888'}
+        >
+          Add Cofounder
+          <span className="cf-add-icon">+</span>
+        </button>
+      )}
+
+      {cofounders.length === 0 && !addingNew && (
+        <p style={{ fontSize: '13px', fontWeight: 300, color: '#aaa', marginTop: '8px' }}>
+          Click "Add Cofounder" to get started.
+        </p>
+      )}
     </div>
   );
 }
