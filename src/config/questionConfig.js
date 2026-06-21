@@ -122,7 +122,6 @@ export const QUESTION_CONFIG = {
     required: true,
     options: INDUSTRIES,
     otherField: FIELDS.INDUSTRY_OTHER,
-    helperText: "Select all that apply",
     tooltip: "Pick the industry that best describes what you currently do. Aspirations to conquer all markets can wait.",
   },
 
@@ -275,7 +274,6 @@ export const QUESTION_CONFIG = {
     question: "What type of decisions require a discussion between all cofounders?",
     type: INPUT_TYPES.CHECKBOX,
     required: true,
-    helperText: "Select all that apply",
     options: MAJOR_DECISIONS,
     otherField: FIELDS.MAJOR_DECISIONS_OTHER,
     tooltip: "Which choices should never happen unless everyone's on board. Not office snacks.",
@@ -397,7 +395,6 @@ export const QUESTION_CONFIG = {
     type: INPUT_TYPES.CHECKBOX,
     required: true,
     options: PERFORMANCE_CONSEQUENCES,
-    helperText: "Select all that apply",
     tooltip: "These measures are intended for serious, ongoing failures to meet material obligations, not for minor issues or temporary setbacks.",
   },
 
@@ -416,7 +413,6 @@ export const QUESTION_CONFIG = {
     required: true,
     options: TERMINATION_WITH_CAUSE_OPTIONS,
     otherField: FIELDS.TERMINATION_WITH_CAUSE_OTHER,
-    helperText: "Select all that apply",
     tooltip: "Basically, what kind of bad behavior gets you booted.",
   },
 

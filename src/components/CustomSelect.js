@@ -1,133 +1,143 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-function CustomSelect({ value, onChange, options, placeholder, disabled, className, useBoxStyle, displayValue }) {
+function CustomSelect({ value, onChange, options, placeholder = 'Select...', disabled, className, displayValue }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const dropdownRef = useRef(null);
-  const inputRef = useRef(null);
+  const wrapperRef = useRef(null);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
         setIsOpen(false);
         setSearchTerm('');
-        setHighlightedIndex(0);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (isOpen && searchRef.current) searchRef.current.focus();
+  }, [isOpen]);
+
+  const selectedOption = options.find(opt => opt.value === value);
+  const displayLabel = displayValue !== undefined ? displayValue : (selectedOption?.label || '');
+
+  const filteredOptions = searchTerm
+    ? options.filter(opt => opt.label.toLowerCase().includes(searchTerm.toLowerCase()))
+    : options;
 
   const handleSelect = (optionValue) => {
     onChange(optionValue);
     setIsOpen(false);
     setSearchTerm('');
-    setHighlightedIndex(0);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (filteredOptions.length > 0) {
-        handleSelect(filteredOptions[highlightedIndex].value);
-      }
-    } else if (e.key === 'Escape') {
-      setIsOpen(false);
-      setSearchTerm('');
-      setHighlightedIndex(0);
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setHighlightedIndex((prev) =>
-        prev < filteredOptions.length - 1 ? prev + 1 : prev
-      );
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setHighlightedIndex((prev) => prev > 0 ? prev - 1 : prev);
-    }
-  };
-
-  const selectedOption = options.find(opt => opt.value === value);
-
-  // Filter options based on search term
-  const filteredOptions = options.filter(option =>
-    option.label.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Reset highlighted index when search term changes
-  useEffect(() => {
-    setHighlightedIndex(0);
-  }, [searchTerm]);
-
-  const handleClear = (e) => {
-    e.stopPropagation();
-    onChange('');
-    setSearchTerm('');
-    setIsOpen(false);
-  };
+  const showSearch = options.length > 8;
 
   return (
-    <div ref={dropdownRef} className={`relative ${className || ''}`}>
-      <div className="relative">
-        <input
-          ref={inputRef}
-          type="text"
-          value={isOpen ? searchTerm : (displayValue !== undefined ? displayValue : (selectedOption?.label || ''))}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            if (!isOpen) setIsOpen(true);
+    <div ref={wrapperRef} style={{ position: 'relative' }} className={className || ''}>
+      {/* Trigger */}
+      <button
+        type="button"
+        onClick={() => !disabled && setIsOpen(prev => !prev)}
+        disabled={disabled}
+        style={{
+          width: '100%',
+          background: 'transparent',
+          border: 'none',
+          borderBottom: `1px solid ${isOpen ? '#555' : '#bbb'}`,
+          outline: 'none',
+          fontSize: '14px',
+          fontFamily: "'Outfit', sans-serif",
+          fontWeight: 300,
+          color: displayLabel ? '#555' : '#bbb',
+          padding: '6px 0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          textAlign: 'left',
+          transition: 'border-color 0.2s',
+          opacity: disabled ? 0.5 : 1,
+        }}
+      >
+        <span>{displayLabel || placeholder}</span>
+        <svg
+          viewBox="0 0 12 12"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{
+            width: '12px',
+            height: '12px',
+            flexShrink: 0,
+            color: isOpen ? '#555' : '#bbb',
+            transition: 'transform 0.2s ease, color 0.2s',
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
           }}
-          onFocus={() => {
-            setIsOpen(true);
-            setSearchTerm('');
-          }}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          disabled={disabled}
-          autoComplete="chrome-off"
-          className={useBoxStyle
-            ? "w-full text-left px-4 py-3 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-            : "w-full text-left bg-transparent border-none border-b-2 border-gray-300 text-gray-700 focus:outline-none focus:border-black disabled:opacity-60 pr-6"
-          }
-          style={useBoxStyle ? {} : {
-            paddingLeft: 0,
-            paddingTop: '12px',
-            paddingBottom: '6px',
-            borderBottom: '2px solid #D1D5DB',
-          }}
-        />
-        {value && !disabled && (
-          <button
-            type="button"
-            onClick={handleClear}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-            aria-label="Clear selection"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        )}
-      </div>
+        >
+          <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
 
+      {/* Dropdown */}
       {isOpen && !disabled && (
-        <div className="absolute w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto" style={{ maxHeight: '120px', zIndex: 9999 }}>
+        <div style={{
+          position: 'absolute',
+          width: '100%',
+          top: 'calc(100% + 6px)',
+          left: 0,
+          background: '#FDFCF9',
+          borderRadius: '8px',
+          boxShadow: '0 6px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)',
+          maxHeight: '220px',
+          overflowY: 'auto',
+          zIndex: 9999,
+        }}>
+          {showSearch && (
+            <div style={{ padding: '8px 12px 6px', borderBottom: '1px solid #f0ede8', position: 'sticky', top: 0, background: '#FDFCF9' }}>
+              <input
+                ref={searchRef}
+                type="text"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                placeholder="Search..."
+                style={{
+                  width: '100%',
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: '13px',
+                  fontFamily: "'Outfit', sans-serif",
+                  fontWeight: 300,
+                  color: '#555',
+                  background: 'transparent',
+                }}
+              />
+            </div>
+          )}
           {filteredOptions.length > 0 ? (
-            filteredOptions.map((option, index) => (
+            filteredOptions.map(opt => (
               <div
-                key={option.value}
-                onClick={() => handleSelect(option.value)}
-                onMouseEnter={() => setHighlightedIndex(index)}
-                className={`px-4 py-2 cursor-pointer text-gray-700 border-b border-gray-100 last:border-b-0 ${
-                  index === highlightedIndex ? 'bg-gray-100' : 'hover:bg-gray-50'
-                }`}
+                key={opt.value}
+                onClick={() => handleSelect(opt.value)}
+                style={{
+                  padding: '9px 16px',
+                  fontSize: '13px',
+                  fontFamily: "'Outfit', sans-serif",
+                  fontWeight: opt.value === value ? 400 : 300,
+                  color: opt.value === value ? '#4B7263' : '#444',
+                  cursor: 'pointer',
+                  transition: 'background 0.1s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#F1EEE9'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                {option.label}
+                {opt.label}
               </div>
             ))
           ) : (
-            <div className="px-4 py-2 text-gray-500 text-sm">
+            <div style={{ padding: '9px 16px', fontSize: '13px', color: '#999', fontWeight: 300, fontFamily: "'Outfit', sans-serif" }}>
               No matches found
             </div>
           )}

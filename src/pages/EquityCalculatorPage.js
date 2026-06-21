@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Header from '../components/Header';
-import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import MarketingNav from '../components/MarketingNav';
+import MarketingFooter from '../components/MarketingFooter';
+import MarketingGrain from '../components/MarketingGrain';
 import { usePageMeta } from '../hooks/usePageMeta';
-import Footer from '../components/Footer';
 import Spreadsheet from 'react-spreadsheet';
 import '../components/EquityCalculator.css';
 import { calculateEquityPercentages } from '../utils/equityCalculation';
 
 function EquityCalculatorPage() {
-  useScrollAnimation();
-
   // SEO meta tags
   usePageMeta({
     title: 'Free Equity Calculator - Cherrytree | Fair Cofounder Equity Split Tool',
@@ -55,16 +53,6 @@ function EquityCalculatorPage() {
 
     setShowCalculator(true);
   };
-
-  // Trigger hero content fade-in on mount
-  useEffect(() => {
-    const heroContent = document.querySelector('.hero-content');
-    if (heroContent) {
-      setTimeout(() => {
-        heroContent.classList.add('section-visible');
-      }, 100);
-    }
-  }, []);
 
   // Get display name for cofounder
   const getCofounderDisplayName = (index) => {
@@ -298,205 +286,181 @@ function EquityCalculatorPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#06271D' }}>
-      <Header variant="dark" />
+    <div className="lp" style={{ minHeight: '100vh' }}>
+      <MarketingGrain />
+      <MarketingNav />
 
-      <section className="pt-24 md:pt-32 pb-24 md:pb-48 px-4 md:px-6 relative">
-        <div className="max-w-xl mx-auto relative">
-          <div
-            className="rounded-lg p-4 sm:p-6 md:p-12"
-            style={{
-              background: '#fcfcfc',
-              border: '1px solid rgba(0, 0, 0, 0.1)',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
-            }}
-          >
-          <div className="hero-content section-visible text-center mb-8 md:mb-16">
-            <h1 className="font-heading text-3xl sm:text-4xl md:text-[56px] font-normal mb-4 md:mb-6">
-              Equity Calculator<span style={{ marginLeft: '0.05em' }}>.</span>
-            </h1>
-            <p className="text-sm md:text-[16px] font-normal" style={{ color: '#716B6B' }}>
-              Determine a fair split based on each cofounder's contributions.
-            </p>
-          </div>
+      <section className="lp-eq-section">
+        <div className="lp-eq-wrap">
+          <div className="lp-eq-card">
+            <div className="lp-eq-hero">
+              <h1 className="lp-page-h1" style={{ fontSize: 'clamp(32px,5vw,48px)', marginBottom: 10 }}>Equity Calculator.</h1>
+              <p className="lp-page-sub">Determine a fair split based on each cofounder's contributions.</p>
+            </div>
 
-          {!showCalculator ? (
-            <form
-              className="max-w-md mx-auto"
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleStartCalculator();
-              }}
-            >
-              {/* Cofounder names */}
-              <div className="mb-6">
-                <label className="block text-base font-medium text-gray-900 mb-3">
-                  Cofounder Names
-                </label>
-                <div className="space-y-3">
-                  {Array.from({ length: numCofounders }, (_, i) => (
-                    <div key={i} className="relative">
-                      <input
-                        type="text"
-                        value={cofounderNames[i] || ''}
-                        onChange={(e) => handleNameChange(i, e.target.value)}
-                        placeholder={i === 0 ? 'Cofounder 1 (you)' : `Cofounder ${i + 1}`}
-                        className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent ${wiggleIndex === i ? 'animate-wiggle' : ''}`}
-                      />
-                      {i >= 2 && (
+            {!showCalculator ? (
+              <form
+                className="lp-eq-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleStartCalculator();
+                }}
+              >
+                {/* Cofounder names */}
+                <div className="lp-eq-field-group">
+                  <label className="lp-eq-label">Cofounder Names</label>
+                  <div className="lp-eq-name-list">
+                    {Array.from({ length: numCofounders }, (_, i) => (
+                      <div key={i} className="lp-eq-name-row">
+                        <input
+                          type="text"
+                          value={cofounderNames[i] || ''}
+                          onChange={(e) => handleNameChange(i, e.target.value)}
+                          placeholder={i === 0 ? 'Cofounder 1 (you)' : `Cofounder ${i + 1}`}
+                          className={`lp-eq-input ${wiggleIndex === i ? 'animate-wiggle' : ''}`}
+                        />
+                        {i >= 2 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNumCofounders(prev => prev - 1);
+                              setCofounderNames(prev => prev.filter((_, idx) => idx !== i));
+                            }}
+                            className="lp-eq-remove-btn"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add cofounder button */}
+                  {numCofounders < 5 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNumCofounders(prev => prev + 1);
+                        setCofounderNames(prev => [...prev, '']);
+                      }}
+                      className="lp-btn-ghost lp-eq-add-btn"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add cofounder
+                    </button>
+                  )}
+                </div>
+
+                {/* Start button */}
+                <button type="submit" className="button-shimmer lp-btn-primary" style={{ width: '100%', textAlign: 'center' }}>
+                  Start Calculator
+                </button>
+              </form>
+            ) : (
+              <div>
+                {/* Back button */}
+                <button onClick={() => setShowCalculator(false)} className="lp-btn-ghost lp-eq-back-btn">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Back to setup
+                </button>
+
+                {/* Instructions */}
+                <div className="lp-eq-instructions">
+                  <p><strong>How to use:</strong> Rate the importance of each category (0-100), then score each cofounder (0-100) on how much they contribute to that category. The calculator will determine equity based on weighted contributions.</p>
+                </div>
+
+                {/* Spreadsheet */}
+                <div className="spreadsheet-wrapper" style={{ overflow: 'visible' }}>
+                  <div
+                    ref={spreadsheetRef}
+                    className="single-click-edit spreadsheet-scroll-container"
+                    style={{
+                      overflowX: 'auto',
+                      overflowY: 'visible',
+                      position: 'relative'
+                    }}
+                  >
+                    <Spreadsheet
+                      data={data}
+                      onChange={handleChange}
+                      columnLabels={false}
+                      rowLabels={false}
+                    />
+                  </div>
+                </div>
+
+                {/* Equity Progress Bar */}
+                <div className="lp-eq-bar-wrap">
+                  <EquityProgressBar equity={currentEquity} />
+                </div>
+
+                {/* Share button */}
+                <div style={{ textAlign: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowSharePopup(true)}
+                    className="button-shimmer lp-btn-primary"
+                  >
+                    Share with cofounder
+                  </button>
+                </div>
+
+                {/* Share popup */}
+                {showSharePopup && (
+                  <div className="lp-eq-modal-backdrop">
+                    <div className="lp-eq-modal">
+                      <div className="lp-eq-modal-head">
+                        <h3>Share with cofounder</h3>
                         <button
-                          type="button"
                           onClick={() => {
-                            setNumCofounders(prev => prev - 1);
-                            setCofounderNames(prev => prev.filter((_, idx) => idx !== i));
+                            setShowSharePopup(false);
+                            setLinkCopied(false);
                           }}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                          className="lp-eq-modal-close"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Add cofounder button */}
-                {numCofounders < 5 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNumCofounders(prev => prev + 1);
-                      setCofounderNames(prev => [...prev, '']);
-                    }}
-                    className="mt-3 text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1 transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    Add cofounder
-                  </button>
-                )}
-              </div>
-
-              {/* Start button */}
-              <button
-                type="submit"
-                className="button-shimmer w-full py-3 px-6 bg-[#000000] text-white rounded-lg hover:bg-[#1a1a1a] transition-colors font-medium"
-              >
-                Start Calculator
-              </button>
-            </form>
-          ) : (
-            <div>
-              {/* Back button */}
-              <button
-                onClick={() => setShowCalculator(false)}
-                className="mb-6 text-gray-600 hover:text-gray-900 flex items-center gap-2 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Back to setup
-              </button>
-
-              {/* Instructions */}
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-700">
-                  <strong>How to use:</strong> Rate the importance of each category (0-100), then score each cofounder (0-100) on how much they contribute to that category. The calculator will determine equity based on weighted contributions.
-                </p>
-              </div>
-
-              {/* Spreadsheet */}
-              <div className="spreadsheet-wrapper" style={{ overflow: 'visible' }}>
-                <div
-                  ref={spreadsheetRef}
-                  className="single-click-edit spreadsheet-scroll-container"
-                  style={{
-                    overflowX: 'auto',
-                    overflowY: 'visible',
-                    position: 'relative'
-                  }}
-                >
-                  <Spreadsheet
-                    data={data}
-                    onChange={handleChange}
-                    columnLabels={false}
-                    rowLabels={false}
-                  />
-                </div>
-              </div>
-
-              {/* Equity Progress Bar */}
-              <div className="py-6">
-                <EquityProgressBar equity={currentEquity} />
-              </div>
-
-              {/* Share button */}
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => setShowSharePopup(true)}
-                  className="button-shimmer px-6 py-3 bg-[#000000] text-white rounded-lg hover:bg-[#1a1a1a] transition-colors font-medium"
-                >
-                  Share with cofounder
-                </button>
-              </div>
-
-              {/* Share popup */}
-              {showSharePopup && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                  <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-medium">Share with cofounder</h3>
-                      <button
-                        onClick={() => {
-                          setShowSharePopup(false);
-                          setLinkCopied(false);
-                        }}
-                        className="text-gray-400 hover:text-gray-600"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Share this link with your cofounder and see if your answers match. Only 2% get the exact same results.
-                    </p>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        readOnly
-                        value={window.location.href}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50"
-                      />
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(window.location.href);
-                          setLinkCopied(true);
-                        }}
-                        className="px-4 py-2 bg-[#000000] text-white rounded-lg hover:bg-[#1a1a1a] transition-colors text-sm font-medium"
-                      >
-                        {linkCopied ? (
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                        ) : (
-                          'Copy'
-                        )}
-                      </button>
+                      </div>
+                      <p className="lp-eq-modal-desc">
+                        Share this link with your cofounder and see if your answers match. Only 2% get the exact same results.
+                      </p>
+                      <div className="lp-eq-modal-row">
+                        <input type="text" readOnly value={window.location.href} className="lp-eq-modal-input" />
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(window.location.href);
+                            setLinkCopied(true);
+                          }}
+                          className="lp-btn-primary"
+                          style={{ padding: '10px 18px', fontSize: 13 }}
+                        >
+                          {linkCopied ? (
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          ) : (
+                            'Copy'
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      <Footer bgColor="#06271D" />
+      <MarketingFooter />
     </div>
   );
 }

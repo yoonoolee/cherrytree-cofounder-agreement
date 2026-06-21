@@ -16,7 +16,8 @@ function QuestionRenderer({
   handleChange,
   isReadOnly,
   showValidation,
-  project
+  project,
+  hideLabel = false,
 }) {
   const { currentUser } = useUser();
   const { collaboratorIds, getDisplayName, isAdmin } = useCollaborators(project);
@@ -79,7 +80,7 @@ function QuestionRenderer({
   })();
 
   // Render label
-  const renderLabel = () => (
+  const renderLabel = () => hideLabel ? null : (
     <label className="block text-base font-medium text-gray-900 mb-2">
       {question}
       {isInvalid && <span className="text-red-700 ml-0.5">*</span>}
@@ -131,15 +132,14 @@ function QuestionRenderer({
       <div>
         {renderLabel()}
         {helperText && <p className="text-sm text-gray-500 mb-3">{helperText}</p>}
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
           {options.map((option) => {
-            // Check if option has description (object format) or is simple string
             const optionValue = typeof option === 'object' ? option.value : option;
             const optionLabel = typeof option === 'object' ? option.label : option;
             const optionDescription = typeof option === 'object' ? option.description : null;
 
             return (
-              <label key={optionValue} className={`flex ${optionDescription ? 'items-start' : 'items-center'}`}>
+              <label key={optionValue} className="card-radio-option" style={{ alignItems: optionDescription ? 'flex-start' : 'center' }}>
                 <input
                   type="radio"
                   name={fieldName}
@@ -149,9 +149,7 @@ function QuestionRenderer({
                     if (!isReadOnly) {
                       const newValue = value === optionValue ? '' : optionValue;
                       handleChange(fieldName, newValue);
-                      if (otherField && newValue !== 'Other') {
-                        handleChange(otherField, '');
-                      }
+                      if (otherField && newValue !== 'Other') handleChange(otherField, '');
                       if (clearsFields) {
                         if (newValue === clearsFields.value) {
                           clearsFields.fields.forEach(({ field, type }) => {
@@ -159,7 +157,6 @@ function QuestionRenderer({
                               const init = Object.fromEntries(collaboratorIds.map(id => [id, false]));
                               handleChange(field, init);
                             }
-                            // Non-acknowledgment fields: no action needed on activation
                           });
                         } else {
                           clearsFields.fields.forEach(({ field }) => handleChange(field, null));
@@ -169,27 +166,19 @@ function QuestionRenderer({
                   }}
                   onChange={() => {}}
                   disabled={isReadOnly}
-                  className={`mr-3 ${optionDescription ? 'mt-1' : ''}`}
                 />
+                <span className="radio-circle" style={{ marginTop: optionDescription ? '2px' : '0' }} />
                 <div>
-                  <span className="text-gray-700 font-medium">{optionLabel}</span>
-                  {optionDescription && <p className="text-sm text-gray-500">{optionDescription}</p>}
+                  <span>{optionLabel}</span>
+                  {optionDescription && <p style={{ fontSize: '11.5px', fontWeight: 300, color: '#aaa', marginTop: '2px' }}>{optionDescription}</p>}
                 </div>
               </label>
             );
           })}
         </div>
 
-        {/* "Other" text input */}
         {value === 'Other' && otherField && (
-          <input
-            type="text"
-            value={otherValue || ''}
-            onChange={(e) => handleChange(otherField, e.target.value)}
-            disabled={isReadOnly}
-            className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-            placeholder="Please specify"
-          />
+          <input type="text" value={otherValue || ''} onChange={(e) => handleChange(otherField, e.target.value)} disabled={isReadOnly} placeholder="Please specify" style={{ marginTop: '8px' }} />
         )}
 
         {description && <p className="text-sm text-gray-500 mt-2">{description}</p>}
@@ -205,9 +194,9 @@ function QuestionRenderer({
       <div>
         {renderLabel()}
         {helperText && <p className="text-sm text-gray-500 mb-3">{helperText}</p>}
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
           {options.map((option) => (
-            <label key={option} className="flex items-center">
+            <label key={option} className="card-checkbox-option">
               <input
                 type="checkbox"
                 checked={selectedValues.includes(option)}
@@ -217,28 +206,18 @@ function QuestionRenderer({
                     : selectedValues.filter(v => v !== option);
                   const newValues = unsorted.sort((a, b) => options.indexOf(a) - options.indexOf(b));
                   handleChange(fieldName, newValues);
-                  if (otherField && option === 'Other' && !e.target.checked) {
-                    handleChange(otherField, '');
-                  }
+                  if (otherField && option === 'Other' && !e.target.checked) handleChange(otherField, '');
                 }}
                 disabled={isReadOnly}
-                className="mr-3"
               />
-              <span className="text-gray-700">{option}</span>
+              <span className="checkbox-box" />
+              {option}
             </label>
           ))}
         </div>
 
-        {/* "Other" text input */}
         {selectedValues.includes('Other') && otherField && (
-          <input
-            type="text"
-            value={otherValue || ''}
-            onChange={(e) => handleChange(otherField, e.target.value)}
-            disabled={isReadOnly}
-            className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
-            placeholder="Please specify"
-          />
+          <input type="text" value={otherValue || ''} onChange={(e) => handleChange(otherField, e.target.value)} disabled={isReadOnly} placeholder="Please specify" style={{ marginTop: '8px' }} />
         )}
 
         {description && <p className="text-sm text-gray-500 mt-2">{description}</p>}
