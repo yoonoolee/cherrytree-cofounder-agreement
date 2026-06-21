@@ -108,25 +108,32 @@ function PanelCollab({ active }) {
 
 function PanelEquity({ active }) {
   const cats = [
-    { name: 'Cash Invested', count: '1 / 18', imp: 60, scores: [7, 4] },
-    { name: 'Time Commitment', count: '2 / 18', imp: 90, scores: [9, 6] },
-    { name: 'Domain Expertise', count: '3 / 18', imp: 75, scores: [5, 8] },
+    { name: 'Cash Invested', count: '1 / 18', imp: 5, scores: [8, 3] },
+    { name: 'Time Commitment', count: '2 / 18', imp: 8, scores: [9, 7] },
+    { name: 'Idea Origination', count: '3 / 18', imp: 6, scores: [7, 10] },
   ];
+  const names = ['Cofounder A (you)', 'Cofounder B'];
   const [idx, setIdx] = useState(0);
   const [sliderPct, setSliderPct] = useState(0);
-  const [dots, setDots] = useState([0, 0]);
+  const [sliderTransition, setSliderTransition] = useState(false);
+  const [sliderVal, setSliderVal] = useState(null);
+  const [selected, setSelected] = useState([null, null]);
   const refs = useRef([]);
 
   useEffect(() => {
     refs.current.forEach(clearTimeout);
     refs.current = [];
-    if (!active) { setIdx(0); setSliderPct(0); setDots([0, 0]); return; }
+    if (!active) { setIdx(0); setSliderPct(0); setSliderTransition(false); setSliderVal(null); setSelected([null, null]); return; }
     const t = (fn, ms) => { const id = setTimeout(fn, ms); refs.current.push(id); };
     const run = (i) => {
-      setIdx(i); setSliderPct(0); setDots([0, 0]);
-      t(() => setSliderPct(cats[i].imp), 80);
-      t(() => setDots(cats[i].scores), 350);
-      t(() => run((i + 1) % cats.length), 2600);
+      setIdx(i); setSliderPct(0); setSliderTransition(false); setSliderVal(null); setSelected([null, null]);
+      const step = cats[i];
+      t(() => { setSliderTransition(true); setSliderPct(step.imp * 10); setSliderVal(step.imp); }, 120);
+      step.scores.forEach((score, ci) => {
+        t(() => setSelected(prev => { const n = [...prev]; n[ci] = score; return n; }), 700 + ci * 420);
+      });
+      const totalDelay = 700 + step.scores.length * 420 + 800;
+      t(() => run((i + 1) % cats.length), totalDelay);
     };
     run(0);
     return () => refs.current.forEach(clearTimeout);
@@ -148,18 +155,18 @@ function PanelEquity({ active }) {
           <div className="lp-s1-label">How important is this?</div>
           <div className="lp-s3-slider-row">
             <div className="lp-s3-track">
-              <div className="lp-s3-fill" style={{ width: `${sliderPct}%` }}/>
-              <div className="lp-s3-thumb" style={{ left: `${sliderPct}%` }}/>
+              <div className="lp-s3-fill" style={{ width: `${sliderPct}%`, transition: sliderTransition ? 'width 0.7s cubic-bezier(0.16,1,0.3,1)' : 'none' }}/>
+              <div className="lp-s3-thumb" style={{ left: `${sliderPct}%`, transition: sliderTransition ? 'left 0.7s cubic-bezier(0.16,1,0.3,1)' : 'none' }}/>
             </div>
-            <span className="lp-s3-val">{Math.round(sliderPct / 10)}</span>
+            <span className="lp-s3-val">{sliderVal ?? '—'}</span>
           </div>
           <div className="lp-s1-label" style={{ marginTop: 10 }}>Score each cofounder</div>
-          {['Alex', 'Jordan'].map((name, i) => (
+          {names.map((name, i) => (
             <div key={i} className="lp-s3-cf">
               <div className="lp-s3-cf-name">{name}</div>
               <div className="lp-s3-dots">
                 {[...Array(10)].map((_, d) => (
-                  <div key={d} className={`lp-s3-dot${d < dots[i] ? ' on' : ''}`} style={{ transition: `background 0.12s ${d * 0.04}s` }}/>
+                  <div key={d} className={`lp-s3-dot${selected[i] === d + 1 ? ' selected' : ''}`}>{d + 1}</div>
                 ))}
               </div>
             </div>

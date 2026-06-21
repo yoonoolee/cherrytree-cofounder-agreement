@@ -27,25 +27,19 @@ const PLANS = [
 ];
 
 const COMPARE_ROWS = [
-  { section: 'Agreement', rows: [
-    { label: 'Equity & vesting schedules', b: true, s: true, e: true },
-    { label: 'Roles & responsibilities', b: true, s: true, e: true },
-    { label: 'Intellectual property', b: true, s: true, e: true },
-    { label: 'Decision-making & voting', b: true, s: true, e: true },
-    { label: 'Non-compete & exit clauses', b: true, s: true, e: true },
-  ]},
-  { section: 'Support', rows: [
-    { label: 'Email support', b: true, s: true, e: true },
-    { label: 'Priority support', b: false, s: true, e: true },
-    { label: 'Attorney review', b: false, s: true, e: true },
-    { label: 'Cofounder coaching', b: false, s: true, e: true },
-    { label: 'Dedicated account manager', b: false, s: false, e: true },
-  ]},
-  { section: 'Enterprise', rows: [
-    { label: 'Bulk licensing', b: false, s: false, e: true },
-    { label: 'Branded experience', b: false, s: false, e: true },
-    { label: 'Cohort dashboard', b: false, s: false, e: true },
-  ]},
+  { label: 'Equity & vesting schedules', b: true, s: true, e: true },
+  { label: 'Roles & responsibilities', b: true, s: true, e: true },
+  { label: 'Intellectual property', b: true, s: true, e: true },
+  { label: 'Decision-making & voting', b: true, s: true, e: true },
+  { label: 'Non-compete & exit clauses', b: true, s: true, e: true },
+  { label: 'Email support', b: true, s: true, e: true },
+  { label: 'Priority support', b: false, s: true, e: true },
+  { label: 'Attorney review', b: false, s: true, e: true },
+  { label: 'Cofounder coaching', b: false, s: true, e: true },
+  { label: 'Dedicated account manager', b: false, s: false, e: true },
+  { label: 'Bulk licensing', b: false, s: false, e: true },
+  { label: 'Branded experience', b: false, s: false, e: true },
+  { label: 'Cohort dashboard', b: false, s: false, e: true },
 ];
 
 const FAQS = [
@@ -56,11 +50,9 @@ const FAQS = [
   { q: 'Do we pay again to edit later?', a: "No, edit all you want. The only repeat cost is if you create a brand-new agreement for a different company." },
 ];
 
-function Check({ on, dark }) {
-  if (!on) return <span style={{ color: dark ? 'rgba(255,255,255,0.2)' : '#ccc', fontSize: 13 }}>—</span>;
-  return (
-    <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:20, height:20, borderRadius:4, background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(75,114,99,0.1)', border: `1px solid ${dark ? 'rgba(255,255,255,0.2)' : 'rgba(75,114,99,0.25)'}`, color: dark ? 'rgba(255,255,255,0.7)' : '#4B7263', fontSize:11 }}>✓</span>
-  );
+function Check({ on }) {
+  if (!on) return <span className="lp-ppt-dash">—</span>;
+  return <span className="lp-ppt-check">✓</span>;
 }
 
 function PricingPage() {
@@ -99,7 +91,7 @@ function PricingPage() {
       <section className="lp-pricing-pg-hero">
         <div className="lp-overline">Pricing</div>
         <h1 className="lp-pricing-pg-h1">Founder-friendly pricing.</h1>
-        <p className="lp-pricing-pg-sub">Choose the plan that's right for your team.</p>
+        <p className="lp-pricing-pg-sub">Choose the plan that's right for your team. No subscriptions, no surprises.</p>
       </section>
 
       {/* Cards */}
@@ -109,7 +101,9 @@ function PricingPage() {
             <div key={i} className={`lp-pricing-card${p.featured ? ' featured' : ''}`}>
               {p.badge && <div className="lp-pricing-badge">{p.badge}</div>}
               <div className="lp-pricing-tier">{p.tier}</div>
-              <div className="lp-pricing-price">{p.price}</div>
+              <div className="lp-pricing-price">
+                {p.price.startsWith('$') ? <><span>$</span>{p.price.slice(1)}</> : p.price}
+              </div>
               <div className="lp-pricing-period">{p.period}</div>
               <div className="lp-pricing-divider"/>
               <p className="lp-pricing-desc">{p.desc}</p>
@@ -136,33 +130,26 @@ function PricingPage() {
 
       {/* Compare table */}
       <section className="lp-pricing-pg-compare">
-        <h2 className="lp-pricing-pg-compare-title">Compare plans.</h2>
-        <p className="lp-pricing-pg-compare-sub">Each plan covers one cofounder agreement.</p>
-        <div className="lp-pricing-pg-table-wrap">
+        <div className="lp-pricing-pg-compare-inner">
+          <h2 className="lp-pricing-pg-compare-title">Compare plans</h2>
+          <p className="lp-pricing-pg-compare-sub">Each plan covers one cofounder agreement. Fill out the survey and equity calculator to get a ready-to-use agreement.</p>
           <table className="lp-pricing-pg-table">
             <thead>
               <tr>
-                <th className="lp-ppt-feature-col">Features</th>
+                <th className="lp-ppt-feature-col"></th>
                 <th>Bootstrapped</th>
-                <th className="lp-ppt-featured-col">Scale</th>
+                <th>Scale</th>
                 <th>Enterprise</th>
               </tr>
             </thead>
             <tbody>
-              {COMPARE_ROWS.map((group, gi) => (
-                <React.Fragment key={gi}>
-                  <tr className="lp-ppt-section-row">
-                    <td colSpan={4}>{group.section}</td>
-                  </tr>
-                  {group.rows.map((row, ri) => (
-                    <tr key={ri} className="lp-ppt-row">
-                      <td className="lp-ppt-label">{row.label}</td>
-                      <td><Check on={row.b}/></td>
-                      <td className="lp-ppt-featured-col"><Check on={row.s}/></td>
-                      <td><Check on={row.e}/></td>
-                    </tr>
-                  ))}
-                </React.Fragment>
+              {COMPARE_ROWS.map((row, ri) => (
+                <tr key={ri} className="lp-ppt-row">
+                  <td className="lp-ppt-label">{row.label}</td>
+                  <td><Check on={row.b}/></td>
+                  <td><Check on={row.s}/></td>
+                  <td><Check on={row.e}/></td>
+                </tr>
               ))}
             </tbody>
           </table>
