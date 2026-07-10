@@ -37,12 +37,19 @@
 .question-card.expanded { padding: 18px 22px 22px; cursor: default; }
 .question-card.answered:not(.expanded) { background: var(--ct-card-answered); }
 .question-card.answered:not(.expanded):hover { background: #A9BAB2; }
+.question-card.flat, .question-card.flat.expanded, .question-card.flat:hover {
+  background: none;
+  padding: 0;
+  margin-bottom: 0;
+  cursor: default;
+}
 
 .card-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  position: relative;
 }
 
 .card-question {
@@ -50,6 +57,7 @@
   font-size: 17px;
   font-weight: 400;
   color: #999;
+  line-height: 1.25;
   transition: font-size 0.35s ease, color 0.35s ease;
 }
 .question-card.expanded .card-question { font-size: 24px; color: #1a1a1a; }
@@ -60,15 +68,28 @@
   font-size: 13px;
   font-weight: 400;
   color: #3a5248;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 220px;
+  text-align: right;
+  max-width: 500px;
   flex-shrink: 0;
   opacity: 0;
+  white-space: pre-line;
   transition: opacity 0.25s ease;
 }
+/* While expanded, the preview is invisible (opacity:0) but was still taking up
+   its full layout width in the flex row - a long preview squeezed the question
+   into a narrower column, forcing it to wrap into extra lines. Taking it out of
+   flow here lets the question always use the full row width. */
+.question-card.expanded .card-row > .card-answer-preview {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
 .question-card.answered:not(.expanded) .card-answer-preview { opacity: 1; }
+
+/* Sub-question row: mirrors the main question row, but only ever visible
+   when the whole card is collapsed - never while expanded. */
+.card-row.sub-question-row { display: none; }
+.question-card.answered:not(.expanded) .card-row.sub-question-row { display: flex; }
 
 .card-bottom {
   display: grid;
@@ -86,6 +107,7 @@
   padding-top: 10px;
   padding-bottom: 6px;
 }
+.card-hint + .card-hint { padding-top: 0; }
 
 /* ── Custom checkbox ── */
 .card-checkbox-option input[type="checkbox"] { display: none !important; }
@@ -639,8 +661,14 @@ select:disabled {
   }
 }
 
+/* Section content entrance - matches Anika's surveystyles.css .main animation exactly */
+@keyframes sectionContentIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .animate-fade-down {
-  animation: fadeInDown 0.5s ease-out forwards;
+  animation: sectionContentIn 0.46s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   opacity: 0;
 }
 
@@ -743,11 +771,9 @@ select:disabled {
 
 /* Conditional question sections */
 .conditional-section {
-  padding-left: 1.5rem;
+  padding-left: 0;
   padding-top: 1rem;
-  padding-bottom: 1rem;
   margin-top: 1rem;
-  margin-bottom: 3rem;
   overflow: visible;
   position: relative;
   z-index: 100;

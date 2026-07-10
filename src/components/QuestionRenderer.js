@@ -1,5 +1,4 @@
 import React from 'react';
-import Tooltip from './Tooltip';
 import CustomSelect from './CustomSelect';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
@@ -47,9 +46,7 @@ function QuestionRenderer({
     required,
     options,
     placeholder,
-    tooltip,
     description,
-    helperText,
     otherField,
     acknowledgmentText,
     clearsFields
@@ -84,7 +81,6 @@ function QuestionRenderer({
     <label className="block text-base font-medium text-gray-900 mb-2">
       {question}
       {isInvalid && <span className="text-red-700 ml-0.5">*</span>}
-      {tooltip && <Tooltip text={tooltip} />}
     </label>
   );
 
@@ -93,7 +89,6 @@ function QuestionRenderer({
     return (
       <div>
         {renderLabel()}
-        {helperText && <p className="text-sm text-gray-500 mb-3">{helperText}</p>}
         <input
           type={type}
           value={value || ''}
@@ -112,7 +107,6 @@ function QuestionRenderer({
     return (
       <div>
         {renderLabel()}
-        {helperText && <p className="text-sm text-gray-500 mb-3">{helperText}</p>}
         <textarea
           value={value || ''}
           onChange={(e) => handleChange(fieldName, e.target.value)}
@@ -131,7 +125,6 @@ function QuestionRenderer({
     return (
       <div>
         {renderLabel()}
-        {helperText && <p className="text-sm text-gray-500 mb-3">{helperText}</p>}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
           {options.map((option) => {
             const optionValue = typeof option === 'object' ? option.value : option;
@@ -193,7 +186,6 @@ function QuestionRenderer({
     return (
       <div>
         {renderLabel()}
-        {helperText && <p className="text-sm text-gray-500 mb-3">{helperText}</p>}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
           {options.map((option) => (
             <label key={option} className="card-checkbox-option">
@@ -230,7 +222,6 @@ function QuestionRenderer({
     return (
       <div>
         {renderLabel()}
-        {helperText && <p className="text-sm text-gray-500 mb-3">{helperText}</p>}
         <CustomSelect
           value={value || ''}
           onChange={(selectedValue) => {
@@ -265,17 +256,18 @@ function QuestionRenderer({
     const approvals = value || {};
     const currentUserId = currentUser?.id;
 
-    // Support dynamic acknowledgmentText as function or string
+    // Support dynamic acknowledgmentText as function or string. The question is
+    // already shown as this card's title, so only render this paragraph when
+    // acknowledgmentText adds something beyond that (e.g. a filled-in detail) -
+    // otherwise it would just repeat the title verbatim.
     const displayText = typeof acknowledgmentText === 'function'
       ? acknowledgmentText(formData)
-      : (acknowledgmentText || question);
+      : acknowledgmentText;
 
     return (
       <div className={config.conditionalOn ? "conditional-section" : ""}>
-        <p className="text-gray-700 mb-4">
-          {displayText}
-          {isInvalid && <span className="text-red-700 ml-0.5">*</span>}
-        </p>
+        {isInvalid && <span className="text-red-700 text-xs">* Required</span>}
+        {displayText && <p className="text-gray-700 mt-2 mb-2">{displayText}</p>}
         <div className="space-y-2 mt-3 pl-4">
           {collaboratorIds.map((userId) => {
             const isApproved = approvals[userId] || false;

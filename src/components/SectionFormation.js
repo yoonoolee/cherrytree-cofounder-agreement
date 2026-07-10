@@ -5,20 +5,10 @@ import QuestionRenderer from './QuestionRenderer';
 import QuestionCard from './QuestionCard';
 import { QUESTION_CONFIG } from '../config/questionConfig';
 import { FIELDS } from '../config/surveySchema';
+import { getPreview } from '../utils/getPreview';
 
 // Constants
 const ADDRESS_SEARCH_MIN_LENGTH = 3; // Minimum characters before triggering address autocomplete
-
-// Returns a short display string for a field's current value
-function getPreview(fieldName, formData) {
-  const val = formData[fieldName];
-  if (!val) return '';
-  if (Array.isArray(val)) {
-    if (val.length === 0) return '';
-    return val.length <= 2 ? val.join(', ') : `${val[0]} +${val.length - 1} more`;
-  }
-  return String(val);
-}
 
 const FIELD_ORDER = [
   FIELDS.COMPANY_NAME,
@@ -48,6 +38,8 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
     const idx = FIELD_ORDER.indexOf(currentKey);
     if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1]);
   };
+
+  const collapse = () => setExpandedField(null);
 
   useEffect(() => {
     // Only sync formData to inputValue on initial mount
@@ -203,7 +195,14 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
 
 
   const addressPreview = formData[FIELDS.MAILING_STREET]
-    ? [formData[FIELDS.MAILING_STREET], formData[FIELDS.MAILING_CITY]].filter(Boolean).join(', ')
+    ? [
+        formData[FIELDS.MAILING_STREET],
+        formData[FIELDS.MAILING_STREET2],
+        [
+          [formData[FIELDS.MAILING_CITY], formData[FIELDS.MAILING_STATE]].filter(Boolean).join(', '),
+          formData[FIELDS.MAILING_ZIP],
+        ].filter(Boolean).join(' '),
+      ].filter(Boolean).join('\n')
     : '';
   const addressAnswered = !!(formData[FIELDS.MAILING_STREET] && formData[FIELDS.MAILING_CITY] && formData[FIELDS.MAILING_STATE] && formData[FIELDS.MAILING_ZIP]);
 
@@ -212,7 +211,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
       <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '42px', fontWeight: 400, letterSpacing: '-0.5px', marginBottom: '14px', lineHeight: 1.1, color: '#1a1a1a' }}>
         Formation &amp; Purpose
       </h2>
-      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', maxWidth: '820px', lineHeight: 1.65, marginBottom: '32px' }}>
+      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', lineHeight: 1.65, marginBottom: '32px' }}>
         You've been talking about this idea for weeks, maybe months. Now you're sitting with your cofounder, naming the company, buying the domain, imagining what it could become. Coffee in hand, takeout on the table. Creating a cofounder agreement is what makes it real. Let's get started.
       </p>
 
@@ -222,10 +221,11 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.COMPANY_NAME].question}
           answerPreview={getPreview(FIELDS.COMPANY_NAME, formData)}
-          hint={QUESTION_CONFIG[FIELDS.COMPANY_NAME].tooltip}
+          tooltip={QUESTION_CONFIG[FIELDS.COMPANY_NAME].tooltip}
           isExpanded={expandedField === FIELDS.COMPANY_NAME}
           isAnswered={!!formData[FIELDS.COMPANY_NAME]}
           onExpand={() => setExpandedField(FIELDS.COMPANY_NAME)}
+          onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.COMPANY_NAME)}
         >
           <QuestionRenderer
@@ -242,11 +242,12 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         {/* Entity Type */}
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.ENTITY_TYPE].question}
-          answerPreview={getPreview(FIELDS.ENTITY_TYPE, formData)}
-          hint={QUESTION_CONFIG[FIELDS.ENTITY_TYPE].tooltip}
+          answerPreview={getPreview(FIELDS.ENTITY_TYPE, formData, FIELDS.ENTITY_TYPE_OTHER)}
+          tooltip={QUESTION_CONFIG[FIELDS.ENTITY_TYPE].tooltip}
           isExpanded={expandedField === FIELDS.ENTITY_TYPE}
           isAnswered={!!formData[FIELDS.ENTITY_TYPE]}
           onExpand={() => setExpandedField(FIELDS.ENTITY_TYPE)}
+          onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.ENTITY_TYPE)}
         >
           <QuestionRenderer
@@ -265,10 +266,11 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
           <QuestionCard
             question={QUESTION_CONFIG[FIELDS.REGISTERED_STATE].question}
             answerPreview={getPreview(FIELDS.REGISTERED_STATE, formData)}
-            hint={QUESTION_CONFIG[FIELDS.REGISTERED_STATE].tooltip}
+            tooltip={QUESTION_CONFIG[FIELDS.REGISTERED_STATE].tooltip}
             isExpanded={expandedField === FIELDS.REGISTERED_STATE}
             isAnswered={!!formData[FIELDS.REGISTERED_STATE]}
             onExpand={() => setExpandedField(FIELDS.REGISTERED_STATE)}
+            onCollapse={collapse}
             onAdvance={() => advanceTo(FIELDS.REGISTERED_STATE)}
           >
             <QuestionRenderer
@@ -290,6 +292,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
           isExpanded={expandedField === 'mailing_address'}
           isAnswered={addressAnswered}
           onExpand={() => setExpandedField('mailing_address')}
+          onCollapse={collapse}
           onAdvance={() => advanceTo('mailing_address')}
         >
           {showValidation && (!formData[FIELDS.MAILING_STREET] || !formData[FIELDS.MAILING_CITY] || !formData[FIELDS.MAILING_STATE] || !formData[FIELDS.MAILING_ZIP]) && (
@@ -378,10 +381,11 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.COMPANY_DESCRIPTION].question}
           answerPreview={getPreview(FIELDS.COMPANY_DESCRIPTION, formData)}
-          hint={QUESTION_CONFIG[FIELDS.COMPANY_DESCRIPTION].tooltip}
+          tooltip={QUESTION_CONFIG[FIELDS.COMPANY_DESCRIPTION].tooltip}
           isExpanded={expandedField === FIELDS.COMPANY_DESCRIPTION}
           isAnswered={!!formData[FIELDS.COMPANY_DESCRIPTION]}
           onExpand={() => setExpandedField(FIELDS.COMPANY_DESCRIPTION)}
+          onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.COMPANY_DESCRIPTION)}
         >
           <QuestionRenderer
@@ -398,11 +402,12 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         {/* Industry */}
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.INDUSTRIES].question}
-          answerPreview={getPreview(FIELDS.INDUSTRIES, formData)}
-          hint={QUESTION_CONFIG[FIELDS.INDUSTRIES].tooltip}
+          answerPreview={getPreview(FIELDS.INDUSTRIES, formData, FIELDS.INDUSTRY_OTHER)}
+          tooltip={QUESTION_CONFIG[FIELDS.INDUSTRIES].tooltip}
           isExpanded={expandedField === FIELDS.INDUSTRIES}
           isAnswered={!!(formData[FIELDS.INDUSTRIES]?.length)}
           onExpand={() => setExpandedField(FIELDS.INDUSTRIES)}
+          onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.INDUSTRIES)}
         >
           <QuestionRenderer
