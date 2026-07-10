@@ -45,9 +45,9 @@ export function useProjectSync(projectId, isSavingRef) {
             setFormData(loadedData);
           }
 
-          // Set lastSaved from updatedAt if available
-          if (data.updatedAt && !lastSaved) {
-            setLastSaved(data.updatedAt.toDate());
+          // Set lastSaved from lastUpdated if available
+          if (data.lastUpdated && !lastSaved) {
+            setLastSaved(data.lastUpdated.toDate());
           }
         }
       },

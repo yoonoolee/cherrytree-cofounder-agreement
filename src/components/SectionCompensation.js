@@ -4,18 +4,19 @@ import QuestionRenderer from './QuestionRenderer';
 import QuestionCard from './QuestionCard';
 import { QUESTION_CONFIG } from '../config/questionConfig';
 import { FIELDS } from '../config/surveySchema';
-
-function getPreview(fieldName, formData) {
-  const val = formData[fieldName];
-  if (!val) return '';
-  if (Array.isArray(val)) return val.length <= 2 ? val.join(', ') : `${val[0]} +${val.length - 1} more`;
-  return String(val);
-}
+import { getPreview } from '../utils/getPreview';
 
 const FIELD_ORDER = [
   FIELDS.TAKING_COMPENSATION,
   FIELDS.SPENDING_LIMIT,
 ];
+
+const formatCurrency = (rawValue) => {
+  if (!rawValue) return '';
+  const parts = rawValue.split('.');
+  const int = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return `$${parts.length === 2 ? `${int}.${parts[1]}` : int}`;
+};
 
 function SectionCompensation({ formData, handleChange, isReadOnly, showValidation, project }) {
   const compensations = formData[FIELDS.COMPENSATIONS] || [];
@@ -28,6 +29,7 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
     const idx = FIELD_ORDER.indexOf(key);
     if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1]);
   };
+  const collapse = () => setExpandedField(null);
 
   const handleAddCompensation = () => {
     if (!canAddMore) return;
@@ -44,14 +46,14 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
     handleChange(FIELDS.COMPENSATIONS, updated);
   };
 
-  const spendingPreview = formData[FIELDS.SPENDING_LIMIT] ? `$${formData[FIELDS.SPENDING_LIMIT]}` : '';
+  const spendingPreview = formatCurrency(formData[FIELDS.SPENDING_LIMIT]);
 
   return (
     <div>
       <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '42px', fontWeight: 400, letterSpacing: '-0.5px', marginBottom: '14px', lineHeight: 1.1, color: '#1a1a1a' }}>
         Compensation &amp; Expenses
       </h2>
-      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', maxWidth: '820px', lineHeight: 1.65, marginBottom: '32px' }}>
+      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', lineHeight: 1.65, marginBottom: '32px' }}>
         Money issues cause more divorce than infidelity and incompatibility. It'd be naive to think cofounderships are immune. Don't wait until someone is frustrated over uneven pay or unclear expenses. Agree on how money flows now and keep communication transparent to avoid costly fallout.
       </p>
 
@@ -59,38 +61,41 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.TAKING_COMPENSATION].question}
           answerPreview={getPreview(FIELDS.TAKING_COMPENSATION, formData)}
-          hint={QUESTION_CONFIG[FIELDS.TAKING_COMPENSATION].tooltip}
+          tooltip={QUESTION_CONFIG[FIELDS.TAKING_COMPENSATION].tooltip}
+          subQuestion={formData[FIELDS.TAKING_COMPENSATION] === 'Yes' ? 'Compensation Details' : undefined}
+          subAnswerPreview={compensations.map(c => `${c.who || 'Unnamed'}: ${formatCurrency(c.amount)}`).join('\n')}
           isExpanded={expandedField === FIELDS.TAKING_COMPENSATION}
           isAnswered={!!formData[FIELDS.TAKING_COMPENSATION]}
           onExpand={() => setExpandedField(FIELDS.TAKING_COMPENSATION)}
+          onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.TAKING_COMPENSATION)}
         >
           <QuestionRenderer fieldName={FIELDS.TAKING_COMPENSATION} config={QUESTION_CONFIG[FIELDS.TAKING_COMPENSATION]} formData={formData} handleChange={handleChange} isReadOnly={isReadOnly} showValidation={showValidation} project={project} hideLabel />
 
           {formData[FIELDS.TAKING_COMPENSATION] === 'Yes' && (
-            <div style={{ marginTop: '20px', borderLeft: '3px solid #d6d2c9', paddingLeft: '18px' }}>
-              <div className="flex justify-between items-center mb-4">
-                <label className="block text-base font-medium text-gray-900">
+            <div className="conditional-section">
+              <div className="card-row">
+                <div className="card-question" style={{ fontSize: '24px', color: '#1a1a1a' }}>
                   Compensation Details
-                  {!canAddMore && compensations.length > 0 && <span className="text-xs text-gray-500 ml-2">All cofounders assigned</span>}
-                </label>
+                  {!canAddMore && compensations.length > 0 && <span style={{ fontFamily: 'Outfit, sans-serif', fontSize: '11px', color: '#888', marginLeft: 8 }}>All cofounders assigned</span>}
+                </div>
                 <button type="button" onClick={handleAddCompensation} disabled={isReadOnly || !canAddMore}
                   style={{ padding: '8px 16px', background: '#4B7263', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', cursor: canAddMore ? 'pointer' : 'not-allowed', opacity: canAddMore ? 1 : 0.5 }}>
                   + Add
                 </button>
               </div>
               {compensations.length === 0 ? (
-                <p className="text-gray-500 text-sm">Click "Add" to add compensation entries</p>
+                <p className="text-gray-500 text-sm" style={{ marginTop: '16px' }}>Click "Add" to add compensation entries</p>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '16px' }}>
                   {compensations.map((comp, index) => (
-                    <div key={index} style={{ borderLeft: '2px solid #E9E5DF', paddingLeft: '16px', paddingTop: '8px' }}>
+                    <div key={index} style={{ borderLeft: '2px solid #E9E5DF', paddingLeft: '16px', paddingTop: '8px', position: 'relative', zIndex: compensations.length - index }}>
                       <div className="flex justify-between items-start mb-3">
                         <h4 className="font-medium text-gray-700">Compensation {index + 1}</h4>
                         <button type="button" onClick={() => handleRemoveCompensation(index)} disabled={isReadOnly} className="text-red-500 hover:text-red-700 text-sm disabled:text-gray-400">Remove</button>
                       </div>
                       <div className="space-y-3">
-                        <div style={{ overflow: 'visible', position: 'relative', zIndex: 100 }}>
+                        <div style={{ overflow: 'visible', position: 'relative' }}>
                           <label className="block text-base font-medium text-gray-900 mb-2">
                             Full Name {showValidation && !comp.who && <span className="text-red-700 ml-0.5 validation-error">*</span>}
                           </label>
@@ -111,7 +116,7 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
                           </label>
                           <input
                             type="text"
-                            value={comp.amount ? `$${(() => { const parts = comp.amount.split('.'); const int = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); return parts.length === 2 ? `${int}.${parts[1]}` : int; })()}` : ''}
+                            value={formatCurrency(comp.amount)}
                             onChange={(e) => {
                               const value = e.target.value.replace('$', '').replace(/,/g, '');
                               if (value === '') { handleCompensationChange(index, 'amount', value); return; }
@@ -141,12 +146,13 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
           isExpanded={expandedField === FIELDS.SPENDING_LIMIT}
           isAnswered={!!formData[FIELDS.SPENDING_LIMIT]}
           onExpand={() => setExpandedField(FIELDS.SPENDING_LIMIT)}
+          onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.SPENDING_LIMIT)}
         >
           {showValidation && !formData[FIELDS.SPENDING_LIMIT] && <span className="text-red-700 text-xs">* Required</span>}
           <input
             type="text"
-            value={formData[FIELDS.SPENDING_LIMIT] ? `$${(() => { const val = formData[FIELDS.SPENDING_LIMIT]; const parts = val.split('.'); const int = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); return parts.length === 2 ? `${int}.${parts[1]}` : int; })()}` : ''}
+            value={formatCurrency(formData[FIELDS.SPENDING_LIMIT])}
             onChange={(e) => {
               const value = e.target.value.replace('$', '').replace(/,/g, '');
               if (value === '') { handleChange(FIELDS.SPENDING_LIMIT, value); return; }

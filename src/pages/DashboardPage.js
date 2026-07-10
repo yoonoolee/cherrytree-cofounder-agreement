@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { UserButton, useClerk } from '@clerk/clerk-react';
@@ -16,6 +16,58 @@ function DashboardPage() {
   const [referLinkCopied, setReferLinkCopied] = useState(false);
 
   const { projects, loading } = useProjects(currentUser, userMemberships, orgsLoaded, authLoading);
+
+  const welcomeRef = useRef(null);
+  const subtitleRef = useRef(null);
+
+  useEffect(() => {
+    if (authLoading || loading) return;
+
+    const welcome = welcomeRef.current;
+    const sub = subtitleRef.current;
+
+    if (welcome) {
+      welcome.style.opacity = '0';
+      welcome.style.transform = 'translateY(12px)';
+      welcome.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    }
+    if (sub) {
+      sub.style.opacity = '0';
+      sub.style.transform = 'translateY(10px)';
+      sub.style.transition = 'opacity 0.5s ease 0.12s, transform 0.5s ease 0.12s';
+    }
+
+    const cards = document.querySelectorAll('[data-animate-card]');
+    cards.forEach((card) => {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(16px)';
+    });
+
+    const timer = setTimeout(() => {
+      if (welcome) { welcome.style.opacity = '1'; welcome.style.transform = 'translateY(0)'; }
+      if (sub) { sub.style.opacity = '1'; sub.style.transform = 'translateY(0)'; }
+    }, 60);
+
+    const cardArray = Array.from(cards);
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const delay = cardArray.indexOf(entry.target) * 0.05;
+          entry.target.style.transition = `opacity 0.45s ease ${delay}s, transform 0.45s ease ${delay}s, background 0.2s`;
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.05 });
+
+    cards.forEach(card => observer.observe(card));
+
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [authLoading, loading]);
 
   const handlePaymentSuccess = () => setShowPaymentModal(false);
 
@@ -89,10 +141,10 @@ function DashboardPage() {
         </div>
 
         {/* Welcome */}
-        <h1 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '44px', fontWeight: 200, letterSpacing: '-0.5px', marginBottom: '12px', lineHeight: 1.1 }}>
+        <h1 ref={welcomeRef} style={{ fontFamily: 'Instrument Serif, serif', fontSize: '44px', fontWeight: 200, letterSpacing: '-0.5px', marginBottom: '12px', lineHeight: 1.1 }}>
           Welcome back, <em>{currentUser?.firstName || 'there'}</em>.
         </h1>
-        <p style={{ fontSize: '14px', fontWeight: 300, color: '#555', lineHeight: 1.55, maxWidth: '440px', marginBottom: '40px' }}>
+        <p ref={subtitleRef} style={{ fontSize: '14px', fontWeight: 300, color: '#555', lineHeight: 1.55, maxWidth: '440px', marginBottom: '40px' }}>
           {projects.length > 0
             ? "Let's jump back into your open agreements."
             : "Create your first cofounder agreement to get started."}
@@ -103,7 +155,7 @@ function DashboardPage() {
           const progress = calculateProjectProgress(project);
           const sectionsCompleted = countCompletedSections(project);
 
-          const lastEditTime = project.updatedAt || project.createdAt;
+          const lastEditTime = project.lastUpdated || project.updatedAt || project.createdAt;
           let timeAgo = '';
           if (lastEditTime) {
             const now = new Date();
@@ -130,7 +182,7 @@ function DashboardPage() {
             : null;
 
           return (
-            <div key={project.id} style={{ background: '#e3dfd8', borderRadius: '5px', padding: '22px 24px 0', marginBottom: '12px', overflow: 'hidden' }}>
+            <div key={project.id} data-card data-animate-card style={{ background: '#e3dfd8', borderRadius: '5px', padding: '22px 24px 0', marginBottom: '12px', overflow: 'hidden' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'stretch', gap: '16px' }}>
                 {/* Left */}
                 <div style={{ flex: 1 }}>
@@ -187,7 +239,51 @@ function DashboardPage() {
                     <div style={{ fontSize: '11px', fontWeight: 300, color: '#4B7263', marginTop: '2px' }}>Completed</div>
                   </div>
                   <button
-                    onClick={() => navigate(`/survey/${project.id}`)}
+                    onClick={(e) => {
+                      const card = e.currentTarget.closest('[data-card]');
+                      const rect = card.getBoundingClientRect();
+
+                      const overlay = document.createElement('div');
+                      overlay.style.cssText = `
+                        position: fixed;
+                        top: ${rect.top}px;
+                        left: ${rect.left}px;
+                        width: ${rect.width}px;
+                        height: ${rect.height}px;
+                        background: #e3dfd8;
+                        border-radius: 5px;
+                        z-index: 9999;
+                        pointer-events: none;
+                        transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                                    left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                                    width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                                    height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                                    border-radius 0.4s ease,
+                                    background 0.12s ease 0.05s;
+                      `;
+                      document.body.appendChild(overlay);
+
+                      // Force reflow then expand to fullscreen + shift to survey bg colour
+                      overlay.getBoundingClientRect();
+                      requestAnimationFrame(() => {
+                        overlay.style.top = '0';
+                        overlay.style.left = '0';
+                        overlay.style.width = '100vw';
+                        overlay.style.height = '100vh';
+                        overlay.style.borderRadius = '0';
+                        overlay.style.background = '#F6F3EE';
+                      });
+
+                      setTimeout(() => {
+                        navigate(`/survey/${project.id}`);
+                        // Give React a couple frames to render the survey, then fade the overlay out
+                        setTimeout(() => {
+                          overlay.style.transition = 'opacity 0.35s ease';
+                          overlay.style.opacity = '0';
+                          setTimeout(() => overlay.remove(), 380);
+                        }, 80);
+                      }, 560);
+                    }}
                     style={{ background: '#4e7068', color: '#fff', border: 'none', borderRadius: '3px', padding: '9px 24px', fontFamily: 'Outfit, sans-serif', fontSize: '13px', fontWeight: 200, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'background 0.2s' }}
                     onMouseEnter={e => e.currentTarget.style.background = '#3d5a54'}
                     onMouseLeave={e => e.currentTarget.style.background = '#4e7068'}
@@ -207,6 +303,7 @@ function DashboardPage() {
 
         {/* Create new card */}
         <button
+          data-animate-card
           onClick={() => setShowPaymentModal(true)}
           style={{ width: '100%', background: '#b6c8c0', borderRadius: '5px', padding: '26px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: 'none', cursor: 'pointer', marginBottom: '12px', transition: 'background 0.2s' }}
           onMouseEnter={e => e.currentTarget.style.background = '#A8BCB3'}
@@ -223,14 +320,6 @@ function DashboardPage() {
           </div>
         </button>
 
-        {/* AI Chat teaser */}
-        <div style={{ width: '100%', borderRadius: '5px', padding: '26px 28px', background: '#e8ede9', position: 'relative', overflow: 'hidden', minHeight: '120px', display: 'flex', alignItems: 'center' }}>
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <div style={{ fontSize: '14px', fontWeight: 400, color: '#1a1a1a', marginBottom: '6px' }}>Chat with our AI</div>
-            <div style={{ fontSize: '13px', fontWeight: 300, color: '#555', maxWidth: '400px', lineHeight: 1.6 }}>Trained on hundreds of real cofounder coaching conversations and broader startup data, with access to your project context.</div>
-            <div style={{ fontSize: '12px', fontWeight: 300, color: '#aaa', marginTop: '10px' }}>*coming soon</div>
-          </div>
-        </div>
       </main>
 
       {/* Refer a Friend popup */}

@@ -213,8 +213,8 @@ export const QUESTION_CONFIG = {
     required: true,
     options: VESTING_SCHEDULES,
     otherField: FIELDS.VESTING_SCHEDULE_OTHER,
-    helperText: "The standard is 4 years with a 1-year cliff",
     tooltip: 'You earn no equity until the "cliff" is hit. Then, once the cliff is reached, you immediately vest the first portion of your equity, and the rest continues to vest gradually over the remaining period.',
+    standard: "The standard is 4 years with a 1-year cliff.",
   },
 
   [FIELDS.CLIFF_PERCENTAGE]: {
@@ -223,6 +223,7 @@ export const QUESTION_CONFIG = {
     type: INPUT_TYPES.TEXT, // Percentage input with custom formatting
     required: true,
     tooltip: "If you leave before the cliff, you get nothing.",
+    standard: "The standard is 25% for 4 years with a 1-year cliff.",
   },
 
   [FIELDS.ACCELERATION_TRIGGER]: {

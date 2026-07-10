@@ -109,12 +109,17 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
   const isAnswered = (cf) =>
     !!(cf[FIELDS.COFOUNDER_FULL_NAME] && cf[FIELDS.COFOUNDER_TITLE] && cf[FIELDS.COFOUNDER_EMAIL] && (cf[FIELDS.COFOUNDER_ROLES] || []).length);
 
+  const getCofounderPreview = (values) => {
+    const rolesList = values.roles.map(r => (r === 'Other' && values.rolesOther ? values.rolesOther : r));
+    return [values.title, values.email, rolesList.join(', ')].filter(Boolean).join('\n');
+  };
+
   return (
     <div>
       <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '42px', fontWeight: 400, letterSpacing: '-0.5px', marginBottom: '14px', lineHeight: 1.1, color: '#1a1a1a' }}>
         Cofounder Information
       </h2>
-      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', maxWidth: '820px', lineHeight: 1.65, marginBottom: '32px' }}>
+      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', lineHeight: 1.65, marginBottom: '32px' }}>
         Whether it's just the two of you or if there's a dozen of you, this is the crew that decided to go for it. Names, roles, contact info, sure. But it's also a snapshot of the team before the world knows your name. Someday, this will be the "garage team" story you tell in interviews.
       </p>
 
@@ -132,16 +137,19 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
           <div
             key={cf[FIELDS.COFOUNDER_ID] || index}
             className={`question-card${isExpanded ? ' expanded' : ''}${answered ? ' answered' : ''}`}
-            onClick={() => { if (!isExpanded) { setExpandedIndex(index); setAddingNew(false); } }}
-            style={{ marginBottom: '8px', cursor: isExpanded ? 'default' : 'pointer' }}
+            style={{ marginBottom: '8px' }}
           >
-            <div className="card-row">
+            <div
+              className="card-row"
+              onClick={() => { if (isExpanded) { setExpandedIndex(-1); } else { setExpandedIndex(index); setAddingNew(false); } }}
+              style={{ cursor: 'pointer' }}
+            >
               <div className="card-question">
                 {cf[FIELDS.COFOUNDER_FULL_NAME] || 'New Cofounder'}
                 {missing && <span style={{ color: '#b97070', marginLeft: '6px', fontSize: '14px' }}>*</span>}
               </div>
-              {cf[FIELDS.COFOUNDER_TITLE] && (
-                <span className="card-answer-preview">{cf[FIELDS.COFOUNDER_TITLE]}</span>
+              {getCofounderPreview(values) && (
+                <span className="card-answer-preview">{getCofounderPreview(values)}</span>
               )}
             </div>
 

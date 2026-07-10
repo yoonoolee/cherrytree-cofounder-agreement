@@ -7,7 +7,7 @@ import SurveyNavigation from './SurveyNavigation';
 import AgreementHeader from './AgreementHeader';
 import CollaboratorManager from './CollaboratorManager';
 import { useUser } from '../contexts/UserContext';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth, UserButton } from '@clerk/clerk-react';
 import { isProjectReadOnly } from '../utils/dateUtils';
 import { useProjectSync } from '../hooks/useProjectSync';
 
@@ -253,19 +253,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
           </span>
         )}
         <div style={{ flex: 1 }} />
-        <div
-          style={{
-            width: '34px', height: '34px', borderRadius: '50%',
-            background: '#ccc9c0', display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.5">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" strokeLinecap="round" />
-          </svg>
-        </div>
+        <UserButton appearance={{ elements: { avatarBox: 'w-[34px] h-[34px]' } }} />
       </div>
 
       {/* Main Content Area */}

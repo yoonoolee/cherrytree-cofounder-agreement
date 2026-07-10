@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PaymentModal from './PaymentModal';
 import UpgradeModal from './UpgradeModal';
@@ -6,6 +6,23 @@ import { SECTION_ORDER, SECTIONS as SECTION_CONFIG } from '../config/sectionConf
 import { useProjectSync } from '../hooks/useProjectSync';
 import { useValidation } from '../hooks/useValidation';
 import { useCollaborators } from '../hooks/useCollaborators';
+
+// Sidebar is a fixed 210px with 32px padding on each side of the name (see style below).
+const NAME_MAX_FONT_SIZE = 42;
+const NAME_MIN_FONT_SIZE = 20;
+const NAME_AVAILABLE_WIDTH = 210 - 32 * 2;
+const NAME_FONT_FAMILY = "'Instrument Serif', serif";
+
+function getFitFontSize(text) {
+  if (!text) return NAME_MAX_FONT_SIZE;
+  const canvas = getFitFontSize.canvas || (getFitFontSize.canvas = document.createElement('canvas'));
+  const ctx = canvas.getContext('2d');
+  for (let size = NAME_MAX_FONT_SIZE; size > NAME_MIN_FONT_SIZE; size -= 1) {
+    ctx.font = `400 ${size}px ${NAME_FONT_FAMILY}`;
+    if (ctx.measureText(text).width <= NAME_AVAILABLE_WIDTH) return size;
+  }
+  return NAME_MIN_FONT_SIZE;
+}
 
 /**
  * Self-contained navigation component with all hooks and logic.
@@ -32,6 +49,11 @@ function SurveyNavigation({
   const { project } = useProjectSync(projectId, isSavingRef);
   const { calculateProgress, isSectionCompleted } = useValidation(project?.surveyData || {}, project);
   const { collaboratorIds, getDisplayName } = useCollaborators(project);
+
+  const [nameFontSize, setNameFontSize] = useState(NAME_MAX_FONT_SIZE);
+  useLayoutEffect(() => {
+    setNameFontSize(getFitFontSize(project?.name));
+  }, [project?.name]);
 
   const progress = calculateProgress ? calculateProgress() : 0;
   const sectionsRemaining = SECTION_ORDER.filter(id => !isSectionCompleted(id)).length;
@@ -83,7 +105,20 @@ function SurveyNavigation({
         </div>
 
         {/* Company name */}
-        <div style={{ fontFamily: 'Instrument Serif, serif', fontSize: '22px', fontWeight: 400, padding: '32px 32px 10px', letterSpacing: '-0.3px', color: '#1a1a1a' }}>
+        <div
+          style={{
+            fontFamily: NAME_FONT_FAMILY,
+            fontSize: `${nameFontSize}px`,
+            fontWeight: 400,
+            padding: '32px 32px 10px',
+            letterSpacing: '-0.5px',
+            lineHeight: 1.1,
+            color: '#1a1a1a',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
           {project?.name || '—'}
         </div>
 
@@ -95,7 +130,7 @@ function SurveyNavigation({
           <div style={{ height: '3px', background: '#d6d2c9', borderRadius: '2px' }}>
             <div style={{ height: '100%', width: `${progress}%`, background: '#4B7263', borderRadius: '2px', transition: 'width 0.3s ease' }} />
           </div>
-          <div style={{ fontSize: '11px', fontWeight: 300, color: '#aaa', marginTop: '5px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 300, color: '#aaa', marginTop: '5px', marginBottom: '18px' }}>
             {sectionsRemaining} section{sectionsRemaining !== 1 ? 's' : ''} remaining
           </div>
         </div>
@@ -111,7 +146,7 @@ function SurveyNavigation({
               const isActive = currentSection === sectionId;
               const isDone = isSectionCompleted && isSectionCompleted(sectionId);
               return (
-                <li key={sectionId} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '5px 32px', marginBottom: '6px' }}>
+                <li key={sectionId} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 32px', marginBottom: '10px' }}>
                   <span className={getSectionDotClass(sectionId)} />
                   <button
                     data-section-id={sectionId}

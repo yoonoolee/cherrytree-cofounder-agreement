@@ -4,9 +4,8 @@ import { useLoadScript } from '@react-google-maps/api';
 import { db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
-import { useAuth } from '@clerk/clerk-react';
-import { SECTION_IDS, SECTION_ORDER, SECTIONS as SECTION_CONFIG, getNextSection, isLastSection } from '../config/sectionConfig';
-import { getQuestionsBySection } from '../config/questionConfig';
+import { useAuth, UserButton } from '@clerk/clerk-react';
+import { SECTION_IDS, SECTION_ORDER, getNextSection, isLastSection } from '../config/sectionConfig';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useProjectSync } from '../hooks/useProjectSync';
 import { useValidation } from '../hooks/useValidation';
@@ -39,13 +38,8 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
 
   // UI state
   const [currentSection, setCurrentSection] = useState(SECTION_IDS.FORMATION);
-  const section3Ref = useRef(null);
   const [showCollaborators, setShowCollaborators] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [showSearchResults, setShowSearchResults] = useState(false);
-  const [section3InResultsView, setSection3InResultsView] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
@@ -61,16 +55,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
     const sectionFromUrl = searchParams.get('section');
     const validSection = SECTION_ORDER.includes(sectionFromUrl) ? sectionFromUrl : SECTION_IDS.FORMATION;
     setCurrentSection(validSection);
-    setSection3InResultsView(false);
   }, [projectId, searchParams]);
-
-
-  // Reset section3InResultsView when leaving equity allocation section
-  useEffect(() => {
-    if (currentSection !== SECTION_IDS.EQUITY_ALLOCATION) {
-      setSection3InResultsView(false);
-    }
-  }, [currentSection]);
 
   // Show welcome popup on first visit per user per project
   useEffect(() => {
@@ -200,96 +185,6 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
     }
   };
 
-  // Auto-generate search data from questionConfig
-  const SEARCH_DATA = React.useMemo(() => {
-    return SECTION_ORDER.map((sectionId, index) => {
-      const sectionConfig = SECTION_CONFIG[sectionId];
-      const questions = getQuestionsBySection(sectionId);
-
-      // Extract all questions (text only, not nested/acknowledgment fields)
-      const questionTexts = questions
-        .filter(q => !q.nested && q.type !== 'custom')
-        .map(q => q.question);
-
-      // Extract all answer options (static answers only)
-      const answers = questions
-        .filter(q => q.options && Array.isArray(q.options))
-        .flatMap(q => q.options)
-        .filter((value, index, self) => self.indexOf(value) === index); // Dedupe
-
-      return {
-        id: index + 1, // Keep numeric ID for backwards compatibility with rendering
-        sectionId: sectionId, // Add section ID for future use
-        name: sectionConfig.displayName,
-        questions: questionTexts,
-        answers: answers
-      };
-    });
-  }, []);
-
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    if (query.trim() === '') {
-      setSearchResults([]);
-      setShowSearchResults(false);
-      return;
-    }
-
-    const lowerQuery = query.toLowerCase();
-    const results = [];
-
-    SEARCH_DATA.forEach(section => {
-      const sectionNameMatches = section.name.toLowerCase().includes(lowerQuery);
-      const matchingQuestions = section.questions.filter(q =>
-        q.toLowerCase().includes(lowerQuery)
-      );
-      const matchingAnswers = (section.answers || []).filter(a =>
-        a.toLowerCase().includes(lowerQuery)
-      );
-
-      // If section name matches, add the section itself (highest priority)
-      if (sectionNameMatches && matchingQuestions.length === 0 && matchingAnswers.length === 0) {
-        results.push({
-          id: section.id,
-          name: section.name,
-          type: 'section'
-        });
-      }
-
-      // Add each matching question as a separate result
-      matchingQuestions.forEach(question => {
-        results.push({
-          id: section.id,
-          name: section.name,
-          question: question,
-          type: 'question'
-        });
-      });
-
-      // Add each matching answer as a separate result (lower priority)
-      matchingAnswers.forEach(answer => {
-        results.push({
-          id: section.id,
-          name: section.name,
-          answer: answer,
-          type: 'answer'
-        });
-      });
-    });
-
-    setSearchResults(results);
-    setShowSearchResults(true);
-  };
-
-  const handleSearchResultClick = (resultId) => {
-    // resultId is the numeric id from SEARCH_DATA, need to convert to sectionId
-    const sectionId = SECTION_ORDER[resultId - 1];
-    setCurrentSection(sectionId);
-    setSearchQuery('');
-    setSearchResults([]);
-    setShowSearchResults(false);
-  };
-
   // Show access denied message if user doesn't have permission
   if (accessDenied) {
     return (
@@ -359,77 +254,10 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
           )}
         </div>
 
-        {/* Search Bar */}
-        <div className="flex-1 flex justify-center items-center">
-        <div className="max-w-lg w-full relative" style={{ maxWidth: '512px' }}>
-          <div className="relative">
-            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="search"
-              placeholder="Search"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              onFocus={(e) => {
-                if (searchQuery) setShowSearchResults(true);
-              }}
-              onBlur={(e) => {
-                setTimeout(() => setShowSearchResults(false), 200);
-              }}
-              className="w-full text-sm transition text-gray-500 placeholder-gray-500 bg-gray-100 focus:bg-gray-200 rounded-lg border-none pl-10 pr-4 py-2 outline-none"
-            />
-          </div>
-
-          {/* Search Results Dropdown */}
-          {showSearchResults && searchResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto z-[9999]">
-              {searchResults.map((result, index) => (
-                <button
-                  key={`${result.id}-${index}`}
-                  onClick={() => handleSearchResultClick(result.id)}
-                  className="w-full text-left px-4 py-2.5 hover:bg-gray-50 transition text-sm border-b border-gray-100 last:border-b-0"
-                >
-                  {result.type === 'section' ? (
-                    <span className="font-medium text-gray-900">{result.name}</span>
-                  ) : result.type === 'question' ? (
-                    <div className="flex flex-col gap-1">
-                      <span className="text-gray-900">{result.question}</span>
-                      <span className="text-xs text-gray-500">{result.name}</span>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-1">
-                      <span className="text-gray-900">{result.answer}</span>
-                      <span className="text-xs text-gray-500">{result.name}</span>
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {showSearchResults && searchResults.length === 0 && searchQuery && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-[9999]">
-              <p className="text-sm text-gray-500">No results found</p>
-            </div>
-          )}
-        </div>
-        </div>
+        <div style={{ flex: 1 }} />
 
         {/* Avatar */}
-        <div
-          style={{
-            width: '34px', height: '34px', borderRadius: '50%',
-            background: '#ccc9c0', display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.5">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" strokeLinecap="round" />
-          </svg>
-        </div>
+        <UserButton appearance={{ elements: { avatarBox: 'w-[34px] h-[34px]' } }} />
 
       </div>
 
@@ -504,13 +332,11 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
           {currentSection === SECTION_IDS.EQUITY_ALLOCATION && (
             <div className="animate-fade-down">
               <SectionEquityAllocation
-                ref={section3Ref}
                 formData={formData}
                 handleChange={handleChange}
                 isReadOnly={isReadOnly}
                 project={project}
                 showValidation={showValidation}
-                onViewModeChange={setSection3InResultsView}
               />
             </div>
           )}
@@ -597,30 +423,6 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
               {!isLastSection(currentSection) ? (
                 <button
                   onClick={() => {
-                    // If on Equity Allocation section
-                    if (currentSection === SECTION_IDS.EQUITY_ALLOCATION) {
-                      // If in results view, proceed to next section
-                      if (section3InResultsView) {
-                        const nextSection = getNextSection(currentSection);
-                        if (nextSection) {
-                          setCurrentSection(nextSection);
-                          setSearchParams({ section: nextSection });
-                        }
-                        return;
-                      }
-                      // If in edit view, submit the calculator first
-                      if (section3Ref.current) {
-                        const submitted = section3Ref.current.submitEquityCalculator();
-                        // Only proceed if submission was successful
-                        if (submitted === false) {
-                          // Submission failed validation, stay on this section
-                          return;
-                        }
-                        // Don't move to next section - the submit will show results view
-                        return;
-                      }
-                    }
-                    // For other sections, proceed normally
                     const nextSection = getNextSection(currentSection);
                     if (nextSection) {
                       setCurrentSection(nextSection);

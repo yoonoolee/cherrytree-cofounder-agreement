@@ -1,16 +1,9 @@
 import React, { useState } from 'react';
-import Tooltip from './Tooltip';
 import QuestionRenderer from './QuestionRenderer';
 import QuestionCard from './QuestionCard';
 import { QUESTION_CONFIG } from '../config/questionConfig';
 import { FIELDS } from '../config/surveySchema';
-
-function getPreview(fieldName, formData) {
-  const val = formData[fieldName];
-  if (!val) return '';
-  if (Array.isArray(val)) return val.length <= 2 ? val.join(', ') : `${val[0]} +${val.length - 1} more`;
-  return String(val);
-}
+import { getPreview } from '../utils/getPreview';
 
 const FIELD_ORDER = [
   FIELDS.PERFORMANCE_CONSEQUENCES,
@@ -26,16 +19,17 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
     const idx = FIELD_ORDER.indexOf(key);
     if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1]);
   };
+  const collapse = () => setExpandedField(null);
 
   return (
     <div>
       <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '42px', fontWeight: 400, letterSpacing: '-0.5px', marginBottom: '14px', lineHeight: 1.1, color: '#1a1a1a' }}>
         Cofounder Performance &amp; Departure
       </h2>
-      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', maxWidth: '820px', lineHeight: 1.65, marginBottom: '12px' }}>
+      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', lineHeight: 1.65, marginBottom: '12px' }}>
         In every startup, execution is everything. You can have the best idea in the world, the perfect cofounder team, and a shiny product plan, but if the work doesn't get done, nothing happens. However, sometimes, for one reason or another, we can't perform at the level that's necessary.
       </p>
-      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', maxWidth: '820px', lineHeight: 1.65, marginBottom: '32px' }}>
+      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', lineHeight: 1.65, marginBottom: '32px' }}>
         In those cases, the best we can do is protect the company and the friendship. You do that by planning for the what-ifs ahead of time. Performance isn't just about grinding harder. It's about foresight, flexibility, and keeping the company moving even when things don't go perfectly.
       </p>
 
@@ -43,21 +37,24 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.PERFORMANCE_CONSEQUENCES].question}
           answerPreview={getPreview(FIELDS.PERFORMANCE_CONSEQUENCES, formData)}
-          hint={QUESTION_CONFIG[FIELDS.PERFORMANCE_CONSEQUENCES].tooltip}
+          tooltip={QUESTION_CONFIG[FIELDS.PERFORMANCE_CONSEQUENCES].tooltip}
           isExpanded={expandedField === FIELDS.PERFORMANCE_CONSEQUENCES}
           isAnswered={!!formData[FIELDS.PERFORMANCE_CONSEQUENCES]}
           onExpand={() => setExpandedField(FIELDS.PERFORMANCE_CONSEQUENCES)}
+          onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.PERFORMANCE_CONSEQUENCES)}
         >
           <QuestionRenderer fieldName={FIELDS.PERFORMANCE_CONSEQUENCES} config={QUESTION_CONFIG[FIELDS.PERFORMANCE_CONSEQUENCES]} formData={formData} handleChange={handleChange} isReadOnly={isReadOnly} showValidation={showValidation} project={project} hideLabel />
         </QuestionCard>
 
         <QuestionCard
-          question="How many days does a cofounder have to fix the issue after receiving written notice before termination can occur?"
+          question={QUESTION_CONFIG[FIELDS.REMEDY_PERIOD_DAYS].question}
           answerPreview={formData[FIELDS.REMEDY_PERIOD_DAYS] ? `${formData[FIELDS.REMEDY_PERIOD_DAYS]} days` : ''}
+          tooltip={QUESTION_CONFIG[FIELDS.REMEDY_PERIOD_DAYS].tooltip}
           isExpanded={expandedField === FIELDS.REMEDY_PERIOD_DAYS}
           isAnswered={!!formData[FIELDS.REMEDY_PERIOD_DAYS]}
           onExpand={() => setExpandedField(FIELDS.REMEDY_PERIOD_DAYS)}
+          onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.REMEDY_PERIOD_DAYS)}
         >
           {showValidation && !formData[FIELDS.REMEDY_PERIOD_DAYS] && <span className="text-red-700 text-xs">* Required</span>}
@@ -68,16 +65,16 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
             onKeyDown={(e) => { if (e.key === '.' || e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault(); }}
             disabled={isReadOnly} placeholder="Enter number of days"
           />
-          <Tooltip text="This period allows cofounders to address issues in good faith before more serious action is taken." />
         </QuestionCard>
 
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.TERMINATION_WITH_CAUSE].question}
-          answerPreview={getPreview(FIELDS.TERMINATION_WITH_CAUSE, formData)}
-          hint={QUESTION_CONFIG[FIELDS.TERMINATION_WITH_CAUSE].tooltip}
+          answerPreview={getPreview(FIELDS.TERMINATION_WITH_CAUSE, formData, FIELDS.TERMINATION_WITH_CAUSE_OTHER)}
+          tooltip={QUESTION_CONFIG[FIELDS.TERMINATION_WITH_CAUSE].tooltip}
           isExpanded={expandedField === FIELDS.TERMINATION_WITH_CAUSE}
           isAnswered={!!formData[FIELDS.TERMINATION_WITH_CAUSE]}
           onExpand={() => setExpandedField(FIELDS.TERMINATION_WITH_CAUSE)}
+          onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.TERMINATION_WITH_CAUSE)}
         >
           <QuestionRenderer fieldName={FIELDS.TERMINATION_WITH_CAUSE} config={QUESTION_CONFIG[FIELDS.TERMINATION_WITH_CAUSE]} formData={formData} handleChange={handleChange} isReadOnly={isReadOnly} showValidation={showValidation} project={project} hideLabel />
@@ -89,6 +86,7 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
           isExpanded={expandedField === FIELDS.VOLUNTARY_NOTICE_DAYS}
           isAnswered={!!formData[FIELDS.VOLUNTARY_NOTICE_DAYS]}
           onExpand={() => setExpandedField(FIELDS.VOLUNTARY_NOTICE_DAYS)}
+          onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.VOLUNTARY_NOTICE_DAYS)}
         >
           {showValidation && !formData[FIELDS.VOLUNTARY_NOTICE_DAYS] && <span className="text-red-700 text-xs">* Required</span>}
