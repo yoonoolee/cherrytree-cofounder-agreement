@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePageMeta } from '../hooks/usePageMeta';
 import MarketingNav from '../components/MarketingNav';
@@ -58,6 +58,9 @@ function Check({ on }) {
 function PricingPage() {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState(null);
+  const [hoveredFaq, setHoveredFaq] = useState(null);
+  const [typedProtect, setTypedProtect] = useState('');
+  const protectTimersRef = useRef([]);
 
   usePageMeta({
     title: 'Pricing — Cherrytree',
@@ -76,11 +79,47 @@ function PricingPage() {
     return () => { const el = document.getElementById('faq-schema'); if (el) document.head.removeChild(el); };
   }, []);
 
+  // Protect CTA: types "and your peace of mind." on an infinite loop — type out,
+  // hold, clear, and after a slight pause type it out again.
+  useEffect(() => {
+    const target = 'and your peace of mind.';
+    const t = (fn, ms) => { const id = setTimeout(fn, ms); protectTimersRef.current.push(id); };
+    const cycle = () => {
+      setTypedProtect('');
+      let i = 0;
+      const typeTick = () => {
+        if (i < target.length) { i++; setTypedProtect(target.slice(0, i)); t(typeTick, 46); }
+        else t(cycle, 2200);
+      };
+      t(typeTick, 46);
+    };
+    t(cycle, 600);
+    return () => { protectTimersRef.current.forEach(clearTimeout); protectTimersRef.current = []; };
+  }, []);
+
   const goToDashboard = () => {
     const isProd = window.location.hostname.includes('cherrytree.app');
     if (isProd) window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
     else navigate('/dashboard', { replace: true });
   };
+
+  // Enterprise has fewer features than Bootstrapped, so it naturally renders shorter.
+  // Force its height to match Bootstrapped's rather than stretching every card to the
+  // tallest one, so Scale (the featured, transform: scale(1.03) card) can still read as
+  // visually larger the way it does in the source design.
+  const pricingCardRefs = useRef([]);
+  useLayoutEffect(() => {
+    const matchEnterpriseHeight = () => {
+      const bootstrapped = pricingCardRefs.current[0];
+      const enterprise = pricingCardRefs.current[2];
+      if (!bootstrapped || !enterprise) return;
+      enterprise.style.height = 'auto';
+      enterprise.style.height = `${bootstrapped.offsetHeight}px`;
+    };
+    matchEnterpriseHeight();
+    window.addEventListener('resize', matchEnterpriseHeight);
+    return () => window.removeEventListener('resize', matchEnterpriseHeight);
+  }, []);
 
   return (
     <div className="lp" style={{ minHeight: '100vh' }}>
@@ -98,7 +137,7 @@ function PricingPage() {
       <section className="lp-pricing-pg-cards-wrap">
         <div className="lp-pricing-grid">
           {PLANS.map((p, i) => (
-            <div key={i} className={`lp-pricing-card${p.featured ? ' featured' : ''}`}>
+            <div key={i} ref={el => pricingCardRefs.current[i] = el} className={`lp-pricing-card${p.featured ? ' featured' : ''}`}>
               {p.badge && <div className="lp-pricing-badge">{p.badge}</div>}
               <div className="lp-pricing-tier">{p.tier}</div>
               <div className="lp-pricing-price">
@@ -164,23 +203,34 @@ function PricingPage() {
             <h2>Common questions.</h2>
           </div>
           <div className="lp-faq-list">
-            {FAQS.map((f, i) => (
-              <div key={i} className="lp-faq-item">
-                <button className="lp-faq-btn" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
-                  <span className="lp-faq-q">{f.q}</span>
-                </button>
-                <div className={`lp-faq-body${openFaq === i ? ' open' : ''}`}>
-                  <div className="lp-faq-body-inner"><p className="lp-faq-a">{f.a}</p></div>
+            {FAQS.map((f, i) => {
+              const expanded = openFaq === i || hoveredFaq === i;
+              return (
+                <div
+                  key={i}
+                  className="lp-faq-item"
+                  onMouseEnter={() => setHoveredFaq(i)}
+                  onMouseLeave={() => setHoveredFaq(prev => (prev === i ? null : prev))}
+                >
+                  <button className="lp-faq-btn" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                    <span className="lp-faq-q">{f.q}</span>
+                  </button>
+                  <div className={`lp-faq-body${expanded ? ' open' : ''}`}>
+                    <div className="lp-faq-body-inner"><p className="lp-faq-a">{f.a}</p></div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* Bottom CTA */}
       <section className="lp-protect-cta">
-        <h2>Protect your piece of the pie<br/><em>and</em> your peace of mind.</h2>
+        <h2>
+          Protect your piece of the pie<br/>
+          <em>{typedProtect}<span className="lp-cursor"/></em>
+        </h2>
         <div className="lp-protect-cta-actions">
           <button className="lp-btn-primary" onClick={goToDashboard}>Get started</button>
           <a className="lp-btn-ghost" href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer">Book a demo →</a>

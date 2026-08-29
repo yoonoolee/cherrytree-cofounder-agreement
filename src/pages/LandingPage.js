@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePageMeta } from '../hooks/usePageMeta';
 import MarketingNav from '../components/MarketingNav';
@@ -169,7 +169,7 @@ function PanelEquity({ active }) {
     <div className="lp-fp" style={{ backgroundImage: "url('/images/leaf.png?v=2')" }}>
       <div className="lp-fp-overlay" />
       <div className="lp-fp-content">
-        <div className="lp-fp-tag">Equity</div>
+        <div className="lp-fp-tag">Step 3</div>
         <div className="lp-fp-title">Equity Calculator</div>
         <div className="lp-s3-card">
           <div className="lp-s3-top">
@@ -226,7 +226,7 @@ function PanelReview({ active }) {
     <div className="lp-fp" style={{ backgroundImage: "url('/images/paper.png?v=2')" }}>
       <div className="lp-fp-overlay" />
       <div className="lp-fp-content">
-        <div className="lp-fp-tag">Step 3</div>
+        <div className="lp-fp-tag">Step 4</div>
         <div className="lp-fp-title">Do a final review</div>
         <div className="lp-s2r-card">
           <div className="lp-s1-label">Cofounder Agreement</div>
@@ -289,7 +289,7 @@ function PanelExpert({ active }) {
     <div className="lp-fp" style={{ backgroundImage: "url('/images/chalk.png?v=2')" }}>
       <div className="lp-fp-overlay" />
       <div className="lp-fp-content">
-        <div className="lp-fp-tag">Support</div>
+        <div className="lp-fp-tag">Step 5</div>
         <div className="lp-fp-title">Expert Guidance</div>
         <div className="lp-s4-card">
           <div className="lp-s4-expert-row">
@@ -557,10 +557,10 @@ function LandingPage() {
   const [counts, setCounts] = useState(STATS.map(() => 0));
   const [lineIn, setLineIn] = useState(STATS.map(() => false));
   const [typedProtect, setTypedProtect] = useState('');
-  const [protectCursorOff, setProtectCursorOff] = useState(false);
+  const protectTimersRef = useRef([]);
   const statRowRefs = useRef([]);
   const featItemRefs = useRef([]);
-  const protectCtaRef = useRef(null);
+  const pricingCardRefs = useRef([]);
 
   const goToDashboard = () => {
     const isProd = window.location.hostname.includes('cherrytree.app');
@@ -571,8 +571,10 @@ function LandingPage() {
   // Scroll reveal — fades/slides in each .lp-rv/.lp-rv-l/.lp-rv-r element once as it enters view.
   // Elements already in the viewport at observe() time can have their IntersectionObserver
   // callback fire before the browser has committed a style pass with the base (opacity:0)
-  // styles, which causes the transition to opacity:1 to never run. Forcing a synchronous
-  // reflow before adding the class guarantees the "from" state is flushed first.
+  // styles, which causes the transition to opacity:1 to never run (position:sticky elements
+  // are especially prone to this — a synchronous reflow read isn't enough to flush their
+  // state). Deferring the class add to a fresh macrotask guarantees a real paint of the
+  // "from" state happens first, regardless of the element's positioning scheme.
   useEffect(() => {
     const els = document.querySelectorAll('.lp-rv, .lp-rv-l, .lp-rv-r');
     const obs = new IntersectionObserver(entries => {
@@ -581,7 +583,7 @@ function LandingPage() {
           const target = entry.target;
           obs.unobserve(target);
           void target.offsetHeight;
-          target.classList.add('lp-rv-in');
+          setTimeout(() => target.classList.add('lp-rv-in'), 0);
         }
       });
     }, { threshold: 0.06, rootMargin: '0px 0px -40px 0px' });
@@ -647,24 +649,39 @@ function LandingPage() {
     return () => observers.forEach(o => o && o.disconnect());
   }, []);
 
-  // Protect CTA: types "and your peace of mind." once, when scrolled into view
+  // Protect CTA: types "and your peace of mind." on an infinite loop — type out,
+  // hold, clear, and after a slight pause type it out again.
   useEffect(() => {
-    if (!protectCtaRef.current) return;
     const target = 'and your peace of mind.';
-    const obs = new IntersectionObserver(entries => {
-      if (!entries[0].isIntersecting) return;
-      obs.disconnect();
+    const t = (fn, ms) => { const id = setTimeout(fn, ms); protectTimersRef.current.push(id); };
+    const cycle = () => {
+      setTypedProtect('');
       let i = 0;
-      const tick = () => {
-        if (i >= target.length) { setProtectCursorOff(true); return; }
-        i++;
-        setTypedProtect(target.slice(0, i));
-        setTimeout(tick, 46);
+      const typeTick = () => {
+        if (i < target.length) { i++; setTypedProtect(target.slice(0, i)); t(typeTick, 46); }
+        else t(cycle, 2200);
       };
-      setTimeout(tick, 400);
-    }, { threshold: 0.4 });
-    obs.observe(protectCtaRef.current);
-    return () => obs.disconnect();
+      t(typeTick, 46);
+    };
+    t(cycle, 600);
+    return () => { protectTimersRef.current.forEach(clearTimeout); protectTimersRef.current = []; };
+  }, []);
+
+  // Enterprise has fewer features than Bootstrapped, so it naturally renders shorter.
+  // Force its height to match Bootstrapped's rather than stretching every card to the
+  // tallest one, so Scale (the featured, transform: scale(1.03) card) can still read as
+  // visually larger the way it does in the source design.
+  useLayoutEffect(() => {
+    const matchEnterpriseHeight = () => {
+      const bootstrapped = pricingCardRefs.current[0];
+      const enterprise = pricingCardRefs.current[2];
+      if (!bootstrapped || !enterprise) return;
+      enterprise.style.height = 'auto';
+      enterprise.style.height = `${bootstrapped.offsetHeight}px`;
+    };
+    matchEnterpriseHeight();
+    window.addEventListener('resize', matchEnterpriseHeight);
+    return () => window.removeEventListener('resize', matchEnterpriseHeight);
   }, []);
 
   const ActivePanel = PANELS[FEATURES[activeFeature].panel];
@@ -716,7 +733,7 @@ function LandingPage() {
           <p className="lp-rv lp-d2">Get your equity, expectations, and everything else right from the start.</p>
         </div>
         <div className="lp-feat-body">
-          <div className="lp-feat-visual lp-rv-l">
+          <div className="lp-feat-visual">
             <ActivePanel active={true} key={activeFeature} />
           </div>
           <div className="lp-feat-list">
@@ -817,7 +834,7 @@ function LandingPage() {
         </div>
         <div className="lp-pricing-grid">
           {PRICING.map((p, i) => (
-            <div key={i} className={`lp-pricing-card lp-rv lp-d${i}${p.featured ? ' featured' : ''}`}>
+            <div key={i} ref={el => pricingCardRefs.current[i] = el} className={`lp-pricing-card lp-rv lp-d${i}${p.featured ? ' featured' : ''}`}>
               {p.badge && <div className="lp-pricing-badge">{p.badge}</div>}
               <div className="lp-pricing-tier">{p.tier}</div>
               <div className={`lp-pricing-price${p.enterprise ? ' lp-pricing-price-custom' : ''}`}>{p.price}</div>
@@ -873,10 +890,10 @@ function LandingPage() {
       </section>
 
       {/* ── Protect CTA ── */}
-      <section className="lp-protect-cta" ref={protectCtaRef}>
+      <section className="lp-protect-cta">
         <h2>
           Protect your piece of the pie<br/>
-          <em>{typedProtect}<span className={`lp-cursor${protectCursorOff ? ' lp-cursor-hidden' : ''}`}/></em>
+          <em>{typedProtect}<span className="lp-cursor"/></em>
         </h2>
         <div className="lp-protect-cta-actions lp-rv lp-d1">
           <button className="lp-btn-primary" onClick={goToDashboard}>Get started</button>
