@@ -269,6 +269,16 @@ function PanelExpert({ active }) {
 
 const PANELS = [PanelInvite, PanelCollab, PanelEquity, PanelReview, PanelExpert];
 
+const LOGOS = [
+  { name: 'Y Combinator', src: '/images/yc-logo.png' },
+  { name: 'Hubble', src: '/images/hubble-logo.png' },
+  { name: 'a16z', src: '/images/a16z-logo.jpg' },
+  { name: 'UC Berkeley', src: '/images/berkeley-logo.png' },
+  { name: 'Stanford', src: '/images/stanford-logo.png' },
+  { name: 'Sequoia', src: '/images/sequoia-logo.png' },
+  { name: 'Startup Grind', src: '/images/startupgrind-logo.png' },
+];
+
 const FEATURES = [
   { num: '01', panel: 0, title: 'Invite your cofounders', desc: 'Add your cofounders as collaborators. They must be added to be included in the Cofounder Agreement.' },
   { num: '02', panel: 1, title: 'Collab on the agreement', desc: 'You and your cofounders answer a set of guided questions together. Nobody has to play "project manager" or relay answers.' },
@@ -452,6 +462,23 @@ function LandingPage() {
         </div>
       </section>
 
+      {/* ── Logo Wall ── */}
+      <section className="lp-logowall">
+        <div className="lp-logowall-label">Trusted by founding teams from</div>
+        <div className="lp-logowall-track-wrap">
+          <div className="lp-logowall-track">
+            {[...LOGOS, ...LOGOS].map((logo, i, arr) => (
+              <React.Fragment key={i}>
+                <div className="lp-lw-logo">
+                  <img className="lp-lw-img" src={logo.src} alt={logo.name} />
+                </div>
+                {i !== arr.length - 1 && <div className="lp-lw-divider" />}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Features ── */}
       <section className="lp-features" id="features">
         <div className="lp-feat-header">
@@ -534,7 +561,7 @@ function LandingPage() {
           </div>
         </div>
         <div className="lp-carousel-track-wrap">
-          <div className="lp-carousel-track" style={{ transform: `translateX(calc(-${carouselIdx} * (min(520px, 90vw) + 16px)))` }}>
+          <div className="lp-carousel-track" style={{ transform: `translateX(calc(-${carouselIdx} * 380px))` }}>
             {CAROUSEL_SLIDES.map((s, i) => (
               <div key={i} className={`lp-cs-slide${i === carouselIdx ? ' active' : ''}`} style={{ backgroundImage: `url('${s.img}')` }}>
                 <div className="lp-cs-overlay"/>

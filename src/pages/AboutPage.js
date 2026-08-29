@@ -1,8 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { usePageMeta } from '../hooks/usePageMeta';
 import MarketingNav from '../components/MarketingNav';
 import MarketingFooter from '../components/MarketingFooter';
 import MarketingGrain from '../components/MarketingGrain';
+
+const SECTIONS = [
+  {
+    overline: 'Note from our CEO',
+    title: 'The Backstory',
+    body: (
+      <>
+        <p>
+          Hey, I'm Tim. I started Cherrytree after learning firsthand how challenging yet rewarding it is to build something with cofounders. Since then, I've taught over a thousand entrepreneurship students, written a book on cofounder dynamics, and teamed up with seasoned coaches, attorneys, and AI experts. We've now worked with hundreds of teams just like yours across a dozen industries.
+        </p>
+        <p>Our mission is simple: <em>to create cofounder magic.</em></p>
+      </>
+    ),
+  },
+  {
+    overline: "We're hiring",
+    title: 'Work With Us',
+    body: (
+      <>
+        <div className="lp-about-job-title">Student Internship (part-time)</div>
+        <p>
+          We're looking for an intern who's genuinely excited about startups and building things from the ground up. You'll work closely with our CEO &amp; Founder, getting hands-on experience across the business from research and growth strategies to operations, project coordination, and fundraising. This is a remote role, but bonus points if you're in SF or Berkeley.
+        </p>
+        <p className="lp-about-apply"><em>Apply here.</em></p>
+      </>
+    ),
+  },
+];
 
 function AboutPage() {
   usePageMeta({
@@ -11,84 +39,48 @@ function AboutPage() {
     breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'About' }],
   });
 
-  const [typedCompany, setTypedCompany] = useState('');
-  const companyText = 'with the right company';
+  const sectionRefs = useRef([]);
 
-  // Typing animation for "with the right company", loops like the hero typewriter
+  // Reveal each about-section as it scrolls into view, staggered by index
   useEffect(() => {
-    let cancelled = false;
-    const timeouts = [];
-    const schedule = (fn, ms) => { const t = setTimeout(fn, ms); timeouts.push(t); return t; };
-
-    const typeLoop = () => {
-      let index = 0;
-      setTypedCompany('');
-      const type = () => {
-        if (cancelled) return;
-        if (index < companyText.length) {
-          index++;
-          setTypedCompany(companyText.slice(0, index));
-          schedule(type, 60);
-        } else {
-          schedule(() => {
-            setTypedCompany('');
-            schedule(typeLoop, 400);
-          }, 1400);
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
         }
-      };
-      type();
-    };
+      });
+    }, { threshold: 0.15 });
 
-    schedule(typeLoop, 600);
-    return () => { cancelled = true; timeouts.forEach(clearTimeout); };
+    sectionRefs.current.forEach((el, i) => {
+      if (!el) return;
+      el.style.transitionDelay = `${i * 0.12}s`;
+      observer.observe(el);
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <div className="lp" style={{ minHeight: '100vh' }}>
+    <div className="lp lp-about-page">
       <MarketingGrain />
       <MarketingNav />
 
-      {/* Hero */}
-      <section className="lp-page-hero">
-        <div className="lp-overline">About</div>
-        <h1 className="lp-hero-headline" style={{ fontSize: 'clamp(36px,6vw,68px)', margin: '0 auto 28px', textAlign: 'center' }}>
-          <span className="lp-hl-line"><span className="lp-hl-inner">Big ideas grow</span></span>
-          <span className="lp-hl-line"><span className="lp-hl-inner"><em>{typedCompany}<span className="lp-cursor"/></em></span></span>
-        </h1>
+      <section className="lp-about-hero">
+        <h1>Big ideas grow<br /><em>with the right company.</em></h1>
       </section>
 
-      {/* Backstory */}
-      <section className="lp-page-section">
-        <div className="lp-about-row">
-          <div className="lp-about-row-label">
-            <div className="lp-overline">Note from our CEO</div>
-            <h2 className="lp-about-row-title">The Backstory</h2>
+      <div className="lp-about-sections">
+        {SECTIONS.map((s, i) => (
+          <div key={i} className="lp-about-section" ref={el => sectionRefs.current[i] = el}>
+            <div className="lp-about-section-left">
+              <div className="lp-about-section-overline">{s.overline}</div>
+              <div className="lp-about-section-title">{s.title}</div>
+            </div>
+            <div className="lp-about-section-right">{s.body}</div>
           </div>
-          <div className="lp-about-row-body">
-            <p>
-              Hey, I'm Tim. I started Cherrytree after learning firsthand how challenging yet rewarding it is to build something with cofounders. Since then, I've taught over a thousand entrepreneurship students, written a book on cofounder dynamics, and teamed up with seasoned coaches, attorneys, and AI experts. We've now worked with hundreds of teams just like yours across a dozen industries.
-            </p>
-            <p>Our mission is simple: <em>to create cofounder magic.</em></p>
-          </div>
-        </div>
-      </section>
-
-      {/* Work with us */}
-      <section className="lp-page-section" style={{ paddingTop: 0 }}>
-        <div className="lp-about-row">
-          <div className="lp-about-row-label">
-            <div className="lp-overline">We're hiring</div>
-            <h2 className="lp-about-row-title">Work With Us</h2>
-          </div>
-          <div className="lp-about-row-body">
-            <h3 className="lp-about-role">Student Internship (part-time)</h3>
-            <p>
-              We're looking for an intern who's genuinely excited about startups and building things from the ground up. You'll work closely with our CEO &amp; Founder, getting hands-on experience across the business from research and growth strategies to operations, project coordination, and fundraising. This is a remote role, but bonus points if you're in SF or Berkeley.
-            </p>
-            <p><em>Apply here.</em></p>
-          </div>
-        </div>
-      </section>
+        ))}
+      </div>
 
       <MarketingFooter />
     </div>

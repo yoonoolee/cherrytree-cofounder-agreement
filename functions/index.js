@@ -20,6 +20,7 @@ const Stripe = require('stripe');
 const crypto = require('crypto');
 const { Webhook } = require('svix');
 const validator = require('validator');
+const { Resend } = require('resend');
 const { getClerk, verifyClerkToken, CLERK_SECRET_KEY } = require('./auth-helpers');
 const { REQUIRED_ACKNOWLEDGMENT_FIELDS, CONDITIONAL_ACKNOWLEDGMENT_FIELDS, mergeOtherFields } = require('./surveySchema');
 
@@ -33,6 +34,7 @@ const MAKE_WEBHOOK_URL = defineSecret('MAKE_WEBHOOK_URL');
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');
 const CLERK_WEBHOOK_SECRET = defineSecret('CLERK_WEBHOOK_SECRET');
+const RESEND_API_KEY = defineSecret('RESEND_API_KEY');
 
 // Note: CLERK_SECRET_KEY and getClerk() are imported from auth-helpers.js
 
@@ -845,6 +847,62 @@ exports.deleteAccount = onCall({
       throw error;
     }
     throw new HttpsError('internal', 'Failed to delete account');
+  }
+});
+
+// ============================================================================
+// CONTACT FORM
+// ============================================================================
+
+const CONTACT_RECIPIENT_EMAIL = 'hello@cherrytree.app';
+const CONTACT_NAME_MAX_LENGTH = 200;
+const CONTACT_MESSAGE_MAX_LENGTH = 5000;
+
+exports.sendContactMessage = onCall({
+  ...FUNCTION_CONFIG,
+  secrets: [RESEND_API_KEY],
+  invoker: 'public',
+  consumeAppCheckToken: true
+}, async (request) => {
+  const { name, email, message } = request.data || {};
+
+  if (typeof name !== 'string' || name.trim().length === 0 || name.trim().length > CONTACT_NAME_MAX_LENGTH) {
+    throw new HttpsError('invalid-argument', 'Please enter your name.');
+  }
+  if (!isValidEmail(email)) {
+    throw new HttpsError('invalid-argument', 'Please enter a valid email address.');
+  }
+  if (typeof message !== 'string' || message.trim().length === 0 || message.trim().length > CONTACT_MESSAGE_MAX_LENGTH) {
+    throw new HttpsError('invalid-argument', 'Please enter a message.');
+  }
+
+  const trimmedName = name.trim();
+  const trimmedEmail = email.trim();
+  const trimmedMessage = message.trim();
+
+  try {
+    const resend = new Resend(RESEND_API_KEY.value());
+    const { data, error } = await resend.emails.send({
+      from: `Cherrytree Contact Form <${CONTACT_RECIPIENT_EMAIL}>`,
+      to: CONTACT_RECIPIENT_EMAIL,
+      replyTo: trimmedEmail,
+      subject: `New contact form message from ${trimmedName}`,
+      text: `From: ${trimmedName} <${trimmedEmail}>\n\n${trimmedMessage}`,
+    });
+
+    if (error) {
+      console.error('Resend error sending contact message:', error);
+      throw new HttpsError('internal', 'Something went wrong sending your message. Please try again or email us directly.');
+    }
+
+    console.log('Contact message sent successfully', { resendId: data?.id, submitterEmail: trimmedEmail });
+    return { success: true };
+  } catch (error) {
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    console.error('Error sending contact message:', error);
+    throw new HttpsError('internal', 'Something went wrong sending your message. Please try again or email us directly.');
   }
 });
 
