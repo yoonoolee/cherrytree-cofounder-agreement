@@ -168,7 +168,6 @@ function PricingPage() {
               <div key={i} className="lp-faq-item">
                 <button className="lp-faq-btn" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
                   <span className="lp-faq-q">{f.q}</span>
-                  <span className={`lp-faq-icon${openFaq === i ? ' open' : ''}`}>+</span>
                 </button>
                 <div className={`lp-faq-body${openFaq === i ? ' open' : ''}`}>
                   <div className="lp-faq-body-inner"><p className="lp-faq-a">{f.a}</p></div>
