@@ -7,26 +7,38 @@ import MarketingGrain from '../components/MarketingGrain';
 
 // ── Panel sub-components ───────────────────────────────────────────────────────
 
+const S1_EMAILS = ['sarah@vc.io', 'priya@buildit.co', 'james@founder.io'];
+
 function PanelInvite({ active }) {
   const [typed, setTyped] = useState('');
   const [showNew, setShowNew] = useState(false);
   const [pressed, setPressed] = useState(false);
-  const email = 'sam@startup.co';
+  const [emailIdx, setEmailIdx] = useState(0);
   const refs = useRef([]);
 
   useEffect(() => {
     refs.current.forEach(clearTimeout);
     refs.current = [];
-    if (!active) { setTyped(''); setShowNew(false); setPressed(false); return; }
+    if (!active) { setTyped(''); setShowNew(false); setPressed(false); setEmailIdx(0); return; }
     const t = (fn, ms) => { const id = setTimeout(fn, ms); refs.current.push(id); };
-    const run = () => {
-      setTyped(''); setShowNew(false); setPressed(false);
-      email.split('').forEach((_, i) => t(() => setTyped(email.slice(0, i + 1)), 800 + i * 55));
-      t(() => setPressed(true), 800 + email.length * 55 + 200);
-      t(() => { setShowNew(true); setPressed(false); setTyped(''); }, 800 + email.length * 55 + 600);
-      t(run, 800 + email.length * 55 + 4000);
+    let idx = 0;
+    const type = () => {
+      const email = S1_EMAILS[idx % S1_EMAILS.length];
+      setTyped(''); setShowNew(false);
+      email.split('').forEach((_, i) => t(() => setTyped(email.slice(0, i + 1)), i * 68));
+      t(submit, email.length * 68 + 750);
     };
-    run();
+    const submit = () => {
+      setPressed(true);
+      t(() => {
+        setPressed(false);
+        setEmailIdx(idx);
+        setShowNew(true);
+        setTyped('');
+        t(() => { setShowNew(false); idx++; type(); }, 2000);
+      }, 180);
+    };
+    t(type, 800);
     return () => refs.current.forEach(clearTimeout);
   }, [active]);
 
@@ -40,7 +52,7 @@ function PanelInvite({ active }) {
           <div className="lp-s1-label">Team</div>
           <div className="lp-s1-row"><span className="lp-dot green"/><span className="lp-s1-email">you@email.com</span><span className="lp-badge owner">Owner</span></div>
           <div className="lp-s1-row"><span className="lp-dot light"/><span className="lp-s1-email">alex@startup.co</span><span className="lp-badge added">Added</span></div>
-          {showNew && <div className="lp-s1-row lp-s1-new"><span className="lp-dot light"/><span className="lp-s1-email">{email}</span><span className="lp-badge added">Added</span></div>}
+          {showNew && <div className="lp-s1-row lp-s1-new"><span className="lp-dot light"/><span className="lp-s1-email">{S1_EMAILS[emailIdx % S1_EMAILS.length]}</span><span className="lp-badge added">Added</span></div>}
           <div className="lp-s1-input-row">
             <div className="lp-s1-input"><span>{typed}</span>{!showNew && <span className="lp-icursor"/>}</div>
             <button className={`lp-s1-btn${pressed ? ' pressed' : ''}`}>+ Add</button>
@@ -51,34 +63,45 @@ function PanelInvite({ active }) {
   );
 }
 
+const S2_QUESTIONS = [
+  { q: "What's your company's name?", a: 'Acme Labs' },
+  { q: "What's the legal structure?", a: 'C-Corp' },
+  { q: 'What state will you register in?', a: 'Delaware' },
+  { q: 'Describe your company in one line.', a: 'AI tools for founders.' },
+];
+
 function PanelCollab({ active }) {
   const [answered, setAnswered] = useState([]);
   const [activeQ, setActiveQ] = useState(0);
   const [typed, setTyped] = useState('');
   const refs = useRef([]);
-  const qs = [
-    { q: "What's your company name?", a: 'Cherrytree' },
-    { q: 'Legal structure?', a: 'C-Corp' },
-    { q: 'State of formation?', a: 'Delaware' },
-  ];
 
   useEffect(() => {
     refs.current.forEach(clearTimeout);
     refs.current = [];
     if (!active) { setAnswered([]); setActiveQ(0); setTyped(''); return; }
     const t = (fn, ms) => { const id = setTimeout(fn, ms); refs.current.push(id); };
-    const run = () => {
-      setAnswered([]); setActiveQ(0); setTyped('');
-      qs.forEach((q, i) => {
-        const base = 400 + i * 2600;
-        q.a.split('').forEach((_, ci) => t(() => setTyped(q.a.slice(0, ci + 1)), base + ci * 80));
-        t(() => { setAnswered(p => [...p, i]); setActiveQ(i + 1); setTyped(''); }, base + q.a.length * 80 + 400);
-      });
-      t(run, 400 + qs.length * 2600 + 1500);
+    const runQuestion = (idx) => {
+      if (idx >= S2_QUESTIONS.length) {
+        t(() => {
+          setAnswered([]); setActiveQ(0); setTyped('');
+          t(() => runQuestion(0), 300);
+        }, 1600);
+        return;
+      }
+      setActiveQ(idx);
+      setTyped('');
+      const target = S2_QUESTIONS[idx].a;
+      t(() => {
+        target.split('').forEach((_, ci) => t(() => setTyped(target.slice(0, ci + 1)), ci * 65));
+        t(() => {
+          setAnswered(p => [...p, idx]);
+          t(() => runQuestion(idx + 1), 420);
+        }, target.length * 65 + 700);
+      }, 80);
     };
-    run();
+    runQuestion(0);
     return () => refs.current.forEach(clearTimeout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
   return (
@@ -89,15 +112,16 @@ function PanelCollab({ active }) {
         <div className="lp-fp-title">Collab on the agreement</div>
         <div className="lp-s2-card">
           <div className="lp-s1-label">Formation &amp; Purpose</div>
-          {qs.map((q, i) => (
+          {S2_QUESTIONS.map((q, i) => (
             <div key={i} className={`lp-s2-q${answered.includes(i) ? ' answered' : ''}${activeQ === i ? ' active' : ''}`}>
               <div className="lp-s2-q-row">
                 <span className="lp-s2-q-text">{q.q}</span>
-                {answered.includes(i) && <><span className="lp-s2-q-answer">{q.a}</span><span className="lp-s2-check">✓</span></>}
+                <span className="lp-s2-q-answer">{q.a}</span>
+                <span className="lp-s2-check">✓</span>
               </div>
-              {activeQ === i && !answered.includes(i) && (
-                <div className="lp-s2-body"><div className="lp-s2-input"><span>{typed}</span><span className="lp-icursor lp-dark"/></div></div>
-              )}
+              <div className="lp-s2-body"><div className="lp-s2-body-inner">
+                <div className="lp-s2-input"><span>{activeQ === i ? typed : ''}</span><span className="lp-icursor lp-dark"/></div>
+              </div></div>
             </div>
           ))}
         </div>
@@ -112,7 +136,7 @@ function PanelEquity({ active }) {
     { name: 'Time Commitment', count: '2 / 18', imp: 8, scores: [9, 7] },
     { name: 'Idea Origination', count: '3 / 18', imp: 6, scores: [7, 10] },
   ];
-  const names = ['Cofounder A (you)', 'Cofounder B'];
+  const names = ['Alex Chen', 'Jordan Lee'];
   const [idx, setIdx] = useState(0);
   const [sliderPct, setSliderPct] = useState(0);
   const [sliderTransition, setSliderTransition] = useState(false);
@@ -178,7 +202,7 @@ function PanelEquity({ active }) {
 }
 
 function PanelReview({ active }) {
-  const sections = ['Formation & Purpose', 'Cofounder Info', 'Equity Allocation', 'Vesting', 'Decision-Making'];
+  const sections = ['Formation & Purpose', 'Cofounder Info', 'Equity Allocation', 'Vesting Schedule', 'Decision-Making'];
   const [done, setDone] = useState([]);
   const refs = useRef([]);
 
@@ -199,7 +223,7 @@ function PanelReview({ active }) {
 
   const pct = (done.length / sections.length) * 100;
   return (
-    <div className="lp-fp" style={{ backgroundImage: "url('/images/chalk.png?v=2')" }}>
+    <div className="lp-fp" style={{ backgroundImage: "url('/images/paper.png?v=2')" }}>
       <div className="lp-fp-overlay" />
       <div className="lp-fp-content">
         <div className="lp-fp-tag">Step 3</div>
@@ -221,32 +245,48 @@ function PanelReview({ active }) {
   );
 }
 
+const S4_MSGS = [
+  { text: 'Hey Tim, what do you recommend for our vesting schedule.', sent: true },
+  { text: 'Happy to help!', sent: false },
+  { text: "I'd recommend 4-year vest with a 1-year cliff for both founders.", sent: false },
+];
+
 function PanelExpert({ active }) {
-  const msgs = [
-    { from: 'expert', text: "Hey — I noticed you're working on equity. Have you tried our calculator?" },
-    { from: 'user', text: "We tried 50/50 but it doesn't feel right." },
-    { from: 'expert', text: "That's common. Let's walk through each contribution area — it takes 10 minutes and the result is much more defensible." },
-  ];
-  const [shown, setShown] = useState(0);
+  const [shown, setShown] = useState([]);
+  const [typingIdx, setTypingIdx] = useState(null);
   const refs = useRef([]);
 
   useEffect(() => {
     refs.current.forEach(clearTimeout);
     refs.current = [];
-    if (!active) { setShown(0); return; }
+    if (!active) { setShown([]); setTypingIdx(null); return; }
     const t = (fn, ms) => { const id = setTimeout(fn, ms); refs.current.push(id); };
-    const run = () => {
-      setShown(0);
-      msgs.forEach((_, i) => t(() => setShown(i + 1), 500 + i * 1600));
-      t(run, 500 + msgs.length * 1600 + 2000);
+    const showMsg = (idx) => {
+      if (idx >= S4_MSGS.length) {
+        t(() => { setShown([]); setTypingIdx(null); showMsg(0); }, 2000);
+        return;
+      }
+      const msg = S4_MSGS[idx];
+      if (msg.sent) {
+        setShown(p => [...p, idx]);
+        t(() => showMsg(idx + 1), 1200);
+      } else {
+        setTypingIdx(idx);
+        t(() => {
+          setTypingIdx(null);
+          t(() => {
+            setShown(p => [...p, idx]);
+            t(() => showMsg(idx + 1), 1900);
+          }, 280);
+        }, 1300);
+      }
     };
-    run();
+    showMsg(0);
     return () => refs.current.forEach(clearTimeout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
   return (
-    <div className="lp-fp" style={{ backgroundImage: "url('/images/paper.png?v=2')" }}>
+    <div className="lp-fp" style={{ backgroundImage: "url('/images/chalk.png?v=2')" }}>
       <div className="lp-fp-overlay" />
       <div className="lp-fp-content">
         <div className="lp-fp-tag">Support</div>
@@ -257,9 +297,177 @@ function PanelExpert({ active }) {
             <div><div className="lp-s4-name">Tim</div><div className="lp-s4-role">Cofounder Coach</div></div>
           </div>
           <div className="lp-s4-msgs">
-            {msgs.slice(0, shown).map((m, i) => (
-              <div key={i} className={`lp-s4-msg${m.from === 'user' ? ' user' : ''}`}>{m.text}</div>
+            {S4_MSGS.map((m, i) => shown.includes(i) && (
+              <div key={i} className={`lp-s4-msg${m.sent ? ' user' : ''}`}>{m.text}</div>
             ))}
+            {typingIdx !== null && (
+              <div className="lp-s4-typing"><div className="lp-s4-dot-anim"/><div className="lp-s4-dot-anim"/><div className="lp-s4-dot-anim"/></div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const HV_NAV_ITEMS = ['Formation', 'Cofounder Info', 'Equity Allocation', 'Vesting', 'Decision-Making', 'IP & Ownership'];
+const HV_SCENES = [
+  { navActive: 2, prog: '30%', lbl: '30% Complete' },
+  { navActive: 3, prog: '42%', lbl: '42% Complete' },
+  { navActive: 4, prog: '54%', lbl: '54% Complete' },
+  { navActive: 5, prog: '66%', lbl: '66% Complete' },
+];
+
+function HeroVisual() {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [exitIdx, setExitIdx] = useState(null);
+  const [sidebar, setSidebar] = useState(HV_SCENES[0]);
+  const [eqText, setEqText] = useState('');
+  const [eqCursorOff, setEqCursorOff] = useState(false);
+  const [vestSel, setVestSel] = useState(null);
+  const [decSel, setDecSel] = useState(null);
+  const [ipCo, setIpCo] = useState('');
+  const [ipJur, setIpJur] = useState('');
+  const [clicking, setClicking] = useState(null);
+  const refs = useRef([]);
+  const activeIdxRef = useRef(0);
+
+  useEffect(() => {
+    const t = (fn, ms) => { const id = setTimeout(fn, ms); refs.current.push(id); };
+
+    const clickContinue = (key, then) => {
+      setClicking(key);
+      t(() => { setClicking(null); t(then, 160); }, 260);
+    };
+
+    const runScene0 = () => {
+      setEqText(''); setEqCursorOff(false);
+      const answer = 'We agreed on an equal 50 / 50 split.';
+      let i = 0;
+      const step = () => {
+        if (i < answer.length) { i++; setEqText(answer.slice(0, i)); t(step, 44); }
+        else t(() => { setEqCursorOff(true); t(() => clickContinue('c1', () => goTo(1)), 700); }, 900);
+      };
+      t(step, 500);
+    };
+
+    const runScene1 = () => {
+      setVestSel(null);
+      t(() => { setVestSel(1); t(() => clickContinue('c2', () => goTo(2)), 900); }, 700);
+    };
+
+    const runScene2 = () => {
+      setDecSel(null);
+      t(() => { setDecSel(0); t(() => clickContinue('c3', () => goTo(3)), 900); }, 700);
+    };
+
+    const runScene3 = () => {
+      setIpCo(''); setIpJur('');
+      const coText = 'Acme Technologies, Inc.';
+      const jurText = 'Delaware';
+      let i = 0, j = 0;
+      const typeJur = () => {
+        if (j < jurText.length) { j++; setIpJur(jurText.slice(0, j)); t(typeJur, 60); }
+        else t(() => clickContinue('c4', () => goTo(0)), 800);
+      };
+      const typeCo = () => {
+        if (i < coText.length) { i++; setIpCo(coText.slice(0, i)); t(typeCo, 46); }
+        else t(typeJur, 300);
+      };
+      t(typeCo, 500);
+    };
+
+    const runScene = (idx) => {
+      if (idx === 0) runScene0();
+      if (idx === 1) runScene1();
+      if (idx === 2) runScene2();
+      if (idx === 3) runScene3();
+    };
+
+    const goTo = (idx) => {
+      const next = idx % HV_SCENES.length;
+      setExitIdx(activeIdxRef.current);
+      setActiveIdx(null);
+      t(() => setExitIdx(null), 500);
+      t(() => {
+        activeIdxRef.current = next;
+        setActiveIdx(next);
+        setSidebar(HV_SCENES[next]);
+        runScene(next);
+      }, 120);
+    };
+
+    t(() => runScene0(), 2400);
+    return () => { refs.current.forEach(clearTimeout); refs.current = []; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const screenCls = (i) => `lp-hv-screen${activeIdx === i ? ' active' : ''}${exitIdx === i ? ' exit' : ''}`;
+
+  return (
+    <div className="lp-hero-visual lp-rv">
+      <div className="lp-hv-bar">
+        <span className="lp-dot-r"/><span className="lp-dot-y"/><span className="lp-dot-g"/>
+        <div className="lp-hv-url">cherrytree.app / agreement</div>
+      </div>
+      <div className="lp-hv-body">
+        <div className="lp-hv-sidebar">
+          <div className="lp-hv-logo"><div className="lp-hv-logo-mark"/><div className="lp-hv-logo-name">Cherrytree</div></div>
+          <div className="lp-hv-prog-lbl">{sidebar.lbl}</div>
+          <div className="lp-hv-prog-bar"><div className="lp-hv-prog-fill" style={{ width: sidebar.prog }}/></div>
+          {HV_NAV_ITEMS.map((label, i) => (
+            <div key={i} className={`lp-hv-nav-item${i === sidebar.navActive ? ' active' : ''}`}>
+              <span className={`lp-hv-dot${i < sidebar.navActive ? ' done' : i === sidebar.navActive ? ' act' : ''}`}/>{label}
+            </div>
+          ))}
+        </div>
+        <div className="lp-hv-main">
+          <div className={screenCls(0)}>
+            <div className="lp-hv-sec-lbl">Section 3 of 10 · Equity Allocation</div>
+            <div className="lp-hv-q-title">How will you split equity?</div>
+            <div className="lp-hv-q-hint">Describe your approach or run the equity calculator to surface each founder's contribution.</div>
+            <div className="lp-hv-input-field focused">
+              <span>{eqText}</span><span className={`lp-hv-inp-cursor${eqCursorOff ? ' off' : ''}`}/>
+            </div>
+            <button className={`lp-hv-continue${clicking === 'c1' ? ' clicking' : ''}`}>Continue →</button>
+          </div>
+          <div className={screenCls(1)}>
+            <div className="lp-hv-sec-lbl">Section 4 of 10 · Vesting</div>
+            <div className="lp-hv-q-title">How long should shares vest?</div>
+            <div className="lp-hv-q-hint">Most startups use a 4-year vesting schedule with a 1-year cliff to protect both founders.</div>
+            <div className="lp-hv-options">
+              {['2 years', '4 years', '6 years'].map((label, i) => (
+                <div key={i} className={`lp-hv-opt${vestSel === i ? ' selected' : ''}`}>{label}</div>
+              ))}
+            </div>
+            <button className={`lp-hv-continue${clicking === 'c2' ? ' clicking' : ''}`}>Continue →</button>
+          </div>
+          <div className={screenCls(2)}>
+            <div className="lp-hv-sec-lbl">Section 5 of 10 · Decision-Making</div>
+            <div className="lp-hv-q-title">How will major decisions be made?</div>
+            <div className="lp-hv-q-hint">Agreeing on a framework now prevents costly disputes later.</div>
+            <div className="lp-hv-options">
+              {['Unanimous vote', 'Majority vote', 'CEO decides'].map((label, i) => (
+                <div key={i} className={`lp-hv-opt${decSel === i ? ' selected' : ''}`}>{label}</div>
+              ))}
+            </div>
+            <button className={`lp-hv-continue${clicking === 'c3' ? ' clicking' : ''}`}>Continue →</button>
+          </div>
+          <div className={screenCls(3)}>
+            <div className="lp-hv-sec-lbl">Section 6 of 10 · IP &amp; Ownership</div>
+            <div className="lp-hv-q-title">Who owns what you build?</div>
+            <div className="lp-hv-q-hint">All IP created for the company should be assigned to the entity, not individuals.</div>
+            <div className="lp-hv-two-col">
+              <div className="lp-hv-field-group">
+                <div className="lp-hv-field-lbl">Company name</div>
+                <div className="lp-hv-field-val">{ipCo}</div>
+              </div>
+              <div className="lp-hv-field-group">
+                <div className="lp-hv-field-lbl">Jurisdiction</div>
+                <div className="lp-hv-field-val">{ipJur}</div>
+              </div>
+            </div>
+            <button className={`lp-hv-continue${clicking === 'c4' ? ' clicking' : ''}`}>Continue →</button>
           </div>
         </div>
       </div>
@@ -343,17 +551,43 @@ function LandingPage() {
 
   const [typedHero, setTypedHero] = useState('');
   const [openFaq, setOpenFaq] = useState(null);
+  const [hoveredFaq, setHoveredFaq] = useState(null);
   const [activeFeature, setActiveFeature] = useState(0);
   const [carouselIdx, setCarouselIdx] = useState(0);
   const [counts, setCounts] = useState(STATS.map(() => 0));
-  const statsRef = useRef(null);
+  const [lineIn, setLineIn] = useState(STATS.map(() => false));
+  const [typedProtect, setTypedProtect] = useState('');
+  const [protectCursorOff, setProtectCursorOff] = useState(false);
+  const statRowRefs = useRef([]);
   const featItemRefs = useRef([]);
+  const protectCtaRef = useRef(null);
 
   const goToDashboard = () => {
     const isProd = window.location.hostname.includes('cherrytree.app');
     if (isProd) window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
     else navigate('/dashboard', { replace: true });
   };
+
+  // Scroll reveal — fades/slides in each .lp-rv/.lp-rv-l/.lp-rv-r element once as it enters view.
+  // Elements already in the viewport at observe() time can have their IntersectionObserver
+  // callback fire before the browser has committed a style pass with the base (opacity:0)
+  // styles, which causes the transition to opacity:1 to never run. Forcing a synchronous
+  // reflow before adding the class guarantees the "from" state is flushed first.
+  useEffect(() => {
+    const els = document.querySelectorAll('.lp-rv, .lp-rv-l, .lp-rv-r');
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const target = entry.target;
+          obs.unobserve(target);
+          void target.offsetHeight;
+          target.classList.add('lp-rv-in');
+        }
+      });
+    }, { threshold: 0.06, rootMargin: '0px 0px -40px 0px' });
+    els.forEach(el => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
 
   // Hero typewriter — types once, cursor stays
   useEffect(() => {
@@ -385,13 +619,17 @@ function LandingPage() {
     return () => window.removeEventListener('scroll', handle);
   }, []);
 
-  // Count-up for stats
+  // Stats: each row draws in its underline and counts up independently as it
+  // individually scrolls into view (matching the source design's per-row observers,
+  // rather than firing every stat at once when the section appears).
   useEffect(() => {
-    if (!statsRef.current) return;
-    const obs = new IntersectionObserver(entries => {
-      if (!entries[0].isIntersecting) return;
-      obs.disconnect();
-      STATS.forEach((s, i) => {
+    const observers = statRowRefs.current.map((el, i) => {
+      if (!el) return null;
+      const obs = new IntersectionObserver(entries => {
+        if (!entries[0].isIntersecting) return;
+        obs.disconnect();
+        setLineIn(prev => { const n = [...prev]; n[i] = true; return n; });
+        const s = STATS[i];
         if (s.num === 0) return;
         const dur = 1600, start = Date.now();
         const tick = () => {
@@ -402,9 +640,30 @@ function LandingPage() {
           if (pct < 1) requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);
-      });
-    }, { threshold: 0.3 });
-    obs.observe(statsRef.current);
+      }, { threshold: 0.4 });
+      obs.observe(el);
+      return obs;
+    });
+    return () => observers.forEach(o => o && o.disconnect());
+  }, []);
+
+  // Protect CTA: types "and your peace of mind." once, when scrolled into view
+  useEffect(() => {
+    if (!protectCtaRef.current) return;
+    const target = 'and your peace of mind.';
+    const obs = new IntersectionObserver(entries => {
+      if (!entries[0].isIntersecting) return;
+      obs.disconnect();
+      let i = 0;
+      const tick = () => {
+        if (i >= target.length) { setProtectCursorOff(true); return; }
+        i++;
+        setTypedProtect(target.slice(0, i));
+        setTimeout(tick, 46);
+      };
+      setTimeout(tick, 400);
+    }, { threshold: 0.4 });
+    obs.observe(protectCtaRef.current);
     return () => obs.disconnect();
   }, []);
 
@@ -429,37 +688,8 @@ function LandingPage() {
         </div>
 
         {/* Product mockup */}
-        <div className="lp-hero-visual lp-rv">
-          <div className="lp-hv-bar">
-            <span className="lp-dot-r"/><span className="lp-dot-y"/><span className="lp-dot-g"/>
-            <div className="lp-hv-url">cherrytree.app / agreement</div>
-          </div>
-          <div className="lp-hv-body">
-            <div className="lp-hv-sidebar">
-              <div className="lp-hv-prog-lbl">40% Complete</div>
-              <div className="lp-hv-prog-bar"><div className="lp-hv-prog-fill" style={{ width: '40%' }}/></div>
-              {['Formation', 'Cofounder Info', 'Equity', 'Vesting', 'Decision-Making', 'IP & Ownership'].map((s, i) => (
-                <div key={i} className={`lp-hv-nav-item${i === 3 ? ' active' : ''}`}>
-                  <span className={`lp-hv-dot${i < 3 ? ' done' : i === 3 ? ' act' : ''}`}/>{s}
-                </div>
-              ))}
-            </div>
-            <div className="lp-hv-main">
-              <div className="lp-hv-sec-lbl">Section 4 of 10 · Vesting Schedule</div>
-              <div className="lp-hv-q-title">What vesting schedule will you use?</div>
-              <div className="lp-hv-q-hint">Vesting protects everyone — it ensures each founder earns their equity over time and gives the team a path forward if someone leaves early.</div>
-              <div className="lp-hv-card">
-                <div className="lp-hv-card-lbl">Select a schedule</div>
-                {['4 years with 1-year cliff', '3 years with 1-year cliff', 'Immediate'].map((opt, i) => (
-                  <div key={i} className="lp-hv-row" style={{ marginBottom: i === 2 ? 0 : 6 }}>
-                    <span style={{ width: 13, height: 13, borderRadius: '50%', border: `1.5px solid ${i === 0 ? 'var(--lp-green)' : 'rgba(0,0,0,0.15)'}`, background: i === 0 ? 'var(--lp-green)' : 'transparent', flexShrink: 0, display: 'inline-block', boxSizing: 'border-box' }}/>
-                    <div className="lp-hv-name" style={{ background: i === 0 ? 'var(--lp-green-bg)' : '#fff', borderColor: i === 0 ? 'rgba(75,114,99,0.2)' : 'rgba(0,0,0,0.1)', color: i === 0 ? 'var(--lp-green)' : 'var(--lp-ink)', fontWeight: i === 0 ? 400 : 300 }}>{opt}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+        <div className="lp-hero-strip" />
+        <HeroVisual />
       </section>
 
       {/* ── Logo Wall ── */}
@@ -482,12 +712,11 @@ function LandingPage() {
       {/* ── Features ── */}
       <section className="lp-features" id="features">
         <div className="lp-feat-header">
-          <div className="lp-overline lp-rv">How it works</div>
           <h2 className="lp-rv lp-d1">Built for <br/><em>early-stage</em> cofounders.</h2>
           <p className="lp-rv lp-d2">Get your equity, expectations, and everything else right from the start.</p>
         </div>
         <div className="lp-feat-body">
-          <div className="lp-feat-visual">
+          <div className="lp-feat-visual lp-rv-l">
             <ActivePanel active={true} key={activeFeature} />
           </div>
           <div className="lp-feat-list">
@@ -508,18 +737,19 @@ function LandingPage() {
       </section>
 
       {/* ── Stats ── */}
-      <section className="lp-stats" ref={statsRef}>
+      <section className="lp-stats">
         <div className="lp-stats-inner">
           <div className="lp-stats-left">
-            <div className="lp-overline lp-rv">By the numbers</div>
             <h2 className="lp-rv lp-d1">The proof is in the<br/><em>partnership.</em></h2>
             <p className="lp-rv lp-d2">Founding teams across the country have used Cherrytree to get aligned before they build. No lawyers required. No legal background needed.</p>
           </div>
           <div className="lp-stats-right">
             {STATS.map((s, i) => (
-              <div key={i} className={`lp-stat-row lp-rv lp-d${i}`}>
-                <div className="lp-stat-num">{s.prefix || ''}{counts[i].toLocaleString()}{s.suffix}</div>
-                <div className="lp-stat-label">{s.label}</div>
+              <div key={i} className={`lp-stat-row${lineIn[i] ? ' lp-line-in' : ''}`} ref={el => statRowRefs.current[i] = el}>
+                <div className="lp-stat-num-row">
+                  <div className="lp-stat-num">{s.prefix || ''}{counts[i].toLocaleString()}{s.suffix}</div>
+                  <div className="lp-stat-label">{s.label}</div>
+                </div>
               </div>
             ))}
           </div>
@@ -529,7 +759,6 @@ function LandingPage() {
       {/* ── Testimonials ── */}
       <section className="lp-testi">
         <div className="lp-testi-header">
-          <div className="lp-overline lp-rv">Testimonials</div>
           <h2 className="lp-rv lp-d1">What founders are saying.</h2>
         </div>
         <div className="lp-testi-grid">
@@ -538,7 +767,7 @@ function LandingPage() {
             { init: 'J', name: 'James T.', role: 'Founder, YC S24', quote: '"Our accelerator recommended this and I\'m glad they did. We got through IP and vesting in one sitting and actually understood what we were agreeing to."' },
             { init: 'S', name: 'Sarah K.', role: 'Co-founder, FinTech startup', quote: '"The equity calculator alone is worth it. We scored each other independently and compared — it was the most honest conversation we\'d had about the company."' },
           ].map((t, i) => (
-            <div key={i} className={`lp-testi-card lp-rv lp-d${i}`}>
+            <div key={i} className={`lp-testi-card lp-rv lp-d${i}`} style={{ backgroundImage: "url('/images/testimonial-paper.jpg')" }}>
               <p className="lp-testi-quote">{t.quote}</p>
               <div className="lp-testi-author">
                 <div><div className="lp-testi-name">{t.name}</div><div className="lp-testi-role">{t.role}</div></div>
@@ -552,7 +781,6 @@ function LandingPage() {
       <section className="lp-carousel" id="who">
         <div className="lp-carousel-header lp-rv">
           <div>
-            <div className="lp-overline" style={{ marginBottom: 12 }}>Who it's for</div>
             <h2 className="lp-carousel-title">Built for every kind of <em>founding team.</em></h2>
           </div>
           <div className="lp-carousel-nav">
@@ -584,7 +812,6 @@ function LandingPage() {
       {/* ── Pricing ── */}
       <section className="lp-pricing" id="pricing">
         <div className="lp-pricing-header">
-          <div className="lp-overline lp-rv">Pricing</div>
           <h2 className="lp-rv lp-d1">Founder-friendly pricing.</h2>
           <p className="lp-rv lp-d2">Choose the plan that's right for your team.</p>
         </div>
@@ -593,7 +820,7 @@ function LandingPage() {
             <div key={i} className={`lp-pricing-card lp-rv lp-d${i}${p.featured ? ' featured' : ''}`}>
               {p.badge && <div className="lp-pricing-badge">{p.badge}</div>}
               <div className="lp-pricing-tier">{p.tier}</div>
-              <div className="lp-pricing-price">{p.price}</div>
+              <div className={`lp-pricing-price${p.enterprise ? ' lp-pricing-price-custom' : ''}`}>{p.price}</div>
               <div className="lp-pricing-period">{p.period}</div>
               <div className="lp-pricing-divider"/>
               <p className="lp-pricing-desc">{p.desc}</p>
@@ -620,28 +847,37 @@ function LandingPage() {
       <section className="lp-faq" id="faq">
         <div className="lp-faq-inner">
           <div className="lp-faq-header">
-            <div className="lp-overline lp-rv">FAQ</div>
-            <h2 className="lp-rv lp-d1">Questions founders ask.</h2>
+            <h2 className="lp-rv lp-d1">FAQ</h2>
           </div>
           <div className="lp-faq-list">
-            {FAQS.map((f, i) => (
-              <div key={i} className={`lp-faq-item lp-rv lp-d${Math.min(i, 4)}`}>
-                <button className="lp-faq-btn" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
-                  <span className="lp-faq-q">{f.q}</span>
-                  <span className={`lp-faq-icon${openFaq === i ? ' open' : ''}`}>+</span>
-                </button>
-                <div className={`lp-faq-body${openFaq === i ? ' open' : ''}`}>
-                  <div className="lp-faq-body-inner"><p className="lp-faq-a">{f.a}</p></div>
+            {FAQS.map((f, i) => {
+              const expanded = openFaq === i || hoveredFaq === i;
+              return (
+                <div
+                  key={i}
+                  className={`lp-faq-item lp-rv lp-d${Math.min(i, 4)}`}
+                  onMouseEnter={() => setHoveredFaq(i)}
+                  onMouseLeave={() => setHoveredFaq(prev => (prev === i ? null : prev))}
+                >
+                  <button className="lp-faq-btn" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                    <span className="lp-faq-q">{f.q}</span>
+                  </button>
+                  <div className={`lp-faq-body${expanded ? ' open' : ''}`}>
+                    <div className="lp-faq-body-inner"><p className="lp-faq-a">{f.a}</p></div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* ── Protect CTA ── */}
-      <section className="lp-protect-cta">
-        <h2 className="lp-rv">Protect your piece of the pie<br/><em>and</em> your peace of mind.</h2>
+      <section className="lp-protect-cta" ref={protectCtaRef}>
+        <h2>
+          Protect your piece of the pie<br/>
+          <em>{typedProtect}<span className={`lp-cursor${protectCursorOff ? ' lp-cursor-hidden' : ''}`}/></em>
+        </h2>
         <div className="lp-protect-cta-actions lp-rv lp-d1">
           <button className="lp-btn-primary" onClick={goToDashboard}>Get started</button>
           <a className="lp-btn-ghost" href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer">Book a demo →</a>
