@@ -119,7 +119,7 @@ function CollaboratorManager({ project }) {
         <form onSubmit={handleInvite} style={{ marginBottom: '28px' }}>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
             <div style={{ flex: 1 }}>
-              <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.02em', display: 'block', marginBottom: '4px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', letterSpacing: '0.04em', display: 'block', marginBottom: '4px' }}>
                 Email Address
               </label>
               <input
@@ -160,7 +160,7 @@ function CollaboratorManager({ project }) {
       {/* Members list */}
       {(memberships?.data?.length > 0 || (isAdmin && invitations?.data?.length > 0)) && (
         <div>
-          <div style={{ fontSize: '11px', fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.02em', marginBottom: '10px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 500, color: '#999', letterSpacing: '0.04em', marginBottom: '10px' }}>
             Members
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>

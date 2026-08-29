@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { usePageMeta } from '../hooks/usePageMeta';
 import MarketingNav from '../components/MarketingNav';
 import MarketingFooter from '../components/MarketingFooter';
@@ -39,28 +39,6 @@ function AboutPage() {
     breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'About' }],
   });
 
-  const sectionRefs = useRef([]);
-
-  // Reveal each about-section as it scrolls into view, staggered by index
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.15 });
-
-    sectionRefs.current.forEach((el, i) => {
-      if (!el) return;
-      el.style.transitionDelay = `${i * 0.12}s`;
-      observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <div className="lp lp-about-page">
       <MarketingGrain />
@@ -72,7 +50,7 @@ function AboutPage() {
 
       <div className="lp-about-sections">
         {SECTIONS.map((s, i) => (
-          <div key={i} className="lp-about-section" ref={el => sectionRefs.current[i] = el}>
+          <div key={i} className="lp-about-section">
             <div className="lp-about-section-left">
               <div className="lp-about-section-overline">{s.overline}</div>
               <div className="lp-about-section-title">{s.title}</div>

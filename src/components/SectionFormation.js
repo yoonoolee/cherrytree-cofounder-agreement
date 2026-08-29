@@ -300,7 +300,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
           )}
           <div className="space-y-3" style={{ marginTop: '14px' }}>
             <div className="relative">
-              <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.02em', display: 'block', marginBottom: '4px' }}>Street Address</label>
+              <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', letterSpacing: '0.04em', display: 'block', marginBottom: '4px' }}>Street Address</label>
               <input
                 type="text"
                 value={inputValue}
@@ -338,18 +338,18 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
               )}
             </div>
             <div>
-              <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.02em', display: 'block', marginBottom: '4px' }}>
-                Address Line 2 <span style={{ fontWeight: 300, color: '#bbb', textTransform: 'none' }}>(Optional)</span>
+              <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', letterSpacing: '0.04em', display: 'block', marginBottom: '4px' }}>
+                Address Line 2 <span style={{ fontWeight: 300, color: '#bbb' }}>(Optional)</span>
               </label>
               <input type="text" value={formData[FIELDS.MAILING_STREET2] || ''} onChange={(e) => handleChange(FIELDS.MAILING_STREET2, e.target.value)} disabled={isReadOnly} autoComplete="chrome-off" placeholder="Apt, Suite, Floor, etc." />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.02em', display: 'block', marginBottom: '4px' }}>City</label>
+                <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', letterSpacing: '0.04em', display: 'block', marginBottom: '4px' }}>City</label>
                 <input type="text" value={formData[FIELDS.MAILING_CITY] || ''} onChange={(e) => handleChange(FIELDS.MAILING_CITY, e.target.value)} disabled={isReadOnly} autoComplete="chrome-off" placeholder="San Francisco" />
               </div>
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.02em', display: 'block', marginBottom: '4px' }}>State</label>
+                <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', letterSpacing: '0.04em', display: 'block', marginBottom: '4px' }}>State</label>
                 <CustomSelect
                   value={formData[FIELDS.MAILING_STATE] || ''}
                   onChange={(value) => handleChange(FIELDS.MAILING_STATE, value)}
@@ -362,7 +362,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.02em', display: 'block', marginBottom: '4px' }}>ZIP Code</label>
+                <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', letterSpacing: '0.04em', display: 'block', marginBottom: '4px' }}>ZIP Code</label>
                 <input
                   type="text"
                   value={formData[FIELDS.MAILING_ZIP] || ''}
