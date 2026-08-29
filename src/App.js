@@ -8,6 +8,7 @@ import EquityCalculatorPage from './pages/EquityCalculatorPage';
 import AttorneyPage from './pages/AttorneyPage';
 import PricingPage from './pages/PricingPage';
 import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import LoginPage from './pages/LoginPage';
@@ -28,6 +29,7 @@ function App() {
         <Route path="/attorney" element={<AttorneyPage />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/login/*" element={<LoginPage />} />

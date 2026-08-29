@@ -157,11 +157,11 @@ function PricingPage() {
       </section>
 
       {/* FAQ */}
-      <section className="lp-faq" style={{ background: 'var(--lp-bg2)' }}>
+      <section className="lp-faq">
         <div className="lp-faq-inner">
           <div className="lp-faq-header">
             <div className="lp-overline">FAQ</div>
-            <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: 'clamp(30px,4vw,52px)', fontWeight: 400, letterSpacing: '-0.8px', lineHeight: 1.1 }}>Common questions.</h2>
+            <h2>Common questions.</h2>
           </div>
           <div className="lp-faq-list">
             {FAQS.map((f, i) => (
@@ -181,9 +181,7 @@ function PricingPage() {
 
       {/* Bottom CTA */}
       <section className="lp-protect-cta">
-        <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: 'clamp(32px,5vw,68px)', fontWeight: 400, letterSpacing: '-2px', lineHeight: 1.08, marginBottom: 40 }}>
-          Protect your piece of the pie<br/><em style={{ fontStyle: 'italic', color: 'var(--lp-green)' }}>and</em> your peace of mind.
-        </h2>
+        <h2>Protect your piece of the pie<br/><em>and</em> your peace of mind.</h2>
         <div className="lp-protect-cta-actions">
           <button className="lp-btn-primary" onClick={goToDashboard}>Get started</button>
           <a className="lp-btn-ghost" href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer">Book a demo →</a>

@@ -38,7 +38,7 @@ function MarketingFooter() {
             <ul className="lp-footer-links">
               <li><button onClick={() => navigate('/privacy')}>Privacy</button></li>
               <li><button onClick={() => navigate('/terms')}>Terms</button></li>
-              <li><button onClick={() => window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })}>Contact</button></li>
+              <li><button onClick={() => navigate('/contact')}>Contact</button></li>
             </ul>
           </div>
         </div>
