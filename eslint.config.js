@@ -82,6 +82,12 @@ export default tseslint.config(
     },
   },
 
+  // Tests (Vitest globals)
+  {
+    files: ['**/*.test.{js,jsx,ts,tsx}', 'web/src/test/**'],
+    languageOptions: { globals: { ...globals.vitest } },
+  },
+
   // Config files at the repo root / package roots
   {
     files: ['*.{js,ts,mjs}', 'web/*.{js,ts}', 'functions/*.{js,mjs}'],

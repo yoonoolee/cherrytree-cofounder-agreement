@@ -4,8 +4,9 @@ A SaaS platform that helps startup cofounders create legally sound cofounder agr
 
 ## Tech Stack
 
-- **Frontend**: React 19, React Router, Tailwind CSS
+- **Frontend**: React 19, React Router, Tailwind CSS, built with Vite
 - **Backend**: Firebase (Firestore, Cloud Functions, Hosting)
+- **Tooling**: npm workspaces, ESLint, Prettier, Vitest
 - **Authentication**: Clerk (handles auth + email invitations)
 - **Payments**: Stripe
 - **External Services**: Make.com (PDF generation), Google Maps API
@@ -13,16 +14,20 @@ A SaaS platform that helps startup cofounders create legally sound cofounder agr
 ## Project Structure
 
 ```
-├── src/
-│   ├── components/         # React components
-│   ├── pages/             # Page components
-│   ├── contexts/          # React contexts (UserContext, etc.)
-│   ├── constants/         # Shared constants (pricing, etc.)
-│   ├── firebase.js        # Firebase initialization
-│   └── App.js             # Main app component
-├── functions/             # Firebase Cloud Functions
-├── public/               # Static assets
-└── firestore.rules       # Firestore security rules
+├── web/                   # React app (npm workspace)
+│   ├── index.html         # Vite entry
+│   ├── public/            # Static assets
+│   └── src/
+│       ├── components/    # React components
+│       ├── pages/         # Page components
+│       ├── contexts/      # React contexts (UserContext, etc.)
+│       ├── constants/     # Shared constants (pricing, etc.)
+│       ├── firebase.js    # Firebase initialization
+│       └── App.jsx        # Main app component
+├── functions/             # Firebase Cloud Functions (standalone package)
+├── firestore.rules        # Firestore security rules
+├── eslint.config.js       # Lint config for the whole repo
+└── package.json           # Root: workspaces + shared scripts
 ```
 
 ---
@@ -40,10 +45,12 @@ A SaaS platform that helps startup cofounders create legally sound cofounder agr
 
 | File | Purpose | Committed to Git |
 |------|---------|------------------|
-| `.env.example` | Template with placeholder values | ✅ Yes |
-| `.env.development` | Dev keys (localhost) | ❌ No |
-| `.env.production` | Prod keys | ❌ No |
-| `.env.local` | Local overrides (optional) | ❌ No |
+| `web/.env.example` | Template with placeholder values | ✅ Yes |
+| `web/.env.dev` | Dev keys (localhost and the dev deploy) | ❌ No |
+| `web/.env.production` | Prod keys | ❌ No |
+| `web/.env.dev.local` | Local overrides (optional) | ❌ No |
+
+All browser-exposed variables are prefixed `VITE_`.
 
 ### First-Time Setup
 
@@ -52,13 +59,13 @@ A SaaS platform that helps startup cofounders create legally sound cofounder agr
    git clone <repo-url>
    cd cherrytree-cofounder-agreement
    npm install
-   cd functions && npm install && cd ..
+   npm --prefix functions install
    ```
 
 2. **Set up environment variables**
    ```bash
-   cp .env.example .env.development
-   cp .env.example .env.production
+   cp web/.env.example web/.env.dev
+   cp web/.env.example web/.env.production
    ```
    Then fill in API keys from team members or create new ones.
 
@@ -73,11 +80,21 @@ A SaaS platform that helps startup cofounders create legally sound cofounder agr
 ## Local Development
 
 ```bash
-npm start
+npm run dev
 ```
-- Opens http://localhost:3000
-- Uses `.env.development` configuration
+- Serves http://localhost:3000
+- Uses `web/.env.dev` configuration
 - Hot reload on file changes
+
+### Quality checks
+
+```bash
+npm run check         # lint + format check + tests + build (run before pushing)
+npm run lint          # ESLint
+npm run format        # Prettier (write)
+npm test              # Vitest
+npm run knip          # unused files / exports / dependencies
+```
 
 ---
 
@@ -95,9 +112,6 @@ npm start
 ```bash
 # Deploy everything to dev
 npm run deploy:dev
-
-# Deploy everything to prod
-npm run deploy:prod
 
 # Deploy specific services
 npm run deploy:hosting:dev      # Frontend only
@@ -184,7 +198,7 @@ Google Maps Places API is used for address autocomplete in Section 1.
 
 1. GCP Project created with Places API enabled
 2. API key restricted to HTTP referrers and Places API only
-3. Key stored in `.env.development` and `.env.production` as `REACT_APP_GOOGLE_MAPS_API_KEY`
+3. Key stored in `web/.env.dev` and `web/.env.production` as `VITE_GOOGLE_MAPS_API_KEY`
 
 ### Restrictions
 
@@ -234,12 +248,11 @@ const EDIT_WINDOW_CONFIG = {
 
 ```bash
 # Development
-npm start                           # Run local dev server
+npm run dev                         # Run local dev server
 npm run build                       # Build for production
 
 # Deployment
 npm run deploy:dev                  # Deploy all to dev
-npm run deploy:prod                 # Deploy all to prod
 
 # Firebase
 firebase use dev/prod               # Switch environment
