@@ -78,7 +78,7 @@ function MarketingNav() {
         </li>
       </ul>
       <div className="lp-nav-right">
-        <button className="lp-nav-signin" onClick={() => navigate('/sign-in')}>
+        <button className="lp-nav-signin" onClick={() => navigate('/login')}>
           Sign in
         </button>
         <button className="lp-nav-cta" onClick={goDash}>
