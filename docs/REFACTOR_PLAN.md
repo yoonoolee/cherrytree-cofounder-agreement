@@ -4,11 +4,11 @@ Temporary file for the JS → TS refactor. Deleted in Phase 9. Full design lives
 
 ## Status
 
-- Phase: 1 (tooling) — code complete, authenticated smoke test pending
-- Step: smoke checklist items 2–7 with the user signed in (public routes already pixel-verified)
-- Last green commit: 812d837
-- Next action: after smoke passes → tag `refactor/p1-done`, then Phase 2 (dead code removal)
-- Blocked on: user smoke test + "continue"
+- Phase: 2 (dead code removal) — complete
+- Step: —
+- Last green commit: c33cf81 (tag refactor/p2-done)
+- Next action: Phase 3 — characterization tests (recommended: start a fresh Claude session first)
+- Blocked on: user "continue"
 
 ## How to resume (start of every session)
 
@@ -26,7 +26,7 @@ Rules: hard stop at every `⏸` checkpoint and wait for the user's "continue". O
 
 - [x] **Phase 0 — Baseline** — branch `refactor/ts-monorepo` off `origin/master` (`d12eb6c`); `.nvmrc`; baseline CRA build clean with 0 ESLint warnings (`.refactor-baseline/cra-build.log`); `__endpoint` golden for the 10 functions (`.refactor-baseline/endpoints.golden.json`, generated with `GCLOUD_PROJECT=test-project`); 30 baseline screenshots of the 10 public routes × desktop/tablet/mobile (`.refactor-baseline/screenshots/`). ⏸
 - [x] **Phase 1 — Tooling skeleton (still JS)** — commits a04005c (move), 4576e4f (.jsx), 856fa7d (Vite), 3309b27 (ESLint), b6d2ffd (Prettier), 36efb68, 812d837 (Vitest/knip/scripts). Public routes pixel-identical to baseline (28/30 exact; 2 animation frames). `npm run check` green. Originally: 1. pure move into `web/` + root/web/shared `package.json` + workspaces; 2. pure rename `.js`→`.jsx` (`index.js`→`main.jsx`); 3. Vite 8 + `index.html` + `vite.config.ts` (port 3000) + `VITE_` env rename + `web/.env.dev`/`.env.production` + `lib/env.ts` + workflow heredocs + `firebase.json` hosting `web/dist`; verify dev, `build`, `build:dev`, no dev-bundle markers in dist; 4. ESLint 10 + Prettier, single format commit + `.git-blame-ignore-revs`; 5. Vitest 5 + RTL + jsdom + knip + root scripts + README quick-start. Full smoke. ⏸
-- [ ] **Phase 2 — Dead code removal** — knip-verified deletes: `DynamicSection`, `DomainRedirect`, `AppRedirect`, `SectionOnboarding`, `utils/errorHandler`, `App.css`, `.Rhistory`, `.DS_Store`, client `mergeOtherFields`/`OTHER_FIELD_CONFIG`, server `crypto`/`defineString` imports, deps `web-vitals`, `env-cmd`, `react-scripts`, `firebase-functions-test`. ⏸
+- [x] **Phase 2 — Dead code removal** — commit c33cf81; also removed unused config helpers, CRA default logos, un-exported internal helpers; `__endpoint` golden re-verified identical. Pre-existing bug fixed with user approval in bcf7b6a (nav Sign in → `/login`). Originally: knip-verified deletes: `DynamicSection`, `DomainRedirect`, `AppRedirect`, `SectionOnboarding`, `utils/errorHandler`, `App.css`, `.Rhistory`, `.DS_Store`, client `mergeOtherFields`/`OTHER_FIELD_CONFIG`, server `crypto`/`defineString` imports, deps `web-vitals`, `env-cmd`, `react-scripts`, `firebase-functions-test`. ⏸
 - [ ] **Phase 3 — Characterization tests (JS)** — pure-logic tests; pairwise-equivalence tests for duplicated logic; `useAutoSave` write-shape; callable request fixtures; `__endpoint` golden + export-set test; 3-layer Section harness for all 10 sections + `SurveyNavigation` with the prefix-fixture matrix. ⏸
 - [ ] **Phase 4 — `shared` package + base tsconfig** — `tsconfig.base.json`; `shared/src/{survey,domain,callables.ts,time.ts}`; server `mergeOtherFields` survives; web + functions consume it from JS; `functions/esbuild.config.mjs`; `firebase.json` predeploy. ⏸
 - [ ] **Phase 5 — Functions → TS** — 5a mechanical JS split + helper tests + golden green on bundle + emulator lists 10; 5b `.ts` conversion (`toErrorMessage`, `new Stripe` + pinned `apiVersion`, `logger`). Dev deploy only after user confirmation. ⏸
@@ -106,7 +106,7 @@ Bugs / inconsistencies
 ## Intermediate artifacts to delete in Phase 9
 
 - `.refactor-baseline/` (build log, endpoint golden source copy, screenshots) — local only, excluded via `.git/info/exclude`
-- `.playwright-mcp/` (Playwright MCP snapshots) — local only, excluded via `.git/info/exclude`
+- `../.playwright-mcp/` (Playwright MCP snapshots; lives in the parent `Cherrytree/` folder, outside the repo)
 - The `.git/info/exclude` entries themselves
 - `docs/REFACTOR_PLAN.md` (this file)
 - Local tags `refactor/p<N>-done`
