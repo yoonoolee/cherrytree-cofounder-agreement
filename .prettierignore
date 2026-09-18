@@ -1,0 +1,10 @@
+node_modules/
+web/dist/
+functions/lib/
+coverage/
+.firebase/
+package-lock.json
+functions/package-lock.json
+web/public/
+cherrytree-cofounder-agreement-v1/
+*.md

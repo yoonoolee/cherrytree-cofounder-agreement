@@ -17,7 +17,6 @@ const { getAuth } = require('firebase-admin/auth');
 const axios = require('axios');
 const { defineString } = require('firebase-functions/params');
 const Stripe = require('stripe');
-const crypto = require('crypto');
 const { Webhook } = require('svix');
 const validator = require('validator');
 const { Resend } = require('resend');
