@@ -6,7 +6,7 @@ Temporary file for the JS → TS refactor. Deleted in Phase 9. Full design lives
 
 - Phase: 0 (baseline) — complete
 - Step: —
-- Last green commit: (set after commit)
+- Last green commit: 340a027
 - Next action: Phase 1, step 1 — pure `git mv` of `src`, `public`, `postcss.config.js`, `tailwind.config.js` into `web/`
 - Blocked on: user "continue"
 
