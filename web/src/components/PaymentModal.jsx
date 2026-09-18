@@ -12,10 +12,13 @@ const PROJECT_NAME_MIN_LENGTH = 1; // Minimum characters for project/company nam
 const PROJECT_NAME_MAX_LENGTH = 100; // Maximum characters for project/company name
 
 // Filter to only Starter and Pro for payment modal
-const PLANS = PRICING_PLANS.filter(plan => plan.key === 'starter' || plan.key === 'pro').reduce((acc, plan) => {
-  acc[plan.key] = plan;
-  return acc;
-}, {});
+const PLANS = PRICING_PLANS.filter((plan) => plan.key === 'starter' || plan.key === 'pro').reduce(
+  (acc, plan) => {
+    acc[plan.key] = plan;
+    return acc;
+  },
+  {},
+);
 
 function PaymentModal({ onClose, onSuccess }) {
   const { currentUser, loading: userLoading } = useUser();
@@ -53,14 +56,14 @@ function PaymentModal({ onClose, onSuccess }) {
     // Prevent script injection and malicious patterns
     // Note: Server-side sanitization is the real protection, this is just early feedback
     const dangerousPatterns = [
-      /<|>/,           // HTML tags
-      /javascript:/i,  // javascript: protocol
-      /data:/i,        // data: protocol
-      /vbscript:/i,    // vbscript: protocol
-      /on\w+=/i        // event handlers (onclick, onerror, etc.)
+      /<|>/, // HTML tags
+      /javascript:/i, // javascript: protocol
+      /data:/i, // data: protocol
+      /vbscript:/i, // vbscript: protocol
+      /on\w+=/i, // event handlers (onclick, onerror, etc.)
     ];
 
-    if (dangerousPatterns.some(pattern => pattern.test(trimmedName))) {
+    if (dangerousPatterns.some((pattern) => pattern.test(trimmedName))) {
       setError('Company name contains invalid characters');
       return;
     }
@@ -97,7 +100,7 @@ function PaymentModal({ onClose, onSuccess }) {
         plan: selectedPlan,
         projectName: trimmedName,
         successUrl: `${baseUrl}/dashboard?payment=success`,
-        cancelUrl: `${baseUrl}/dashboard?payment=cancelled`
+        cancelUrl: `${baseUrl}/dashboard?payment=cancelled`,
       });
 
       // Redirect to Stripe checkout
@@ -108,7 +111,6 @@ function PaymentModal({ onClose, onSuccess }) {
       } else {
         throw new Error('Failed to create checkout session');
       }
-
     } catch (err) {
       console.error('Error creating checkout session:', err);
       setError(err.message || 'Failed to start payment. Please try again.');
@@ -117,8 +119,14 @@ function PaymentModal({ onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-3 md:p-4 z-[9999]" onClick={onClose}>
-      <div className="bg-white/95 backdrop-blur-xl rounded-lg shadow-2xl border border-gray-200/50 max-w-2xl w-full p-4 md:p-8 relative z-[10000] max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-3 md:p-4 z-[9999]"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white/95 backdrop-blur-xl rounded-lg shadow-2xl border border-gray-200/50 max-w-2xl w-full p-4 md:p-8 relative z-[10000] max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex justify-between items-start mb-4 md:mb-6">
           <div className="flex-1 pr-4">
             <h2 className="text-lg md:text-2xl font-bold text-gray-900">
@@ -136,15 +144,11 @@ function PaymentModal({ onClose, onSuccess }) {
           </button>
         </div>
 
-        {error && (
-          <p className="text-xs text-red-950 mb-4">{error}</p>
-        )}
+        {error && <p className="text-xs text-red-950 mb-4">{error}</p>}
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4 md:mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Company Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
             <input
               type="text"
               value={projectName}
@@ -156,9 +160,7 @@ function PaymentModal({ onClose, onSuccess }) {
 
           {/* Plan Selection */}
           <div className="mb-4 md:mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Select Plan
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Select Plan</label>
             <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 items-stretch">
               {Object.entries(PLANS).map(([key, plan]) => {
                 const isProPlan = key === 'pro';
@@ -167,16 +169,20 @@ function PaymentModal({ onClose, onSuccess }) {
                 const cardContent = (
                   <>
                     {!isProPlan && (
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 mb-2 ${
-                        selectedPlan === key ? 'border-black' : 'border-gray-300'
-                      }`}>
+                      <div
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 mb-2 ${
+                          selectedPlan === key ? 'border-black' : 'border-gray-300'
+                        }`}
+                      >
                         {selectedPlan === key && (
                           <div className="w-2 h-2 rounded-full bg-black"></div>
                         )}
                       </div>
                     )}
                     <div className="mb-2">
-                      <h3 className="text-sm md:text-base font-semibold text-gray-900">{plan.name}</h3>
+                      <h3 className="text-sm md:text-base font-semibold text-gray-900">
+                        {plan.name}
+                      </h3>
                       <p className="text-xs text-gray-500 mt-0.5">{plan.description}</p>
                     </div>
                     <p className="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-3">
@@ -199,34 +205,37 @@ function PaymentModal({ onClose, onSuccess }) {
                 );
 
                 return (
-                <div key={key} className="relative">
-                  {/* Coming Soon Badge for Pro */}
-                  {isProPlan && (
-                    <div className="absolute -top-2 -right-2 text-white text-xs font-semibold px-3 py-1 rounded-full z-10" style={{ backgroundColor: '#eae6e5', color: '#000000' }}>
-                      Coming Soon
-                    </div>
-                  )}
-                  {isProPlan ? (
-                    <div className="p-3 md:p-4 rounded-lg border-2 transition text-left w-full h-full border-gray-200 bg-gray-50 cursor-not-allowed">
-                      {cardContent}
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => !isDisabled && setSelectedPlan(key)}
-                      disabled={isDisabled}
-                      className={`p-3 md:p-4 rounded-lg border-2 transition text-left w-full h-full ${
-                        isDisabled
-                          ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
-                          : selectedPlan === key
-                            ? 'border-black bg-gray-50'
-                            : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      {cardContent}
-                    </button>
-                  )}
-                </div>
+                  <div key={key} className="relative">
+                    {/* Coming Soon Badge for Pro */}
+                    {isProPlan && (
+                      <div
+                        className="absolute -top-2 -right-2 text-white text-xs font-semibold px-3 py-1 rounded-full z-10"
+                        style={{ backgroundColor: '#eae6e5', color: '#000000' }}
+                      >
+                        Coming Soon
+                      </div>
+                    )}
+                    {isProPlan ? (
+                      <div className="p-3 md:p-4 rounded-lg border-2 transition text-left w-full h-full border-gray-200 bg-gray-50 cursor-not-allowed">
+                        {cardContent}
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => !isDisabled && setSelectedPlan(key)}
+                        disabled={isDisabled}
+                        className={`p-3 md:p-4 rounded-lg border-2 transition text-left w-full h-full ${
+                          isDisabled
+                            ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                            : selectedPlan === key
+                              ? 'border-black bg-gray-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        {cardContent}
+                      </button>
+                    )}
+                  </div>
                 );
               })}
             </div>

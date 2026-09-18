@@ -39,7 +39,7 @@ export function useProjectSync(projectId, isSavingRef) {
 
             const loadedData = {
               ...initialFormData,
-              ...(data.surveyData || {})
+              ...(data.surveyData || {}),
             };
 
             setFormData(loadedData);
@@ -56,7 +56,7 @@ export function useProjectSync(projectId, isSavingRef) {
         if (error.code === 'permission-denied') {
           setAccessDenied(true);
         }
-      }
+      },
     );
 
     return unsubscribe;
@@ -69,6 +69,6 @@ export function useProjectSync(projectId, isSavingRef) {
     setFormData,
     accessDenied,
     lastSaved,
-    setLastSaved
+    setLastSaved,
   };
 }

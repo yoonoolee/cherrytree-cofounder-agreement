@@ -1,6 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-function CustomSelect({ value, onChange, options, placeholder = 'Select...', disabled, className, displayValue }) {
+function CustomSelect({
+  value,
+  onChange,
+  options,
+  placeholder = 'Select...',
+  disabled,
+  className,
+  displayValue,
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const wrapperRef = useRef(null);
@@ -21,11 +29,11 @@ function CustomSelect({ value, onChange, options, placeholder = 'Select...', dis
     if (isOpen && searchRef.current) searchRef.current.focus();
   }, [isOpen]);
 
-  const selectedOption = options.find(opt => opt.value === value);
-  const displayLabel = displayValue !== undefined ? displayValue : (selectedOption?.label || '');
+  const selectedOption = options.find((opt) => opt.value === value);
+  const displayLabel = displayValue !== undefined ? displayValue : selectedOption?.label || '';
 
   const filteredOptions = searchTerm
-    ? options.filter(opt => opt.label.toLowerCase().includes(searchTerm.toLowerCase()))
+    ? options.filter((opt) => opt.label.toLowerCase().includes(searchTerm.toLowerCase()))
     : options;
 
   const handleSelect = (optionValue) => {
@@ -41,7 +49,7 @@ function CustomSelect({ value, onChange, options, placeholder = 'Select...', dis
       {/* Trigger */}
       <button
         type="button"
-        onClick={() => !disabled && setIsOpen(prev => !prev)}
+        onClick={() => !disabled && setIsOpen((prev) => !prev)}
         disabled={disabled}
         style={{
           width: '100%',
@@ -77,31 +85,47 @@ function CustomSelect({ value, onChange, options, placeholder = 'Select...', dis
             transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
           }}
         >
-          <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M2 4L6 8L10 4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       </button>
 
       {/* Dropdown */}
       {isOpen && !disabled && (
-        <div style={{
-          position: 'absolute',
-          width: '100%',
-          top: 'calc(100% + 6px)',
-          left: 0,
-          background: '#FDFCF9',
-          borderRadius: '8px',
-          boxShadow: '0 6px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)',
-          maxHeight: '220px',
-          overflowY: 'auto',
-          zIndex: 9999,
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            width: '100%',
+            top: 'calc(100% + 6px)',
+            left: 0,
+            background: '#FDFCF9',
+            borderRadius: '8px',
+            boxShadow: '0 6px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)',
+            maxHeight: '220px',
+            overflowY: 'auto',
+            zIndex: 9999,
+          }}
+        >
           {showSearch && (
-            <div style={{ padding: '8px 12px 6px', borderBottom: '1px solid #f0ede8', position: 'sticky', top: 0, background: '#FDFCF9' }}>
+            <div
+              style={{
+                padding: '8px 12px 6px',
+                borderBottom: '1px solid #f0ede8',
+                position: 'sticky',
+                top: 0,
+                background: '#FDFCF9',
+              }}
+            >
               <input
                 ref={searchRef}
                 type="text"
                 value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search..."
                 style={{
                   width: '100%',
@@ -117,7 +141,7 @@ function CustomSelect({ value, onChange, options, placeholder = 'Select...', dis
             </div>
           )}
           {filteredOptions.length > 0 ? (
-            filteredOptions.map(opt => (
+            filteredOptions.map((opt) => (
               <div
                 key={opt.value}
                 onClick={() => handleSelect(opt.value)}
@@ -130,14 +154,22 @@ function CustomSelect({ value, onChange, options, placeholder = 'Select...', dis
                   cursor: 'pointer',
                   transition: 'background 0.1s',
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = '#F1EEE9'}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#F1EEE9')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
                 {opt.label}
               </div>
             ))
           ) : (
-            <div style={{ padding: '9px 16px', fontSize: '13px', color: '#999', fontWeight: 300, fontFamily: "'Outfit', sans-serif" }}>
+            <div
+              style={{
+                padding: '9px 16px',
+                fontSize: '13px',
+                color: '#999',
+                fontWeight: 300,
+                fontFamily: "'Outfit', sans-serif",
+              }}
+            >
               No matches found
             </div>
           )}

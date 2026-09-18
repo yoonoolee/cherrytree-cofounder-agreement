@@ -19,7 +19,7 @@ export function convertFromFirebaseFormat(firebaseData) {
       return aNum - bNum;
     });
 
-    return rowKeys.map(rowKey => {
+    return rowKeys.map((rowKey) => {
       const row = firebaseData[rowKey];
       if (!row) return [];
 
@@ -29,13 +29,13 @@ export function convertFromFirebaseFormat(firebaseData) {
         return aNum - bNum;
       });
 
-      return colKeys.map(colKey => {
+      return colKeys.map((colKey) => {
         const cell = row[colKey];
         const cellValue = cell?.value;
         return {
-          value: (cellValue !== undefined && cellValue !== null && cellValue !== '') ? cellValue : 0,
+          value: cellValue !== undefined && cellValue !== null && cellValue !== '' ? cellValue : 0,
           readOnly: cell?.readOnly || false,
-          className: cell?.className || ''
+          className: cell?.className || '',
         };
       });
     });
@@ -54,7 +54,7 @@ export function isFirebaseFormat(data) {
   return (
     typeof data === 'object' &&
     !Array.isArray(data) &&
-    Object.keys(data).some(key => key.startsWith('row_'))
+    Object.keys(data).some((key) => key.startsWith('row_'))
   );
 }
 
@@ -134,8 +134,8 @@ export function calculateEquityPercentages(spreadsheetData, options = {}) {
     if (totalScore === 0) return null;
 
     // Convert to percentages and round to 3 decimal places
-    const percentages = weightedScores.map(score =>
-      Math.round((score / totalScore) * 100 * 1000) / 1000
+    const percentages = weightedScores.map(
+      (score) => Math.round((score / totalScore) * 100 * 1000) / 1000,
     );
 
     // Return as object with userIds if provided, otherwise as array

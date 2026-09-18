@@ -17,8 +17,13 @@ const FIELD_ORDER = [
 ];
 
 function SectionFinal({ formData, handleChange, isReadOnly, project, showValidation }) {
-  const isAckAnswered = (f) => { const v = formData[f]; return v && typeof v === 'object' && Object.values(v).length > 0 && Object.values(v).every(Boolean); };
-  const firstUnanswered = FIELD_ORDER.find(f => {
+  const isAckAnswered = (f) => {
+    const v = formData[f];
+    return (
+      v && typeof v === 'object' && Object.values(v).length > 0 && Object.values(v).every(Boolean)
+    );
+  };
+  const firstUnanswered = FIELD_ORDER.find((f) => {
     const v = formData[f];
     if (!v) return true;
     if (typeof v === 'object') return !Object.values(v).every(Boolean);
@@ -33,17 +38,40 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
 
   return (
     <div>
-      <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '42px', fontWeight: 400, letterSpacing: '-0.5px', marginBottom: '14px', lineHeight: 1.1, color: '#1a1a1a' }}>
+      <h2
+        style={{
+          fontFamily: 'Instrument Serif, serif',
+          fontSize: '42px',
+          fontWeight: 400,
+          letterSpacing: '-0.5px',
+          marginBottom: '14px',
+          lineHeight: 1.1,
+          color: '#1a1a1a',
+        }}
+      >
         General Provisions
       </h2>
-      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', lineHeight: 1.65, marginBottom: '32px' }}>
-        Last stretch! Knock out these last few questions, then review and green-light your agreement.
+      <p
+        style={{
+          fontSize: '14px',
+          fontWeight: 200,
+          color: '#555',
+          lineHeight: 1.65,
+          marginBottom: '32px',
+        }}
+      >
+        Last stretch! Knock out these last few questions, then review and green-light your
+        agreement.
       </p>
 
       <div style={{ overflow: 'visible' }}>
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.DISPUTE_RESOLUTION].question}
-          answerPreview={getPreview(FIELDS.DISPUTE_RESOLUTION, formData, FIELDS.DISPUTE_RESOLUTION_OTHER)}
+          answerPreview={getPreview(
+            FIELDS.DISPUTE_RESOLUTION,
+            formData,
+            FIELDS.DISPUTE_RESOLUTION_OTHER,
+          )}
           tooltip={QUESTION_CONFIG[FIELDS.DISPUTE_RESOLUTION].tooltip}
           isExpanded={expandedField === FIELDS.DISPUTE_RESOLUTION}
           isAnswered={!!formData[FIELDS.DISPUTE_RESOLUTION]}
@@ -51,7 +79,16 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.DISPUTE_RESOLUTION)}
         >
-          <QuestionRenderer fieldName={FIELDS.DISPUTE_RESOLUTION} config={QUESTION_CONFIG[FIELDS.DISPUTE_RESOLUTION]} formData={formData} handleChange={handleChange} isReadOnly={isReadOnly} showValidation={showValidation} project={project} hideLabel />
+          <QuestionRenderer
+            fieldName={FIELDS.DISPUTE_RESOLUTION}
+            config={QUESTION_CONFIG[FIELDS.DISPUTE_RESOLUTION]}
+            formData={formData}
+            handleChange={handleChange}
+            isReadOnly={isReadOnly}
+            showValidation={showValidation}
+            project={project}
+            hideLabel
+          />
         </QuestionCard>
 
         <div style={{ overflow: 'visible', position: 'relative', zIndex: 100 }}>
@@ -65,13 +102,26 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
             onCollapse={collapse}
             onAdvance={() => advanceTo(FIELDS.GOVERNING_LAW)}
           >
-            <QuestionRenderer fieldName={FIELDS.GOVERNING_LAW} config={QUESTION_CONFIG[FIELDS.GOVERNING_LAW]} formData={formData} handleChange={handleChange} isReadOnly={isReadOnly} showValidation={showValidation} project={project} hideLabel />
+            <QuestionRenderer
+              fieldName={FIELDS.GOVERNING_LAW}
+              config={QUESTION_CONFIG[FIELDS.GOVERNING_LAW]}
+              formData={formData}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              showValidation={showValidation}
+              project={project}
+              hideLabel
+            />
           </QuestionCard>
         </div>
 
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.AMENDMENT_PROCESS].question}
-          answerPreview={getPreview(FIELDS.AMENDMENT_PROCESS, formData, FIELDS.AMENDMENT_PROCESS_OTHER)}
+          answerPreview={getPreview(
+            FIELDS.AMENDMENT_PROCESS,
+            formData,
+            FIELDS.AMENDMENT_PROCESS_OTHER,
+          )}
           tooltip={QUESTION_CONFIG[FIELDS.AMENDMENT_PROCESS].tooltip}
           isExpanded={expandedField === FIELDS.AMENDMENT_PROCESS}
           isAnswered={!!formData[FIELDS.AMENDMENT_PROCESS]}
@@ -79,21 +129,37 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.AMENDMENT_PROCESS)}
         >
-          <QuestionRenderer fieldName={FIELDS.AMENDMENT_PROCESS} config={QUESTION_CONFIG[FIELDS.AMENDMENT_PROCESS]} formData={formData} handleChange={handleChange} isReadOnly={isReadOnly} showValidation={showValidation} project={project} hideLabel />
+          <QuestionRenderer
+            fieldName={FIELDS.AMENDMENT_PROCESS}
+            config={QUESTION_CONFIG[FIELDS.AMENDMENT_PROCESS]}
+            formData={formData}
+            handleChange={handleChange}
+            isReadOnly={isReadOnly}
+            showValidation={showValidation}
+            project={project}
+            hideLabel
+          />
         </QuestionCard>
 
         <QuestionCard
           question="How often (in months) should this agreement be reviewed by the cofounders?"
-          answerPreview={formData[FIELDS.REVIEW_FREQUENCY_MONTHS] ? `Every ${formData[FIELDS.REVIEW_FREQUENCY_MONTHS]} months` : ''}
+          answerPreview={
+            formData[FIELDS.REVIEW_FREQUENCY_MONTHS]
+              ? `Every ${formData[FIELDS.REVIEW_FREQUENCY_MONTHS]} months`
+              : ''
+          }
           isExpanded={expandedField === FIELDS.REVIEW_FREQUENCY_MONTHS}
           isAnswered={!!formData[FIELDS.REVIEW_FREQUENCY_MONTHS]}
           onExpand={() => setExpandedField(FIELDS.REVIEW_FREQUENCY_MONTHS)}
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.REVIEW_FREQUENCY_MONTHS)}
         >
-          {showValidation && !formData[FIELDS.REVIEW_FREQUENCY_MONTHS] && <span className="text-red-700 text-xs">* Required</span>}
+          {showValidation && !formData[FIELDS.REVIEW_FREQUENCY_MONTHS] && (
+            <span className="text-red-700 text-xs">* Required</span>
+          )}
           <input
-            type="number" min="0"
+            type="number"
+            min="0"
             value={formData[FIELDS.REVIEW_FREQUENCY_MONTHS] || ''}
             onChange={(e) => {
               const value = e.target.value;
@@ -102,8 +168,11 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
                 handleChange(FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW, {});
               }
             }}
-            onKeyDown={(e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault(); }}
-            disabled={isReadOnly} placeholder="Enter number of months"
+            onKeyDown={(e) => {
+              if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault();
+            }}
+            disabled={isReadOnly}
+            placeholder="Enter number of months"
           />
         </QuestionCard>
 
@@ -116,7 +185,15 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW)}
         >
-          <QuestionRenderer fieldName={FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW} config={QUESTION_CONFIG[FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW]} formData={formData} handleChange={handleChange} isReadOnly={isReadOnly} showValidation={showValidation} project={project} />
+          <QuestionRenderer
+            fieldName={FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW}
+            config={QUESTION_CONFIG[FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW]}
+            formData={formData}
+            handleChange={handleChange}
+            isReadOnly={isReadOnly}
+            showValidation={showValidation}
+            project={project}
+          />
         </QuestionCard>
 
         <QuestionCard
@@ -128,7 +205,15 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST)}
         >
-          <QuestionRenderer fieldName={FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST} config={QUESTION_CONFIG[FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST]} formData={formData} handleChange={handleChange} isReadOnly={isReadOnly} showValidation={showValidation} project={project} />
+          <QuestionRenderer
+            fieldName={FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST}
+            config={QUESTION_CONFIG[FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST]}
+            formData={formData}
+            handleChange={handleChange}
+            isReadOnly={isReadOnly}
+            showValidation={showValidation}
+            project={project}
+          />
         </QuestionCard>
 
         <QuestionCard
@@ -140,7 +225,15 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT)}
         >
-          <QuestionRenderer fieldName={FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT} config={QUESTION_CONFIG[FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT]} formData={formData} handleChange={handleChange} isReadOnly={isReadOnly} showValidation={showValidation} project={project} />
+          <QuestionRenderer
+            fieldName={FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT}
+            config={QUESTION_CONFIG[FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT]}
+            formData={formData}
+            handleChange={handleChange}
+            isReadOnly={isReadOnly}
+            showValidation={showValidation}
+            project={project}
+          />
         </QuestionCard>
 
         <QuestionCard
@@ -152,12 +245,30 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.ACKNOWLEDGE_SEVERABILITY)}
         >
-          <QuestionRenderer fieldName={FIELDS.ACKNOWLEDGE_SEVERABILITY} config={QUESTION_CONFIG[FIELDS.ACKNOWLEDGE_SEVERABILITY]} formData={formData} handleChange={handleChange} isReadOnly={isReadOnly} showValidation={showValidation} project={project} />
+          <QuestionRenderer
+            fieldName={FIELDS.ACKNOWLEDGE_SEVERABILITY}
+            config={QUESTION_CONFIG[FIELDS.ACKNOWLEDGE_SEVERABILITY]}
+            formData={formData}
+            handleChange={handleChange}
+            isReadOnly={isReadOnly}
+            showValidation={showValidation}
+            project={project}
+          />
         </QuestionCard>
 
-        <div style={{ background: '#E9E5DF', borderRadius: '6px', padding: '14px 18px', marginTop: '8px' }}>
+        <div
+          style={{
+            background: '#E9E5DF',
+            borderRadius: '6px',
+            padding: '14px 18px',
+            marginTop: '8px',
+          }}
+        >
           <p style={{ fontSize: '12px', fontWeight: 300, color: '#666', lineHeight: 1.65 }}>
-            <strong style={{ fontWeight: 500 }}>Important:</strong> This document is a starting point and should be reviewed by a qualified attorney before signing. Laws vary by jurisdiction, and this agreement may not cover all scenarios relevant to your specific situation.
+            <strong style={{ fontWeight: 500 }}>Important:</strong> This document is a starting
+            point and should be reviewed by a qualified attorney before signing. Laws vary by
+            jurisdiction, and this agreement may not cover all scenarios relevant to your specific
+            situation.
           </p>
         </div>
       </div>

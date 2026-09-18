@@ -18,7 +18,10 @@ function WelcomePopup({ isOpen, onClose }) {
         onClick={handleBackdropClick}
       />
       <div className="fixed inset-0 flex items-center justify-center z-[9999] pointer-events-none p-4">
-        <div className={`bg-white rounded-lg shadow-xl max-w-lg w-full pt-4 md:pt-8 px-4 md:px-8 pb-2 md:pb-3 pointer-events-auto flex flex-col ${wiggle ? 'animate-wiggle' : ''}`} style={{ height: '85vh', maxHeight: '500px' }}>
+        <div
+          className={`bg-white rounded-lg shadow-xl max-w-lg w-full pt-4 md:pt-8 px-4 md:px-8 pb-2 md:pb-3 pointer-events-auto flex flex-col ${wiggle ? 'animate-wiggle' : ''}`}
+          style={{ height: '85vh', maxHeight: '500px' }}
+        >
           {/* Step indicators */}
           <div className="flex items-center justify-center gap-2 mb-4 md:mb-6">
             {[1, 2, 3].map((s) => (
@@ -36,15 +39,27 @@ function WelcomePopup({ isOpen, onClose }) {
                 Welcome to Cherrytree
               </h2>
               <p className="text-sm text-gray-600 mb-3 md:mb-4">
-                Add your cofounders as collaborators. They must be added to be included in the Agreement.
+                Add your cofounders as collaborators. They must be added to be included in the
+                Agreement.
               </p>
 
               {/* Add Collaborators Animation */}
-              <div className="relative bg-gray-50 rounded-lg p-2 md:p-5 mb-2 overflow-hidden" style={{ height: 'clamp(180px, 40vh, 240px)', minHeight: '180px', maxHeight: '240px', display: 'block' }}>
+              <div
+                className="relative bg-gray-50 rounded-lg p-2 md:p-5 mb-2 overflow-hidden"
+                style={{
+                  height: 'clamp(180px, 40vh, 240px)',
+                  minHeight: '180px',
+                  maxHeight: '240px',
+                  display: 'block',
+                }}
+              >
                 {/* Cursor */}
-                <div className="collaborator-cursor absolute w-4 h-4 z-30" style={{ pointerEvents: 'none' }}>
+                <div
+                  className="collaborator-cursor absolute w-4 h-4 z-30"
+                  style={{ pointerEvents: 'none' }}
+                >
                   <svg viewBox="0 0 24 24" fill="black" className="w-4 h-4">
-                    <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
+                    <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z" />
                   </svg>
                 </div>
 
@@ -52,7 +67,12 @@ function WelcomePopup({ isOpen, onClose }) {
                 <div className="flex justify-end mb-4">
                   <button className="add-collab-btn text-xs px-3 py-1.5 rounded border border-gray-300 bg-white flex items-center gap-1.5 text-gray-700">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                      />
                     </svg>
                     <span className="font-medium">Add</span>
                   </button>
@@ -223,15 +243,27 @@ function WelcomePopup({ isOpen, onClose }) {
 
               <div className="flex-1 flex flex-col justify-center">
                 <div className="flex justify-end items-center gap-3">
-                <button
-                  onClick={() => setStep(2)}
-                  className="button-shimmer bg-[#000000] text-white px-4 md:px-6 py-2 rounded text-sm font-medium hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2 flex-shrink-0"
-                >
-                  Continue
-                  <svg width="16" height="14" viewBox="0 0 20 16" fill="none" className="flex-shrink-0">
-                    <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
+                  <button
+                    onClick={() => setStep(2)}
+                    className="button-shimmer bg-[#000000] text-white px-4 md:px-6 py-2 rounded text-sm font-medium hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2 flex-shrink-0"
+                  >
+                    Continue
+                    <svg
+                      width="16"
+                      height="14"
+                      viewBox="0 0 20 16"
+                      fill="none"
+                      className="flex-shrink-0"
+                    >
+                      <path
+                        d="M0 8L18 8M18 8L12 2M18 8L12 14"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
@@ -244,22 +276,43 @@ function WelcomePopup({ isOpen, onClose }) {
                 Collab on the Agreement
               </h2>
               <p className="text-sm text-gray-600 mb-3 md:mb-4">
-                You and your cofounders answer a set of guided questions together. Nobody has to play "project manager" or relay answers.
+                You and your cofounders answer a set of guided questions together. Nobody has to
+                play "project manager" or relay answers.
               </p>
 
               {/* Animation area */}
-              <div className="relative bg-gray-50 rounded-lg p-2 md:p-5 mb-2 overflow-hidden" style={{ height: 'clamp(180px, 40vh, 240px)', minHeight: '180px', maxHeight: '240px', display: 'block' }}>
+              <div
+                className="relative bg-gray-50 rounded-lg p-2 md:p-5 mb-2 overflow-hidden"
+                style={{
+                  height: 'clamp(180px, 40vh, 240px)',
+                  minHeight: '180px',
+                  maxHeight: '240px',
+                  display: 'block',
+                }}
+              >
                 {/* Blue cursor */}
-                <div className="cursor-black absolute w-4 h-4 z-20" style={{ pointerEvents: 'none' }}>
+                <div
+                  className="cursor-black absolute w-4 h-4 z-20"
+                  style={{ pointerEvents: 'none' }}
+                >
                   <svg viewBox="0 0 24 24" fill="#0056D6" className="w-4 h-4">
-                    <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
+                    <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z" />
                   </svg>
                 </div>
 
                 {/* White cursor with blue stroke */}
-                <div className="cursor-white absolute w-4 h-4 z-20" style={{ pointerEvents: 'none' }}>
-                  <svg viewBox="0 0 24 24" fill="white" stroke="#0056D6" strokeWidth="1" className="w-4 h-4">
-                    <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z"/>
+                <div
+                  className="cursor-white absolute w-4 h-4 z-20"
+                  style={{ pointerEvents: 'none' }}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="white"
+                    stroke="#0056D6"
+                    strokeWidth="1"
+                    className="w-4 h-4"
+                  >
+                    <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.48 0 .72-.58.38-.92L5.94 2.72a.5.5 0 0 0-.44.49Z" />
                   </svg>
                 </div>
 
@@ -277,36 +330,64 @@ function WelcomePopup({ isOpen, onClose }) {
                   <p className="text-xs text-gray-500 mb-1">Industry</p>
                   <div className="relative bg-white border border-gray-200 rounded px-3 py-2 text-sm h-9 flex items-center justify-between">
                     <span className="selected-industry"></span>
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <svg
+                      className="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </div>
                   {/* Dropdown menu */}
                   <div className="dropdown-menu absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded shadow-lg overflow-hidden">
-                    <div className="dropdown-option-1 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Artificial Intelligence</div>
-                    <div className="dropdown-option-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Food and Beverage</div>
-                    <div className="dropdown-option-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Healthtech</div>
+                    <div className="dropdown-option-1 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                      Artificial Intelligence
+                    </div>
+                    <div className="dropdown-option-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                      Food and Beverage
+                    </div>
+                    <div className="dropdown-option-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                      Healthtech
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div className="flex-1 flex flex-col justify-center">
                 <div className="flex justify-between items-center gap-3">
-                <button
-                  onClick={() => setStep(1)}
-                  className="text-xs md:text-sm text-gray-500 hover:text-gray-700"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={() => setStep(3)}
-                  className="button-shimmer bg-[#000000] text-white px-4 md:px-6 py-2 rounded text-sm font-medium hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2 flex-shrink-0"
-                >
-                  Continue
-                  <svg width="16" height="14" viewBox="0 0 20 16" fill="none" className="flex-shrink-0">
-                    <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
+                  <button
+                    onClick={() => setStep(1)}
+                    className="text-xs md:text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={() => setStep(3)}
+                    className="button-shimmer bg-[#000000] text-white px-4 md:px-6 py-2 rounded text-sm font-medium hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2 flex-shrink-0"
+                  >
+                    Continue
+                    <svg
+                      width="16"
+                      height="14"
+                      viewBox="0 0 20 16"
+                      fill="none"
+                      className="flex-shrink-0"
+                    >
+                      <path
+                        d="M0 8L18 8M18 8L12 2M18 8L12 14"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
                 </div>
               </div>
 
@@ -424,12 +505,23 @@ function WelcomePopup({ isOpen, onClose }) {
                 Do a Final Review
               </h2>
               <p className="text-sm text-gray-600 mb-3 md:mb-4">
-                Once everyone has answered all the questions, review the generated agreement together and approve it.
+                Once everyone has answered all the questions, review the generated agreement
+                together and approve it.
               </p>
 
               {/* Document preview */}
-              <div className="relative bg-gray-50 rounded-lg p-2 md:p-5 mb-2 overflow-hidden flex justify-center items-center" style={{ height: 'clamp(180px, 40vh, 240px)', minHeight: '180px', maxHeight: '240px' }}>
-                <div className="bg-white rounded border border-gray-200 p-4 h-full relative" style={{ width: '85%' }}>
+              <div
+                className="relative bg-gray-50 rounded-lg p-2 md:p-5 mb-2 overflow-hidden flex justify-center items-center"
+                style={{
+                  height: 'clamp(180px, 40vh, 240px)',
+                  minHeight: '180px',
+                  maxHeight: '240px',
+                }}
+              >
+                <div
+                  className="bg-white rounded border border-gray-200 p-4 h-full relative"
+                  style={{ width: '85%' }}
+                >
                   <h3 className="text-xs text-gray-500 mb-3">Cofounder Agreement</h3>
                   <div className="space-y-2">
                     <div className="h-1 bg-gray-200 rounded w-full"></div>
@@ -443,7 +535,15 @@ function WelcomePopup({ isOpen, onClose }) {
                   </div>
                 </div>
                 {/* Scanner line */}
-                <div className="scanner-line absolute h-0.5" style={{ left: '5%', right: '5%', backgroundColor: '#0056D6', boxShadow: '0 0 6px 1px rgba(0, 86, 214, 0.5)' }}></div>
+                <div
+                  className="scanner-line absolute h-0.5"
+                  style={{
+                    left: '5%',
+                    right: '5%',
+                    backgroundColor: '#0056D6',
+                    boxShadow: '0 0 6px 1px rgba(0, 86, 214, 0.5)',
+                  }}
+                ></div>
               </div>
 
               <style>{`
@@ -465,21 +565,33 @@ function WelcomePopup({ isOpen, onClose }) {
 
               <div className="flex-1 flex flex-col justify-center">
                 <div className="flex justify-between items-center gap-3">
-                <button
-                  onClick={() => setStep(2)}
-                  className="text-xs md:text-sm text-gray-500 hover:text-gray-700"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={onClose}
-                  className="button-shimmer bg-[#000000] text-white px-4 md:px-6 py-2 rounded text-sm font-medium hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2 flex-shrink-0"
-                >
-                  Get Started
-                  <svg width="16" height="14" viewBox="0 0 20 16" fill="none" className="flex-shrink-0">
-                    <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
+                  <button
+                    onClick={() => setStep(2)}
+                    className="text-xs md:text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={onClose}
+                    className="button-shimmer bg-[#000000] text-white px-4 md:px-6 py-2 rounded text-sm font-medium hover:bg-[#1a1a1a] transition flex items-center justify-center gap-2 flex-shrink-0"
+                  >
+                    Get Started
+                    <svg
+                      width="16"
+                      height="14"
+                      viewBox="0 0 20 16"
+                      fill="none"
+                      className="flex-shrink-0"
+                    >
+                      <path
+                        d="M0 8L18 8M18 8L12 2M18 8L12 14"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>

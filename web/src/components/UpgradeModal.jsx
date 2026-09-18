@@ -4,7 +4,7 @@ import ProWaitlistForm from './ProWaitlistForm';
 
 function UpgradeModal({ onClose, currentPlan = 'starter' }) {
   // Only show Starter and Pro (not Enterprise) in upgrade modal
-  const upgradePlans = PRICING_PLANS.filter(plan => plan.name !== 'Enterprise');
+  const upgradePlans = PRICING_PLANS.filter((plan) => plan.name !== 'Enterprise');
 
   return (
     <div
@@ -18,9 +18,7 @@ function UpgradeModal({ onClose, currentPlan = 'starter' }) {
         {/* Header */}
         <div className="flex justify-between items-start mb-6 md:mb-8">
           <div className="flex-1 pr-4">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-              Upgrade Your Plan
-            </h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Upgrade Your Plan</h2>
             <p className="text-sm md:text-base text-gray-600 mt-1">
               Choose the plan that's right for your team
             </p>
@@ -36,21 +34,23 @@ function UpgradeModal({ onClose, currentPlan = 'starter' }) {
         {/* Pricing Plans Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           {upgradePlans.map((plan) => {
-            const isCurrentPlan = currentPlan && currentPlan.toLowerCase() === plan.name.toLowerCase();
+            const isCurrentPlan =
+              currentPlan && currentPlan.toLowerCase() === plan.name.toLowerCase();
             const isProPlan = plan.name === 'Pro';
 
             return (
               <div
                 key={plan.name}
                 className={`bg-white p-6 md:p-8 rounded-lg flex flex-col relative ${
-                  plan.featured
-                    ? 'ring-2 ring-gray-700'
-                    : 'border border-gray-400'
+                  plan.featured ? 'ring-2 ring-gray-700' : 'border border-gray-400'
                 }`}
               >
                 {/* Coming Soon Badge for Pro */}
                 {isProPlan && (
-                  <div className="absolute -top-2 -right-2 text-white text-xs font-semibold px-3 py-1 rounded-full z-10" style={{ backgroundColor: '#0056D6' }}>
+                  <div
+                    className="absolute -top-2 -right-2 text-white text-xs font-semibold px-3 py-1 rounded-full z-10"
+                    style={{ backgroundColor: '#0056D6' }}
+                  >
                     Coming Soon
                   </div>
                 )}

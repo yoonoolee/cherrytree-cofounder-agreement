@@ -15,11 +15,11 @@ const MARKETING_DOMAIN = getHostnameFromUrl(import.meta.env.VITE_MARKETING_URL);
 
 // Define which routes belong to the app (e.g., my.cherrytree.app)
 const APP_ROUTES = [
-  '/login',     // Login must be on app domain for auth to work
+  '/login', // Login must be on app domain for auth to work
   '/survey',
   '/preview',
   '/settings',
-  '/dashboard'
+  '/dashboard',
 ];
 
 // Define which routes belong to the main site (e.g., cherrytree.app)
@@ -30,7 +30,7 @@ const MAIN_ROUTES = [
   '/attorney',
   '/privacy',
   '/terms',
-  '/contact'
+  '/contact',
 ];
 
 function DomainRedirect() {
@@ -52,10 +52,10 @@ function DomainRedirect() {
     }
 
     // Check if we're on an app route
-    const isAppRoute = APP_ROUTES.some(route => currentPath.startsWith(route));
+    const isAppRoute = APP_ROUTES.some((route) => currentPath.startsWith(route));
 
     // Check if we're on a main site route
-    const isMainRoute = MAIN_ROUTES.some(route => currentPath.startsWith(route));
+    const isMainRoute = MAIN_ROUTES.some((route) => currentPath.startsWith(route));
 
     // If on app route but not on app domain, redirect
     if (isAppRoute && APP_DOMAIN && !currentHostname.includes(APP_DOMAIN)) {
@@ -70,7 +70,6 @@ function DomainRedirect() {
       window.location.href = newUrl;
       return;
     }
-
   }, [location]);
 
   return null;

@@ -26,7 +26,14 @@ import WelcomePopup from './WelcomePopup';
 
 const libraries = ['places'];
 
-function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFinalAgreement, onCreateProject }) {
+function Survey({
+  projectId,
+  allProjects = [],
+  onProjectSwitch,
+  onPreview,
+  onFinalAgreement,
+  onCreateProject,
+}) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser, setActive, userMemberships, orgsLoaded } = useUser();
@@ -45,15 +52,25 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
 
   // Custom hooks for managing survey state and logic
   const isSavingRef = useRef(false);
-  const { project, formData, setFormData, accessDenied, lastSaved } = useProjectSync(projectId, isSavingRef);
-  const { saveStatus, lastSaved: autoSaveLastSaved, saveFormData, createChangeHandler } = useAutoSave(projectId, project, currentUser);
+  const { project, formData, setFormData, accessDenied, lastSaved } = useProjectSync(
+    projectId,
+    isSavingRef,
+  );
+  const {
+    saveStatus,
+    lastSaved: autoSaveLastSaved,
+    saveFormData,
+    createChangeHandler,
+  } = useAutoSave(projectId, project, currentUser);
   const { isSectionCompleted } = useValidation(formData, project);
   const handleChange = createChangeHandler(setFormData);
 
   // Read section from URL query parameter or default to Formation
   useEffect(() => {
     const sectionFromUrl = searchParams.get('section');
-    const validSection = SECTION_ORDER.includes(sectionFromUrl) ? sectionFromUrl : SECTION_IDS.FORMATION;
+    const validSection = SECTION_ORDER.includes(sectionFromUrl)
+      ? sectionFromUrl
+      : SECTION_IDS.FORMATION;
     setCurrentSection(validSection);
   }, [projectId, searchParams]);
 
@@ -68,7 +85,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
           try {
             const projectRef = doc(db, 'projects', projectId);
             await updateDoc(projectRef, {
-              [`onboardingCompleted.${currentUser.id}`]: false
+              [`onboardingCompleted.${currentUser.id}`]: false,
             });
           } catch (error) {
             console.error('Error initializing onboarding status:', error);
@@ -93,15 +110,13 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
       try {
         const projectRef = doc(db, 'projects', projectId);
         await updateDoc(projectRef, {
-          [`onboardingCompleted.${currentUser.id}`]: true
+          [`onboardingCompleted.${currentUser.id}`]: true,
         });
       } catch (error) {
         console.error('Error updating onboarding status:', error);
       }
     }
   };
-
-
 
   // Automatically switch to the project's organization (projectId === clerkOrgId)
   useEffect(() => {
@@ -117,9 +132,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
       }
 
       // Find the membership for this project's org
-      const membership = userMemberships.data?.find(
-        m => m.organization.id === projectId
-      );
+      const membership = userMemberships.data?.find((m) => m.organization.id === projectId);
 
       if (membership) {
         try {
@@ -156,7 +169,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
 
     // Wait for any pending saves to complete
     if (saveStatus === 'saving') {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
     // Check if all sections are complete
@@ -191,11 +204,11 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
           <div className="text-center">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Access Denied
-            </h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Access Denied</h3>
             <p className="text-sm text-gray-600 mb-6">
-              You do not have permission to access this project. Please contact the project owner to grant you access. If this is an error, please contact hello@cherrytree.app for support.
+              You do not have permission to access this project. Please contact the project owner to
+              grant you access. If this is an error, please contact hello@cherrytree.app for
+              support.
             </p>
             <button
               onClick={() => navigate('/dashboard')}
@@ -220,24 +233,33 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
 
   return (
     <div className="min-h-screen flex survey-bg">
-
       {/* Welcome Popup */}
       <WelcomePopup isOpen={showWelcomePopup} onClose={dismissWelcomePopup} />
 
       {/* Top Header */}
-      <div className="fixed top-0 left-0 right-0 h-16 flex items-center gap-4 px-4 md:pl-[262px] md:pr-[52px]" style={{ zIndex: 50, background: 'var(--ct-bg)', fontFamily: "'Outfit', sans-serif" }}>
+      <div
+        className="fixed top-0 left-0 right-0 h-16 flex items-center gap-4 px-4 md:pl-[262px] md:pr-[52px]"
+        style={{ zIndex: 50, background: 'var(--ct-bg)', fontFamily: "'Outfit', sans-serif" }}
+      >
         {/* Back to Dashboard + Save Status */}
         <div className="flex items-center" style={{ gap: '14px' }}>
           <button
             onClick={() => navigate('/dashboard')}
             style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: '6px',
-              fontSize: '13px', fontWeight: 300, color: '#666',
-              fontFamily: 'Outfit, sans-serif', transition: 'color 0.15s',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '13px',
+              fontWeight: 300,
+              color: '#666',
+              fontFamily: 'Outfit, sans-serif',
+              transition: 'color 0.15s',
             }}
-            onMouseEnter={e => e.currentTarget.style.color = '#1a1a1a'}
-            onMouseLeave={e => e.currentTarget.style.color = '#666'}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#1a1a1a')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#666')}
           >
             ← Back to Dashboard
           </button>
@@ -246,11 +268,17 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
           )}
           {saveStatus === 'saved' && (autoSaveLastSaved || lastSaved) && (
             <span style={{ fontSize: '11px', color: '#4B7263', fontWeight: 300 }}>
-              Saved {(autoSaveLastSaved || lastSaved).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+              Saved{' '}
+              {(autoSaveLastSaved || lastSaved).toLocaleTimeString([], {
+                hour: 'numeric',
+                minute: '2-digit',
+              })}
             </span>
           )}
           {saveStatus === 'error' && (
-            <span style={{ fontSize: '11px', color: '#b97070', fontWeight: 300 }}>Error saving</span>
+            <span style={{ fontSize: '11px', color: '#b97070', fontWeight: 300 }}>
+              Error saving
+            </span>
           )}
         </div>
 
@@ -258,7 +286,6 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
 
         {/* Avatar */}
         <UserButton appearance={{ elements: { avatarBox: 'w-[34px] h-[34px]' } }} />
-
       </div>
 
       {/* Sidebar Navigation - self-contained with all hooks */}
@@ -282,12 +309,68 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
       {/* Collaborators Modal */}
       {showCollaborators && (
         <>
-          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" style={{ zIndex: 10000 }} onClick={() => setShowCollaborators(false)} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 10001, background: '#F6F3EE', borderRadius: '8px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', width: '90vw', maxWidth: '480px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', fontFamily: 'Outfit, sans-serif' }}>
-            <div style={{ padding: '22px 26px 18px', borderBottom: '1px solid #d6d2c9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-              <h3 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '22px', fontWeight: 400, color: '#1a1a1a' }}>Collaborators</h3>
-              <button onClick={() => setShowCollaborators(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#aaa', lineHeight: 1 }}>
-                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          <div
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm"
+            style={{ zIndex: 10000 }}
+            onClick={() => setShowCollaborators(false)}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 10001,
+              background: '#F6F3EE',
+              borderRadius: '8px',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+              width: '90vw',
+              maxWidth: '480px',
+              maxHeight: '90vh',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              fontFamily: 'Outfit, sans-serif',
+            }}
+          >
+            <div
+              style={{
+                padding: '22px 26px 18px',
+                borderBottom: '1px solid #d6d2c9',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <h3
+                style={{
+                  fontFamily: 'Instrument Serif, serif',
+                  fontSize: '22px',
+                  fontWeight: 400,
+                  color: '#1a1a1a',
+                }}
+              >
+                Collaborators
+              </h3>
+              <button
+                onClick={() => setShowCollaborators(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#aaa',
+                  lineHeight: 1,
+                }}
+              >
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
               </button>
             </div>
             <div style={{ overflowY: 'auto', flex: 1, padding: '22px 26px 26px' }}>
@@ -296,7 +379,6 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
           </div>
         </>
       )}
-
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto md:ml-[210px] mt-16 survey-bg">
@@ -429,26 +511,81 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
                       setSearchParams({ section: nextSection });
                     }
                   }}
-                  style={{ background: '#4B7263', color: '#fff', border: 'none', borderRadius: '6px', padding: '10px 20px', fontSize: '13px', fontWeight: 400, fontFamily: 'Outfit, sans-serif', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'background 0.15s' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#3d5f52'}
-                  onMouseLeave={e => e.currentTarget.style.background = '#4B7263'}
+                  style={{
+                    background: '#4B7263',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '10px 20px',
+                    fontSize: '13px',
+                    fontWeight: 400,
+                    fontFamily: 'Outfit, sans-serif',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#3d5f52')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = '#4B7263')}
                 >
                   Continue
-                  <svg width="16" height="13" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <svg
+                    width="16"
+                    height="13"
+                    viewBox="0 0 20 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M0 8L18 8M18 8L12 2M18 8L12 14"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </button>
               ) : (
                 <button
                   onClick={handlePreviewClick}
                   disabled={saveStatus === 'saving'}
-                  style={{ background: '#4B7263', color: '#fff', border: 'none', borderRadius: '6px', padding: '10px 20px', fontSize: '13px', fontWeight: 400, fontFamily: 'Outfit, sans-serif', cursor: saveStatus === 'saving' ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'background 0.15s', opacity: saveStatus === 'saving' ? 0.5 : 1 }}
-                  onMouseEnter={e => { if (saveStatus !== 'saving') e.currentTarget.style.background = '#3d5f52'; }}
-                  onMouseLeave={e => e.currentTarget.style.background = '#4B7263'}
+                  style={{
+                    background: '#4B7263',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '10px 20px',
+                    fontSize: '13px',
+                    fontWeight: 400,
+                    fontFamily: 'Outfit, sans-serif',
+                    cursor: saveStatus === 'saving' ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'background 0.15s',
+                    opacity: saveStatus === 'saving' ? 0.5 : 1,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (saveStatus !== 'saving') e.currentTarget.style.background = '#3d5f52';
+                  }}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = '#4B7263')}
                 >
                   Review &amp; Approve
-                  <svg width="16" height="13" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0 8L18 8M18 8L12 2M18 8L12 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <svg
+                    width="16"
+                    height="13"
+                    viewBox="0 0 20 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M0 8L18 8M18 8L12 2M18 8L12 14"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </button>
               )}

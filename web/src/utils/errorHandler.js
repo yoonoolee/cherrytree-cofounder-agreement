@@ -13,7 +13,7 @@ export function handleError(error, options = {}) {
   const {
     userMessage = 'Something went wrong. Please try again.',
     action = 'unknown action',
-    context = {}
+    context = {},
   } = options;
 
   // Show user-friendly toast
@@ -24,13 +24,13 @@ export function handleError(error, options = {}) {
     error: error?.message || error,
     stack: error?.stack,
     ...context,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
   // Send to Sentry with context
   Sentry.captureException(error, {
     tags: { action },
-    extra: context
+    extra: context,
   });
 }
 

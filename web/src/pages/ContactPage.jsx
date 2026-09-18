@@ -46,7 +46,7 @@ function ContactPage() {
       setErrorMessage(
         isValidationError
           ? error.message
-          : "Something went wrong sending your message. Please try again or email us directly at hello@cherrytree.app."
+          : 'Something went wrong sending your message. Please try again or email us directly at hello@cherrytree.app.',
       );
     }
   };
@@ -69,12 +69,16 @@ function ContactPage() {
           {status === 'sent' ? (
             <div className="lp-form-success">
               <div className="lp-form-success-title">Message sent.</div>
-              <p className="lp-form-success-body">Thanks for reaching out — we'll get back to you soon.</p>
+              <p className="lp-form-success-body">
+                Thanks for reaching out — we'll get back to you soon.
+              </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
               <div className="lp-form-group">
-                <label className="lp-form-label" htmlFor="contact-name">Name</label>
+                <label className="lp-form-label" htmlFor="contact-name">
+                  Name
+                </label>
                 <input
                   id="contact-name"
                   className="lp-form-input"
@@ -87,7 +91,9 @@ function ContactPage() {
                 />
               </div>
               <div className="lp-form-group">
-                <label className="lp-form-label" htmlFor="contact-email">Email</label>
+                <label className="lp-form-label" htmlFor="contact-email">
+                  Email
+                </label>
                 <input
                   id="contact-email"
                   className="lp-form-input"
@@ -100,7 +106,9 @@ function ContactPage() {
                 />
               </div>
               <div className="lp-form-group">
-                <label className="lp-form-label" htmlFor="contact-message">Message</label>
+                <label className="lp-form-label" htmlFor="contact-message">
+                  Message
+                </label>
                 <textarea
                   id="contact-message"
                   className="lp-form-input lp-form-textarea"

@@ -13,7 +13,7 @@ export const getPreview = (fieldName, formData, otherFieldName) => {
   const otherVal = otherFieldName ? formData[otherFieldName] : undefined;
   if (!val) return '';
   if (Array.isArray(val)) {
-    return val.map(v => (v === 'Other' && otherVal ? otherVal : v)).join(', ');
+    return val.map((v) => (v === 'Other' && otherVal ? otherVal : v)).join(', ');
   }
   if (typeof val === 'object') {
     const vals = Object.values(val);

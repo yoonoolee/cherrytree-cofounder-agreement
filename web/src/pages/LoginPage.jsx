@@ -9,11 +9,9 @@ function LoginPage() {
 
   usePageMeta({
     title: 'Login | Cherrytree',
-    description: 'Login to Cherrytree to access your cofounder agreements and manage your equity splits.',
-    breadcrumbs: [
-      { name: 'Home', url: '/' },
-      { name: 'Login' }
-    ]
+    description:
+      'Login to Cherrytree to access your cofounder agreements and manage your equity splits.',
+    breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'Login' }],
   });
 
   // Preserve ticket when switching to signup
@@ -29,8 +27,8 @@ function LoginPage() {
           appearance={{
             elements: {
               rootBox: 'mx-auto',
-              card: 'shadow-lg'
-            }
+              card: 'shadow-lg',
+            },
           }}
         />
       </div>

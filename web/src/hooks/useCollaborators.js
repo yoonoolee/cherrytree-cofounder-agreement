@@ -1,5 +1,8 @@
 import { useMemo } from 'react';
-import { getSortedCollaboratorIds, migrateCollaboratorPositions } from '../utils/collaboratorPositions';
+import {
+  getSortedCollaboratorIds,
+  migrateCollaboratorPositions,
+} from '../utils/collaboratorPositions';
 import { COLLABORATOR_FIELDS } from '../config/surveySchema';
 
 export function useCollaborators(project) {
@@ -12,7 +15,7 @@ export function useCollaborators(project) {
   const collaborators = useMemo(() => {
     return Object.entries(collaboratorsMap).map(([userId, data]) => ({
       userId,
-      ...data
+      ...data,
     }));
   }, [collaboratorsMap]);
 
@@ -30,8 +33,10 @@ export function useCollaborators(project) {
       const collaborator = collaboratorsMap[userId];
       const accountName = [
         collaborator?.[COLLABORATOR_FIELDS.FIRST_NAME],
-        collaborator?.[COLLABORATOR_FIELDS.LAST_NAME]
-      ].filter(Boolean).join(' ');
+        collaborator?.[COLLABORATOR_FIELDS.LAST_NAME],
+      ]
+        .filter(Boolean)
+        .join(' ');
       return accountName || getCofounderLabel(index);
     };
   }, [collaboratorIds, collaboratorsMap]);
@@ -54,6 +59,6 @@ export function useCollaborators(project) {
     collaboratorIds,
     getDisplayName,
     isAdmin,
-    getAdmin
+    getAdmin,
   };
 }

@@ -30,7 +30,7 @@ function ProWaitlistForm({ source = 'unknown' }) {
       await addDoc(collection(db, 'proWaitlist'), {
         email: waitlistEmail.toLowerCase().trim(),
         timestamp: serverTimestamp(),
-        source
+        source,
       });
 
       setWaitlistSuccess(true);
@@ -53,9 +53,7 @@ function ProWaitlistForm({ source = 'unknown' }) {
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Join the waitlist
-      </label>
+      <label className="block text-sm font-medium text-gray-700 mb-2">Join the waitlist</label>
       <div className="flex gap-2">
         <input
           type="email"
@@ -79,9 +77,7 @@ function ProWaitlistForm({ source = 'unknown' }) {
           {waitlistLoading ? 'Joining...' : 'Join'}
         </button>
       </div>
-      {waitlistError && (
-        <p className="text-xs text-red-600 mt-2">{waitlistError}</p>
-      )}
+      {waitlistError && <p className="text-xs text-red-600 mt-2">{waitlistError}</p>}
     </div>
   );
 }

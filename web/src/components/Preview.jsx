@@ -119,7 +119,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
       console.error('Error details:', {
         code: error.code,
         message: error.message,
-        details: error.details
+        details: error.details,
       });
       setPdfError(error.message || 'Failed to generate preview. Please try again.');
     } finally {
@@ -153,7 +153,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
     const approvals = project.approvals || {};
 
     // Everyone must approve (including admin)
-    return collaboratorIds.every(userId => approvals[userId] === true);
+    return collaboratorIds.every((userId) => approvals[userId] === true);
   };
 
   const handleSubmit = async () => {
@@ -217,12 +217,68 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
       {/* Collaborators Modal */}
       {showCollaborators && (
         <>
-          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" style={{ zIndex: 10000 }} onClick={() => setShowCollaborators(false)} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 10001, background: '#F6F3EE', borderRadius: '8px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', width: '90vw', maxWidth: '480px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', fontFamily: 'Outfit, sans-serif' }}>
-            <div style={{ padding: '22px 26px 18px', borderBottom: '1px solid #d6d2c9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-              <h3 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '22px', fontWeight: 400, color: '#1a1a1a' }}>Collaborators</h3>
-              <button onClick={() => setShowCollaborators(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#aaa', lineHeight: 1 }}>
-                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          <div
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm"
+            style={{ zIndex: 10000 }}
+            onClick={() => setShowCollaborators(false)}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 10001,
+              background: '#F6F3EE',
+              borderRadius: '8px',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+              width: '90vw',
+              maxWidth: '480px',
+              maxHeight: '90vh',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              fontFamily: 'Outfit, sans-serif',
+            }}
+          >
+            <div
+              style={{
+                padding: '22px 26px 18px',
+                borderBottom: '1px solid #d6d2c9',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <h3
+                style={{
+                  fontFamily: 'Instrument Serif, serif',
+                  fontSize: '22px',
+                  fontWeight: 400,
+                  color: '#1a1a1a',
+                }}
+              >
+                Collaborators
+              </h3>
+              <button
+                onClick={() => setShowCollaborators(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#aaa',
+                  lineHeight: 1,
+                }}
+              >
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
               </button>
             </div>
             <div style={{ overflowY: 'auto', flex: 1, padding: '22px 26px 26px' }}>
@@ -233,23 +289,42 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
       )}
 
       {/* Top Header */}
-      <div className="fixed top-0 left-0 right-0 h-16 flex items-center" style={{ zIndex: 50, paddingLeft: '210px', paddingRight: '32px', background: '#fff', fontFamily: "'Outfit', sans-serif" }}>
+      <div
+        className="fixed top-0 left-0 right-0 h-16 flex items-center"
+        style={{
+          zIndex: 50,
+          paddingLeft: '210px',
+          paddingRight: '32px',
+          background: '#fff',
+          fontFamily: "'Outfit', sans-serif",
+        }}
+      >
         <button
           onClick={() => navigate('/dashboard')}
           style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: '6px',
-            fontSize: '13px', fontWeight: 300, color: '#666',
-            fontFamily: 'Outfit, sans-serif', transition: 'color 0.15s',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '13px',
+            fontWeight: 300,
+            color: '#666',
+            fontFamily: 'Outfit, sans-serif',
+            transition: 'color 0.15s',
           }}
-          onMouseEnter={e => e.currentTarget.style.color = '#1a1a1a'}
-          onMouseLeave={e => e.currentTarget.style.color = '#666'}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#1a1a1a')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#666')}
         >
           ← Back to Dashboard
         </button>
         {project?.lastUpdated && (
           <span style={{ fontSize: '11px', color: '#4B7263', fontWeight: 300, marginLeft: '14px' }}>
-            Saved {project.lastUpdated.toDate().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+            Saved{' '}
+            {project.lastUpdated
+              .toDate()
+              .toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
           </span>
         )}
         <div style={{ flex: 1 }} />
@@ -261,18 +336,15 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
         <div className="max-w-6xl mx-auto pt-6 px-6 pr-12 pb-20">
           {/* Content Container */}
           <div className="px-20 pt-8 pb-20">
-
-          {/* Preview page only shows the Generated Agreement (PDF/Approval) */}
-          {/* Clicking sections 1-10 in nav navigates back to Survey page */}
-          <div>
+            {/* Preview page only shows the Generated Agreement (PDF/Approval) */}
+            {/* Clicking sections 1-10 in nav navigates back to Survey page */}
+            <div>
               {/* Stale Preview Warning */}
               {!isReadOnly && pdfUrl && isPreviewStale() && !isGeneratingPdf && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-gray-900 font-medium">
-                        The survey has been edited
-                      </p>
+                      <p className="text-gray-900 font-medium">The survey has been edited</p>
                       <p className="text-sm text-gray-600 mt-1">
                         Please refresh to see the updated preview of the cofounder agreement.
                       </p>
@@ -293,11 +365,29 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
               {/* PDF Loading State */}
               {isGeneratingPdf && (
                 <div className="flex flex-col items-center justify-center py-24 bg-gray-50 rounded">
-                  <svg className="animate-spin h-12 w-12 text-gray-900 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin h-12 w-12 text-gray-900 mb-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
-                  <p className="text-gray-900 font-medium">Generating your cofounder agreement...</p>
+                  <p className="text-gray-900 font-medium">
+                    Generating your cofounder agreement...
+                  </p>
                   <p className="text-sm text-gray-500 mt-2">This may take a few moments</p>
                 </div>
               )}
@@ -340,9 +430,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                 <div className="mt-8 pt-6 border-t border-gray-200">
                   {isAdmin ? (
                     <div>
-                      {submitError && (
-                        <p className="text-xs text-red-950 mb-4">{submitError}</p>
-                      )}
+                      {submitError && <p className="text-xs text-red-950 mb-4">{submitError}</p>}
                       <button
                         onClick={handleSubmit}
                         disabled={isSubmitting || !checkAllApproved()}
@@ -350,9 +438,25 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
                       >
                         {isSubmitting ? (
                           <span className="flex items-center gap-2">
-                            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            <svg
+                              className="animate-spin h-5 w-5"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
                             </svg>
                             Generating PDF...
                           </span>

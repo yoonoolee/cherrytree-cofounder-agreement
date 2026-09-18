@@ -13,7 +13,7 @@ const FIELD_ORDER = [
 ];
 
 function SectionPerformance({ formData, handleChange, isReadOnly, showValidation, project }) {
-  const firstUnanswered = FIELD_ORDER.find(f => !formData[f]);
+  const firstUnanswered = FIELD_ORDER.find((f) => !formData[f]);
   const [expandedField, setExpandedField] = useState(firstUnanswered || FIELD_ORDER[0]);
   const advanceTo = (key) => {
     const idx = FIELD_ORDER.indexOf(key);
@@ -23,14 +23,46 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
 
   return (
     <div>
-      <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '42px', fontWeight: 400, letterSpacing: '-0.5px', marginBottom: '14px', lineHeight: 1.1, color: '#1a1a1a' }}>
+      <h2
+        style={{
+          fontFamily: 'Instrument Serif, serif',
+          fontSize: '42px',
+          fontWeight: 400,
+          letterSpacing: '-0.5px',
+          marginBottom: '14px',
+          lineHeight: 1.1,
+          color: '#1a1a1a',
+        }}
+      >
         Cofounder Performance &amp; Departure
       </h2>
-      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', lineHeight: 1.65, marginBottom: '12px' }}>
-        In every startup, execution is everything. You can have the best idea in the world, the perfect cofounder team, and a shiny product plan, but if the work doesn't get done, nothing happens. However, sometimes, for one reason or another, we can't perform at the level that's necessary.
+      <p
+        style={{
+          fontSize: '14px',
+          fontWeight: 200,
+          color: '#555',
+          lineHeight: 1.65,
+          marginBottom: '12px',
+        }}
+      >
+        In every startup, execution is everything. You can have the best idea in the world, the
+        perfect cofounder team, and a shiny product plan, but if the work doesn't get done, nothing
+        happens. However, sometimes, for one reason or another, we can't perform at the level that's
+        necessary.
       </p>
-      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', lineHeight: 1.65, marginBottom: '32px' }}>
-        In those cases, the best we can do is protect the company and the friendship. You do that by planning for the what-ifs ahead of time. Performance isn't just about grinding harder. It's about foresight, flexibility, and keeping the company moving even when things don't go perfectly.
+      <p
+        style={{
+          fontSize: '14px',
+          fontWeight: 200,
+          color: '#555',
+          lineHeight: 1.65,
+          marginBottom: '32px',
+        }}
+      >
+        In those cases, the best we can do is protect the company and the friendship. You do that by
+        planning for the what-ifs ahead of time. Performance isn't just about grinding harder. It's
+        about foresight, flexibility, and keeping the company moving even when things don't go
+        perfectly.
       </p>
 
       <div>
@@ -44,12 +76,23 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.PERFORMANCE_CONSEQUENCES)}
         >
-          <QuestionRenderer fieldName={FIELDS.PERFORMANCE_CONSEQUENCES} config={QUESTION_CONFIG[FIELDS.PERFORMANCE_CONSEQUENCES]} formData={formData} handleChange={handleChange} isReadOnly={isReadOnly} showValidation={showValidation} project={project} hideLabel />
+          <QuestionRenderer
+            fieldName={FIELDS.PERFORMANCE_CONSEQUENCES}
+            config={QUESTION_CONFIG[FIELDS.PERFORMANCE_CONSEQUENCES]}
+            formData={formData}
+            handleChange={handleChange}
+            isReadOnly={isReadOnly}
+            showValidation={showValidation}
+            project={project}
+            hideLabel
+          />
         </QuestionCard>
 
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.REMEDY_PERIOD_DAYS].question}
-          answerPreview={formData[FIELDS.REMEDY_PERIOD_DAYS] ? `${formData[FIELDS.REMEDY_PERIOD_DAYS]} days` : ''}
+          answerPreview={
+            formData[FIELDS.REMEDY_PERIOD_DAYS] ? `${formData[FIELDS.REMEDY_PERIOD_DAYS]} days` : ''
+          }
           tooltip={QUESTION_CONFIG[FIELDS.REMEDY_PERIOD_DAYS].tooltip}
           isExpanded={expandedField === FIELDS.REMEDY_PERIOD_DAYS}
           isAnswered={!!formData[FIELDS.REMEDY_PERIOD_DAYS]}
@@ -57,19 +100,35 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.REMEDY_PERIOD_DAYS)}
         >
-          {showValidation && !formData[FIELDS.REMEDY_PERIOD_DAYS] && <span className="text-red-700 text-xs">* Required</span>}
+          {showValidation && !formData[FIELDS.REMEDY_PERIOD_DAYS] && (
+            <span className="text-red-700 text-xs">* Required</span>
+          )}
           <input
-            type="number" step="1" min="0"
+            type="number"
+            step="1"
+            min="0"
             value={formData[FIELDS.REMEDY_PERIOD_DAYS] || ''}
-            onChange={(e) => { const value = e.target.value; if (value === '' || (Number.isInteger(Number(value)) && Number(value) >= 0)) handleChange(FIELDS.REMEDY_PERIOD_DAYS, value); }}
-            onKeyDown={(e) => { if (e.key === '.' || e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault(); }}
-            disabled={isReadOnly} placeholder="Enter number of days"
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '' || (Number.isInteger(Number(value)) && Number(value) >= 0))
+                handleChange(FIELDS.REMEDY_PERIOD_DAYS, value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === '.' || e.key === '-' || e.key === 'e' || e.key === 'E')
+                e.preventDefault();
+            }}
+            disabled={isReadOnly}
+            placeholder="Enter number of days"
           />
         </QuestionCard>
 
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.TERMINATION_WITH_CAUSE].question}
-          answerPreview={getPreview(FIELDS.TERMINATION_WITH_CAUSE, formData, FIELDS.TERMINATION_WITH_CAUSE_OTHER)}
+          answerPreview={getPreview(
+            FIELDS.TERMINATION_WITH_CAUSE,
+            formData,
+            FIELDS.TERMINATION_WITH_CAUSE_OTHER,
+          )}
           tooltip={QUESTION_CONFIG[FIELDS.TERMINATION_WITH_CAUSE].tooltip}
           isExpanded={expandedField === FIELDS.TERMINATION_WITH_CAUSE}
           isAnswered={!!formData[FIELDS.TERMINATION_WITH_CAUSE]}
@@ -77,24 +136,40 @@ function SectionPerformance({ formData, handleChange, isReadOnly, showValidation
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.TERMINATION_WITH_CAUSE)}
         >
-          <QuestionRenderer fieldName={FIELDS.TERMINATION_WITH_CAUSE} config={QUESTION_CONFIG[FIELDS.TERMINATION_WITH_CAUSE]} formData={formData} handleChange={handleChange} isReadOnly={isReadOnly} showValidation={showValidation} project={project} hideLabel />
+          <QuestionRenderer
+            fieldName={FIELDS.TERMINATION_WITH_CAUSE}
+            config={QUESTION_CONFIG[FIELDS.TERMINATION_WITH_CAUSE]}
+            formData={formData}
+            handleChange={handleChange}
+            isReadOnly={isReadOnly}
+            showValidation={showValidation}
+            project={project}
+            hideLabel
+          />
         </QuestionCard>
 
         <QuestionCard
           question="How many days is the notice period if a Cofounder wishes to voluntarily leave?"
-          answerPreview={formData[FIELDS.VOLUNTARY_NOTICE_DAYS] ? `${formData[FIELDS.VOLUNTARY_NOTICE_DAYS]} days` : ''}
+          answerPreview={
+            formData[FIELDS.VOLUNTARY_NOTICE_DAYS]
+              ? `${formData[FIELDS.VOLUNTARY_NOTICE_DAYS]} days`
+              : ''
+          }
           isExpanded={expandedField === FIELDS.VOLUNTARY_NOTICE_DAYS}
           isAnswered={!!formData[FIELDS.VOLUNTARY_NOTICE_DAYS]}
           onExpand={() => setExpandedField(FIELDS.VOLUNTARY_NOTICE_DAYS)}
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.VOLUNTARY_NOTICE_DAYS)}
         >
-          {showValidation && !formData[FIELDS.VOLUNTARY_NOTICE_DAYS] && <span className="text-red-700 text-xs">* Required</span>}
+          {showValidation && !formData[FIELDS.VOLUNTARY_NOTICE_DAYS] && (
+            <span className="text-red-700 text-xs">* Required</span>
+          )}
           <input
             type="number"
             value={formData[FIELDS.VOLUNTARY_NOTICE_DAYS] || ''}
             onChange={(e) => handleChange(FIELDS.VOLUNTARY_NOTICE_DAYS, e.target.value)}
-            disabled={isReadOnly} placeholder="Enter number of days"
+            disabled={isReadOnly}
+            placeholder="Enter number of days"
           />
         </QuestionCard>
       </div>

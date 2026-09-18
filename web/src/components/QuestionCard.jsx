@@ -30,7 +30,22 @@ import Standard from './Standard';
  *   subAnswerPreview  {string} - The follow-up question's answer preview.
  *   children        {node}     - The actual input element(s)
  */
-function QuestionCard({ question, answerPreview, tooltip, standard, isExpanded, isAnswered, onExpand, onCollapse, onAdvance, alwaysExpanded = false, flat = false, subQuestion, subAnswerPreview, children }) {
+function QuestionCard({
+  question,
+  answerPreview,
+  tooltip,
+  standard,
+  isExpanded,
+  isAnswered,
+  onExpand,
+  onCollapse,
+  onAdvance,
+  alwaysExpanded = false,
+  flat = false,
+  subQuestion,
+  subAnswerPreview,
+  children,
+}) {
   const cardRef = useRef(null);
   const hasHint = !!(tooltip || standard);
   const expanded = alwaysExpanded || isExpanded;
@@ -38,7 +53,10 @@ function QuestionCard({ question, answerPreview, tooltip, standard, isExpanded, 
   // Scroll into view when expanded
   useEffect(() => {
     if (expanded && cardRef.current) {
-      setTimeout(() => cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+      setTimeout(
+        () => cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }),
+        50,
+      );
     }
   }, [expanded]);
 
@@ -66,7 +84,11 @@ function QuestionCard({ question, answerPreview, tooltip, standard, isExpanded, 
       className={`question-card${expanded ? ' expanded' : ''}${isAnswered ? ' answered' : ''}${alwaysExpanded ? ' static' : ''}${flat ? ' flat' : ''}`}
       onKeyDown={handleKeyDown}
     >
-      <div className="card-row" onClick={handleHeaderClick} style={alwaysExpanded ? undefined : { cursor: 'pointer' }}>
+      <div
+        className="card-row"
+        onClick={handleHeaderClick}
+        style={alwaysExpanded ? undefined : { cursor: 'pointer' }}
+      >
         <div className="card-question">{question}</div>
         <span className="card-answer-preview">{answerPreview}</span>
       </div>
@@ -82,9 +104,7 @@ function QuestionCard({ question, answerPreview, tooltip, standard, isExpanded, 
         <div className="card-bottom-inner">
           <Tooltip text={tooltip} />
           <Standard text={standard} />
-          <div style={{ marginTop: hasHint ? 0 : '14px' }}>
-            {children}
-          </div>
+          <div style={{ marginTop: hasHint ? 0 : '14px' }}>{children}</div>
         </div>
       </div>
     </div>

@@ -17,9 +17,11 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 }
 
 // Enforce HTTPS in production
-if (import.meta.env.VITE_ENFORCE_HTTPS === 'true' &&
-    import.meta.env.PROD &&
-    window.location.protocol === 'http:') {
+if (
+  import.meta.env.VITE_ENFORCE_HTTPS === 'true' &&
+  import.meta.env.PROD &&
+  window.location.protocol === 'http:'
+) {
   window.location.href = window.location.href.replace('http:', 'https:');
 }
 
@@ -34,7 +36,7 @@ root.render(
   <ClerkProvider
     publishableKey={clerkPubKey}
     appearance={{
-      variables: { colorPrimary: '#000000' }
+      variables: { colorPrimary: '#000000' },
     }}
     signInUrl="/login"
     signUpUrl="/signup"
@@ -53,5 +55,5 @@ root.render(
         }}
       />
     </UserProvider>
-  </ClerkProvider>
+  </ClerkProvider>,
 );

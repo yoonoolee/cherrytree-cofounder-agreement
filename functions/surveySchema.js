@@ -69,21 +69,37 @@ const OTHER_FIELD_CONFIG = [
   // Array fields
   { field: FIELDS.INDUSTRIES, otherField: FIELDS.INDUSTRY_OTHER, type: 'array' },
   { field: FIELDS.MAJOR_DECISIONS, otherField: FIELDS.MAJOR_DECISIONS_OTHER, type: 'array' },
-  { field: FIELDS.TERMINATION_WITH_CAUSE, otherField: FIELDS.TERMINATION_WITH_CAUSE_OTHER, type: 'array' },
+  {
+    field: FIELDS.TERMINATION_WITH_CAUSE,
+    otherField: FIELDS.TERMINATION_WITH_CAUSE_OTHER,
+    type: 'array',
+  },
 
   // Nested array fields (inside cofounders array)
-  { field: `${FIELDS.COFOUNDERS}.${FIELDS.COFOUNDER_ROLES}`, otherField: FIELDS.COFOUNDER_ROLES_OTHER, type: 'array' },
+  {
+    field: `${FIELDS.COFOUNDERS}.${FIELDS.COFOUNDER_ROLES}`,
+    otherField: FIELDS.COFOUNDER_ROLES_OTHER,
+    type: 'array',
+  },
 
   // String fields
   { field: FIELDS.ENTITY_TYPE, otherField: FIELDS.ENTITY_TYPE_OTHER, type: 'string' },
   { field: FIELDS.VESTING_SCHEDULE, otherField: FIELDS.VESTING_SCHEDULE_OTHER, type: 'string' },
-  { field: FIELDS.NON_COMPETE_DURATION, otherField: FIELDS.NON_COMPETE_DURATION_OTHER, type: 'string' },
-  { field: FIELDS.NON_SOLICIT_DURATION, otherField: FIELDS.NON_SOLICIT_DURATION_OTHER, type: 'string' },
+  {
+    field: FIELDS.NON_COMPETE_DURATION,
+    otherField: FIELDS.NON_COMPETE_DURATION_OTHER,
+    type: 'string',
+  },
+  {
+    field: FIELDS.NON_SOLICIT_DURATION,
+    otherField: FIELDS.NON_SOLICIT_DURATION_OTHER,
+    type: 'string',
+  },
   { field: FIELDS.DISPUTE_RESOLUTION, otherField: FIELDS.DISPUTE_RESOLUTION_OTHER, type: 'string' },
   { field: FIELDS.AMENDMENT_PROCESS, otherField: FIELDS.AMENDMENT_PROCESS_OTHER, type: 'string' },
 ];
 
-const OTHER_FIELD_NAMES = OTHER_FIELD_CONFIG.map(config => config.otherField);
+const OTHER_FIELD_NAMES = OTHER_FIELD_CONFIG.map((config) => config.otherField);
 
 /**
  * Recursively traverses nested paths and processes "Other" fields
@@ -98,8 +114,8 @@ function processNestedField(obj, pathParts, otherField, type) {
     if (isLastPart) {
       // We've reached the field that needs merging
       if (type === 'array' && current[currentKey]?.includes('Other') && current[otherField]) {
-        current[currentKey] = current[currentKey].map(item =>
-          item === 'Other' ? current[otherField] : item
+        current[currentKey] = current[currentKey].map((item) =>
+          item === 'Other' ? current[otherField] : item,
         );
       } else if (type === 'string' && current[currentKey] === 'Other' && current[otherField]) {
         current[currentKey] = current[otherField];
@@ -112,7 +128,7 @@ function processNestedField(obj, pathParts, otherField, type) {
 
       if (Array.isArray(nextValue)) {
         // If it's an array, process each item
-        nextValue.forEach(item => traverse(item, remainingParts));
+        nextValue.forEach((item) => traverse(item, remainingParts));
       } else if (nextValue && typeof nextValue === 'object') {
         // If it's an object, continue traversing
         traverse(nextValue, remainingParts);
@@ -134,7 +150,7 @@ function mergeOtherFields(surveyData) {
     if (pathParts.length === 1) {
       // Top-level field (existing logic)
       if (type === 'array' && merged[field]?.includes('Other') && merged[otherField]) {
-        merged[field] = merged[field].map(item => item === 'Other' ? merged[otherField] : item);
+        merged[field] = merged[field].map((item) => (item === 'Other' ? merged[otherField] : item));
       } else if (type === 'string' && merged[field] === 'Other' && merged[otherField]) {
         merged[field] = merged[otherField];
       }
@@ -153,5 +169,5 @@ module.exports = {
   CONDITIONAL_ACKNOWLEDGMENT_FIELDS,
   OTHER_FIELD_CONFIG,
   OTHER_FIELD_NAMES,
-  mergeOtherFields
+  mergeOtherFields,
 };

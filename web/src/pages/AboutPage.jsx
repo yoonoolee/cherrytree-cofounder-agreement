@@ -11,9 +11,15 @@ const SECTIONS = [
     body: (
       <>
         <p>
-          Hey, I'm Tim. I started Cherrytree after learning firsthand how challenging yet rewarding it is to build something with cofounders. Since then, I've taught over a thousand entrepreneurship students, written a book on cofounder dynamics, and teamed up with seasoned coaches, attorneys, and AI experts. We've now worked with hundreds of teams just like yours across a dozen industries.
+          Hey, I'm Tim. I started Cherrytree after learning firsthand how challenging yet rewarding
+          it is to build something with cofounders. Since then, I've taught over a thousand
+          entrepreneurship students, written a book on cofounder dynamics, and teamed up with
+          seasoned coaches, attorneys, and AI experts. We've now worked with hundreds of teams just
+          like yours across a dozen industries.
         </p>
-        <p>Our mission is simple: <em>to create cofounder magic.</em></p>
+        <p>
+          Our mission is simple: <em>to create cofounder magic.</em>
+        </p>
       </>
     ),
   },
@@ -24,9 +30,15 @@ const SECTIONS = [
       <>
         <div className="lp-about-job-title">Student Internship (part-time)</div>
         <p>
-          We're looking for an intern who's genuinely excited about startups and building things from the ground up. You'll work closely with our CEO &amp; Founder, getting hands-on experience across the business from research and growth strategies to operations, project coordination, and fundraising. This is a remote role, but bonus points if you're in SF or Berkeley.
+          We're looking for an intern who's genuinely excited about startups and building things
+          from the ground up. You'll work closely with our CEO &amp; Founder, getting hands-on
+          experience across the business from research and growth strategies to operations, project
+          coordination, and fundraising. This is a remote role, but bonus points if you're in SF or
+          Berkeley.
         </p>
-        <p className="lp-about-apply"><em>Apply here.</em></p>
+        <p className="lp-about-apply">
+          <em>Apply here.</em>
+        </p>
       </>
     ),
   },
@@ -35,7 +47,8 @@ const SECTIONS = [
 function AboutPage() {
   usePageMeta({
     title: 'About Cherrytree — Fair Cofounder Agreements for Startups',
-    description: 'Learn how Cherrytree helps early-stage cofounders create fair agreements that protect both equity stakes and relationships. Built by founders, for founders.',
+    description:
+      'Learn how Cherrytree helps early-stage cofounders create fair agreements that protect both equity stakes and relationships. Built by founders, for founders.',
     breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'About' }],
   });
 
@@ -45,7 +58,11 @@ function AboutPage() {
       <MarketingNav />
 
       <section className="lp-about-hero">
-        <h1>Big ideas grow<br /><em>with the right company.</em></h1>
+        <h1>
+          Big ideas grow
+          <br />
+          <em>with the right company.</em>
+        </h1>
       </section>
 
       <div className="lp-about-sections">

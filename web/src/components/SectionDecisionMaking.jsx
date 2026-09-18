@@ -18,7 +18,7 @@ const FIELD_ORDER = [
 function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, showValidation }) {
   const { currentUser } = useUser();
   const { collaboratorIds, getDisplayName, isAdmin } = useCollaborators(project);
-  const firstUnanswered = FIELD_ORDER.find(f => !formData[f]);
+  const firstUnanswered = FIELD_ORDER.find((f) => !formData[f]);
   const [expandedField, setExpandedField] = useState(firstUnanswered || FIELD_ORDER[0]);
   const advanceTo = (key) => {
     const idx = FIELD_ORDER.indexOf(key);
@@ -28,11 +28,36 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
 
   return (
     <div>
-      <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '42px', fontWeight: 400, letterSpacing: '-0.5px', marginBottom: '14px', lineHeight: 1.1, color: '#1a1a1a' }}>
+      <h2
+        style={{
+          fontFamily: 'Instrument Serif, serif',
+          fontSize: '42px',
+          fontWeight: 400,
+          letterSpacing: '-0.5px',
+          marginBottom: '14px',
+          lineHeight: 1.1,
+          color: '#1a1a1a',
+        }}
+      >
         Decision-Making &amp; Voting
       </h2>
-      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', lineHeight: 1.65, marginBottom: '32px' }}>
-        Without a plan for who decides what, even choosing office chairs can start a cold war. The day-to-day questions start piling up. Should we hire this engineer? Take that investor meeting? Pivot the product? Left undefined, these decisions can quietly blow up trust.<br/><br/>This section is where you make it concrete: who signs off on what, when a decision needs a vote, and how ties get broken. Defining it now means that when disagreements inevitably come, you have a clear, agreed-upon way to move forward without derailing.
+      <p
+        style={{
+          fontSize: '14px',
+          fontWeight: 200,
+          color: '#555',
+          lineHeight: 1.65,
+          marginBottom: '32px',
+        }}
+      >
+        Without a plan for who decides what, even choosing office chairs can start a cold war. The
+        day-to-day questions start piling up. Should we hire this engineer? Take that investor
+        meeting? Pivot the product? Left undefined, these decisions can quietly blow up trust.
+        <br />
+        <br />
+        This section is where you make it concrete: who signs off on what, when a decision needs a
+        vote, and how ties get broken. Defining it now means that when disagreements inevitably
+        come, you have a clear, agreed-upon way to move forward without derailing.
       </p>
 
       <div style={{ overflow: 'visible' }}>
@@ -41,12 +66,21 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
           answerPreview={getPreview(FIELDS.MAJOR_DECISIONS, formData, FIELDS.MAJOR_DECISIONS_OTHER)}
           tooltip={QUESTION_CONFIG[FIELDS.MAJOR_DECISIONS].tooltip}
           isExpanded={expandedField === FIELDS.MAJOR_DECISIONS}
-          isAnswered={!!(formData[FIELDS.MAJOR_DECISIONS]?.length)}
+          isAnswered={!!formData[FIELDS.MAJOR_DECISIONS]?.length}
           onExpand={() => setExpandedField(FIELDS.MAJOR_DECISIONS)}
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.MAJOR_DECISIONS)}
         >
-          <QuestionRenderer fieldName={FIELDS.MAJOR_DECISIONS} config={QUESTION_CONFIG[FIELDS.MAJOR_DECISIONS]} formData={formData} handleChange={handleChange} isReadOnly={isReadOnly} showValidation={showValidation} project={project} hideLabel />
+          <QuestionRenderer
+            fieldName={FIELDS.MAJOR_DECISIONS}
+            config={QUESTION_CONFIG[FIELDS.MAJOR_DECISIONS]}
+            formData={formData}
+            handleChange={handleChange}
+            isReadOnly={isReadOnly}
+            showValidation={showValidation}
+            project={project}
+            hideLabel
+          />
         </QuestionCard>
 
         <QuestionCard
@@ -59,14 +93,27 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.EQUITY_VOTING_POWER)}
         >
-          <QuestionRenderer fieldName={FIELDS.EQUITY_VOTING_POWER} config={QUESTION_CONFIG[FIELDS.EQUITY_VOTING_POWER]} formData={formData} handleChange={handleChange} isReadOnly={isReadOnly} showValidation={showValidation} project={project} hideLabel />
+          <QuestionRenderer
+            fieldName={FIELDS.EQUITY_VOTING_POWER}
+            config={QUESTION_CONFIG[FIELDS.EQUITY_VOTING_POWER]}
+            formData={formData}
+            handleChange={handleChange}
+            isReadOnly={isReadOnly}
+            showValidation={showValidation}
+            project={project}
+            hideLabel
+          />
         </QuestionCard>
 
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.TIE_RESOLUTION].question}
           answerPreview={getPreview(FIELDS.TIE_RESOLUTION, formData)}
           tooltip={QUESTION_CONFIG[FIELDS.TIE_RESOLUTION].tooltip}
-          subQuestion={formData[FIELDS.TIE_RESOLUTION] ? `I acknowledge that in the event of a deadlock, the Cofounders agree to first seek resolution through informal negotiation for a period of 30 days. If unresolved, the deadlock shall be resolved by ${formData[FIELDS.TIE_RESOLUTION]}.` : undefined}
+          subQuestion={
+            formData[FIELDS.TIE_RESOLUTION]
+              ? `I acknowledge that in the event of a deadlock, the Cofounders agree to first seek resolution through informal negotiation for a period of 30 days. If unresolved, the deadlock shall be resolved by ${formData[FIELDS.TIE_RESOLUTION]}.`
+              : undefined
+          }
           subAnswerPreview={getPreview(FIELDS.ACKNOWLEDGE_TIE_RESOLUTION, formData)}
           isExpanded={expandedField === FIELDS.TIE_RESOLUTION}
           isAnswered={!!formData[FIELDS.TIE_RESOLUTION]}
@@ -74,26 +121,31 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.TIE_RESOLUTION)}
         >
-          {showValidation && !formData[FIELDS.TIE_RESOLUTION] && <span className="text-red-700 text-xs">* Required</span>}
+          {showValidation && !formData[FIELDS.TIE_RESOLUTION] && (
+            <span className="text-red-700 text-xs">* Required</span>
+          )}
           <div className="space-y-2" style={{ marginTop: '14px' }}>
             {TIE_RESOLUTION_OPTIONS.map((option) => (
               <label key={option} className="card-radio-option">
                 <input
-                  type="radio" name="tieResolution" value={option}
+                  type="radio"
+                  name="tieResolution"
+                  value={option}
                   checked={formData[FIELDS.TIE_RESOLUTION] === option}
                   onClick={() => {
                     if (!isReadOnly) {
                       const newValue = formData[FIELDS.TIE_RESOLUTION] === option ? '' : option;
                       handleChange(FIELDS.TIE_RESOLUTION, newValue);
                       if (newValue) {
-                        const init = Object.fromEntries(collaboratorIds.map(id => [id, false]));
+                        const init = Object.fromEntries(collaboratorIds.map((id) => [id, false]));
                         handleChange(FIELDS.ACKNOWLEDGE_TIE_RESOLUTION, init);
                       } else {
                         handleChange(FIELDS.ACKNOWLEDGE_TIE_RESOLUTION, null);
                       }
                     }
                   }}
-                  onChange={() => {}} disabled={isReadOnly}
+                  onChange={() => {}}
+                  disabled={isReadOnly}
                 />
                 <span className="radio-circle" />
                 {option}
@@ -107,19 +159,37 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                 alwaysExpanded
                 flat
               >
-                {showValidation && !(collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_TIE_RESOLUTION]?.[userId])) && (
-                  <span className="text-red-700 text-xs">* Required</span>
-                )}
+                {showValidation &&
+                  !(
+                    collaboratorIds.length > 0 &&
+                    collaboratorIds.every(
+                      (userId) => formData[FIELDS.ACKNOWLEDGE_TIE_RESOLUTION]?.[userId],
+                    )
+                  ) && <span className="text-red-700 text-xs">* Required</span>}
                 <div className="space-y-2 mt-3">
                   {(() => {
                     const approvals = formData[FIELDS.ACKNOWLEDGE_TIE_RESOLUTION] || {};
                     const currentUserId = currentUser?.id;
                     return collaboratorIds.map((userId) => (
                       <label key={userId} className="flex items-center">
-                        <input type="checkbox" checked={approvals[userId] || false}
-                          onChange={(e) => handleChange(FIELDS.ACKNOWLEDGE_TIE_RESOLUTION, { ...approvals, [userId]: e.target.checked })}
-                          disabled={isReadOnly || userId !== currentUserId} className="mr-3" />
-                        <span className="text-gray-700">{getDisplayName(userId)}{isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}</span>
+                        <input
+                          type="checkbox"
+                          checked={approvals[userId] || false}
+                          onChange={(e) =>
+                            handleChange(FIELDS.ACKNOWLEDGE_TIE_RESOLUTION, {
+                              ...approvals,
+                              [userId]: e.target.checked,
+                            })
+                          }
+                          disabled={isReadOnly || userId !== currentUserId}
+                          className="mr-3"
+                        />
+                        <span className="text-gray-700">
+                          {getDisplayName(userId)}
+                          {isAdmin(userId) && (
+                            <span className="ml-2 text-xs text-gray-500">(Admin)</span>
+                          )}
+                        </span>
                       </label>
                     ));
                   })()}
@@ -133,7 +203,11 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
           question={QUESTION_CONFIG[FIELDS.INCLUDE_SHOTGUN_CLAUSE].question}
           answerPreview={getPreview(FIELDS.INCLUDE_SHOTGUN_CLAUSE, formData)}
           tooltip={QUESTION_CONFIG[FIELDS.INCLUDE_SHOTGUN_CLAUSE].tooltip}
-          subQuestion={formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === 'Yes' ? "I acknowledge that no partial buy/sell is allowed and payment is due in cash within 60 days of acceptance." : undefined}
+          subQuestion={
+            formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === 'Yes'
+              ? 'I acknowledge that no partial buy/sell is allowed and payment is due in cash within 60 days of acceptance.'
+              : undefined
+          }
           subAnswerPreview={getPreview(FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE, formData)}
           isExpanded={expandedField === FIELDS.INCLUDE_SHOTGUN_CLAUSE}
           isAnswered={!!formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE]}
@@ -141,25 +215,33 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.INCLUDE_SHOTGUN_CLAUSE)}
         >
-          {showValidation && !formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] && <span className="text-red-700 text-xs">* Required</span>}
+          {showValidation && !formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] && (
+            <span className="text-red-700 text-xs">* Required</span>
+          )}
           <div className="space-y-2" style={{ marginTop: '14px' }}>
             {['Yes', 'No'].map((option) => (
               <label key={option} className="card-radio-option">
-                <input type="radio" name="includeShotgunClause" value={option}
+                <input
+                  type="radio"
+                  name="includeShotgunClause"
+                  value={option}
                   checked={formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === option}
                   onClick={() => {
                     if (!isReadOnly) {
-                      const newValue = formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === option ? '' : option;
+                      const newValue =
+                        formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] === option ? '' : option;
                       handleChange(FIELDS.INCLUDE_SHOTGUN_CLAUSE, newValue);
                       if (newValue === 'Yes') {
-                        const init = Object.fromEntries(collaboratorIds.map(id => [id, false]));
+                        const init = Object.fromEntries(collaboratorIds.map((id) => [id, false]));
                         handleChange(FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE, init);
                       } else {
                         handleChange(FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE, null);
                       }
                     }
                   }}
-                  onChange={() => {}} disabled={isReadOnly} />
+                  onChange={() => {}}
+                  disabled={isReadOnly}
+                />
                 <span className="radio-circle" />
                 {option}
               </label>
@@ -172,19 +254,37 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                 alwaysExpanded
                 flat
               >
-                {showValidation && !(collaboratorIds.length > 0 && collaboratorIds.every(userId => formData[FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE]?.[userId])) && (
-                  <span className="text-red-700 text-xs">* Required</span>
-                )}
+                {showValidation &&
+                  !(
+                    collaboratorIds.length > 0 &&
+                    collaboratorIds.every(
+                      (userId) => formData[FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE]?.[userId],
+                    )
+                  ) && <span className="text-red-700 text-xs">* Required</span>}
                 <div className="space-y-2 mt-3">
                   {(() => {
                     const approvals = formData[FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE] || {};
                     const currentUserId = currentUser?.id;
                     return collaboratorIds.map((userId) => (
                       <label key={userId} className="flex items-center">
-                        <input type="checkbox" checked={approvals[userId] || false}
-                          onChange={(e) => handleChange(FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE, { ...approvals, [userId]: e.target.checked })}
-                          disabled={isReadOnly || userId !== currentUserId} className="mr-3" />
-                        <span className="text-gray-700">{getDisplayName(userId)}{isAdmin(userId) && <span className="ml-2 text-xs text-gray-500">(Admin)</span>}</span>
+                        <input
+                          type="checkbox"
+                          checked={approvals[userId] || false}
+                          onChange={(e) =>
+                            handleChange(FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE, {
+                              ...approvals,
+                              [userId]: e.target.checked,
+                            })
+                          }
+                          disabled={isReadOnly || userId !== currentUserId}
+                          className="mr-3"
+                        />
+                        <span className="text-gray-700">
+                          {getDisplayName(userId)}
+                          {isAdmin(userId) && (
+                            <span className="ml-2 text-xs text-gray-500">(Admin)</span>
+                          )}
+                        </span>
                       </label>
                     ));
                   })()}

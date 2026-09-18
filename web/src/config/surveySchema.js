@@ -183,7 +183,7 @@ export const US_STATES = [
   { value: 'WA', label: 'Washington' },
   { value: 'WV', label: 'West Virginia' },
   { value: 'WI', label: 'Wisconsin' },
-  { value: 'WY', label: 'Wyoming' }
+  { value: 'WY', label: 'Wyoming' },
 ];
 
 export const ENTITY_TYPES = ['C-Corp', 'S-Corp', 'LLC', 'Other'];
@@ -213,7 +213,7 @@ export const INDUSTRIES = [
   'Sustainability / Carbon Tech',
   'Travel / Hospitality',
   'Web3 / Blockchain / Crypto',
-  'Other'
+  'Other',
 ];
 
 export const ROLES = [
@@ -228,7 +228,7 @@ export const ROLES = [
   'Product strategy',
   'Sales / business development',
   'UX / design',
-  'Other'
+  'Other',
 ];
 
 export const MAJOR_DECISIONS = [
@@ -240,26 +240,26 @@ export const MAJOR_DECISIONS = [
   'Product pivots',
   'Selling the company or merging',
   'None of the above',
-  'Other'
+  'Other',
 ];
 
 export const TIE_RESOLUTION_OPTIONS = [
   'Consult agreed external advisor / board member',
   'Mediation with a neutral third party',
-  'Final decision authority by domain'
+  'Final decision authority by domain',
 ];
 
 export const VESTING_SCHEDULES = [
   '4 years with 1-year cliff',
   '3 years with 1-year cliff',
   'Immediate',
-  'Other'
+  'Other',
 ];
 
 export const VESTED_SHARES_DISPOSAL_OPTIONS = [
   'The company has the option to repurchase vested shares at Fair Market Value',
   'The company must repurchase vested shares at Fair Market Value',
-  'Vested shares transfer to the cofounder\'s estate or heirs, without voting or board rights'
+  "Vested shares transfer to the cofounder's estate or heirs, without voting or board rights",
 ];
 
 export const PERFORMANCE_CONSEQUENCES = [
@@ -267,7 +267,7 @@ export const PERFORMANCE_CONSEQUENCES = [
   'Temporary suspension of voting rights',
   'Reduction or dilution of unvested equity',
   'Role reassignment or demotion',
-  'Termination'
+  'Termination',
 ];
 
 export const TERMINATION_WITH_CAUSE_OPTIONS = [
@@ -276,7 +276,7 @@ export const TERMINATION_WITH_CAUSE_OPTIONS = [
   'Willful misconduct or gross negligence',
   'Material breach of this agreement',
   'Criminal conviction',
-  'Other'
+  'Other',
 ];
 
 export const NON_COMPETE_DURATIONS = [
@@ -284,7 +284,7 @@ export const NON_COMPETE_DURATIONS = [
   '1 year',
   '2 years',
   'No non-competition clause',
-  'Other'
+  'Other',
 ];
 
 export const NON_SOLICIT_DURATIONS = [
@@ -292,20 +292,20 @@ export const NON_SOLICIT_DURATIONS = [
   '1 year',
   '2 years',
   'No non-solicitation clause',
-  'Other'
+  'Other',
 ];
 
 export const DISPUTE_RESOLUTION_OPTIONS = [
   'Mediation first, then arbitration if mediation fails',
   'Binding arbitration',
   'Litigation in courts',
-  'Other'
+  'Other',
 ];
 
 export const AMENDMENT_PROCESS_OPTIONS = [
   'Unanimous written consent of all cofounders',
   'Majority vote of cofounders',
-  'Other'
+  'Other',
 ];
 
 /**
@@ -343,7 +343,7 @@ export const SECTIONS = [
   { id: 7, name: 'Compensation' },
   { id: 8, name: 'Performance' },
   { id: 9, name: 'Non-Competition' },
-  { id: 10, name: 'General Provisions' }
+  { id: 10, name: 'General Provisions' },
 ];
 
 // =============================================================================
@@ -361,7 +361,13 @@ export const SECTIONS = [
 export const SURVEY_FIELDS = {
   // Section 1: Formation & Purpose
   companyName: { default: '', type: 'string' },
-  entityType: { default: '', type: 'string', hasOther: true, otherField: 'entityTypeOther', options: ENTITY_TYPES },
+  entityType: {
+    default: '',
+    type: 'string',
+    hasOther: true,
+    otherField: 'entityTypeOther',
+    options: ENTITY_TYPES,
+  },
   entityTypeOther: { default: '', type: 'string' },
   registeredState: { default: '', type: 'string', options: US_STATES },
   mailingStreet: { default: '', type: 'string' },
@@ -370,7 +376,13 @@ export const SURVEY_FIELDS = {
   mailingState: { default: '', type: 'string' },
   mailingZip: { default: '', type: 'string' },
   companyDescription: { default: '', type: 'string' },
-  industries: { default: [], type: 'array', hasOther: true, otherField: 'industryOther', options: INDUSTRIES },
+  industries: {
+    default: [],
+    type: 'array',
+    hasOther: true,
+    otherField: 'industryOther',
+    options: INDUSTRIES,
+  },
   industryOther: { default: '', type: 'string' },
 
   // Section 2: Cofounder Info
@@ -385,7 +397,13 @@ export const SURVEY_FIELDS = {
   equityCalculatorSubmitted: { default: {}, type: 'object' },
 
   // Section 4: Decision-Making & Voting
-  majorDecisions: { default: [], type: 'array', hasOther: true, otherField: 'majorDecisionsOther', options: MAJOR_DECISIONS },
+  majorDecisions: {
+    default: [],
+    type: 'array',
+    hasOther: true,
+    otherField: 'majorDecisionsOther',
+    options: MAJOR_DECISIONS,
+  },
   majorDecisionsOther: { default: '', type: 'string' },
   equityVotingPower: { default: '', type: 'string' },
   tieResolution: { default: '', type: 'string', options: TIE_RESOLUTION_OPTIONS },
@@ -395,7 +413,13 @@ export const SURVEY_FIELDS = {
 
   // Section 5: Equity & Vesting
   vestingStartDate: { default: '', type: 'string' },
-  vestingSchedule: { default: '', type: 'string', hasOther: true, otherField: 'vestingScheduleOther', options: VESTING_SCHEDULES },
+  vestingSchedule: {
+    default: '',
+    type: 'string',
+    hasOther: true,
+    otherField: 'vestingScheduleOther',
+    options: VESTING_SCHEDULES,
+  },
   vestingScheduleOther: { default: '', type: 'string' },
   cliffPercentage: { default: '', type: 'string' },
   accelerationTrigger: { default: '', type: 'string' },
@@ -417,28 +441,58 @@ export const SURVEY_FIELDS = {
   // Section 8: Performance
   performanceConsequences: { default: [], type: 'array', options: PERFORMANCE_CONSEQUENCES },
   remedyPeriodDays: { default: '', type: 'string' },
-  terminationWithCause: { default: [], type: 'array', hasOther: true, otherField: 'terminationWithCauseOther', options: TERMINATION_WITH_CAUSE_OPTIONS },
+  terminationWithCause: {
+    default: [],
+    type: 'array',
+    hasOther: true,
+    otherField: 'terminationWithCauseOther',
+    options: TERMINATION_WITH_CAUSE_OPTIONS,
+  },
   terminationWithCauseOther: { default: '', type: 'string' },
   voluntaryNoticeDays: { default: '', type: 'string' },
 
   // Section 9: Non-Competition
   acknowledgeConfidentiality: { default: {}, type: 'object' },
-  nonCompeteDuration: { default: '', type: 'string', hasOther: true, otherField: 'nonCompeteDurationOther', options: NON_COMPETE_DURATIONS },
+  nonCompeteDuration: {
+    default: '',
+    type: 'string',
+    hasOther: true,
+    otherField: 'nonCompeteDurationOther',
+    options: NON_COMPETE_DURATIONS,
+  },
   nonCompeteDurationOther: { default: '', type: 'string' },
-  nonSolicitDuration: { default: '', type: 'string', hasOther: true, otherField: 'nonSolicitDurationOther', options: NON_SOLICIT_DURATIONS },
+  nonSolicitDuration: {
+    default: '',
+    type: 'string',
+    hasOther: true,
+    otherField: 'nonSolicitDurationOther',
+    options: NON_SOLICIT_DURATIONS,
+  },
   nonSolicitDurationOther: { default: '', type: 'string' },
 
   // Section 10: Final Details
-  disputeResolution: { default: '', type: 'string', hasOther: true, otherField: 'disputeResolutionOther', options: DISPUTE_RESOLUTION_OPTIONS },
+  disputeResolution: {
+    default: '',
+    type: 'string',
+    hasOther: true,
+    otherField: 'disputeResolutionOther',
+    options: DISPUTE_RESOLUTION_OPTIONS,
+  },
   disputeResolutionOther: { default: '', type: 'string' },
   governingLaw: { default: '', type: 'string', options: US_STATES },
-  amendmentProcess: { default: '', type: 'string', hasOther: true, otherField: 'amendmentProcessOther', options: AMENDMENT_PROCESS_OPTIONS },
+  amendmentProcess: {
+    default: '',
+    type: 'string',
+    hasOther: true,
+    otherField: 'amendmentProcessOther',
+    options: AMENDMENT_PROCESS_OPTIONS,
+  },
   amendmentProcessOther: { default: '', type: 'string' },
   reviewFrequencyMonths: { default: '', type: 'string' },
   acknowledgePeriodicReview: { default: {}, type: 'object' },
   acknowledgeAmendmentReviewRequest: { default: {}, type: 'object' },
   acknowledgeEntireAgreement: { default: {}, type: 'object' },
-  acknowledgeSeverability: { default: {}, type: 'object' }
+  acknowledgeSeverability: { default: {}, type: 'object' },
 };
 
 // =============================================================================
@@ -450,7 +504,7 @@ export const SURVEY_FIELDS = {
  * Auto-generated from SURVEY_FIELDS
  */
 export const INITIAL_FORM_DATA = Object.fromEntries(
-  Object.entries(SURVEY_FIELDS).map(([key, config]) => [key, config.default])
+  Object.entries(SURVEY_FIELDS).map(([key, config]) => [key, config.default]),
 );
 
 /**
@@ -463,14 +517,14 @@ export const OTHER_FIELD_CONFIG = Object.entries(SURVEY_FIELDS)
   .map(([field, config]) => ({
     field,
     otherField: config.otherField,
-    type: config.type
+    type: config.type,
   }));
 
 /**
  * List of all "Other" field names (e.g., entityTypeOther, industryOther)
  * Useful for cleaning up data before sending to external services
  */
-export const OTHER_FIELD_NAMES = OTHER_FIELD_CONFIG.map(config => config.otherField);
+export const OTHER_FIELD_NAMES = OTHER_FIELD_CONFIG.map((config) => config.otherField);
 
 /**
  * Merge "Other" fields into their parent fields
@@ -485,7 +539,7 @@ export function mergeOtherFields(data) {
 
   for (const { field, otherField, type } of OTHER_FIELD_CONFIG) {
     if (type === 'array' && merged[field]?.includes('Other') && merged[otherField]) {
-      merged[field] = merged[field].map(item => item === 'Other' ? merged[otherField] : item);
+      merged[field] = merged[field].map((item) => (item === 'Other' ? merged[otherField] : item));
     } else if (type === 'string' && merged[field] === 'Other' && merged[otherField]) {
       merged[field] = merged[otherField];
     }

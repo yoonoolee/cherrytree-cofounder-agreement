@@ -10,11 +10,23 @@ import { useProjects } from '../hooks/useProjects';
 function SurveyPage() {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const { currentUser, loading: authLoading, userMemberships, organizationList, setActive, orgsLoaded } = useUser();
+  const {
+    currentUser,
+    loading: authLoading,
+    userMemberships,
+    organizationList,
+    setActive,
+    orgsLoaded,
+  } = useUser();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Use shared useProjects hook instead of duplicate fetching logic
-  const { projects: allProjects } = useProjects(currentUser, userMemberships, orgsLoaded, authLoading);
+  const { projects: allProjects } = useProjects(
+    currentUser,
+    userMemberships,
+    orgsLoaded,
+    authLoading,
+  );
 
   // Set active organization based on projectId (projectId === clerkOrgId)
   useEffect(() => {
@@ -22,7 +34,7 @@ function SurveyPage() {
       if (!projectId || !orgsLoaded || !setActive) return;
 
       try {
-        const org = organizationList?.find(o => o.organization.id === projectId);
+        const org = organizationList?.find((o) => o.organization.id === projectId);
         if (org) {
           await setActive({ organization: projectId });
         }
@@ -42,7 +54,7 @@ function SurveyPage() {
       try {
         const projectRef = doc(db, 'projects', projectId);
         await updateDoc(projectRef, {
-          lastOpened: new Date()
+          lastOpened: new Date(),
         });
       } catch (error) {
         console.error('Error updating lastOpened:', error);
@@ -86,10 +98,7 @@ function SurveyPage() {
         onProjectSwitch={handleProjectSwitch}
       />
       {showPaymentModal && (
-        <PaymentModal
-          onClose={() => setShowPaymentModal(false)}
-          onSuccess={handlePaymentSuccess}
-        />
+        <PaymentModal onClose={() => setShowPaymentModal(false)} onSuccess={handlePaymentSuccess} />
       )}
     </>
   );

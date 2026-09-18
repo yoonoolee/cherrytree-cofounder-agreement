@@ -19,7 +19,7 @@ function ApprovalSection({ project, projectId }) {
   const approvals = project.approvals || {};
 
   // Count approvals (everyone must approve, including admin)
-  const approvedCount = collaboratorIds.filter(userId => approvals[userId] === true).length;
+  const approvedCount = collaboratorIds.filter((userId) => approvals[userId] === true).length;
   const totalRequired = collaboratorIds.length;
   const allApproved = totalRequired === 0 || approvedCount === totalRequired;
 
@@ -31,11 +31,11 @@ function ApprovalSection({ project, projectId }) {
       // Create a new approvals object with the updated status
       const updatedApprovals = {
         ...approvals,
-        [currentUserId]: newStatus
+        [currentUserId]: newStatus,
       };
 
       await updateDoc(projectRef, {
-        approvals: updatedApprovals
+        approvals: updatedApprovals,
       });
     } catch (error) {
       console.error('Error updating approval:', error);
@@ -52,18 +52,14 @@ function ApprovalSection({ project, projectId }) {
   if (collaboratorIds.length <= 1) {
     return (
       <div className="border border-gray-200 rounded-lg p-4">
-        <p className="text-sm text-gray-500">
-          Add collaborators to enable the approval system.
-        </p>
+        <p className="text-sm text-gray-500">Add collaborators to enable the approval system.</p>
       </div>
     );
   }
 
   return (
     <div className="border border-gray-200 rounded-lg p-6">
-      <h3 className="text-base font-semibold text-gray-900 mb-1">
-        Approval Status
-      </h3>
+      <h3 className="text-base font-semibold text-gray-900 mb-1">Approval Status</h3>
       <p className="text-sm text-gray-500 mb-4">
         {approvedCount} of {totalRequired} cofounders approved
       </p>
@@ -72,7 +68,8 @@ function ApprovalSection({ project, projectId }) {
       {project.lastEditedBy && approvedCount === 0 && totalRequired > 0 && (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
           <p className="text-sm text-gray-600">
-            The survey was recently edited. All approvals have been reset. Please review and re-approve.
+            The survey was recently edited. All approvals have been reset. Please review and
+            re-approve.
           </p>
         </div>
       )}
@@ -84,7 +81,10 @@ function ApprovalSection({ project, projectId }) {
           const isApproved = approvals[userId] === true;
 
           return (
-            <div key={userId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div
+              key={userId}
+              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+            >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                   <span className="text-gray-700 font-medium text-sm">
@@ -92,16 +92,14 @@ function ApprovalSection({ project, projectId }) {
                   </span>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-700">
-                    {displayName}
-                  </span>
-                  {isThisAdmin && (
-                    <span className="text-xs text-gray-500 ml-2">(Admin)</span>
-                  )}
+                  <span className="text-sm text-gray-700">{displayName}</span>
+                  {isThisAdmin && <span className="text-xs text-gray-500 ml-2">(Admin)</span>}
                 </div>
               </div>
 
-              <span className={`text-sm font-medium ${isApproved ? 'text-green-700' : 'text-gray-400'}`}>
+              <span
+                className={`text-sm font-medium ${isApproved ? 'text-green-700' : 'text-gray-400'}`}
+              >
                 {isApproved ? 'Approved' : 'Pending'}
               </span>
             </div>

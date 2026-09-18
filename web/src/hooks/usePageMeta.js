@@ -47,14 +47,14 @@ export function usePageMeta({ title, description, ogTitle, ogDescription, breadc
     // Add breadcrumb schema if provided
     if (breadcrumbs && breadcrumbs.length > 0) {
       const breadcrumbSchema = {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        "itemListElement": breadcrumbs.map((crumb, index) => ({
-          "@type": "ListItem",
-          "position": index + 1,
-          "name": crumb.name,
-          ...(crumb.url && { "item": `https://cherrytree.app${crumb.url}` })
-        }))
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: breadcrumbs.map((crumb, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: crumb.name,
+          ...(crumb.url && { item: `https://cherrytree.app${crumb.url}` }),
+        })),
       };
 
       const script = document.createElement('script');
@@ -68,7 +68,10 @@ export function usePageMeta({ title, description, ogTitle, ogDescription, breadc
     return () => {
       document.title = 'Cherrytree - Create Cofounder Agreements';
       if (metaDescription) {
-        metaDescription.setAttribute('content', 'Cherrytree makes it easy to create cofounder agreements and determine equity splits.');
+        metaDescription.setAttribute(
+          'content',
+          'Cherrytree makes it easy to create cofounder agreements and determine equity splits.',
+        );
       }
       // Remove breadcrumb schema
       const existingBreadcrumbScript = document.getElementById('breadcrumb-schema');

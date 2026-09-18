@@ -14,9 +14,7 @@ function FinalAgreementPage() {
       navigate(`/preview/${projectId}`);
     } else {
       // Navigate to Survey page for regular sections
-      const url = sectionId
-        ? `/survey/${projectId}?section=${sectionId}`
-        : `/survey/${projectId}`;
+      const url = sectionId ? `/survey/${projectId}?section=${sectionId}` : `/survey/${projectId}`;
       navigate(url);
     }
   };
@@ -45,10 +43,7 @@ function FinalAgreementPage() {
         onProjectSwitch={handleProjectSwitch}
       />
       {showPaymentModal && (
-        <PaymentModal
-          onClose={() => setShowPaymentModal(false)}
-          onSuccess={handlePaymentSuccess}
-        />
+        <PaymentModal onClose={() => setShowPaymentModal(false)} onSuccess={handlePaymentSuccess} />
       )}
     </>
   );

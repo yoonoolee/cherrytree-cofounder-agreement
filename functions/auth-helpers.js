@@ -44,7 +44,7 @@ async function verifyClerkToken(sessionToken) {
 
     // Verify the session token using standalone JWT verification (no network call)
     const payload = await clerkVerifyToken(sessionToken, {
-      secretKey: CLERK_SECRET_KEY.value()
+      secretKey: CLERK_SECRET_KEY.value(),
     });
 
     if (!payload || !payload.sub) {
@@ -62,7 +62,7 @@ async function verifyClerkToken(sessionToken) {
 
     // Get primary email
     const primaryEmail = user.emailAddresses.find(
-      email => email.id === user.primaryEmailAddressId
+      (email) => email.id === user.primaryEmailAddressId,
     );
 
     if (!primaryEmail) {
@@ -89,5 +89,5 @@ async function verifyClerkToken(sessionToken) {
 module.exports = {
   getClerk,
   verifyClerkToken,
-  CLERK_SECRET_KEY
+  CLERK_SECRET_KEY,
 };

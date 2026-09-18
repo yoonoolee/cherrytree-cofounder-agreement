@@ -11,9 +11,9 @@ export const PRICING_PLANS = [
       'Comprehensive agreements',
       'Proprietary equity calculator',
       'Best practices and tips',
-      'Up to 5 collaborators'
+      'Up to 5 collaborators',
     ],
-    featured: true
+    featured: true,
   },
   {
     name: 'Pro',
@@ -22,11 +22,7 @@ export const PRICING_PLANS = [
     priceValue: 2000,
     priceId: import.meta.env.VITE_STRIPE_PRO_PRICE_ID,
     description: 'Everything in Starter, plus',
-    features: [
-      'Attorney review',
-      'Cofounder coaching',
-      'Priority support'
-    ]
+    features: ['Attorney review', 'Cofounder coaching', 'Priority support'],
   },
   {
     name: 'Enterprise',
@@ -35,10 +31,6 @@ export const PRICING_PLANS = [
     priceValue: null,
     priceId: null,
     description: 'For investors and schools',
-    features: [
-      'Bulk licensing',
-      'White label option',
-      'Priority support'
-    ]
-  }
+    features: ['Bulk licensing', 'White label option', 'Priority support'],
+  },
 ];

@@ -21,7 +21,7 @@ function DynamicSection({
   project,
   customTitle,
   customDescription,
-  customComponents = {}
+  customComponents = {},
 }) {
   const sectionConfig = SECTION_CONFIG[sectionId];
   const questions = getQuestionsBySection(sectionId);
@@ -53,11 +53,7 @@ function DynamicSection({
 
           // If custom component provided for this field, render it instead
           if (customComponents[fieldName]) {
-            return (
-              <div key={fieldName}>
-                {customComponents[fieldName]}
-              </div>
-            );
+            return <div key={fieldName}>{customComponents[fieldName]}</div>;
           }
 
           // Skip nested fields (like cofounder fields) - these are handled by parent component

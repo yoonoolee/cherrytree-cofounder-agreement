@@ -28,7 +28,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
   const isInitialMount = useRef(true);
 
   // Start on first unanswered field
-  const firstUnanswered = FIELD_ORDER.find(f => {
+  const firstUnanswered = FIELD_ORDER.find((f) => {
     if (f === 'mailing_address') return !formData[FIELDS.MAILING_STREET];
     return !formData[f];
   });
@@ -54,7 +54,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
     const initAutocomplete = async () => {
       if (!isReadOnly && window.google?.maps?.places) {
         try {
-          const { AutocompleteSuggestion } = await window.google.maps.importLibrary("places");
+          const { AutocompleteSuggestion } = await window.google.maps.importLibrary('places');
           autocompleteSuggestion.current = AutocompleteSuggestion;
         } catch (error) {
           console.error('Error loading AutocompleteSuggestion:', error);
@@ -82,7 +82,8 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         includedRegionCodes: ['us'],
       };
 
-      const { suggestions: fetchedSuggestions } = await autocompleteSuggestion.current.fetchAutocompleteSuggestions(request);
+      const { suggestions: fetchedSuggestions } =
+        await autocompleteSuggestion.current.fetchAutocompleteSuggestions(request);
 
       if (fetchedSuggestions && fetchedSuggestions.length > 0) {
         setSuggestions(fetchedSuggestions);
@@ -104,12 +105,10 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setHighlightedIndex((prev) =>
-        prev < suggestions.length - 1 ? prev + 1 : prev
-      );
+      setHighlightedIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : prev));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setHighlightedIndex((prev) => prev > 0 ? prev - 1 : prev);
+      setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : prev));
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (suggestions[highlightedIndex]) {
@@ -132,11 +131,11 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
 
   const handleSelectAddress = async (placeId) => {
     try {
-      const { Place } = await window.google.maps.importLibrary("places");
+      const { Place } = await window.google.maps.importLibrary('places');
       const place = new Place({ id: placeId });
 
       await place.fetchFields({
-        fields: ['addressComponents']
+        fields: ['addressComponents'],
       });
 
       const addressComponents = place.addressComponents;
@@ -151,7 +150,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
       let state = '';
       let zip = '';
 
-      addressComponents.forEach(component => {
+      addressComponents.forEach((component) => {
         const types = component.types;
 
         if (types.includes('street_number')) {
@@ -175,7 +174,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
       });
 
       // Convert state abbreviation to full name
-      const stateFullName = US_STATES.find(s => s.value === state)?.label || state;
+      const stateFullName = US_STATES.find((s) => s.value === state)?.label || state;
 
       // Update all address fields
       setInputValue(street.trim());
@@ -193,30 +192,60 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
     }
   };
 
-
   const addressPreview = formData[FIELDS.MAILING_STREET]
     ? [
         formData[FIELDS.MAILING_STREET],
         formData[FIELDS.MAILING_STREET2],
         [
-          [formData[FIELDS.MAILING_CITY], formData[FIELDS.MAILING_STATE]].filter(Boolean).join(', '),
+          [formData[FIELDS.MAILING_CITY], formData[FIELDS.MAILING_STATE]]
+            .filter(Boolean)
+            .join(', '),
           formData[FIELDS.MAILING_ZIP],
-        ].filter(Boolean).join(' '),
-      ].filter(Boolean).join('\n')
+        ]
+          .filter(Boolean)
+          .join(' '),
+      ]
+        .filter(Boolean)
+        .join('\n')
     : '';
-  const addressAnswered = !!(formData[FIELDS.MAILING_STREET] && formData[FIELDS.MAILING_CITY] && formData[FIELDS.MAILING_STATE] && formData[FIELDS.MAILING_ZIP]);
+  const addressAnswered = !!(
+    formData[FIELDS.MAILING_STREET] &&
+    formData[FIELDS.MAILING_CITY] &&
+    formData[FIELDS.MAILING_STATE] &&
+    formData[FIELDS.MAILING_ZIP]
+  );
 
   return (
     <div>
-      <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '42px', fontWeight: 400, letterSpacing: '-0.5px', marginBottom: '14px', lineHeight: 1.1, color: '#1a1a1a' }}>
+      <h2
+        style={{
+          fontFamily: 'Instrument Serif, serif',
+          fontSize: '42px',
+          fontWeight: 400,
+          letterSpacing: '-0.5px',
+          marginBottom: '14px',
+          lineHeight: 1.1,
+          color: '#1a1a1a',
+        }}
+      >
         Formation &amp; Purpose
       </h2>
-      <p style={{ fontSize: '14px', fontWeight: 200, color: '#555', lineHeight: 1.65, marginBottom: '32px' }}>
-        You've been talking about this idea for weeks, maybe months. Now you're sitting with your cofounder, naming the company, buying the domain, imagining what it could become. Coffee in hand, takeout on the table. Creating a cofounder agreement is what makes it real. Let's get started.
+      <p
+        style={{
+          fontSize: '14px',
+          fontWeight: 200,
+          color: '#555',
+          lineHeight: 1.65,
+          marginBottom: '32px',
+        }}
+      >
+        You've been talking about this idea for weeks, maybe months. Now you're sitting with your
+        cofounder, naming the company, buying the domain, imagining what it could become. Coffee in
+        hand, takeout on the table. Creating a cofounder agreement is what makes it real. Let's get
+        started.
       </p>
 
       <div style={{ overflow: 'visible' }}>
-
         {/* Company Name */}
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.COMPANY_NAME].question}
@@ -295,12 +324,27 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
           onCollapse={collapse}
           onAdvance={() => advanceTo('mailing_address')}
         >
-          {showValidation && (!formData[FIELDS.MAILING_STREET] || !formData[FIELDS.MAILING_CITY] || !formData[FIELDS.MAILING_STATE] || !formData[FIELDS.MAILING_ZIP]) && (
-            <span className="text-red-700 text-xs">* Required</span>
-          )}
+          {showValidation &&
+            (!formData[FIELDS.MAILING_STREET] ||
+              !formData[FIELDS.MAILING_CITY] ||
+              !formData[FIELDS.MAILING_STATE] ||
+              !formData[FIELDS.MAILING_ZIP]) && (
+              <span className="text-red-700 text-xs">* Required</span>
+            )}
           <div className="space-y-3" style={{ marginTop: '14px' }}>
             <div className="relative">
-              <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', letterSpacing: '0.04em', display: 'block', marginBottom: '4px' }}>Street Address</label>
+              <label
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  color: '#999',
+                  letterSpacing: '0.04em',
+                  display: 'block',
+                  marginBottom: '4px',
+                }}
+              >
+                Street Address
+              </label>
               <input
                 type="text"
                 value={inputValue}
@@ -314,7 +358,11 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                 onKeyDown={handleAddressKeyDown}
                 disabled={isReadOnly}
                 autoComplete="chrome-off"
-                onFocus={() => !isReadOnly && inputValue.length >= ADDRESS_SEARCH_MIN_LENGTH && setShowSuggestions(true)}
+                onFocus={() =>
+                  !isReadOnly &&
+                  inputValue.length >= ADDRESS_SEARCH_MIN_LENGTH &&
+                  setShowSuggestions(true)
+                }
                 onBlur={handleStreetBlur}
                 placeholder="Start typing address..."
               />
@@ -329,8 +377,13 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                         onMouseDown={() => handleSelectAddress(placePrediction.placeId)}
                         onMouseEnter={() => setHighlightedIndex(index)}
                       >
-                        <div className="text-sm text-gray-900">{placePrediction.structuredFormat?.mainText?.text || placePrediction.text?.text}</div>
-                        <div className="text-xs text-gray-500">{placePrediction.structuredFormat?.secondaryText?.text}</div>
+                        <div className="text-sm text-gray-900">
+                          {placePrediction.structuredFormat?.mainText?.text ||
+                            placePrediction.text?.text}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {placePrediction.structuredFormat?.secondaryText?.text}
+                        </div>
                       </div>
                     );
                   })}
@@ -338,35 +391,100 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
               )}
             </div>
             <div>
-              <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', letterSpacing: '0.04em', display: 'block', marginBottom: '4px' }}>
+              <label
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  color: '#999',
+                  letterSpacing: '0.04em',
+                  display: 'block',
+                  marginBottom: '4px',
+                }}
+              >
                 Address Line 2 <span style={{ fontWeight: 300, color: '#bbb' }}>(Optional)</span>
               </label>
-              <input type="text" value={formData[FIELDS.MAILING_STREET2] || ''} onChange={(e) => handleChange(FIELDS.MAILING_STREET2, e.target.value)} disabled={isReadOnly} autoComplete="chrome-off" placeholder="Apt, Suite, Floor, etc." />
+              <input
+                type="text"
+                value={formData[FIELDS.MAILING_STREET2] || ''}
+                onChange={(e) => handleChange(FIELDS.MAILING_STREET2, e.target.value)}
+                disabled={isReadOnly}
+                autoComplete="chrome-off"
+                placeholder="Apt, Suite, Floor, etc."
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', letterSpacing: '0.04em', display: 'block', marginBottom: '4px' }}>City</label>
-                <input type="text" value={formData[FIELDS.MAILING_CITY] || ''} onChange={(e) => handleChange(FIELDS.MAILING_CITY, e.target.value)} disabled={isReadOnly} autoComplete="chrome-off" placeholder="San Francisco" />
+                <label
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: '#999',
+                    letterSpacing: '0.04em',
+                    display: 'block',
+                    marginBottom: '4px',
+                  }}
+                >
+                  City
+                </label>
+                <input
+                  type="text"
+                  value={formData[FIELDS.MAILING_CITY] || ''}
+                  onChange={(e) => handleChange(FIELDS.MAILING_CITY, e.target.value)}
+                  disabled={isReadOnly}
+                  autoComplete="chrome-off"
+                  placeholder="San Francisco"
+                />
               </div>
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', letterSpacing: '0.04em', display: 'block', marginBottom: '4px' }}>State</label>
+                <label
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: '#999',
+                    letterSpacing: '0.04em',
+                    display: 'block',
+                    marginBottom: '4px',
+                  }}
+                >
+                  State
+                </label>
                 <CustomSelect
                   value={formData[FIELDS.MAILING_STATE] || ''}
                   onChange={(value) => handleChange(FIELDS.MAILING_STATE, value)}
-                  options={US_STATES.map(state => ({ value: state.label, label: `${state.label} (${state.value})` }))}
+                  options={US_STATES.map((state) => ({
+                    value: state.label,
+                    label: `${state.label} (${state.value})`,
+                  }))}
                   placeholder="Select state"
                   disabled={isReadOnly}
-                  displayValue={formData[FIELDS.MAILING_STATE] ? US_STATES.find(s => s.label === formData[FIELDS.MAILING_STATE])?.value : ''}
+                  displayValue={
+                    formData[FIELDS.MAILING_STATE]
+                      ? US_STATES.find((s) => s.label === formData[FIELDS.MAILING_STATE])?.value
+                      : ''
+                  }
                 />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', letterSpacing: '0.04em', display: 'block', marginBottom: '4px' }}>ZIP Code</label>
+                <label
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: '#999',
+                    letterSpacing: '0.04em',
+                    display: 'block',
+                    marginBottom: '4px',
+                  }}
+                >
+                  ZIP Code
+                </label>
                 <input
                   type="text"
                   value={formData[FIELDS.MAILING_ZIP] || ''}
-                  onChange={(e) => handleChange(FIELDS.MAILING_ZIP, e.target.value.replace(/[^\d-]/g, ''))}
+                  onChange={(e) =>
+                    handleChange(FIELDS.MAILING_ZIP, e.target.value.replace(/[^\d-]/g, ''))
+                  }
                   disabled={isReadOnly}
                   autoComplete="chrome-off"
                   placeholder="94102"
@@ -405,7 +523,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
           answerPreview={getPreview(FIELDS.INDUSTRIES, formData, FIELDS.INDUSTRY_OTHER)}
           tooltip={QUESTION_CONFIG[FIELDS.INDUSTRIES].tooltip}
           isExpanded={expandedField === FIELDS.INDUSTRIES}
-          isAnswered={!!(formData[FIELDS.INDUSTRIES]?.length)}
+          isAnswered={!!formData[FIELDS.INDUSTRIES]?.length}
           onExpand={() => setExpandedField(FIELDS.INDUSTRIES)}
           onCollapse={collapse}
           onAdvance={() => advanceTo(FIELDS.INDUSTRIES)}
@@ -420,7 +538,6 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
             hideLabel
           />
         </QuestionCard>
-
       </div>
     </div>
   );

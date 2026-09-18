@@ -85,7 +85,7 @@
 .single-click-edit .Spreadsheet__table tbody tr:first-child .Spreadsheet__cell {
   background-color: #ffffff !important;
   font-weight: 600 !important;
-  color: #6B7280 !important;
+  color: #6b7280 !important;
   position: -webkit-sticky !important;
   position: sticky !important;
   top: 0 !important;
@@ -105,7 +105,7 @@
   text-align: left !important;
   font-size: 0.875rem !important;
   font-weight: 600 !important;
-  color: #6B7280 !important;
+  color: #6b7280 !important;
   background-color: #ffffff !important;
   border-right: none !important;
   border-bottom: 1px solid #e5e7eb !important;
@@ -153,10 +153,10 @@
 }
 
 /* Apply max-width only to columns 2+ (importance and cofounder columns) */
-.Spreadsheet th:nth-child(n+2),
-.Spreadsheet thead .Spreadsheet__cell:nth-child(n+2),
-.Spreadsheet tbody .Spreadsheet__cell:nth-child(n+2),
-.Spreadsheet td:nth-child(n+2) {
+.Spreadsheet th:nth-child(n + 2),
+.Spreadsheet thead .Spreadsheet__cell:nth-child(n + 2),
+.Spreadsheet tbody .Spreadsheet__cell:nth-child(n + 2),
+.Spreadsheet td:nth-child(n + 2) {
   max-width: 120px !important;
 }
 
@@ -258,7 +258,7 @@
 .spreadsheet-scroll-container td.header-cell {
   font-size: 1rem !important;
   font-weight: 600 !important;
-  color: #6B7280 !important;
+  color: #6b7280 !important;
   background-color: #ffffff !important;
   cursor: default !important;
   user-select: text !important;
@@ -274,13 +274,17 @@
 .spreadsheet-scroll-container .Spreadsheet .header-cell *,
 .spreadsheet-scroll-container .Spreadsheet td.header-cell *,
 .spreadsheet-scroll-container td.header-cell * {
-  color: #6B7280 !important;
+  color: #6b7280 !important;
   opacity: 1 !important;
 }
 
 /* First header cell with header-cell class needs higher z-index */
 .spreadsheet-scroll-container .Spreadsheet tbody tr:first-child td:first-child.header-cell,
-.spreadsheet-scroll-container .Spreadsheet tbody tr:first-child .Spreadsheet__cell:first-child.header-cell {
+.spreadsheet-scroll-container
+  .Spreadsheet
+  tbody
+  tr:first-child
+  .Spreadsheet__cell:first-child.header-cell {
   position: -webkit-sticky !important;
   position: sticky !important;
   z-index: 30 !important;
@@ -321,15 +325,15 @@ td.separator-cell {
 }
 
 /* Cofounder columns (3+) - center aligned */
-.Spreadsheet__cell:nth-child(n+3),
-.Spreadsheet td:nth-child(n+3),
-.Spreadsheet th:nth-child(n+3) {
+.Spreadsheet__cell:nth-child(n + 3),
+.Spreadsheet td:nth-child(n + 3),
+.Spreadsheet th:nth-child(n + 3) {
   text-align: center !important;
 }
 
 /* Cofounder column inputs - center aligned */
-.Spreadsheet__cell:nth-child(n+3) input,
-.Spreadsheet td:nth-child(n+3) input {
+.Spreadsheet__cell:nth-child(n + 3) input,
+.Spreadsheet td:nth-child(n + 3) input {
   text-align: center !important;
 }
 
@@ -412,9 +416,9 @@ td.separator-cell {
   }
 
   /* Make cofounder columns more compact on mobile */
-  .Spreadsheet__cell:nth-child(n+2),
-  .Spreadsheet td:nth-child(n+2),
-  .Spreadsheet th:nth-child(n+2) {
+  .Spreadsheet__cell:nth-child(n + 2),
+  .Spreadsheet td:nth-child(n + 2),
+  .Spreadsheet th:nth-child(n + 2) {
     min-width: 70px !important;
   }
 

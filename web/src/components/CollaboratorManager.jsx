@@ -27,7 +27,7 @@ function CollaboratorManager({ project }) {
   if (!project.id) {
     const subject = encodeURIComponent('[URGENT] Production Support Request - No Project ID');
     const body = encodeURIComponent(
-      `Hi Cherrytree Support,\n\nI'm encountering an error with my project.\n\n--- Debug Info ---\nProject ID: ${project?.id || 'Unknown'}\nProject Name: ${project?.name || 'Unknown'}\nAdmin User ID: ${project?.admin || 'Unknown'}\nCreated At: ${project?.createdAt?.toDate?.()?.toISOString() || 'Unknown'}\nCurrent User ID: ${membership?.publicUserData?.userId || 'Unknown'}\nCurrent User Email: ${membership?.publicUserData?.identifier || 'Unknown'}\nError: Missing project ID\nTimestamp: ${new Date().toISOString()}\n------------------\n\nPlease help me resolve this issue.\n\nThank you.`
+      `Hi Cherrytree Support,\n\nI'm encountering an error with my project.\n\n--- Debug Info ---\nProject ID: ${project?.id || 'Unknown'}\nProject Name: ${project?.name || 'Unknown'}\nAdmin User ID: ${project?.admin || 'Unknown'}\nCreated At: ${project?.createdAt?.toDate?.()?.toISOString() || 'Unknown'}\nCurrent User ID: ${membership?.publicUserData?.userId || 'Unknown'}\nCurrent User Email: ${membership?.publicUserData?.identifier || 'Unknown'}\nError: Missing project ID\nTimestamp: ${new Date().toISOString()}\n------------------\n\nPlease help me resolve this issue.\n\nThank you.`,
     );
     return (
       <div style={{ textAlign: 'center', padding: '32px 0', fontFamily: 'Outfit, sans-serif' }}>
@@ -36,7 +36,16 @@ function CollaboratorManager({ project }) {
         </p>
         <a
           href={`mailto:hello@cherrytree.app?subject=${subject}&body=${body}`}
-          style={{ display: 'inline-block', padding: '9px 20px', background: '#4B7263', color: '#fff', borderRadius: '6px', fontSize: '13px', fontWeight: 400, textDecoration: 'none' }}
+          style={{
+            display: 'inline-block',
+            padding: '9px 20px',
+            background: '#4B7263',
+            color: '#fff',
+            borderRadius: '6px',
+            fontSize: '13px',
+            fontWeight: 400,
+            textDecoration: 'none',
+          }}
         >
           Contact Support
         </a>
@@ -56,12 +65,21 @@ function CollaboratorManager({ project }) {
 
   const handleInvite = async (e) => {
     e.preventDefault();
-    setError(''); setSuccess(''); setInviting(true);
+    setError('');
+    setSuccess('');
+    setInviting(true);
     try {
       const sessionToken = await getToken({ template: 'firebase' });
       const createInvitation = httpsCallable(functions, 'createOrganizationInvitation');
-      await createInvitation({ sessionToken, emailAddress: email, organizationId: organization.id, role: 'org:member' });
-      setSuccess("An invitation has been sent if the email exists. Ask them to check their spam folder if they don't see it.");
+      await createInvitation({
+        sessionToken,
+        emailAddress: email,
+        organizationId: organization.id,
+        role: 'org:member',
+      });
+      setSuccess(
+        "An invitation has been sent if the email exists. Ask them to check their spam folder if they don't see it.",
+      );
       setEmail('');
       await memberships?.revalidate?.();
       await invitations?.revalidate?.();
@@ -91,7 +109,7 @@ function CollaboratorManager({ project }) {
   const handleRevokeInvitation = async (invitationId) => {
     setRevokingInvitationId(invitationId);
     try {
-      const invitation = invitations?.data?.find(inv => inv.id === invitationId);
+      const invitation = invitations?.data?.find((inv) => inv.id === invitationId);
       if (invitation) {
         await invitation.revoke();
         await invitations?.revalidate?.();
@@ -119,7 +137,16 @@ function CollaboratorManager({ project }) {
         <form onSubmit={handleInvite} style={{ marginBottom: '28px' }}>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
             <div style={{ flex: 1 }}>
-              <label style={{ fontSize: '11px', fontWeight: 500, color: '#999', letterSpacing: '0.04em', display: 'block', marginBottom: '4px' }}>
+              <label
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  color: '#999',
+                  letterSpacing: '0.04em',
+                  display: 'block',
+                  marginBottom: '4px',
+                }}
+              >
                 Email Address
               </label>
               <input
@@ -152,23 +179,53 @@ function CollaboratorManager({ project }) {
               {inviting ? 'Sending...' : 'Invite'}
             </button>
           </div>
-          {error && <p style={{ fontSize: '12px', color: '#b97070', marginTop: '8px', fontWeight: 300 }}>{error}</p>}
-          {success && <p style={{ fontSize: '12px', color: '#4B7263', marginTop: '8px', fontWeight: 300 }}>{success}</p>}
+          {error && (
+            <p style={{ fontSize: '12px', color: '#b97070', marginTop: '8px', fontWeight: 300 }}>
+              {error}
+            </p>
+          )}
+          {success && (
+            <p style={{ fontSize: '12px', color: '#4B7263', marginTop: '8px', fontWeight: 300 }}>
+              {success}
+            </p>
+          )}
         </form>
       )}
 
       {/* Members list */}
       {(memberships?.data?.length > 0 || (isAdmin && invitations?.data?.length > 0)) && (
         <div>
-          <div style={{ fontSize: '11px', fontWeight: 500, color: '#999', letterSpacing: '0.04em', marginBottom: '10px' }}>
+          <div
+            style={{
+              fontSize: '11px',
+              fontWeight: 500,
+              color: '#999',
+              letterSpacing: '0.04em',
+              marginBottom: '10px',
+            }}
+          >
             Members
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {memberships?.data?.map((m) => (
-              <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#E9E5DF', borderRadius: '5px' }}>
+              <div
+                key={m.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '10px 14px',
+                  background: '#E9E5DF',
+                  borderRadius: '5px',
+                }}
+              >
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 400, color: '#1a1a1a' }}>{m.publicUserData.identifier}</div>
-                  <div style={{ fontSize: '11px', fontWeight: 300, color: '#888', marginTop: '2px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 400, color: '#1a1a1a' }}>
+                    {m.publicUserData.identifier}
+                  </div>
+                  <div
+                    style={{ fontSize: '11px', fontWeight: 300, color: '#888', marginTop: '2px' }}
+                  >
                     <span style={{ textTransform: 'capitalize' }}>{formatRole(m.role)}</span>
                     <span style={{ margin: '0 5px' }}>·</span>
                     <span style={{ color: '#4B7263' }}>Active</span>
@@ -178,7 +235,20 @@ function CollaboratorManager({ project }) {
                   <button
                     onClick={() => handleRemoveMember(m.publicUserData.userId)}
                     disabled={removingUserId === m.publicUserData.userId || isEditWindowExpired}
-                    style={{ background: 'none', border: 'none', fontSize: '12px', fontWeight: 300, color: '#b97070', cursor: removingUserId === m.publicUserData.userId || isEditWindowExpired ? 'not-allowed' : 'pointer', opacity: removingUserId === m.publicUserData.userId || isEditWindowExpired ? 0.5 : 1, fontFamily: 'Outfit, sans-serif' }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      fontSize: '12px',
+                      fontWeight: 300,
+                      color: '#b97070',
+                      cursor:
+                        removingUserId === m.publicUserData.userId || isEditWindowExpired
+                          ? 'not-allowed'
+                          : 'pointer',
+                      opacity:
+                        removingUserId === m.publicUserData.userId || isEditWindowExpired ? 0.5 : 1,
+                      fontFamily: 'Outfit, sans-serif',
+                    }}
                   >
                     {removingUserId === m.publicUserData.userId ? 'Removing...' : 'Remove'}
                   </button>
@@ -186,25 +256,52 @@ function CollaboratorManager({ project }) {
               </div>
             ))}
 
-            {isAdmin && invitations?.data?.map((inv) => (
-              <div key={inv.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#E9E5DF', borderRadius: '5px' }}>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 400, color: '#1a1a1a' }}>{inv.emailAddress}</div>
-                  <div style={{ fontSize: '11px', fontWeight: 300, color: '#888', marginTop: '2px' }}>
-                    <span style={{ textTransform: 'capitalize' }}>{formatRole(inv.role)}</span>
-                    <span style={{ margin: '0 5px' }}>·</span>
-                    <span style={{ color: '#a08c3a' }}>Pending</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleRevokeInvitation(inv.id)}
-                  disabled={revokingInvitationId === inv.id || isEditWindowExpired}
-                  style={{ background: 'none', border: 'none', fontSize: '12px', fontWeight: 300, color: '#b97070', cursor: revokingInvitationId === inv.id || isEditWindowExpired ? 'not-allowed' : 'pointer', opacity: revokingInvitationId === inv.id || isEditWindowExpired ? 0.5 : 1, fontFamily: 'Outfit, sans-serif' }}
+            {isAdmin &&
+              invitations?.data?.map((inv) => (
+                <div
+                  key={inv.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '10px 14px',
+                    background: '#E9E5DF',
+                    borderRadius: '5px',
+                  }}
                 >
-                  {revokingInvitationId === inv.id ? 'Removing...' : 'Remove'}
-                </button>
-              </div>
-            ))}
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 400, color: '#1a1a1a' }}>
+                      {inv.emailAddress}
+                    </div>
+                    <div
+                      style={{ fontSize: '11px', fontWeight: 300, color: '#888', marginTop: '2px' }}
+                    >
+                      <span style={{ textTransform: 'capitalize' }}>{formatRole(inv.role)}</span>
+                      <span style={{ margin: '0 5px' }}>·</span>
+                      <span style={{ color: '#a08c3a' }}>Pending</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleRevokeInvitation(inv.id)}
+                    disabled={revokingInvitationId === inv.id || isEditWindowExpired}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      fontSize: '12px',
+                      fontWeight: 300,
+                      color: '#b97070',
+                      cursor:
+                        revokingInvitationId === inv.id || isEditWindowExpired
+                          ? 'not-allowed'
+                          : 'pointer',
+                      opacity: revokingInvitationId === inv.id || isEditWindowExpired ? 0.5 : 1,
+                      fontFamily: 'Outfit, sans-serif',
+                    }}
+                  >
+                    {revokingInvitationId === inv.id ? 'Removing...' : 'Remove'}
+                  </button>
+                </div>
+              ))}
           </div>
         </div>
       )}

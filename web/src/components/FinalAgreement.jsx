@@ -98,7 +98,9 @@ function FinalAgreement({ projectId, allProjects = [], onProjectSwitch, onEdit, 
               ) : (
                 <div className="flex flex-col items-center justify-center py-24 bg-gray-50 rounded">
                   <p className="text-gray-900 font-medium">No final agreement available yet</p>
-                  <p className="text-sm text-gray-500 mt-2">Submit your agreement from the Review and Approve page</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Submit your agreement from the Review and Approve page
+                  </p>
                 </div>
               )}
             </div>

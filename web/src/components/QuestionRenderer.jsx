@@ -49,40 +49,44 @@ function QuestionRenderer({
     description,
     otherField,
     acknowledgmentText,
-    clearsFields
+    clearsFields,
   } = config;
 
   const value = formData[fieldName];
   const otherValue = otherField ? formData[otherField] : null;
 
   // Check if field is invalid for validation display
-  const isInvalid = showValidation && required && (() => {
-    if (type === 'checkbox') {
-      if (!value || value.length === 0) return true;
-      // Check if "Other" is selected but otherField is empty
-      if (value.includes('Other') && otherField && (!otherValue || otherValue.trim() === '')) {
-        return true;
+  const isInvalid =
+    showValidation &&
+    required &&
+    (() => {
+      if (type === 'checkbox') {
+        if (!value || value.length === 0) return true;
+        // Check if "Other" is selected but otherField is empty
+        if (value.includes('Other') && otherField && (!otherValue || otherValue.trim() === '')) {
+          return true;
+        }
+        return false;
       }
-      return false;
-    }
-    if (type === 'acknowledgment') {
-      // Check if all collaborators have acknowledged
-      return !(collaboratorIds.length > 0 && collaboratorIds.every(userId => value?.[userId]));
-    }
-    // For fields with "Other" option
-    if (value === 'Other' && otherField) {
-      return !otherValue || otherValue.trim() === '';
-    }
-    return !value;
-  })();
+      if (type === 'acknowledgment') {
+        // Check if all collaborators have acknowledged
+        return !(collaboratorIds.length > 0 && collaboratorIds.every((userId) => value?.[userId]));
+      }
+      // For fields with "Other" option
+      if (value === 'Other' && otherField) {
+        return !otherValue || otherValue.trim() === '';
+      }
+      return !value;
+    })();
 
   // Render label
-  const renderLabel = () => hideLabel ? null : (
-    <label className="block text-base font-medium text-gray-900 mb-2">
-      {question}
-      {isInvalid && <span className="text-red-700 ml-0.5">*</span>}
-    </label>
-  );
+  const renderLabel = () =>
+    hideLabel ? null : (
+      <label className="block text-base font-medium text-gray-900 mb-2">
+        {question}
+        {isInvalid && <span className="text-red-700 ml-0.5">*</span>}
+      </label>
+    );
 
   // TEXT INPUT
   if (type === 'text' || type === 'number' || type === 'date') {
@@ -132,7 +136,11 @@ function QuestionRenderer({
             const optionDescription = typeof option === 'object' ? option.description : null;
 
             return (
-              <label key={optionValue} className="card-radio-option" style={{ alignItems: optionDescription ? 'flex-start' : 'center' }}>
+              <label
+                key={optionValue}
+                className="card-radio-option"
+                style={{ alignItems: optionDescription ? 'flex-start' : 'center' }}
+              >
                 <input
                   type="radio"
                   name={fieldName}
@@ -147,7 +155,9 @@ function QuestionRenderer({
                         if (newValue === clearsFields.value) {
                           clearsFields.fields.forEach(({ field, type }) => {
                             if (type === 'acknowledgment') {
-                              const init = Object.fromEntries(collaboratorIds.map(id => [id, false]));
+                              const init = Object.fromEntries(
+                                collaboratorIds.map((id) => [id, false]),
+                              );
                               handleChange(field, init);
                             }
                           });
@@ -160,10 +170,24 @@ function QuestionRenderer({
                   onChange={() => {}}
                   disabled={isReadOnly}
                 />
-                <span className="radio-circle" style={{ marginTop: optionDescription ? '2px' : '0' }} />
+                <span
+                  className="radio-circle"
+                  style={{ marginTop: optionDescription ? '2px' : '0' }}
+                />
                 <div>
                   <span>{optionLabel}</span>
-                  {optionDescription && <p style={{ fontSize: '11.5px', fontWeight: 300, color: '#aaa', marginTop: '2px' }}>{optionDescription}</p>}
+                  {optionDescription && (
+                    <p
+                      style={{
+                        fontSize: '11.5px',
+                        fontWeight: 300,
+                        color: '#aaa',
+                        marginTop: '2px',
+                      }}
+                    >
+                      {optionDescription}
+                    </p>
+                  )}
                 </div>
               </label>
             );
@@ -171,7 +195,14 @@ function QuestionRenderer({
         </div>
 
         {value === 'Other' && otherField && (
-          <input type="text" value={otherValue || ''} onChange={(e) => handleChange(otherField, e.target.value)} disabled={isReadOnly} placeholder="Please specify" style={{ marginTop: '8px' }} />
+          <input
+            type="text"
+            value={otherValue || ''}
+            onChange={(e) => handleChange(otherField, e.target.value)}
+            disabled={isReadOnly}
+            placeholder="Please specify"
+            style={{ marginTop: '8px' }}
+          />
         )}
 
         {description && <p className="text-sm text-gray-500 mt-2">{description}</p>}
@@ -195,10 +226,13 @@ function QuestionRenderer({
                 onChange={(e) => {
                   const unsorted = e.target.checked
                     ? [...selectedValues, option]
-                    : selectedValues.filter(v => v !== option);
-                  const newValues = unsorted.sort((a, b) => options.indexOf(a) - options.indexOf(b));
+                    : selectedValues.filter((v) => v !== option);
+                  const newValues = unsorted.sort(
+                    (a, b) => options.indexOf(a) - options.indexOf(b),
+                  );
                   handleChange(fieldName, newValues);
-                  if (otherField && option === 'Other' && !e.target.checked) handleChange(otherField, '');
+                  if (otherField && option === 'Other' && !e.target.checked)
+                    handleChange(otherField, '');
                 }}
                 disabled={isReadOnly}
               />
@@ -209,7 +243,14 @@ function QuestionRenderer({
         </div>
 
         {selectedValues.includes('Other') && otherField && (
-          <input type="text" value={otherValue || ''} onChange={(e) => handleChange(otherField, e.target.value)} disabled={isReadOnly} placeholder="Please specify" style={{ marginTop: '8px' }} />
+          <input
+            type="text"
+            value={otherValue || ''}
+            onChange={(e) => handleChange(otherField, e.target.value)}
+            disabled={isReadOnly}
+            placeholder="Please specify"
+            style={{ marginTop: '8px' }}
+          />
         )}
 
         {description && <p className="text-sm text-gray-500 mt-2">{description}</p>}
@@ -260,12 +301,11 @@ function QuestionRenderer({
     // already shown as this card's title, so only render this paragraph when
     // acknowledgmentText adds something beyond that (e.g. a filled-in detail) -
     // otherwise it would just repeat the title verbatim.
-    const displayText = typeof acknowledgmentText === 'function'
-      ? acknowledgmentText(formData)
-      : acknowledgmentText;
+    const displayText =
+      typeof acknowledgmentText === 'function' ? acknowledgmentText(formData) : acknowledgmentText;
 
     return (
-      <div className={config.conditionalOn ? "conditional-section" : ""}>
+      <div className={config.conditionalOn ? 'conditional-section' : ''}>
         {isInvalid && <span className="text-red-700 text-xs">* Required</span>}
         {displayText && <p className="text-gray-700 mt-2 mb-2">{displayText}</p>}
         <div className="space-y-2 mt-3 pl-4">

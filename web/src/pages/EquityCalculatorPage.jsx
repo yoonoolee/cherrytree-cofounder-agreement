@@ -11,11 +11,9 @@ function EquityCalculatorPage() {
   // SEO meta tags
   usePageMeta({
     title: 'Free Equity Calculator - Cherrytree | Fair Cofounder Equity Split Tool',
-    description: 'Calculate fair equity splits for your startup cofounders. Free interactive tool to determine cofounder equity percentages based on contributions, risk, and commitment.',
-    breadcrumbs: [
-      { name: 'Home', url: '/' },
-      { name: 'Equity Calculator' }
-    ]
+    description:
+      'Calculate fair equity splits for your startup cofounders. Free interactive tool to determine cofounder equity percentages based on contributions, risk, and commitment.',
+    breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'Equity Calculator' }],
   });
 
   const [numCofounders, setNumCofounders] = useState(2);
@@ -87,7 +85,7 @@ function EquityCalculatorPage() {
       'Role Scalability',
       'Opportunity Cost',
       'Risk Tolerance',
-      'Idea Origination'
+      'Idea Origination',
     ];
 
     return rows.map((rowLabel, index) => {
@@ -99,8 +97,8 @@ function EquityCalculatorPage() {
           ...Array.from({ length: numCofounders }, (_, i) => ({
             value: getCofounderDisplayName(i),
             readOnly: true,
-            className: 'header-cell'
-          }))
+            className: 'header-cell',
+          })),
         ];
       }
 
@@ -109,7 +107,11 @@ function EquityCalculatorPage() {
         return [
           { value: rowLabel, readOnly: true, className: 'category-cell separator-cell' },
           { value: '', readOnly: true, className: 'separator-cell' },
-          ...Array.from({ length: numCofounders }, () => ({ value: '', readOnly: true, className: 'separator-cell' }))
+          ...Array.from({ length: numCofounders }, () => ({
+            value: '',
+            readOnly: true,
+            className: 'separator-cell',
+          })),
         ];
       }
 
@@ -117,7 +119,7 @@ function EquityCalculatorPage() {
       return [
         { value: rowLabel, readOnly: true, className: 'category-cell' },
         { value: 0 },
-        ...Array.from({ length: numCofounders }, () => ({ value: 0 }))
+        ...Array.from({ length: numCofounders }, () => ({ value: 0 })),
       ];
     });
   };
@@ -144,13 +146,16 @@ function EquityCalculatorPage() {
         }
 
         const categoryName = row[0]?.value;
-        const isSeparatorRow = categoryName === 'Input' || categoryName === 'Execution' || categoryName === 'Intangibles';
+        const isSeparatorRow =
+          categoryName === 'Input' ||
+          categoryName === 'Execution' ||
+          categoryName === 'Intangibles';
 
         if (colIndex === 0) {
           return {
             ...cell,
             readOnly: true,
-            className: isSeparatorRow ? 'category-cell separator-cell' : 'category-cell'
+            className: isSeparatorRow ? 'category-cell separator-cell' : 'category-cell',
           };
         }
 
@@ -181,10 +186,9 @@ function EquityCalculatorPage() {
     setData(preservedData);
   };
 
-
   // Handle cofounder name change
   const handleNameChange = (index, name) => {
-    setCofounderNames(prev => {
+    setCofounderNames((prev) => {
       const newNames = [...prev];
       newNames[index] = name;
       return newNames;
@@ -205,7 +209,7 @@ function EquityCalculatorPage() {
           bubbles: true,
           cancelable: true,
           clientX: e.clientX,
-          clientY: e.clientY
+          clientY: e.clientY,
         });
         cell.dispatchEvent(dblClickEvent);
       }
@@ -238,7 +242,10 @@ function EquityCalculatorPage() {
 
     return (
       <div className="w-full">
-        <div className="w-full h-7 bg-gray-200 rounded-lg flex relative overflow-hidden" style={{ border: '1px solid #000000' }}>
+        <div
+          className="w-full h-7 bg-gray-200 rounded-lg flex relative overflow-hidden"
+          style={{ border: '1px solid #000000' }}
+        >
           {equity.map((percentage, index) => {
             if (percentage === 0) return null;
             return (
@@ -247,7 +254,7 @@ function EquityCalculatorPage() {
                 className="transition-all duration-300 flex items-center justify-center relative"
                 style={{
                   width: `${percentage}%`,
-                  backgroundColor: colors[index]
+                  backgroundColor: colors[index],
                 }}
               >
                 <span
@@ -258,7 +265,7 @@ function EquityCalculatorPage() {
                     paddingRight: percentage >= 10 ? '0.25rem' : '0.125rem',
                     color: index < Math.ceil(numCof / 2) ? '#FFFFFF' : '#000000',
                     position: 'relative',
-                    zIndex: 1
+                    zIndex: 1,
                   }}
                 >
                   {percentage.toFixed(2)}%
@@ -275,9 +282,7 @@ function EquityCalculatorPage() {
                 className="w-3 h-3 rounded-sm"
                 style={{ backgroundColor: colors[index], border: '1px solid #000000' }}
               />
-              <span className="text-sm text-gray-700">
-                {getCofounderDisplayName(index)}
-              </span>
+              <span className="text-sm text-gray-700">{getCofounderDisplayName(index)}</span>
             </div>
           ))}
         </div>
@@ -294,8 +299,15 @@ function EquityCalculatorPage() {
         <div className="lp-eq-wrap">
           <div className="lp-eq-card">
             <div className="lp-eq-hero">
-              <h1 className="lp-page-h1" style={{ fontSize: 'clamp(32px,5vw,48px)', marginBottom: 10 }}>Equity Calculator.</h1>
-              <p className="lp-page-sub">Determine a fair split based on each cofounder's contributions.</p>
+              <h1
+                className="lp-page-h1"
+                style={{ fontSize: 'clamp(32px,5vw,48px)', marginBottom: 10 }}
+              >
+                Equity Calculator.
+              </h1>
+              <p className="lp-page-sub">
+                Determine a fair split based on each cofounder's contributions.
+              </p>
             </div>
 
             {!showCalculator ? (
@@ -323,13 +335,23 @@ function EquityCalculatorPage() {
                           <button
                             type="button"
                             onClick={() => {
-                              setNumCofounders(prev => prev - 1);
-                              setCofounderNames(prev => prev.filter((_, idx) => idx !== i));
+                              setNumCofounders((prev) => prev - 1);
+                              setCofounderNames((prev) => prev.filter((_, idx) => idx !== i));
                             }}
                             className="lp-eq-remove-btn"
                           >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
                             </svg>
                           </button>
                         )}
@@ -342,13 +364,23 @@ function EquityCalculatorPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        setNumCofounders(prev => prev + 1);
-                        setCofounderNames(prev => [...prev, '']);
+                        setNumCofounders((prev) => prev + 1);
+                        setCofounderNames((prev) => [...prev, '']);
                       }}
                       className="lp-btn-ghost lp-eq-add-btn"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
                       </svg>
                       Add cofounder
                     </button>
@@ -356,23 +388,39 @@ function EquityCalculatorPage() {
                 </div>
 
                 {/* Start button */}
-                <button type="submit" className="button-shimmer lp-btn-primary" style={{ width: '100%', textAlign: 'center' }}>
+                <button
+                  type="submit"
+                  className="button-shimmer lp-btn-primary"
+                  style={{ width: '100%', textAlign: 'center' }}
+                >
                   Start Calculator
                 </button>
               </form>
             ) : (
               <div>
                 {/* Back button */}
-                <button onClick={() => setShowCalculator(false)} className="lp-btn-ghost lp-eq-back-btn">
+                <button
+                  onClick={() => setShowCalculator(false)}
+                  className="lp-btn-ghost lp-eq-back-btn"
+                >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
                   </svg>
                   Back to setup
                 </button>
 
                 {/* Instructions */}
                 <div className="lp-eq-instructions">
-                  <p><strong>How to use:</strong> Rate the importance of each category (0-100), then score each cofounder (0-100) on how much they contribute to that category. The calculator will determine equity based on weighted contributions.</p>
+                  <p>
+                    <strong>How to use:</strong> Rate the importance of each category (0-100), then
+                    score each cofounder (0-100) on how much they contribute to that category. The
+                    calculator will determine equity based on weighted contributions.
+                  </p>
                 </div>
 
                 {/* Spreadsheet */}
@@ -383,7 +431,7 @@ function EquityCalculatorPage() {
                     style={{
                       overflowX: 'auto',
                       overflowY: 'visible',
-                      position: 'relative'
+                      position: 'relative',
                     }}
                   >
                     <Spreadsheet
@@ -424,16 +472,32 @@ function EquityCalculatorPage() {
                           }}
                           className="lp-eq-modal-close"
                         >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
                           </svg>
                         </button>
                       </div>
                       <p className="lp-eq-modal-desc">
-                        Share this link with your cofounder and see if your answers match. Only 2% get the exact same results.
+                        Share this link with your cofounder and see if your answers match. Only 2%
+                        get the exact same results.
                       </p>
                       <div className="lp-eq-modal-row">
-                        <input type="text" readOnly value={window.location.href} className="lp-eq-modal-input" />
+                        <input
+                          type="text"
+                          readOnly
+                          value={window.location.href}
+                          className="lp-eq-modal-input"
+                        />
                         <button
                           onClick={() => {
                             navigator.clipboard.writeText(window.location.href);
@@ -443,8 +507,18 @@ function EquityCalculatorPage() {
                           style={{ padding: '10px 18px', fontSize: 13 }}
                         >
                           {linkCopied ? (
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                           ) : (
                             'Copy'

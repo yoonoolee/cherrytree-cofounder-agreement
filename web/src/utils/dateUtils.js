@@ -53,6 +53,6 @@ export function formatDeadline(editDeadline) {
   return deadline.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   });
 }

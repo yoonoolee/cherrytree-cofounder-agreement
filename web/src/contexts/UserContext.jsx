@@ -22,7 +22,7 @@ export const UserProvider = ({ children }) => {
     userMemberships,
     organizationList,
     setActive,
-    isLoaded: orgsLoaded
+    isLoaded: orgsLoaded,
   } = useOrganizationList({ userMemberships: { infinite: true } });
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -69,18 +69,22 @@ export const UserProvider = ({ children }) => {
     if (isLoaded && firebaseAuthReady && clerkUser) {
       // Listen to Firestore user document in real-time
       const userRef = doc(db, 'users', clerkUser.id);
-      unsubscribeFirestore = onSnapshot(userRef, (docSnap) => {
-        if (docSnap.exists()) {
-          setUserProfile(docSnap.data());
-        } else {
+      unsubscribeFirestore = onSnapshot(
+        userRef,
+        (docSnap) => {
+          if (docSnap.exists()) {
+            setUserProfile(docSnap.data());
+          } else {
+            setUserProfile(null);
+          }
+          setLoading(false);
+        },
+        (error) => {
+          console.error('Error fetching user profile:', error);
           setUserProfile(null);
-        }
-        setLoading(false);
-      }, (error) => {
-        console.error('Error fetching user profile:', error);
-        setUserProfile(null);
-        setLoading(false);
-      });
+          setLoading(false);
+        },
+      );
     } else if (isLoaded && !clerkUser) {
       setUserProfile(null);
       setLoading(false);
@@ -100,17 +104,16 @@ export const UserProvider = ({ children }) => {
     currentUser: clerkUser,
     userProfile,
     loading: !isAuthReady || loading,
-    displayName: [userProfile?.firstName, userProfile?.lastName].filter(Boolean).join(' ') || clerkUser?.primaryEmailAddress?.emailAddress?.split('@')[0] || 'User',
+    displayName:
+      [userProfile?.firstName, userProfile?.lastName].filter(Boolean).join(' ') ||
+      clerkUser?.primaryEmailAddress?.emailAddress?.split('@')[0] ||
+      'User',
     // Organization data (fetched once, shared everywhere)
     userMemberships,
     organizationList,
     setActive,
-    orgsLoaded
+    orgsLoaded,
   };
 
-  return (
-    <UserContext.Provider value={value}>
-      {children}
-    </UserContext.Provider>
-  );
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };

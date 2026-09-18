@@ -10,10 +10,7 @@ function SignUpPage() {
   usePageMeta({
     title: 'Sign Up | Cherrytree',
     description: 'Create your Cherrytree account to start building your cofounder agreement.',
-    breadcrumbs: [
-      { name: 'Home', url: '/' },
-      { name: 'Sign Up' }
-    ]
+    breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'Sign Up' }],
   });
 
   // Preserve ticket when switching to login
@@ -29,8 +26,8 @@ function SignUpPage() {
           appearance={{
             elements: {
               rootBox: 'mx-auto',
-              card: 'shadow-lg'
-            }
+              card: 'shadow-lg',
+            },
           }}
         />
       </div>

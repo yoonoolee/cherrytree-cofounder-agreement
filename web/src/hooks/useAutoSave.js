@@ -25,78 +25,84 @@ export function useAutoSave(projectId, project, currentUser) {
    * Save form data to Firestore
    * Keeps "Other" fields separate - merging happens only in cloud functions for PDF generation
    */
-  const saveFormData = useCallback(async (dataToSave) => {
-    if (!project) return;
+  const saveFormData = useCallback(
+    async (dataToSave) => {
+      if (!project) return;
 
-    isSavingRef.current = true;
-    setSaveStatus('saving');
+      isSavingRef.current = true;
+      setSaveStatus('saving');
 
-    try {
-      const projectRef = doc(db, 'projects', projectId);
+      try {
+        const projectRef = doc(db, 'projects', projectId);
 
-      // Check if there are actual changes
-      const oldData = project.surveyData || {};
-      const changedFields = Object.keys(dataToSave).filter(key => {
-        return JSON.stringify(oldData[key]) !== JSON.stringify(dataToSave[key]);
-      });
+        // Check if there are actual changes
+        const oldData = project.surveyData || {};
+        const changedFields = Object.keys(dataToSave).filter((key) => {
+          return JSON.stringify(oldData[key]) !== JSON.stringify(dataToSave[key]);
+        });
 
-      const updateData = {
-        surveyData: dataToSave,
-        lastUpdated: serverTimestamp(),
-        lastEditedBy: currentUser?.primaryEmailAddress?.emailAddress
-      };
+        const updateData = {
+          surveyData: dataToSave,
+          lastUpdated: serverTimestamp(),
+          lastEditedBy: currentUser?.primaryEmailAddress?.emailAddress,
+        };
 
-      // Reset approvals if there are actual changes
-      if (changedFields.length > 0) {
-        updateData.approvals = {};
+        // Reset approvals if there are actual changes
+        if (changedFields.length > 0) {
+          updateData.approvals = {};
+        }
+
+        await updateDoc(projectRef, updateData);
+
+        setSaveStatus('saved');
+        setLastSaved(new Date());
+      } catch (error) {
+        console.error('Error saving:', error);
+        setSaveStatus('error');
+      } finally {
+        setTimeout(() => {
+          isSavingRef.current = false;
+        }, SAVE_COMPLETION_DELAY_MS);
       }
-
-      await updateDoc(projectRef, updateData);
-
-      setSaveStatus('saved');
-      setLastSaved(new Date());
-    } catch (error) {
-      console.error('Error saving:', error);
-      setSaveStatus('error');
-    } finally {
-      setTimeout(() => {
-        isSavingRef.current = false;
-      }, SAVE_COMPLETION_DELAY_MS);
-    }
-  }, [project, projectId, currentUser]);
+    },
+    [project, projectId, currentUser],
+  );
 
   /**
    * Handle form field changes with debounced auto-save
    * @param {function} setFormData - Form data setter
    */
-  const createChangeHandler = useCallback((setFormData) => {
-    return (field, value) => {
-      setFormData(prevFormData => {
-        const newFormData = {
-          ...prevFormData,
-          [field]: value
-        };
+  const createChangeHandler = useCallback(
+    (setFormData) => {
+      return (field, value) => {
+        setFormData((prevFormData) => {
+          const newFormData = {
+            ...prevFormData,
+            [field]: value,
+          };
 
-        setSaveStatus('saving');
+          setSaveStatus('saving');
 
-        if (saveTimeoutRef.current) {
-          clearTimeout(saveTimeoutRef.current);
-        }
+          if (saveTimeoutRef.current) {
+            clearTimeout(saveTimeoutRef.current);
+          }
 
-        saveTimeoutRef.current = setTimeout(() => {
-          saveFormData(newFormData);
-        }, AUTO_SAVE_DELAY_MS);
+          saveTimeoutRef.current = setTimeout(() => {
+            saveFormData(newFormData);
+          }, AUTO_SAVE_DELAY_MS);
 
-        return newFormData;
-      });
-    };
-  }, [saveFormData]);
+          return newFormData;
+        });
+      };
+    },
+    [saveFormData],
+  );
 
   return {
     saveStatus,
     lastSaved,
     saveFormData,
     createChangeHandler,
-    isSavingRef
+    isSavingRef,
   };
 }

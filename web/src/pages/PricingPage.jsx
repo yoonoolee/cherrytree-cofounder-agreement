@@ -7,22 +7,49 @@ import MarketingGrain from '../components/MarketingGrain';
 
 const PLANS = [
   {
-    tier: 'Bootstrapped', price: '$200', period: 'One-time payment',
+    tier: 'Bootstrapped',
+    price: '$200',
+    period: 'One-time payment',
     desc: 'Ideal for early-stage or bootstrapped teams that need to move fast and start building now.',
-    features: ['Expert-designed survey', 'Comprehensive agreements', 'Proprietary equity calculator', 'Best practices and tips', 'Up to 5 collaborators'],
-    cta: 'Get started', featured: false,
+    features: [
+      'Expert-designed survey',
+      'Comprehensive agreements',
+      'Proprietary equity calculator',
+      'Best practices and tips',
+      'Up to 5 collaborators',
+    ],
+    cta: 'Get started',
+    featured: false,
   },
   {
-    tier: 'Scale', price: '$2,000', period: 'One-time payment', badge: 'Most popular',
+    tier: 'Scale',
+    price: '$2,000',
+    period: 'One-time payment',
+    badge: 'Most popular',
     desc: 'Built for funded teams that need deeper control, greater detail, and stronger foundations.',
-    features: ['Everything in Bootstrapped', 'Final attorney review', 'Personalized onboarding', 'Cofounder coaching', 'Priority support'],
-    cta: 'Get started', featured: true,
+    features: [
+      'Everything in Bootstrapped',
+      'Final attorney review',
+      'Personalized onboarding',
+      'Cofounder coaching',
+      'Priority support',
+    ],
+    cta: 'Get started',
+    featured: true,
   },
   {
-    tier: 'Enterprise', price: 'Custom', period: 'Contact for volume pricing',
-    desc: 'Running a fund or accelerator and want to deploy in bulk? We\'ll set you up.',
-    features: ['Everything in Scale, for your cohort', 'Cohort dashboard and progress tracking', 'Branded experience for your program', 'Dedicated account support'],
-    cta: 'Contact sales', enterprise: true,
+    tier: 'Enterprise',
+    price: 'Custom',
+    period: 'Contact for volume pricing',
+    desc: "Running a fund or accelerator and want to deploy in bulk? We'll set you up.",
+    features: [
+      'Everything in Scale, for your cohort',
+      'Cohort dashboard and progress tracking',
+      'Branded experience for your program',
+      'Dedicated account support',
+    ],
+    cta: 'Contact sales',
+    enterprise: true,
   },
 ];
 
@@ -43,11 +70,26 @@ const COMPARE_ROWS = [
 ];
 
 const FAQS = [
-  { q: 'Which plan is right for me?', a: "If your cofoundership is fairly simple, get the Bootstrapped plan. You fill out a survey and receive a ready-to-use cofounder agreement. If your cofoundership is more complex, or if you want extra peace of mind, get Scale — you'll get an attorney review and a cofounder coach." },
-  { q: 'Is the price per agreement or per person?', a: "The price covers one agreement. You can add as many cofounders as you want, even on the Bootstrapped plan. Only one person pays; they invite everyone else. A new company later needs a separate purchase." },
-  { q: 'Do you offer discounts?', a: "If you're currently a student, reach out to tim@cherrytree.app with your .edu email and we'll get you a discount." },
-  { q: 'Can we upgrade anytime?', a: "Yes. If you start with Bootstrapped but realize you want an attorney review, you can upgrade to Scale at any time." },
-  { q: 'Do we pay again to edit later?', a: "No, edit all you want. The only repeat cost is if you create a brand-new agreement for a different company." },
+  {
+    q: 'Which plan is right for me?',
+    a: "If your cofoundership is fairly simple, get the Bootstrapped plan. You fill out a survey and receive a ready-to-use cofounder agreement. If your cofoundership is more complex, or if you want extra peace of mind, get Scale — you'll get an attorney review and a cofounder coach.",
+  },
+  {
+    q: 'Is the price per agreement or per person?',
+    a: 'The price covers one agreement. You can add as many cofounders as you want, even on the Bootstrapped plan. Only one person pays; they invite everyone else. A new company later needs a separate purchase.',
+  },
+  {
+    q: 'Do you offer discounts?',
+    a: "If you're currently a student, reach out to tim@cherrytree.app with your .edu email and we'll get you a discount.",
+  },
+  {
+    q: 'Can we upgrade anytime?',
+    a: 'Yes. If you start with Bootstrapped but realize you want an attorney review, you can upgrade to Scale at any time.',
+  },
+  {
+    q: 'Do we pay again to edit later?',
+    a: 'No, edit all you want. The only repeat cost is if you create a brand-new agreement for a different company.',
+  },
 ];
 
 function Check({ on }) {
@@ -64,37 +106,57 @@ function PricingPage() {
 
   usePageMeta({
     title: 'Pricing — Cherrytree',
-    description: 'Affordable cofounder agreement pricing. Bootstrapped at $200, Scale at $2,000, Enterprise custom.',
+    description:
+      'Affordable cofounder agreement pricing. Bootstrapped at $200, Scale at $2,000, Enterprise custom.',
     breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'Pricing' }],
   });
 
   useEffect(() => {
     const faqSchema = {
-      '@context': 'https://schema.org', '@type': 'FAQPage',
-      mainEntity: FAQS.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: FAQS.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
     };
     const s = document.createElement('script');
-    s.type = 'application/ld+json'; s.text = JSON.stringify(faqSchema); s.id = 'faq-schema';
+    s.type = 'application/ld+json';
+    s.text = JSON.stringify(faqSchema);
+    s.id = 'faq-schema';
     document.head.appendChild(s);
-    return () => { const el = document.getElementById('faq-schema'); if (el) document.head.removeChild(el); };
+    return () => {
+      const el = document.getElementById('faq-schema');
+      if (el) document.head.removeChild(el);
+    };
   }, []);
 
   // Protect CTA: types "and your peace of mind." on an infinite loop — type out,
   // hold, clear, and after a slight pause type it out again.
   useEffect(() => {
     const target = 'and your peace of mind.';
-    const t = (fn, ms) => { const id = setTimeout(fn, ms); protectTimersRef.current.push(id); };
+    const t = (fn, ms) => {
+      const id = setTimeout(fn, ms);
+      protectTimersRef.current.push(id);
+    };
     const cycle = () => {
       setTypedProtect('');
       let i = 0;
       const typeTick = () => {
-        if (i < target.length) { i++; setTypedProtect(target.slice(0, i)); t(typeTick, 46); }
-        else t(cycle, 2200);
+        if (i < target.length) {
+          i++;
+          setTypedProtect(target.slice(0, i));
+          t(typeTick, 46);
+        } else t(cycle, 2200);
       };
       t(typeTick, 46);
     };
     t(cycle, 600);
-    return () => { protectTimersRef.current.forEach(clearTimeout); protectTimersRef.current = []; };
+    return () => {
+      protectTimersRef.current.forEach(clearTimeout);
+      protectTimersRef.current = [];
+    };
   }, []);
 
   const goToDashboard = () => {
@@ -130,27 +192,48 @@ function PricingPage() {
       <section className="lp-pricing-pg-hero">
         <div className="lp-overline">Pricing</div>
         <h1 className="lp-pricing-pg-h1">Founder-friendly pricing.</h1>
-        <p className="lp-pricing-pg-sub">Choose the plan that's right for your team. No subscriptions, no surprises.</p>
+        <p className="lp-pricing-pg-sub">
+          Choose the plan that's right for your team. No subscriptions, no surprises.
+        </p>
       </section>
 
       {/* Cards */}
       <section className="lp-pricing-pg-cards-wrap">
         <div className="lp-pricing-grid">
           {PLANS.map((p, i) => (
-            <div key={i} ref={el => pricingCardRefs.current[i] = el} className={`lp-pricing-card${p.featured ? ' featured' : ''}`}>
+            <div
+              key={i}
+              ref={(el) => (pricingCardRefs.current[i] = el)}
+              className={`lp-pricing-card${p.featured ? ' featured' : ''}`}
+            >
               {p.badge && <div className="lp-pricing-badge">{p.badge}</div>}
               <div className="lp-pricing-tier">{p.tier}</div>
               <div className="lp-pricing-price">
-                {p.price.startsWith('$') ? <><span>$</span>{p.price.slice(1)}</> : p.price}
+                {p.price.startsWith('$') ? (
+                  <>
+                    <span>$</span>
+                    {p.price.slice(1)}
+                  </>
+                ) : (
+                  p.price
+                )}
               </div>
               <div className="lp-pricing-period">{p.period}</div>
-              <div className="lp-pricing-divider"/>
+              <div className="lp-pricing-divider" />
               <p className="lp-pricing-desc">{p.desc}</p>
               <ul className="lp-pricing-features">
                 {p.features.map((f, j) => (
                   <li key={j} className="lp-pricing-feat">
                     <span className="lp-pf-check">
-                      <svg viewBox="0 0 8 8" fill="none"><path d="M1.5 4l2 2 3-3" stroke={p.featured ? '#6a9e8a' : '#4B7263'} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      <svg viewBox="0 0 8 8" fill="none">
+                        <path
+                          d="M1.5 4l2 2 3-3"
+                          stroke={p.featured ? '#6a9e8a' : '#4B7263'}
+                          strokeWidth="1.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
                     </span>
                     {f}
                   </li>
@@ -158,7 +241,11 @@ function PricingPage() {
               </ul>
               <button
                 className={`lp-pricing-cta ${p.featured ? 'filled' : p.enterprise ? 'solid' : 'outline'}`}
-                onClick={() => p.enterprise ? window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 }) : goToDashboard()}
+                onClick={() =>
+                  p.enterprise
+                    ? window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })
+                    : goToDashboard()
+                }
               >
                 {p.cta}
               </button>
@@ -171,7 +258,10 @@ function PricingPage() {
       <section className="lp-pricing-pg-compare">
         <div className="lp-pricing-pg-compare-inner">
           <h2 className="lp-pricing-pg-compare-title">Compare plans</h2>
-          <p className="lp-pricing-pg-compare-sub">Each plan covers one cofounder agreement. Fill out the survey and equity calculator to get a ready-to-use agreement.</p>
+          <p className="lp-pricing-pg-compare-sub">
+            Each plan covers one cofounder agreement. Fill out the survey and equity calculator to
+            get a ready-to-use agreement.
+          </p>
           <table className="lp-pricing-pg-table">
             <thead>
               <tr>
@@ -185,9 +275,15 @@ function PricingPage() {
               {COMPARE_ROWS.map((row, ri) => (
                 <tr key={ri} className="lp-ppt-row">
                   <td className="lp-ppt-label">{row.label}</td>
-                  <td><Check on={row.b}/></td>
-                  <td><Check on={row.s}/></td>
-                  <td><Check on={row.e}/></td>
+                  <td>
+                    <Check on={row.b} />
+                  </td>
+                  <td>
+                    <Check on={row.s} />
+                  </td>
+                  <td>
+                    <Check on={row.e} />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -210,13 +306,18 @@ function PricingPage() {
                   key={i}
                   className="lp-faq-item"
                   onMouseEnter={() => setHoveredFaq(i)}
-                  onMouseLeave={() => setHoveredFaq(prev => (prev === i ? null : prev))}
+                  onMouseLeave={() => setHoveredFaq((prev) => (prev === i ? null : prev))}
                 >
-                  <button className="lp-faq-btn" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                  <button
+                    className="lp-faq-btn"
+                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  >
                     <span className="lp-faq-q">{f.q}</span>
                   </button>
                   <div className={`lp-faq-body${expanded ? ' open' : ''}`}>
-                    <div className="lp-faq-body-inner"><p className="lp-faq-a">{f.a}</p></div>
+                    <div className="lp-faq-body-inner">
+                      <p className="lp-faq-a">{f.a}</p>
+                    </div>
                   </div>
                 </div>
               );
@@ -228,12 +329,25 @@ function PricingPage() {
       {/* Bottom CTA */}
       <section className="lp-protect-cta">
         <h2>
-          Protect your piece of the pie<br/>
-          <em>{typedProtect}<span className="lp-cursor"/></em>
+          Protect your piece of the pie
+          <br />
+          <em>
+            {typedProtect}
+            <span className="lp-cursor" />
+          </em>
         </h2>
         <div className="lp-protect-cta-actions">
-          <button className="lp-btn-primary" onClick={goToDashboard}>Get started</button>
-          <a className="lp-btn-ghost" href="https://cal.com/tim-he/15min" target="_blank" rel="noopener noreferrer">Book a demo →</a>
+          <button className="lp-btn-primary" onClick={goToDashboard}>
+            Get started
+          </button>
+          <a
+            className="lp-btn-ghost"
+            href="https://cal.com/tim-he/15min"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Book a demo →
+          </a>
         </div>
       </section>
 

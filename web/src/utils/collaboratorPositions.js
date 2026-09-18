@@ -20,15 +20,15 @@ export function getSortedCollaboratorIds(collaboratorsMap) {
   return Object.entries(collaboratorsMap)
     .filter(([_, data]) => data[COLLABORATOR_FIELDS.IS_ACTIVE] !== false) // Only include active collaborators
     .map(([userId, data]) => {
-      const name = [
-        data[COLLABORATOR_FIELDS.FIRST_NAME],
-        data[COLLABORATOR_FIELDS.LAST_NAME]
-      ].filter(Boolean).join(' ').toLowerCase();
+      const name = [data[COLLABORATOR_FIELDS.FIRST_NAME], data[COLLABORATOR_FIELDS.LAST_NAME]]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
 
       return { userId, name };
     })
     .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically by name
-    .map(item => item.userId);
+    .map((item) => item.userId);
 }
 
 /**

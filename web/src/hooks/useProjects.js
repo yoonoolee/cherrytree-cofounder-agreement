@@ -16,7 +16,7 @@ export function useProjects(currentUser, userMemberships, orgsLoaded, authLoadin
 
       try {
         const allProjects = [];
-        const orgIds = userMemberships?.data?.map(m => m.organization.id) || [];
+        const orgIds = userMemberships?.data?.map((m) => m.organization.id) || [];
 
         for (const orgId of orgIds) {
           try {

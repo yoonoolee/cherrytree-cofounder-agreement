@@ -10,16 +10,19 @@ function AgreementHeader({ project, title }) {
       <p className="text-sm text-gray-500">
         {project.pdfAgreements && project.pdfAgreements.length > 0 ? (
           <>
-            Last submitted on {project.pdfAgreements[project.pdfAgreements.length - 1].generatedAt.toDate().toLocaleDateString()}.
+            Last submitted on{' '}
+            {project.pdfAgreements[project.pdfAgreements.length - 1].generatedAt
+              .toDate()
+              .toLocaleDateString()}
+            .
             {!isReadOnly && project.editDeadline && (
               <>
                 {' '}
                 {isAfterEditDeadline(project.editDeadline)
-                  ? (project.previewPdfGeneratedAt
-                      ? `Edit window expired on ${formatDeadline(project.editDeadline)}.`
-                      : 'You will not be able to edit this agreement once it has been generated.')
-                  : `You can continue to edit and regenerate the agreement until ${formatDeadline(project.editDeadline)}.`
-                }
+                  ? project.previewPdfGeneratedAt
+                    ? `Edit window expired on ${formatDeadline(project.editDeadline)}.`
+                    : 'You will not be able to edit this agreement once it has been generated.'
+                  : `You can continue to edit and regenerate the agreement until ${formatDeadline(project.editDeadline)}.`}
               </>
             )}
           </>

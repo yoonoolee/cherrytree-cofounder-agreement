@@ -9,9 +9,7 @@ function PreviewPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const handleEdit = (sectionId = null) => {
-    const url = sectionId
-      ? `/survey/${projectId}?section=${sectionId}`
-      : `/survey/${projectId}`;
+    const url = sectionId ? `/survey/${projectId}?section=${sectionId}` : `/survey/${projectId}`;
     navigate(url);
   };
 
@@ -39,10 +37,7 @@ function PreviewPage() {
         onProjectSwitch={handleProjectSwitch}
       />
       {showPaymentModal && (
-        <PaymentModal
-          onClose={() => setShowPaymentModal(false)}
-          onSuccess={handlePaymentSuccess}
-        />
+        <PaymentModal onClose={() => setShowPaymentModal(false)} onSuccess={handlePaymentSuccess} />
       )}
     </>
   );
