@@ -4,7 +4,7 @@ export const PRICING_PLANS = [
     key: 'starter',
     price: '$200',
     priceValue: 200,
-    priceId: process.env.REACT_APP_STRIPE_STARTER_PRICE_ID,
+    priceId: import.meta.env.VITE_STRIPE_STARTER_PRICE_ID,
     description: 'For individuals to get started',
     features: [
       'Expert-designed guided survey',
@@ -20,7 +20,7 @@ export const PRICING_PLANS = [
     key: 'pro',
     price: '$2000',
     priceValue: 2000,
-    priceId: process.env.REACT_APP_STRIPE_PRO_PRICE_ID,
+    priceId: import.meta.env.VITE_STRIPE_PRO_PRICE_ID,
     description: 'Everything in Starter, plus',
     features: [
       'Attorney review',

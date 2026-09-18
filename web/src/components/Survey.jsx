@@ -32,7 +32,7 @@ function Survey({ projectId, allProjects = [], onProjectSwitch, onPreview, onFin
   const { currentUser, setActive, userMemberships, orgsLoaded } = useUser();
   const { orgId } = useAuth();
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries,
   });
 

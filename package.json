@@ -1,0 +1,20 @@
+{
+  "name": "cherrytree-cofounder-agreement",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "web"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w web",
+    "start": "npm run dev -w web",
+    "build": "npm run build -w web",
+    "build:dev": "npm run build:dev -w web",
+    "deploy:dev": "npm run build:dev && firebase use dev && firebase deploy",
+    "deploy:functions:dev": "firebase use dev && firebase deploy --only functions",
+    "deploy:hosting:dev": "npm run build:dev && firebase use dev && firebase deploy --only hosting"
+  }
+}

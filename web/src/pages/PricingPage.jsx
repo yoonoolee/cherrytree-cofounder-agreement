@@ -99,7 +99,7 @@ function PricingPage() {
 
   const goToDashboard = () => {
     const isProd = window.location.hostname.includes('cherrytree.app');
-    if (isProd) window.location.href = `${process.env.REACT_APP_APP_URL}/dashboard`;
+    if (isProd) window.location.href = `${import.meta.env.VITE_APP_URL}/dashboard`;
     else navigate('/dashboard', { replace: true });
   };
 

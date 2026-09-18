@@ -10,8 +10,8 @@ const getHostnameFromUrl = (url) => {
   }
 };
 
-const APP_DOMAIN = getHostnameFromUrl(process.env.REACT_APP_APP_URL);
-const MARKETING_DOMAIN = getHostnameFromUrl(process.env.REACT_APP_MARKETING_URL);
+const APP_DOMAIN = getHostnameFromUrl(import.meta.env.VITE_APP_URL);
+const MARKETING_DOMAIN = getHostnameFromUrl(import.meta.env.VITE_MARKETING_URL);
 
 // Define which routes belong to the app (e.g., my.cherrytree.app)
 const APP_ROUTES = [
@@ -38,7 +38,7 @@ function DomainRedirect() {
 
   useEffect(() => {
     // Only run in production
-    if (process.env.NODE_ENV !== 'production') {
+    if (!import.meta.env.PROD) {
       return;
     }
 
