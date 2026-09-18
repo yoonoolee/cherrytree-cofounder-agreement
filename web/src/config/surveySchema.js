@@ -308,44 +308,6 @@ export const AMENDMENT_PROCESS_OPTIONS = [
   'Other',
 ];
 
-/**
- * Acknowledgment fields initialized on project creation and collaborator join.
- */
-export const REQUIRED_ACKNOWLEDGMENT_FIELDS = [
-  FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION,
-  FIELDS.ACKNOWLEDGE_FORFEITURE,
-  FIELDS.ACKNOWLEDGE_IP_OWNERSHIP,
-  FIELDS.ACKNOWLEDGE_CONFIDENTIALITY,
-  FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW,
-  FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST,
-  FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT,
-  FIELDS.ACKNOWLEDGE_SEVERABILITY,
-];
-
-/**
- * Acknowledgment fields created/deleted dynamically based on a parent question.
- * Only initialized for collaborators if they already exist in surveyData.
- */
-export const CONDITIONAL_ACKNOWLEDGMENT_FIELDS = [
-  FIELDS.ACKNOWLEDGE_TIE_RESOLUTION,
-  FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE,
-  FIELDS.ACKNOWLEDGE_IP_ASSIGNMENT,
-];
-
-export const SECTIONS = [
-  { id: 0, name: 'Welcome' },
-  { id: 1, name: 'Formation & Purpose' },
-  { id: 2, name: 'Cofounder Info' },
-  { id: 3, name: 'Equity Allocation' },
-  { id: 4, name: 'Vesting Schedule' },
-  { id: 5, name: 'Decision-Making' },
-  { id: 6, name: 'IP & Ownership' },
-  { id: 7, name: 'Compensation' },
-  { id: 8, name: 'Performance' },
-  { id: 9, name: 'Non-Competition' },
-  { id: 10, name: 'General Provisions' },
-];
-
 // =============================================================================
 // SURVEY FIELDS SCHEMA
 // =============================================================================
@@ -358,7 +320,7 @@ export const SECTIONS = [
  * - otherField: name of the field that stores the custom "Other" value
  * - options: (optional) reference to options array for dropdowns/radios/checkboxes
  */
-export const SURVEY_FIELDS = {
+const SURVEY_FIELDS = {
   // Section 1: Formation & Purpose
   companyName: { default: '', type: 'string' },
   entityType: {
@@ -506,45 +468,3 @@ export const SURVEY_FIELDS = {
 export const INITIAL_FORM_DATA = Object.fromEntries(
   Object.entries(SURVEY_FIELDS).map(([key, config]) => [key, config.default]),
 );
-
-/**
- * Configuration for fields with "Other" options
- * Used by useAutoSave.js and cloud functions for merging "Other" values
- * Auto-generated from SURVEY_FIELDS
- */
-export const OTHER_FIELD_CONFIG = Object.entries(SURVEY_FIELDS)
-  .filter(([_, config]) => config.hasOther)
-  .map(([field, config]) => ({
-    field,
-    otherField: config.otherField,
-    type: config.type,
-  }));
-
-/**
- * List of all "Other" field names (e.g., entityTypeOther, industryOther)
- * Useful for cleaning up data before sending to external services
- */
-export const OTHER_FIELD_NAMES = OTHER_FIELD_CONFIG.map((config) => config.otherField);
-
-/**
- * Merge "Other" fields into their parent fields
- * Used for PDF generation - keeps data clean in Firestore but merged for external use
- * @param {object} data - Survey data object
- * @returns {object} - Data with "Other" fields merged into parent fields
- */
-export function mergeOtherFields(data) {
-  if (!data) return {};
-
-  const merged = { ...data };
-
-  for (const { field, otherField, type } of OTHER_FIELD_CONFIG) {
-    if (type === 'array' && merged[field]?.includes('Other') && merged[otherField]) {
-      merged[field] = merged[field].map((item) => (item === 'Other' ? merged[otherField] : item));
-    } else if (type === 'string' && merged[field] === 'Other' && merged[otherField]) {
-      merged[field] = merged[otherField];
-    }
-    delete merged[otherField];
-  }
-
-  return merged;
-}

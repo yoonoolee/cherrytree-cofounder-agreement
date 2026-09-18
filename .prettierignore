@@ -8,3 +8,4 @@ functions/package-lock.json
 web/public/
 cherrytree-cofounder-agreement-v1/
 *.md
+.refactor-baseline/

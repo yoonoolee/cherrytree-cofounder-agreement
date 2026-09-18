@@ -15,7 +15,7 @@ const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
 const axios = require('axios');
-const { defineString } = require('firebase-functions/params');
+const { defineSecret } = require('firebase-functions/params');
 const Stripe = require('stripe');
 const { Webhook } = require('svix');
 const validator = require('validator');
@@ -32,7 +32,6 @@ const db = getFirestore();
 const auth = getAuth();
 
 // Load secrets from environment config
-const { defineSecret } = require('firebase-functions/params');
 const MAKE_WEBHOOK_URL = defineSecret('MAKE_WEBHOOK_URL');
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');

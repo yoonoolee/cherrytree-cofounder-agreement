@@ -8,7 +8,7 @@
  * @param {Object} firebaseData - Data in Firebase format (row_0: { col_0: {...}, col_1: {...} })
  * @returns {Array|null} - Array of arrays with cell objects, or null if invalid
  */
-export function convertFromFirebaseFormat(firebaseData) {
+function convertFromFirebaseFormat(firebaseData) {
   if (!firebaseData) return null;
 
   try {
@@ -50,7 +50,7 @@ export function convertFromFirebaseFormat(firebaseData) {
  * @param {*} data - Data to check
  * @returns {boolean}
  */
-export function isFirebaseFormat(data) {
+function isFirebaseFormat(data) {
   return (
     typeof data === 'object' &&
     !Array.isArray(data) &&

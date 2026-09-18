@@ -29,7 +29,7 @@ import {
 } from './surveySchema';
 
 // Input type constants
-export const INPUT_TYPES = {
+const INPUT_TYPES = {
   TEXT: 'text',
   TEXTAREA: 'textarea',
   NUMBER: 'number',
@@ -567,27 +567,4 @@ export const QUESTION_CONFIG = {
     required: true,
     requiresAllCollaborators: true,
   },
-};
-
-/**
- * Get all questions for a specific section
- */
-export const getQuestionsBySection = (sectionId) => {
-  return Object.entries(QUESTION_CONFIG)
-    .filter(([_, config]) => config.section === sectionId)
-    .map(([fieldName, config]) => ({ fieldName, ...config }));
-};
-
-/**
- * Get question config by field name
- */
-export const getQuestionConfig = (fieldName) => {
-  return QUESTION_CONFIG[fieldName];
-};
-
-/**
- * Check if field has "Other" option
- */
-export const hasOtherOption = (fieldName) => {
-  return !!QUESTION_CONFIG[fieldName]?.otherField;
 };

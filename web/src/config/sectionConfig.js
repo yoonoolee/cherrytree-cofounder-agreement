@@ -100,12 +100,7 @@ export const SECTIONS = {
 /**
  * Get section index from section ID
  */
-export const getSectionIndex = (sectionId) => SECTION_ORDER.indexOf(sectionId);
-
-/**
- * Get section ID from index (legacy compatibility)
- */
-export const getSectionIdByIndex = (index) => SECTION_ORDER[index];
+const getSectionIndex = (sectionId) => SECTION_ORDER.indexOf(sectionId);
 
 /**
  * Get next section ID
@@ -117,22 +112,6 @@ export const getNextSection = (currentSectionId) => {
   }
   return null;
 };
-
-/**
- * Get previous section ID
- */
-export const getPreviousSection = (currentSectionId) => {
-  const currentIndex = getSectionIndex(currentSectionId);
-  if (currentIndex > 0) {
-    return SECTION_ORDER[currentIndex - 1];
-  }
-  return null;
-};
-
-/**
- * Check if section is first
- */
-export const isFirstSection = (sectionId) => getSectionIndex(sectionId) === 0;
 
 /**
  * Check if section is last
