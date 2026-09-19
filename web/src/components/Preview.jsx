@@ -26,7 +26,6 @@ function Preview({ projectId, onEdit }) {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfError, setPdfError] = useState('');
-  const [currentSection, setCurrentSection] = useState(GENERATED_AGREEMENT_ID);
 
   // Refs and hooks for form data (SurveyNavigation has its own hooks now)
   const isSavingRef = useRef(false);
@@ -165,9 +164,9 @@ function Preview({ projectId, onEdit }) {
       {/* Sidebar Navigation - self-contained with all hooks */}
       <SurveyNavigation
         projectId={projectId}
-        currentSection={currentSection}
+        currentSection={GENERATED_AGREEMENT_ID}
         onSectionClick={(sectionId) => onEdit(sectionId)} // Navigate back to survey at specific section
-        onReviewAndApproveClick={() => setCurrentSection(GENERATED_AGREEMENT_ID)}
+        onReviewAndApproveClick={() => {}} // Already here; the entry stays in the navigation
         onFinalAgreementClick={() => navigate(`/final-agreement/${projectId}`)}
         isMobileNavOpen={isMobileNavOpen}
         setIsMobileNavOpen={setIsMobileNavOpen}

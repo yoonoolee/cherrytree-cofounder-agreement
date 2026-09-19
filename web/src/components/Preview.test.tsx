@@ -159,6 +159,11 @@ describe('Preview', () => {
       nav().onSectionClick(SECTION_IDS.VESTING);
       expect(onEdit).toHaveBeenCalledWith(SECTION_IDS.VESTING);
 
+      act(() => nav().onReviewAndApproveClick());
+      expect(nav().currentSection).toBe('generated-agreement');
+      expect(onEdit).toHaveBeenCalledTimes(1);
+      expect(path()).toBe(`/preview/${PROJECT_ID}`);
+
       act(() => nav().onFinalAgreementClick!());
       expect(path()).toBe(`/final-agreement/${PROJECT_ID}`);
     });
