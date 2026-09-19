@@ -101,6 +101,7 @@ const SURVEY_FIELDS: { [K in keyof SurveyData]: FieldConfig<SurveyData[K]> } = {
   vestingScheduleOther: { default: '', type: 'string' },
   cliffPercentage: { default: '', type: 'string' },
   accelerationTrigger: { default: '', type: 'string' },
+  accelerationProtectionMonths: { default: '', type: 'string' },
   sharesSellNoticeDays: { default: '', type: 'string' },
   sharesBuybackDays: { default: '', type: 'string' },
   acknowledgeForfeiture: { default: {}, type: 'object' },

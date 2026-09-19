@@ -84,6 +84,8 @@ export interface SurveyData {
   vestingScheduleOther: string;
   cliffPercentage: string;
   accelerationTrigger: string;
+  /** Follow-up shown when `accelerationTrigger` is 'Yes'; not part of any completion rule. */
+  accelerationProtectionMonths: string;
   sharesSellNoticeDays: string;
   sharesBuybackDays: string;
   acknowledgeForfeiture: AcknowledgmentMap;

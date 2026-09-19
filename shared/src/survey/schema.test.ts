@@ -33,6 +33,7 @@ const EXPECTED_DEFAULTS = {
   vestingScheduleOther: '',
   cliffPercentage: '',
   accelerationTrigger: '',
+  accelerationProtectionMonths: '',
   sharesSellNoticeDays: '',
   sharesBuybackDays: '',
   acknowledgeForfeiture: {},

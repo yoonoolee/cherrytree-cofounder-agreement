@@ -43,6 +43,7 @@ export const FIELDS = {
   VESTING_SCHEDULE_OTHER: 'vestingScheduleOther',
   CLIFF_PERCENTAGE: 'cliffPercentage',
   ACCELERATION_TRIGGER: 'accelerationTrigger',
+  ACCELERATION_PROTECTION_MONTHS: 'accelerationProtectionMonths',
   SHARES_SELL_NOTICE_DAYS: 'sharesSellNoticeDays',
   SHARES_BUYBACK_DAYS: 'sharesBuybackDays',
   ACKNOWLEDGE_FORFEITURE: 'acknowledgeForfeiture',
