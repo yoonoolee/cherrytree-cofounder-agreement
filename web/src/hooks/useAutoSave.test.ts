@@ -32,20 +32,25 @@ afterEach(() => {
 
 describe('useAutoSave', () => {
   it('starts as saved with nothing saved yet', () => {
-    const { result } = renderHook(() => useAutoSave('org_1', project, currentUser));
+    const isSavingRef = { current: false };
+    const { result } = renderHook(() => useAutoSave('org_1', project, currentUser, isSavingRef));
     expect(result.current.saveStatus).toBe('saved');
     expect(result.current.lastSaved).toBeNull();
-    expect(result.current.isSavingRef.current).toBe(false);
+    expect(isSavingRef.current).toBe(false);
   });
 
   it('does nothing until the project has loaded', async () => {
-    const { result } = renderHook(() => useAutoSave('org_1', null, currentUser));
+    const { result } = renderHook(() =>
+      useAutoSave('org_1', null, currentUser, { current: false }),
+    );
     await act(() => result.current.saveFormData(makeSurveyData()));
     expect(updateDoc).not.toHaveBeenCalled();
   });
 
   it('writes the whole form with a server timestamp and the editor email', async () => {
-    const { result } = renderHook(() => useAutoSave('org_1', project, currentUser));
+    const { result } = renderHook(() =>
+      useAutoSave('org_1', project, currentUser, { current: false }),
+    );
     const form = makeSurveyData({ companyName: 'Acme', mailingCity: 'Wilmington' });
 
     await act(() => result.current.saveFormData(form));
@@ -64,7 +69,9 @@ describe('useAutoSave', () => {
   });
 
   it('keeps existing approvals when nothing actually changed', async () => {
-    const { result } = renderHook(() => useAutoSave('org_1', project, currentUser));
+    const { result } = renderHook(() =>
+      useAutoSave('org_1', project, currentUser, { current: false }),
+    );
     // Same values as the stored surveyData for every key it holds.
     await act(() => result.current.saveFormData({ companyName: 'Acme' } as never));
 
@@ -75,7 +82,9 @@ describe('useAutoSave', () => {
   it('reports a failed write', async () => {
     updateDoc.mockRejectedValue(new Error('offline'));
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const { result } = renderHook(() => useAutoSave('org_1', project, currentUser));
+    const { result } = renderHook(() =>
+      useAutoSave('org_1', project, currentUser, { current: false }),
+    );
 
     await act(() => result.current.saveFormData(makeSurveyData()));
 
@@ -83,15 +92,21 @@ describe('useAutoSave', () => {
     expect(result.current.lastSaved).toBeNull();
   });
 
-  it('flags a save in progress until shortly after it settles', async () => {
+  it('flags the shared ref from the start of a write until shortly after it settles', async () => {
     vi.useFakeTimers();
-    const { result } = renderHook(() => useAutoSave('org_1', project, currentUser));
+    const isSavingRef = { current: false };
+    let savingDuringWrite: boolean | undefined;
+    updateDoc.mockImplementation(async () => {
+      savingDuringWrite = isSavingRef.current;
+    });
+    const { result } = renderHook(() => useAutoSave('org_1', project, currentUser, isSavingRef));
 
     await act(() => result.current.saveFormData(makeSurveyData()));
-    expect(result.current.isSavingRef.current).toBe(true);
+    expect(savingDuringWrite).toBe(true);
+    expect(isSavingRef.current).toBe(true);
 
     act(() => vi.advanceTimersByTime(500));
-    expect(result.current.isSavingRef.current).toBe(false);
+    expect(isSavingRef.current).toBe(false);
   });
 
   it('debounces field changes into one save of the merged form', async () => {
@@ -99,7 +114,9 @@ describe('useAutoSave', () => {
     const setFormData = vi.fn((update: (prev: unknown) => unknown) =>
       update(makeSurveyData({ companyName: 'Acme' })),
     );
-    const { result } = renderHook(() => useAutoSave('org_1', project, currentUser));
+    const { result } = renderHook(() =>
+      useAutoSave('org_1', project, currentUser, { current: false }),
+    );
     const handleChange = result.current.createChangeHandler(setFormData as never);
 
     act(() => {

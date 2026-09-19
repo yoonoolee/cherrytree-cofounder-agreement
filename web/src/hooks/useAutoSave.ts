@@ -1,4 +1,11 @@
-import { useState, useRef, useCallback, type Dispatch, type SetStateAction } from 'react';
+import {
+  useState,
+  useRef,
+  useCallback,
+  type Dispatch,
+  type RefObject,
+  type SetStateAction,
+} from 'react';
 import { serverTimestamp, updateDoc, type FieldValue, type UpdateData } from 'firebase/firestore';
 import type { Project, SurveyData, SurveyFieldName } from '@cherrytree/shared';
 
@@ -33,16 +40,18 @@ export type ChangeHandler = <K extends SurveyFieldName>(field: K, value: SurveyD
  * @param projectId - The project ID
  * @param project - The project object
  * @param currentUser - The current user object
+ * @param isSavingRef - Shared with `useProjectSync`: true from the start of a write until shortly
+ *   after it settles, so the snapshot of our own write does not overwrite newer local edits
  */
 export function useAutoSave(
   projectId: string,
   project: Pick<Project, 'surveyData'> | null | undefined,
   currentUser: ClerkUser | null | undefined,
+  isSavingRef: RefObject<boolean>,
 ) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isSavingRef = useRef(false);
 
   /**
    * Save form data to Firestore
@@ -86,7 +95,7 @@ export function useAutoSave(
         }, SAVE_COMPLETION_DELAY_MS);
       }
     },
-    [project, projectId, currentUser],
+    [project, projectId, currentUser, isSavingRef],
   );
 
   /**
@@ -124,6 +133,5 @@ export function useAutoSave(
     lastSaved,
     saveFormData,
     createChangeHandler,
-    isSavingRef,
   };
 }

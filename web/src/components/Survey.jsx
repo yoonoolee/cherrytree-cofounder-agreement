@@ -54,7 +54,7 @@ function Survey({ projectId, onPreview, onFinalAgreement }) {
     lastSaved: autoSaveLastSaved,
     saveFormData,
     createChangeHandler,
-  } = useAutoSave(projectId, project, currentUser);
+  } = useAutoSave(projectId, project, currentUser, isSavingRef);
   const { isSectionCompleted } = useValidation(formData, project);
   const handleChange = createChangeHandler(setFormData);
 
