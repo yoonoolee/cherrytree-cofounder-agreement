@@ -1,5 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import type { SelectOption } from '@cherrytree/shared';
 
+interface CustomSelectProps {
+  value: string;
+  onChange: (value: string) => void;
+  options: readonly SelectOption[];
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+  /** Overrides the selected option's label in the trigger (e.g. a merged "Other" answer). */
+  displayValue?: string;
+}
+
+/** Searchable single-select dropdown; the search box appears past 8 options. */
 function CustomSelect({
   value,
   onChange,
@@ -8,15 +21,15 @@ function CustomSelect({
   disabled,
   className,
   displayValue,
-}) {
+}: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const wrapperRef = useRef(null);
-  const searchRef = useRef(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsOpen(false);
         setSearchTerm('');
       }
@@ -36,7 +49,7 @@ function CustomSelect({
     ? options.filter((opt) => opt.label.toLowerCase().includes(searchTerm.toLowerCase()))
     : options;
 
-  const handleSelect = (optionValue) => {
+  const handleSelect = (optionValue: string) => {
     onChange(optionValue);
     setIsOpen(false);
     setSearchTerm('');
