@@ -36,11 +36,11 @@ function Preview({ projectId, onEdit }) {
   // Update PDF URL when project changes
   useEffect(() => {
     if (project) {
-      // Show latest submitted PDF if it exists, otherwise show preview PDF
-      if (project.latestPdfUrl) {
-        setPdfUrl(project.latestPdfUrl);
-      } else if (project.previewPdfUrl) {
-        setPdfUrl(project.previewPdfUrl);
+      // A locked project shows its final agreement; an editable one shows the preview of the
+      // current answers (the submitted PDF lives on the Final Agreement page).
+      const url = isProjectReadOnly(project) ? project.latestPdfUrl : project.previewPdfUrl;
+      if (url) {
+        setPdfUrl(url);
       }
     }
   }, [project]);

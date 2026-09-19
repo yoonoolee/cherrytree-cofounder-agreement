@@ -239,6 +239,32 @@ describe('Preview', () => {
     });
   });
 
+  describe('submitted project still inside the edit window', () => {
+    const submitted = {
+      pdfAgreements: [{ url: FINAL_URL, generatedAt: PAST, generatedBy: ADMIN_ID }],
+      latestPdfUrl: FINAL_URL,
+    };
+
+    it('shows the preview, not the submitted agreement', () => {
+      mocks.project = editableProject({ ...submitted, ...freshPreview });
+      renderPreview();
+      expect(mocks.callFunction).not.toHaveBeenCalled();
+      expect(iframe().src).toBe(embedOf('preview1'));
+      expect(screen.getByTestId('approval-section')).toBeInTheDocument();
+    });
+
+    it('regenerates a stale preview and keeps showing it', async () => {
+      mocks.project = editableProject({ ...submitted, ...stalePreview });
+      mocks.callFunction.mockResolvedValueOnce({ success: true, pdfUrl: FRESH_PREVIEW_URL });
+      renderPreview();
+      expect(mocks.callFunction).toHaveBeenCalledWith('generatePreviewPDF', {
+        projectId: PROJECT_ID,
+      });
+      await waitFor(() => expect(generatingText()).not.toBeInTheDocument());
+      expect(iframe().src).toBe(embedOf('preview2'));
+    });
+  });
+
   describe('read-only project', () => {
     it('shows the submitted agreement and hides approval and submit', () => {
       mocks.project = readOnlyProject();
