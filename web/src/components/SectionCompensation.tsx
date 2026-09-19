@@ -1,30 +1,70 @@
-import React, { useState } from 'react';
-import CustomSelect from './CustomSelect';
-import QuestionRenderer from './QuestionRenderer';
-import QuestionCard from './QuestionCard';
-import { QUESTION_CONFIG } from '../config/questionConfig';
-import { FIELDS } from '@cherrytree/shared';
-import { getPreview } from '../utils/getPreview';
+import { useState, type FocusEvent, type KeyboardEvent, type MouseEvent } from 'react';
+import { FIELDS, type Compensation } from '@cherrytree/shared';
 
-const FIELD_ORDER = [FIELDS.TAKING_COMPENSATION, FIELDS.SPENDING_LIMIT];
+import CustomSelect from './CustomSelect.tsx';
+import QuestionRenderer from './QuestionRenderer.tsx';
+import QuestionCard from './QuestionCard.tsx';
+import type { SurveySectionProps } from './sectionProps.ts';
+import { QUESTION_CONFIG } from '../config/questionConfig.ts';
+import { getPreview } from '../utils/getPreview.ts';
 
-const formatCurrency = (rawValue) => {
+const FIELD_ORDER = [FIELDS.TAKING_COMPENSATION, FIELDS.SPENDING_LIMIT] as const;
+
+type Field = (typeof FIELD_ORDER)[number];
+
+const formatCurrency = (rawValue: string | undefined): string => {
   if (!rawValue) return '';
-  const parts = rawValue.split('.');
-  const int = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return `$${parts.length === 2 ? `${int}.${parts[1]}` : int}`;
+  const [whole = '', decimals] = rawValue.split('.');
+  const int = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return `$${decimals !== undefined ? `${int}.${decimals}` : int}`;
 };
 
-function SectionCompensation({ formData, handleChange, isReadOnly, showValidation, project }) {
+/** The digits the user typed, without the `$` and thousands separators the input displays. */
+const rawAmount = (displayed: string): string => displayed.replace('$', '').replace(/,/g, '');
+
+/** `''`, or a non-negative number with at most two decimals. */
+const isValidAmount = (value: string): boolean => {
+  if (value === '') return true;
+  if (Number.isNaN(Number(value)) || parseFloat(value) < 0) return false;
+  const dec = value.split('.');
+  return dec.length === 1 || (dec.length === 2 && (dec[1]?.length ?? 0) <= 2);
+};
+
+// The `$` prefix is part of the input's value; these keep the caret from landing before it.
+const guardCurrencyKey = (e: KeyboardEvent<HTMLInputElement>) => {
+  const cp = e.currentTarget.selectionStart ?? 0;
+  if ((e.key === 'ArrowLeft' || e.key === 'Home') && cp <= 1) e.preventDefault();
+  if (e.key === 'Backspace' && cp <= 1) e.preventDefault();
+  if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault();
+};
+const guardCurrencyClick = (e: MouseEvent<HTMLInputElement>) => {
+  const input = e.currentTarget;
+  if (input.selectionStart === 0) setTimeout(() => input.setSelectionRange(1, 1), 0);
+};
+const caretToEnd = (e: FocusEvent<HTMLInputElement>) => {
+  const input = e.currentTarget;
+  const v = input.value.replace('$', '');
+  setTimeout(() => input.setSelectionRange(v.length + 1, v.length + 1), 0);
+};
+
+function SectionCompensation({
+  formData,
+  handleChange,
+  isReadOnly,
+  showValidation,
+  project,
+}: SurveySectionProps) {
   const compensations = formData[FIELDS.COMPENSATIONS] || [];
   const collaboratorCount = Object.keys(project?.collaborators || {}).length;
   const canAddMore = compensations.length < collaboratorCount;
 
   const firstUnanswered = FIELD_ORDER.find((f) => !formData[f]);
-  const [expandedField, setExpandedField] = useState(firstUnanswered || FIELD_ORDER[0]);
-  const advanceTo = (key) => {
+  const [expandedField, setExpandedField] = useState<Field | null>(
+    firstUnanswered || FIELD_ORDER[0],
+  );
+  const advanceTo = (key: Field) => {
     const idx = FIELD_ORDER.indexOf(key);
-    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1]);
+    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1] ?? null);
   };
   const collapse = () => setExpandedField(null);
 
@@ -33,16 +73,20 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
     handleChange(FIELDS.COMPENSATIONS, [...compensations, { who: '', amount: '' }]);
   };
 
-  const handleRemoveCompensation = (index) => {
+  const handleRemoveCompensation = (index: number) => {
     handleChange(
       FIELDS.COMPENSATIONS,
       compensations.filter((_, i) => i !== index),
     );
   };
 
-  const handleCompensationChange = (index, field, value) => {
+  const handleCompensationChange = <K extends keyof Compensation>(
+    index: number,
+    field: K,
+    value: Compensation[K],
+  ) => {
     const updated = [...compensations];
-    updated[index] = { ...updated[index], [field]: value };
+    updated[index] = { ...(updated[index] ?? { who: '', amount: '' }), [field]: value };
     handleChange(FIELDS.COMPENSATIONS, updated);
   };
 
@@ -82,7 +126,6 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.TAKING_COMPENSATION].question}
           answerPreview={getPreview(FIELDS.TAKING_COMPENSATION, formData)}
-          tooltip={QUESTION_CONFIG[FIELDS.TAKING_COMPENSATION].tooltip}
           subQuestion={
             formData[FIELDS.TAKING_COMPENSATION] === 'Yes' ? 'Compensation Details' : undefined
           }
@@ -215,36 +258,13 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
                             type="text"
                             value={formatCurrency(comp.amount)}
                             onChange={(e) => {
-                              const value = e.target.value.replace('$', '').replace(/,/g, '');
-                              if (value === '') {
+                              const value = rawAmount(e.target.value);
+                              if (isValidAmount(value))
                                 handleCompensationChange(index, 'amount', value);
-                                return;
-                              }
-                              if (!isNaN(value) && parseFloat(value) >= 0) {
-                                const dec = value.split('.');
-                                if (dec.length === 1 || (dec.length === 2 && dec[1].length <= 2))
-                                  handleCompensationChange(index, 'amount', value);
-                              }
                             }}
-                            onKeyDown={(e) => {
-                              const cp = e.target.selectionStart;
-                              if ((e.key === 'ArrowLeft' || e.key === 'Home') && cp <= 1)
-                                e.preventDefault();
-                              if (e.key === 'Backspace' && cp <= 1) e.preventDefault();
-                              if (e.key === '-' || e.key === 'e' || e.key === 'E')
-                                e.preventDefault();
-                            }}
-                            onClick={(e) => {
-                              if (e.target.selectionStart === 0)
-                                setTimeout(() => e.target.setSelectionRange(1, 1), 0);
-                            }}
-                            onFocus={(e) => {
-                              const v = e.target.value.replace('$', '');
-                              setTimeout(
-                                () => e.target.setSelectionRange(v.length + 1, v.length + 1),
-                                0,
-                              );
-                            }}
+                            onKeyDown={guardCurrencyKey}
+                            onClick={guardCurrencyClick}
+                            onFocus={caretToEnd}
                             disabled={isReadOnly}
                             placeholder="$100,000.00"
                           />
@@ -274,31 +294,12 @@ function SectionCompensation({ formData, handleChange, isReadOnly, showValidatio
             type="text"
             value={formatCurrency(formData[FIELDS.SPENDING_LIMIT])}
             onChange={(e) => {
-              const value = e.target.value.replace('$', '').replace(/,/g, '');
-              if (value === '') {
-                handleChange(FIELDS.SPENDING_LIMIT, value);
-                return;
-              }
-              if (!isNaN(value) && parseFloat(value) >= 0) {
-                const dec = value.split('.');
-                if (dec.length === 1 || (dec.length === 2 && dec[1].length <= 2))
-                  handleChange(FIELDS.SPENDING_LIMIT, value);
-              }
+              const value = rawAmount(e.target.value);
+              if (isValidAmount(value)) handleChange(FIELDS.SPENDING_LIMIT, value);
             }}
-            onKeyDown={(e) => {
-              const cp = e.target.selectionStart;
-              if ((e.key === 'ArrowLeft' || e.key === 'Home') && cp <= 1) e.preventDefault();
-              if (e.key === 'Backspace' && cp <= 1) e.preventDefault();
-              if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault();
-            }}
-            onClick={(e) => {
-              if (e.target.selectionStart === 0)
-                setTimeout(() => e.target.setSelectionRange(1, 1), 0);
-            }}
-            onFocus={(e) => {
-              const v = e.target.value.replace('$', '');
-              setTimeout(() => e.target.setSelectionRange(v.length + 1, v.length + 1), 0);
-            }}
+            onKeyDown={guardCurrencyKey}
+            onClick={guardCurrencyClick}
+            onFocus={caretToEnd}
             disabled={isReadOnly}
             placeholder="$5000.00"
           />
