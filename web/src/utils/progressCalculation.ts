@@ -1,16 +1,29 @@
-import { FIELDS, COLLABORATOR_FIELDS, SECTION_IDS, SECTION_ORDER } from '@cherrytree/shared';
+import {
+  FIELDS,
+  COLLABORATOR_FIELDS,
+  SECTION_IDS,
+  SECTION_ORDER,
+  type Collaborator,
+  type SurveyData,
+} from '@cherrytree/shared';
 
 /**
  * Standalone progress calculation utility
  * Can be used both in hooks and components
  */
 
+/** What the progress rules read: the answers and who has to acknowledge them. */
+export interface ProgressInput {
+  surveyData?: Partial<SurveyData>;
+  collaborators?: Record<string, Collaborator>;
+}
+
 /**
  * Helper to check if "Other" field is valid
  */
-const isOtherFieldValid = (value, otherValue) => {
+const isOtherFieldValid = (value: string | undefined, otherValue: string | undefined): boolean => {
   if (value === 'Other') {
-    return otherValue && otherValue.trim() !== '';
+    return !!otherValue && otherValue.trim() !== '';
   }
   return !!value;
 };
@@ -18,28 +31,33 @@ const isOtherFieldValid = (value, otherValue) => {
 /**
  * Helper to check if array with "Other" is valid
  */
-const isOtherArrayFieldValid = (array, otherValue) => {
+const isOtherArrayFieldValid = (
+  array: readonly string[] | undefined,
+  otherValue: string | undefined,
+): boolean => {
   if (!array || array.length === 0) return false;
   if (array.includes('Other')) {
-    return otherValue && otherValue.trim() !== '';
+    return !!otherValue && otherValue.trim() !== '';
   }
   return true;
 };
 
+/** Active collaborator userIds from the project */
+const activeCollaboratorIds = (collaborators: ProgressInput['collaborators']): string[] =>
+  Object.entries(collaborators || {})
+    .filter(([_, data]) => data[COLLABORATOR_FIELDS.IS_ACTIVE] !== false)
+    .map(([userId]) => userId);
+
 /**
  * Calculate progress for a project
- * @param {object} project - Project object with surveyData and collaborators
- * @returns {number} - Progress percentage (0-100)
+ * @returns Progress percentage (0-100)
  */
-export const calculateProjectProgress = (project) => {
+export const calculateProjectProgress = (project: ProgressInput): number => {
   const formData = project.surveyData || {};
   let totalRequired = 0;
   let completed = 0;
 
-  // Get active collaborator userIds from the project
-  const collaboratorIds = Object.entries(project?.collaborators || {})
-    .filter(([_, data]) => data[COLLABORATOR_FIELDS.IS_ACTIVE] !== false)
-    .map(([userId]) => userId);
+  const collaboratorIds = activeCollaboratorIds(project?.collaborators);
 
   // Section 1: Formation & Purpose (9 fields)
   if (formData[FIELDS.COMPANY_NAME]) completed++;
@@ -66,8 +84,9 @@ export const calculateProjectProgress = (project) => {
   // Section 2: Cofounder Info
   if (formData[FIELDS.COFOUNDER_COUNT]) completed++;
   totalRequired++;
-  if (formData[FIELDS.COFOUNDERS] && formData[FIELDS.COFOUNDERS].length > 0) {
-    const allCofoundersFilled = formData[FIELDS.COFOUNDERS].every(
+  const cofounders = formData[FIELDS.COFOUNDERS];
+  if (cofounders && cofounders.length > 0) {
+    const allCofoundersFilled = cofounders.every(
       (cf) =>
         cf[FIELDS.COFOUNDER_FULL_NAME] &&
         cf[FIELDS.COFOUNDER_TITLE] &&
@@ -167,11 +186,8 @@ export const calculateProjectProgress = (project) => {
   totalRequired++;
 
   // Section 8: Performance (4 fields)
-  if (
-    formData[FIELDS.PERFORMANCE_CONSEQUENCES] &&
-    formData[FIELDS.PERFORMANCE_CONSEQUENCES].length > 0
-  )
-    completed++;
+  const performanceConsequences = formData[FIELDS.PERFORMANCE_CONSEQUENCES];
+  if (performanceConsequences && performanceConsequences.length > 0) completed++;
   totalRequired++;
   if (formData[FIELDS.REMEDY_PERIOD_DAYS]) completed++;
   totalRequired++;
@@ -257,13 +273,11 @@ export const calculateProjectProgress = (project) => {
  * Count how many of the 10 sections are fully completed.
  * Mirrors isSectionCompleted from useValidation as a standalone utility.
  */
-export const countCompletedSections = (project) => {
+export const countCompletedSections = (project: ProgressInput | null | undefined): number => {
   const formData = project?.surveyData || {};
-  const collaboratorIds = Object.entries(project?.collaborators || {})
-    .filter(([_, data]) => data[COLLABORATOR_FIELDS.IS_ACTIVE] !== false)
-    .map(([userId]) => userId);
+  const collaboratorIds = activeCollaboratorIds(project?.collaborators);
 
-  const isSectionDone = (sectionId) => {
+  const isSectionDone = (sectionId: string): boolean => {
     switch (sectionId) {
       case SECTION_IDS.FORMATION:
         return !!(
@@ -278,19 +292,21 @@ export const countCompletedSections = (project) => {
           isOtherArrayFieldValid(formData[FIELDS.INDUSTRIES], formData[FIELDS.INDUSTRY_OTHER])
         );
 
-      case SECTION_IDS.COFOUNDERS:
+      case SECTION_IDS.COFOUNDERS: {
+        const cofounders = formData[FIELDS.COFOUNDERS] || [];
         if (!formData[FIELDS.COFOUNDER_COUNT]) return false;
-        if ((formData[FIELDS.COFOUNDERS] || []).length > collaboratorIds.length) return false;
-        if (formData[FIELDS.COFOUNDERS]?.length > 0) {
-          return formData[FIELDS.COFOUNDERS].every(
+        if (cofounders.length > collaboratorIds.length) return false;
+        if (cofounders.length > 0) {
+          return cofounders.every(
             (cf) =>
               cf[FIELDS.COFOUNDER_FULL_NAME] &&
               cf[FIELDS.COFOUNDER_TITLE] &&
               cf[FIELDS.COFOUNDER_EMAIL] &&
-              cf[FIELDS.COFOUNDER_ROLES]?.length > 0,
+              (cf[FIELDS.COFOUNDER_ROLES]?.length ?? 0) > 0,
           );
         }
         return true;
+      }
 
       case SECTION_IDS.EQUITY_ALLOCATION: {
         const entries = formData[FIELDS.EQUITY_ENTRIES] || [];
@@ -358,7 +374,7 @@ export const countCompletedSections = (project) => {
 
       case SECTION_IDS.PERFORMANCE:
         return !!(
-          formData[FIELDS.PERFORMANCE_CONSEQUENCES]?.length > 0 &&
+          (formData[FIELDS.PERFORMANCE_CONSEQUENCES]?.length ?? 0) > 0 &&
           formData[FIELDS.REMEDY_PERIOD_DAYS] &&
           isOtherArrayFieldValid(
             formData[FIELDS.TERMINATION_WITH_CAUSE],
