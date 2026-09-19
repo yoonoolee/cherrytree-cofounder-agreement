@@ -9,6 +9,7 @@ import { HttpsError, onCall, onRequest, type CallableRequest } from 'firebase-fu
 import Stripe from 'stripe';
 import {
   REQUIRED_ACKNOWLEDGMENT_FIELDS,
+  toErrorMessage,
   type CallableRequest as CallableData,
   type CallableResponse,
   type Payment,
@@ -30,7 +31,7 @@ import {
 import { resolveAppOrigin } from './lib/appOrigin.ts';
 import { getClerk, getClerkPrimaryEmail, requireAuth } from './lib/auth.ts';
 import { calculateEditDeadline } from './lib/dates.ts';
-import { toErrorMessage, toHttpsError } from './lib/errors.ts';
+import { toHttpsError } from './lib/errors.ts';
 import { projects, stripeEvents, users } from './lib/firebase.ts';
 import { normalizeProjectName } from './lib/validation.ts';
 

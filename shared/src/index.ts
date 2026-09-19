@@ -2,6 +2,7 @@ export * from './domain/project.ts';
 export * from './domain/surveyData.ts';
 export * from './domain/user.ts';
 export * from './time.ts';
+export * from './errors.ts';
 export * from './survey/fields.ts';
 export * from './survey/options.ts';
 export * from './survey/schema.ts';
