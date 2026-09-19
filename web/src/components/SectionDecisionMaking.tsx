@@ -1,27 +1,43 @@
-import React, { useState } from 'react';
-import { TIE_RESOLUTION_OPTIONS, FIELDS } from '@cherrytree/shared';
-import { useUser } from '../contexts/UserContext';
-import { useCollaborators } from '../hooks/useCollaborators';
-import QuestionRenderer from './QuestionRenderer';
-import QuestionCard from './QuestionCard';
-import { QUESTION_CONFIG } from '../config/questionConfig';
-import { getPreview } from '../utils/getPreview';
+import { useState } from 'react';
+import { TIE_RESOLUTION_OPTIONS, FIELDS, type AcknowledgmentMap } from '@cherrytree/shared';
+
+import QuestionRenderer from './QuestionRenderer.tsx';
+import QuestionCard from './QuestionCard.tsx';
+import type { SurveySectionProps } from './sectionProps.ts';
+import { useUser } from '../contexts/UserContext.tsx';
+import { useCollaborators } from '../hooks/useCollaborators.ts';
+import { QUESTION_CONFIG } from '../config/questionConfig.ts';
+import { getPreview } from '../utils/getPreview.ts';
 
 const FIELD_ORDER = [
   FIELDS.MAJOR_DECISIONS,
   FIELDS.EQUITY_VOTING_POWER,
   FIELDS.TIE_RESOLUTION,
   FIELDS.INCLUDE_SHOTGUN_CLAUSE,
-];
+] as const;
 
-function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, showValidation }) {
+type Field = (typeof FIELD_ORDER)[number];
+
+// Survey logic kept as-is: clearing a choice writes its acknowledgment as `null`,
+// which the readers below treat like "unset" (`|| {}`).
+const CLEARED_ACK = null as unknown as AcknowledgmentMap;
+
+function SectionDecisionMaking({
+  formData,
+  handleChange,
+  isReadOnly,
+  project,
+  showValidation,
+}: SurveySectionProps) {
   const { currentUser } = useUser();
   const { collaboratorIds, getDisplayName, isAdmin } = useCollaborators(project);
   const firstUnanswered = FIELD_ORDER.find((f) => !formData[f]);
-  const [expandedField, setExpandedField] = useState(firstUnanswered || FIELD_ORDER[0]);
-  const advanceTo = (key) => {
+  const [expandedField, setExpandedField] = useState<Field | null>(
+    firstUnanswered || FIELD_ORDER[0],
+  );
+  const advanceTo = (key: Field) => {
     const idx = FIELD_ORDER.indexOf(key);
-    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1]);
+    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1] ?? null);
   };
   const collapse = () => setExpandedField(null);
 
@@ -85,7 +101,6 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.EQUITY_VOTING_POWER].question}
           answerPreview={getPreview(FIELDS.EQUITY_VOTING_POWER, formData)}
-          tooltip={QUESTION_CONFIG[FIELDS.EQUITY_VOTING_POWER].tooltip}
           isExpanded={expandedField === FIELDS.EQUITY_VOTING_POWER}
           isAnswered={!!formData[FIELDS.EQUITY_VOTING_POWER]}
           onExpand={() => setExpandedField(FIELDS.EQUITY_VOTING_POWER)}
@@ -139,7 +154,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                         const init = Object.fromEntries(collaboratorIds.map((id) => [id, false]));
                         handleChange(FIELDS.ACKNOWLEDGE_TIE_RESOLUTION, init);
                       } else {
-                        handleChange(FIELDS.ACKNOWLEDGE_TIE_RESOLUTION, null);
+                        handleChange(FIELDS.ACKNOWLEDGE_TIE_RESOLUTION, CLEARED_ACK);
                       }
                     }
                   }}
@@ -234,7 +249,7 @@ function SectionDecisionMaking({ formData, handleChange, isReadOnly, project, sh
                         const init = Object.fromEntries(collaboratorIds.map((id) => [id, false]));
                         handleChange(FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE, init);
                       } else {
-                        handleChange(FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE, null);
+                        handleChange(FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE, CLEARED_ACK);
                       }
                     }
                   }}
