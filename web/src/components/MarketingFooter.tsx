@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import { goToDashboard } from './MarketingNav.tsx';
+import { goToDashboard } from '../utils/goToDashboard.ts';
 
 function MarketingFooter() {
   const navigate = useNavigate();

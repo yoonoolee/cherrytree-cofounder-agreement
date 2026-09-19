@@ -1,9 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
-import MarketingNav, { goToDashboard } from './MarketingNav.tsx';
-
-vi.mock('../lib/env', () => ({ env: { appUrl: 'https://my.cherrytree.app' } }));
+import MarketingNav from './MarketingNav.tsx';
 
 function Location() {
   const { pathname } = useLocation();
@@ -20,29 +18,6 @@ function renderNav() {
     </MemoryRouter>,
   );
 }
-
-describe('goToDashboard', () => {
-  const realLocation = window.location;
-
-  afterEach(() => {
-    Object.defineProperty(window, 'location', { configurable: true, value: realLocation });
-  });
-
-  it('uses the router off the production host', () => {
-    const navigate = vi.fn();
-    goToDashboard(navigate);
-    expect(navigate).toHaveBeenCalledWith('/dashboard', { replace: true });
-  });
-
-  it('leaves for the app host from a cherrytree.app marketing page', () => {
-    const fake = { hostname: 'cherrytree.app', href: 'https://cherrytree.app/' };
-    Object.defineProperty(window, 'location', { configurable: true, value: fake });
-    const navigate = vi.fn();
-    goToDashboard(navigate);
-    expect(navigate).not.toHaveBeenCalled();
-    expect(fake.href).toBe('https://my.cherrytree.app/dashboard');
-  });
-});
 
 describe('MarketingNav', () => {
   it('routes the logo, product links, sign-in and CTA through the router', () => {

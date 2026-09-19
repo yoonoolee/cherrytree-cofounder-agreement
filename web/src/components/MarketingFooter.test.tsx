@@ -3,8 +3,6 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 import MarketingFooter from './MarketingFooter.tsx';
 
-vi.mock('../lib/env', () => ({ env: { appUrl: 'https://my.cherrytree.app' } }));
-
 function Location() {
   const { pathname } = useLocation();
   return <p data-testid="path">{pathname}</p>;
