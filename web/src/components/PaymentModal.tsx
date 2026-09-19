@@ -8,8 +8,10 @@ import ProWaitlistForm from './ProWaitlistForm.tsx';
 
 // Constants
 const WIGGLE_DURATION_MS = 500; // Duration of wiggle animation for validation errors
-const PROJECT_NAME_MIN_LENGTH = 1; // Minimum characters for project/company name
-const PROJECT_NAME_MAX_LENGTH = 100; // Maximum characters for project/company name
+// Mirror functions/src/config.ts (normalizeProjectName) so the server never rejects a name
+// the client accepted.
+const PROJECT_NAME_MIN_LENGTH = 2;
+const PROJECT_NAME_MAX_LENGTH = 100;
 
 /** A plan that can be bought (as opposed to the contact-us Enterprise tier). */
 type PurchasablePlan = PricingPlan & { key: Plan };

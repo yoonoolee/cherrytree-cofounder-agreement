@@ -60,8 +60,14 @@ describe('PaymentModal', () => {
     expect(nameInput).not.toHaveClass('animate-wiggle');
   });
 
-  it('rejects names over 100 characters and names with markup-like characters', () => {
+  it('rejects names outside 2–100 characters and names with markup-like characters', () => {
     const { nameInput, submit } = renderModal();
+    // Same minimum as the server's normalizeProjectName, so the error shows before the call.
+    fireEvent.change(nameInput, { target: { value: 'A' } });
+    fireEvent.click(submit);
+    expect(screen.getByText('Company name must be at least 2 characters')).toBeInTheDocument();
+    expect(nameInput).toHaveClass('animate-wiggle');
+
     fireEvent.change(nameInput, { target: { value: 'a'.repeat(101) } });
     fireEvent.click(submit);
     expect(screen.getByText('Company name must be less than 100 characters')).toBeInTheDocument();
