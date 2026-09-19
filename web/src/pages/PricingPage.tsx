@@ -1,11 +1,40 @@
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePageMeta } from '../hooks/usePageMeta';
-import MarketingNav from '../components/MarketingNav';
-import MarketingFooter from '../components/MarketingFooter';
-import MarketingGrain from '../components/MarketingGrain';
 
-const PLANS = [
+import { usePageMeta } from '../hooks/usePageMeta.ts';
+import MarketingNav from '../components/MarketingNav.tsx';
+import MarketingFooter from '../components/MarketingFooter.tsx';
+import MarketingGrain from '../components/MarketingGrain.tsx';
+import { goToDashboard } from '../utils/goToDashboard.ts';
+
+interface Plan {
+  tier: string;
+  /** `$…` renders the sign in its own span; anything else verbatim. */
+  price: string;
+  period: string;
+  desc: string;
+  features: readonly string[];
+  cta: string;
+  badge?: string;
+  featured?: boolean;
+  /** Contact sales opens the Tally form instead of the dashboard. */
+  enterprise?: boolean;
+}
+
+interface CompareRow {
+  label: string;
+  /** Bootstrapped / Scale / Enterprise */
+  b: boolean;
+  s: boolean;
+  e: boolean;
+}
+
+interface Faq {
+  q: string;
+  a: string;
+}
+
+const PLANS: readonly Plan[] = [
   {
     tier: 'Bootstrapped',
     price: '$200',
@@ -53,7 +82,7 @@ const PLANS = [
   },
 ];
 
-const COMPARE_ROWS = [
+const COMPARE_ROWS: readonly CompareRow[] = [
   { label: 'Equity & vesting schedules', b: true, s: true, e: true },
   { label: 'Roles & responsibilities', b: true, s: true, e: true },
   { label: 'Intellectual property', b: true, s: true, e: true },
@@ -69,7 +98,7 @@ const COMPARE_ROWS = [
   { label: 'Cohort dashboard', b: false, s: false, e: true },
 ];
 
-const FAQS = [
+const FAQS: readonly Faq[] = [
   {
     q: 'Which plan is right for me?',
     a: "If your cofoundership is fairly simple, get the Bootstrapped plan. You fill out a survey and receive a ready-to-use cofounder agreement. If your cofoundership is more complex, or if you want extra peace of mind, get Scale — you'll get an attorney review and a cofounder coach.",
@@ -92,17 +121,17 @@ const FAQS = [
   },
 ];
 
-function Check({ on }) {
+function Check({ on }: { on: boolean }) {
   if (!on) return <span className="lp-ppt-dash">—</span>;
   return <span className="lp-ppt-check">✓</span>;
 }
 
 function PricingPage() {
   const navigate = useNavigate();
-  const [openFaq, setOpenFaq] = useState(null);
-  const [hoveredFaq, setHoveredFaq] = useState(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [hoveredFaq, setHoveredFaq] = useState<number | null>(null);
   const [typedProtect, setTypedProtect] = useState('');
-  const protectTimersRef = useRef([]);
+  const protectTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   usePageMeta({
     title: 'Pricing — Cherrytree',
@@ -136,7 +165,7 @@ function PricingPage() {
   // hold, clear, and after a slight pause type it out again.
   useEffect(() => {
     const target = 'and your peace of mind.';
-    const t = (fn, ms) => {
+    const t = (fn: () => void, ms: number) => {
       const id = setTimeout(fn, ms);
       protectTimersRef.current.push(id);
     };
@@ -159,17 +188,13 @@ function PricingPage() {
     };
   }, []);
 
-  const goToDashboard = () => {
-    const isProd = window.location.hostname.includes('cherrytree.app');
-    if (isProd) window.location.href = `${import.meta.env.VITE_APP_URL}/dashboard`;
-    else navigate('/dashboard', { replace: true });
-  };
+  const goDash = () => goToDashboard(navigate);
 
   // Enterprise has fewer features than Bootstrapped, so it naturally renders shorter.
   // Force its height to match Bootstrapped's rather than stretching every card to the
   // tallest one, so Scale (the featured, transform: scale(1.03) card) can still read as
   // visually larger the way it does in the source design.
-  const pricingCardRefs = useRef([]);
+  const pricingCardRefs = useRef<(HTMLDivElement | null)[]>([]);
   useLayoutEffect(() => {
     const matchEnterpriseHeight = () => {
       const bootstrapped = pricingCardRefs.current[0];
@@ -203,7 +228,9 @@ function PricingPage() {
           {PLANS.map((p, i) => (
             <div
               key={i}
-              ref={(el) => (pricingCardRefs.current[i] = el)}
+              ref={(el) => {
+                pricingCardRefs.current[i] = el;
+              }}
               className={`lp-pricing-card${p.featured ? ' featured' : ''}`}
             >
               {p.badge && <div className="lp-pricing-badge">{p.badge}</div>}
@@ -244,7 +271,7 @@ function PricingPage() {
                 onClick={() =>
                   p.enterprise
                     ? window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })
-                    : goToDashboard()
+                    : goDash()
                 }
               >
                 {p.cta}
@@ -337,7 +364,7 @@ function PricingPage() {
           </em>
         </h2>
         <div className="lp-protect-cta-actions">
-          <button className="lp-btn-primary" onClick={goToDashboard}>
+          <button className="lp-btn-primary" onClick={goDash}>
             Get started
           </button>
           <a
