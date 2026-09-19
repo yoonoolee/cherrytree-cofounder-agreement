@@ -9,6 +9,7 @@ import { useUser } from '../contexts/UserContext';
 import { UserButton } from '@clerk/clerk-react';
 import { isProjectReadOnly } from '../utils/dateUtils';
 import { useProjectSync } from '../hooks/useProjectSync';
+import { useCollaborators } from '../hooks/useCollaborators';
 import { getEmbedUrl } from '../utils/getEmbedUrl';
 
 const GENERATED_AGREEMENT_ID = 'generated-agreement';
@@ -30,6 +31,7 @@ function Preview({ projectId, onEdit }) {
   // Refs and hooks for form data (SurveyNavigation has its own hooks now)
   const isSavingRef = useRef(false);
   const { project } = useProjectSync(projectId, isSavingRef);
+  const { collaboratorIds } = useCollaborators(project);
 
   // Update PDF URL when project changes
   useEffect(() => {
@@ -109,13 +111,13 @@ function Preview({ projectId, onEdit }) {
   }, [project]);
 
   const checkAllApproved = () => {
-    const collaborators = project.collaborators || {};
-    const collaboratorIds = Object.keys(collaborators);
     if (collaboratorIds.length === 0) return true;
 
     const approvals = project.approvals || {};
 
-    // Everyone must approve (including admin)
+    // Every active collaborator must approve (including admin). Removed members stay in
+    // `collaborators` with isActive false and no approvals entry, so they are not counted —
+    // the same set ApprovalSection shows.
     return collaboratorIds.every((userId) => approvals[userId] === true);
   };
 
