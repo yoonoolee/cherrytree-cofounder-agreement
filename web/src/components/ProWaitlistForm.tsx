@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
-import { db } from '../lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useState, type SyntheticEvent } from 'react';
+import { addDoc, serverTimestamp } from 'firebase/firestore';
 
-function ProWaitlistForm({ source = 'unknown' }) {
+import { proWaitlist } from '../lib/firebase.ts';
+
+interface ProWaitlistFormProps {
+  /** Where the form is shown; stored with the signup. */
+  source?: string;
+}
+
+function ProWaitlistForm({ source = 'unknown' }: ProWaitlistFormProps) {
   const [waitlistEmail, setWaitlistEmail] = useState('');
   const [waitlistLoading, setWaitlistLoading] = useState(false);
   const [waitlistSuccess, setWaitlistSuccess] = useState(false);
   const [waitlistError, setWaitlistError] = useState('');
 
-  const handleWaitlistSubmit = async (e) => {
+  const handleWaitlistSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
 
     // Prevent double submission
@@ -27,7 +33,7 @@ function ProWaitlistForm({ source = 'unknown' }) {
 
     try {
       // Save to Firestore
-      await addDoc(collection(db, 'proWaitlist'), {
+      await addDoc(proWaitlist, {
         email: waitlistEmail.toLowerCase().trim(),
         timestamp: serverTimestamp(),
         source,

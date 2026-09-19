@@ -13,7 +13,7 @@ import {
 } from 'firebase/firestore';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
-import type { Project, UserDoc } from '@cherrytree/shared';
+import type { ProWaitlistSignup, Project, UserDoc } from '@cherrytree/shared';
 
 import { env } from './env.ts';
 import { castConverter } from './firestore.ts';
@@ -55,3 +55,7 @@ export const projectRef = (projectId: string): DocumentReference<Project> =>
   doc(projects, projectId);
 /** `users/{clerkUserId}` */
 export const userRef = (userId: string): DocumentReference<UserDoc> => doc(users, userId);
+/** `proWaitlist` — append-only from the client (`addDoc`). */
+export const proWaitlist = collection(db, 'proWaitlist').withConverter(
+  castConverter<ProWaitlistSignup>(),
+);
