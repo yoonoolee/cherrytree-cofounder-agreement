@@ -26,14 +26,7 @@ import WelcomePopup from './WelcomePopup';
 
 const libraries = ['places'];
 
-function Survey({
-  projectId,
-  allProjects = [],
-  onProjectSwitch,
-  onPreview,
-  onFinalAgreement,
-  onCreateProject,
-}) {
+function Survey({ projectId, onPreview, onFinalAgreement }) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser, setActive, userMemberships, orgsLoaded } = useUser();
@@ -298,9 +291,6 @@ function Survey({
         }}
         onReviewAndApproveClick={onPreview}
         onFinalAgreementClick={onFinalAgreement}
-        allProjects={allProjects}
-        onProjectSwitch={onProjectSwitch}
-        onCreateProject={onCreateProject}
         isMobileNavOpen={isMobileNavOpen}
         setIsMobileNavOpen={setIsMobileNavOpen}
         onManageCollaborators={() => setShowCollaborators(true)}

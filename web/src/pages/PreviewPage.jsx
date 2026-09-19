@@ -1,37 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Preview from '../components/Preview';
-import PaymentModal from '../components/PaymentModal';
 
 function PreviewPage() {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const handleEdit = (sectionId = null) => {
     const url = sectionId ? `/survey/${projectId}?section=${sectionId}` : `/survey/${projectId}`;
     navigate(url);
   };
 
-  const handleCreateProject = () => {
-    setShowPaymentModal(true);
-  };
-
-  const handleProjectSwitch = (newProjectId) => {
-    navigate(`/survey/${newProjectId}`);
-  };
-
-  return (
-    <>
-      <Preview
-        projectId={projectId}
-        onEdit={handleEdit}
-        onCreateProject={handleCreateProject}
-        onProjectSwitch={handleProjectSwitch}
-      />
-      {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} />}
-    </>
-  );
+  return <Preview projectId={projectId} onEdit={handleEdit} />;
 }
 
 export default PreviewPage;

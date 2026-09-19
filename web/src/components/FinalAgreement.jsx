@@ -5,7 +5,7 @@ import { useProjectSync } from '../hooks/useProjectSync';
 
 const FINAL_AGREEMENT_ID = 'final-agreement';
 
-function FinalAgreement({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreateProject }) {
+function FinalAgreement({ projectId, onEdit }) {
   // UI state
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [currentSection, setCurrentSection] = useState(FINAL_AGREEMENT_ID);
@@ -68,9 +68,6 @@ function FinalAgreement({ projectId, allProjects = [], onProjectSwitch, onEdit, 
         onSectionClick={(sectionId) => onEdit(sectionId)} // Navigate back to survey at specific section
         onReviewAndApproveClick={() => onEdit('generated-agreement')} // Navigate to Preview page
         onFinalAgreementClick={() => setCurrentSection(FINAL_AGREEMENT_ID)}
-        allProjects={allProjects}
-        onProjectSwitch={onProjectSwitch}
-        onCreateProject={onCreateProject}
         isMobileNavOpen={isMobileNavOpen}
         setIsMobileNavOpen={setIsMobileNavOpen}
       />

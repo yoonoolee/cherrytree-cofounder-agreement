@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import FinalAgreement from '../components/FinalAgreement';
-import PaymentModal from '../components/PaymentModal';
 
 function FinalAgreementPage() {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const handleEdit = (sectionId = null) => {
     if (sectionId === 'generated-agreement') {
@@ -19,25 +17,7 @@ function FinalAgreementPage() {
     }
   };
 
-  const handleCreateProject = () => {
-    setShowPaymentModal(true);
-  };
-
-  const handleProjectSwitch = (newProjectId) => {
-    navigate(`/survey/${newProjectId}`);
-  };
-
-  return (
-    <>
-      <FinalAgreement
-        projectId={projectId}
-        onEdit={handleEdit}
-        onCreateProject={handleCreateProject}
-        onProjectSwitch={handleProjectSwitch}
-      />
-      {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} />}
-    </>
-  );
+  return <FinalAgreement projectId={projectId} onEdit={handleEdit} />;
 }
 
 export default FinalAgreementPage;

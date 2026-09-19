@@ -1,25 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Survey from '../components/Survey';
-import PaymentModal from '../components/PaymentModal';
 import { db } from '../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
-import { useUser } from '../contexts/UserContext';
-import { useProjects } from '../hooks/useProjects';
 
 function SurveyPage() {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const { currentUser, loading: authLoading, userMemberships, orgsLoaded } = useUser();
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-
-  // Use shared useProjects hook instead of duplicate fetching logic
-  const { projects: allProjects } = useProjects(
-    currentUser,
-    userMemberships,
-    orgsLoaded,
-    authLoading,
-  );
 
   // Update lastOpened timestamp when project is accessed
   useEffect(() => {
@@ -47,26 +34,12 @@ function SurveyPage() {
     navigate(`/final-agreement/${projectId}`);
   };
 
-  const handleCreateProject = () => {
-    setShowPaymentModal(true);
-  };
-
-  const handleProjectSwitch = (newProjectId) => {
-    navigate(`/survey/${newProjectId}`);
-  };
-
   return (
-    <>
-      <Survey
-        projectId={projectId}
-        allProjects={allProjects}
-        onPreview={handlePreview}
-        onFinalAgreement={handleFinalAgreement}
-        onCreateProject={handleCreateProject}
-        onProjectSwitch={handleProjectSwitch}
-      />
-      {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} />}
-    </>
+    <Survey
+      projectId={projectId}
+      onPreview={handlePreview}
+      onFinalAgreement={handleFinalAgreement}
+    />
   );
 }
 

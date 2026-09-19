@@ -12,7 +12,7 @@ import { useProjectSync } from '../hooks/useProjectSync';
 
 const GENERATED_AGREEMENT_ID = 'generated-agreement';
 
-function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreateProject }) {
+function Preview({ projectId, onEdit }) {
   const { currentUser } = useUser();
   const navigate = useNavigate();
 
@@ -200,9 +200,6 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
         onSectionClick={(sectionId) => onEdit(sectionId)} // Navigate back to survey at specific section
         onReviewAndApproveClick={() => setCurrentSection(GENERATED_AGREEMENT_ID)}
         onFinalAgreementClick={() => navigate(`/final-agreement/${projectId}`)}
-        allProjects={allProjects}
-        onProjectSwitch={onProjectSwitch}
-        onCreateProject={onCreateProject}
         isMobileNavOpen={isMobileNavOpen}
         setIsMobileNavOpen={setIsMobileNavOpen}
         onManageCollaborators={() => setShowCollaborators(true)}
