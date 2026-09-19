@@ -1,57 +1,69 @@
 rules_version = '2';
 
+// Client access is deliberately narrow: Cloud Functions (Admin SDK, which bypasses these
+// rules) own every document's lifecycle and every field that carries money, membership or
+// deadlines. Guarded by functions/test/rules/firestore.rules.test.ts (npm run test:rules).
 service cloud.firestore {
   match /databases/{database}/documents {
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Users collection
+    // users/{clerkUserId}: readable by its owner, written only by the Clerk webhook and
+    // createCheckoutSession (stripeCustomerId).
     match /users/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow write: if false;
     }
 
-    // Projects collection
+    // projects/{clerkOrgId}
     match /projects/{projectId} {
-      // Check if user is admin or active collaborator
-      function isAdminOrCollaborator() {
-        return resource.data.admin == request.auth.uid ||
-               resource.data.collaborators[request.auth.uid] != null;
+      function isAdmin() {
+        return resource.data.admin == request.auth.uid;
       }
 
-      // Projects are created via Stripe webhook (server-side)
-      allow create: if false;
+      // A collaborator whose membership is current; removed members keep their entry
+      // (history) but lose access.
+      function isActiveCollaborator() {
+        return resource.data.collaborators.get(request.auth.uid, {}).get('isActive', false) == true;
+      }
 
-      // Allow read if user is admin or collaborator
-      allow read: if isSignedIn() && isAdminOrCollaborator();
+      // Fields the app writes from the browser (auto-save, approvals, onboarding, lastOpened).
+      // Everything else — admin, collaborators, payments, editDeadline, pdfAgreements,
+      // currentPlan, name, ... — is written server-side only.
+      function onlyClientFields() {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'surveyData', 'lastUpdated', 'lastEditedBy', 'updatedAt',
+          'approvals', 'onboardingCompleted', 'lastOpened'
+        ]);
+      }
 
-      // Allow list queries for authenticated users
-      allow list: if isSignedIn() && request.query.limit <= 100;
+      // Created by the Stripe webhook; never deleted from the client.
+      allow create, delete: if false;
 
-      // Admin and collaborators can update, but cannot change admin
+      allow get: if isSignedIn() && (isAdmin() || isActiveCollaborator());
+
+      // The app loads projects one by one from the user's Clerk memberships.
+      allow list: if false;
+
       allow update: if isSignedIn() &&
-                      isAdminOrCollaborator() &&
-                      request.resource.data.admin == resource.data.admin;
-
-      // Only admin can delete
-      allow delete: if isSignedIn() &&
-                      resource.data.admin == request.auth.uid;
+                      (isAdmin() || isActiveCollaborator()) &&
+                      onlyClientFields();
     }
 
-    // Chats subcollection — managed server-side via admin SDK only
-    // The chat agent reads/writes chats using a service account (bypasses these rules).
-    // No client-side access is ever needed.
-    match /projects/{projectId}/chats/{chatId} {
-      allow read, write: if false;
-    }
-
-    // Pro waitlist collection
+    // Public pro-plan waitlist: anonymous signup with exactly the fields the form sends.
     match /proWaitlist/{docId} {
-      allow create: if true;
+      allow create: if request.resource.data.keys().hasOnly(['email', 'timestamp', 'source']) &&
+                      request.resource.data.email is string &&
+                      request.resource.data.email.size() <= 254 &&
+                      request.resource.data.email.matches('.+@.+') &&
+                      request.resource.data.timestamp == request.time &&
+                      request.resource.data.source is string &&
+                      request.resource.data.source.size() <= 100;
       allow read, update, delete: if false;
     }
 
-    // Deny all other access
+    // Everything else (including stripeEvents) is server-side only.
     match /{document=**} {
       allow read, write: if false;
     }
