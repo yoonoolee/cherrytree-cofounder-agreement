@@ -1,8 +1,10 @@
 import { act, render, screen } from '@testing-library/react';
 import { SECTION_IDS, type Project } from '@cherrytree/shared';
 
+import { FINAL_AGREEMENT_ID, GENERATED_AGREEMENT_ID } from '../config/sectionConfig.ts';
 import { makeProject } from '../test/fixtures/project.ts';
-import FinalAgreement from './FinalAgreement';
+import FinalAgreement from './FinalAgreement.tsx';
+import type SurveyNavigation from './SurveyNavigation.tsx';
 
 const mocks = vi.hoisted(() => ({
   project: null as Project | null,
@@ -28,10 +30,7 @@ function renderFinalAgreement() {
   return { onEdit };
 }
 
-const nav = () =>
-  mocks.navProps as unknown as React.ComponentProps<
-    typeof import('./SurveyNavigation.tsx').default
-  >;
+const nav = () => mocks.navProps as unknown as React.ComponentProps<typeof SurveyNavigation>;
 const iframe = () => screen.getByTitle('Final Cofounder Agreement') as HTMLIFrameElement;
 
 beforeEach(() => {
@@ -70,16 +69,16 @@ describe('FinalAgreement', () => {
   it('routes the navigation clicks through onEdit', () => {
     const { onEdit } = renderFinalAgreement();
     expect(nav().projectId).toBe('org_1');
-    expect(nav().currentSection).toBe('final-agreement');
+    expect(nav().currentSection).toBe(FINAL_AGREEMENT_ID);
 
     nav().onSectionClick(SECTION_IDS.VESTING);
     expect(onEdit).toHaveBeenLastCalledWith(SECTION_IDS.VESTING);
 
     nav().onReviewAndApproveClick();
-    expect(onEdit).toHaveBeenLastCalledWith('generated-agreement');
+    expect(onEdit).toHaveBeenLastCalledWith(GENERATED_AGREEMENT_ID);
 
     act(() => nav().onFinalAgreementClick!());
-    expect(nav().currentSection).toBe('final-agreement');
+    expect(nav().currentSection).toBe(FINAL_AGREEMENT_ID);
     expect(onEdit).toHaveBeenCalledTimes(2);
   });
 

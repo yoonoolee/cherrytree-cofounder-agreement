@@ -71,3 +71,11 @@ export const SECTIONS: Record<SectionId, SectionMeta> = {
       'Last stretch! Knock out these last few questions, then review and green-light your agreement.',
   },
 };
+
+/**
+ * `SurveyNavigation.currentSection` values for the pages after the survey. The navigation
+ * only compares `currentSection` against survey section ids, so these mark no section active.
+ * `GENERATED_AGREEMENT_ID` is also what `FinalAgreement.onEdit` receives for "go to Review & Approve".
+ */
+export const GENERATED_AGREEMENT_ID = 'generated-agreement';
+export const FINAL_AGREEMENT_ID = 'final-agreement';

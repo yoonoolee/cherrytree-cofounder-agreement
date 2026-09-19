@@ -1,12 +1,19 @@
-import React, { useState, useRef } from 'react';
-import SurveyNavigation from './SurveyNavigation';
-import AgreementHeader from './AgreementHeader';
-import { useProjectSync } from '../hooks/useProjectSync';
-import { getEmbedUrl } from '../utils/getEmbedUrl';
+import { useState, useRef } from 'react';
+import type { SectionId } from '@cherrytree/shared';
 
-const FINAL_AGREEMENT_ID = 'final-agreement';
+import SurveyNavigation from './SurveyNavigation.tsx';
+import AgreementHeader from './AgreementHeader.tsx';
+import { useProjectSync } from '../hooks/useProjectSync.ts';
+import { getEmbedUrl } from '../utils/getEmbedUrl.ts';
+import { FINAL_AGREEMENT_ID, GENERATED_AGREEMENT_ID } from '../config/sectionConfig.ts';
 
-function FinalAgreement({ projectId, onEdit }) {
+interface FinalAgreementProps {
+  projectId: string;
+  /** Leave for a survey section, or for the Review & Approve page (`GENERATED_AGREEMENT_ID`). */
+  onEdit: (sectionId: SectionId | typeof GENERATED_AGREEMENT_ID) => void;
+}
+
+function FinalAgreement({ projectId, onEdit }: FinalAgreementProps) {
   // UI state
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
@@ -32,7 +39,7 @@ function FinalAgreement({ projectId, onEdit }) {
         projectId={projectId}
         currentSection={FINAL_AGREEMENT_ID}
         onSectionClick={(sectionId) => onEdit(sectionId)} // Navigate back to survey at specific section
-        onReviewAndApproveClick={() => onEdit('generated-agreement')} // Navigate to Preview page
+        onReviewAndApproveClick={() => onEdit(GENERATED_AGREEMENT_ID)} // Navigate to Preview page
         onFinalAgreementClick={() => {}} // Already here; keeps the entry in the navigation
         isMobileNavOpen={isMobileNavOpen}
         setIsMobileNavOpen={setIsMobileNavOpen}
