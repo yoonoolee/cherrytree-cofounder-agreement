@@ -1,41 +1,60 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type KeyboardEvent } from 'react';
 import { US_STATES, FIELDS } from '@cherrytree/shared';
-import CustomSelect from './CustomSelect';
-import QuestionRenderer from './QuestionRenderer';
-import QuestionCard from './QuestionCard';
-import { QUESTION_CONFIG } from '../config/questionConfig';
-import { getPreview } from '../utils/getPreview';
+
+import CustomSelect from './CustomSelect.tsx';
+import QuestionRenderer from './QuestionRenderer.tsx';
+import QuestionCard from './QuestionCard.tsx';
+import type { SurveySectionProps } from './sectionProps.ts';
+import { QUESTION_CONFIG } from '../config/questionConfig.ts';
+import { getPreview } from '../utils/getPreview.ts';
 
 // Constants
 const ADDRESS_SEARCH_MIN_LENGTH = 3; // Minimum characters before triggering address autocomplete
+
+const MAILING_ADDRESS_CARD = 'mailing_address'; // custom card key (four fields in one card)
 
 const FIELD_ORDER = [
   FIELDS.COMPANY_NAME,
   FIELDS.ENTITY_TYPE,
   FIELDS.REGISTERED_STATE,
-  'mailing_address', // custom card key
+  MAILING_ADDRESS_CARD,
   FIELDS.COMPANY_DESCRIPTION,
   FIELDS.INDUSTRIES,
-];
+] as const;
 
-function SectionFormation({ formData, handleChange, isReadOnly, showValidation }) {
-  const [suggestions, setSuggestions] = useState([]);
+type Field = (typeof FIELD_ORDER)[number];
+
+/** `google.maps.importLibrary` returns the union of every library; this section only loads Places. */
+const importPlaces = () =>
+  window.google.maps.importLibrary('places') as Promise<google.maps.PlacesLibrary>;
+
+function SectionFormation({
+  formData,
+  handleChange,
+  isReadOnly,
+  showValidation,
+}: SurveySectionProps) {
+  const [suggestions, setSuggestions] = useState<google.maps.places.AutocompleteSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const autocompleteSuggestion = useRef(null);
+  const autocompleteSuggestion = useRef<typeof google.maps.places.AutocompleteSuggestion | null>(
+    null,
+  );
   const isInitialMount = useRef(true);
 
   // Start on first unanswered field
   const firstUnanswered = FIELD_ORDER.find((f) => {
-    if (f === 'mailing_address') return !formData[FIELDS.MAILING_STREET];
+    if (f === MAILING_ADDRESS_CARD) return !formData[FIELDS.MAILING_STREET];
     return !formData[f];
   });
-  const [expandedField, setExpandedField] = useState(firstUnanswered || FIELD_ORDER[0]);
+  const [expandedField, setExpandedField] = useState<Field | null>(
+    firstUnanswered || FIELD_ORDER[0],
+  );
 
-  const advanceTo = (currentKey) => {
+  const advanceTo = (currentKey: Field) => {
     const idx = FIELD_ORDER.indexOf(currentKey);
-    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1]);
+    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1] ?? null);
   };
 
   const collapse = () => setExpandedField(null);
@@ -53,7 +72,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
     const initAutocomplete = async () => {
       if (!isReadOnly && window.google?.maps?.places) {
         try {
-          const { AutocompleteSuggestion } = await window.google.maps.importLibrary('places');
+          const { AutocompleteSuggestion } = await importPlaces();
           autocompleteSuggestion.current = AutocompleteSuggestion;
         } catch (error) {
           console.error('Error loading AutocompleteSuggestion:', error);
@@ -63,7 +82,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
     initAutocomplete();
   }, [isReadOnly]);
 
-  const handleInputChange = async (value) => {
+  const handleInputChange = async (value: string) => {
     setInputValue(value);
 
     if (!value || value.length < ADDRESS_SEARCH_MIN_LENGTH) {
@@ -76,7 +95,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
     if (!autocompleteSuggestion.current) return;
 
     try {
-      const request = {
+      const request: google.maps.places.AutocompleteRequest = {
         input: value,
         includedRegionCodes: ['us'],
       };
@@ -99,7 +118,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
     }
   };
 
-  const handleAddressKeyDown = (e) => {
+  const handleAddressKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (!showSuggestions || suggestions.length === 0) return;
 
     if (e.key === 'ArrowDown') {
@@ -110,10 +129,8 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
       setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : prev));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (suggestions[highlightedIndex]) {
-        const placeId = suggestions[highlightedIndex].placePrediction.placeId;
-        handleSelectAddress(placeId);
-      }
+      const placeId = suggestions[highlightedIndex]?.placePrediction?.placeId;
+      if (placeId) handleSelectAddress(placeId);
     } else if (e.key === 'Escape') {
       setShowSuggestions(false);
       setHighlightedIndex(0);
@@ -128,9 +145,9 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
     }
   };
 
-  const handleSelectAddress = async (placeId) => {
+  const handleSelectAddress = async (placeId: string) => {
     try {
-      const { Place } = await window.google.maps.importLibrary('places');
+      const { Place } = await importPlaces();
       const place = new Place({ id: placeId });
 
       await place.fetchFields({
@@ -149,26 +166,28 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
       let state = '';
       let zip = '';
 
+      // The typings allow null component names; a missing name reads as ''.
       addressComponents.forEach((component) => {
         const types = component.types;
+        const longText = component.longText ?? '';
 
         if (types.includes('street_number')) {
-          street = component.longText + ' ';
+          street = longText + ' ';
         }
         if (types.includes('route')) {
-          street += component.longText;
+          street += longText;
         }
         if (types.includes('subpremise')) {
-          street2 = component.longText;
+          street2 = longText;
         }
         if (types.includes('locality')) {
-          city = component.longText;
+          city = longText;
         }
         if (types.includes('administrative_area_level_1')) {
-          state = component.shortText;
+          state = component.shortText ?? '';
         }
         if (types.includes('postal_code')) {
-          zip = component.longText;
+          zip = longText;
         }
       });
 
@@ -317,11 +336,11 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
         <QuestionCard
           question="What's your company mailing address?"
           answerPreview={addressPreview}
-          isExpanded={expandedField === 'mailing_address'}
+          isExpanded={expandedField === MAILING_ADDRESS_CARD}
           isAnswered={addressAnswered}
-          onExpand={() => setExpandedField('mailing_address')}
+          onExpand={() => setExpandedField(MAILING_ADDRESS_CARD)}
           onCollapse={collapse}
-          onAdvance={() => advanceTo('mailing_address')}
+          onAdvance={() => advanceTo(MAILING_ADDRESS_CARD)}
         >
           {showValidation &&
             (!formData[FIELDS.MAILING_STREET] ||
@@ -369,6 +388,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                 <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                   {suggestions.map((suggestion, index) => {
                     const placePrediction = suggestion.placePrediction;
+                    if (!placePrediction) return null;
                     return (
                       <div
                         key={index}
@@ -377,7 +397,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                         onMouseEnter={() => setHighlightedIndex(index)}
                       >
                         <div className="text-sm text-gray-900">
-                          {placePrediction.mainText?.text || placePrediction.text?.text}
+                          {placePrediction.mainText?.text || placePrediction.text.text}
                         </div>
                         <div className="text-xs text-gray-500">
                           {placePrediction.secondaryText?.text}
@@ -486,7 +506,7 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                   disabled={isReadOnly}
                   autoComplete="chrome-off"
                   placeholder="94102"
-                  maxLength="10"
+                  maxLength={10}
                 />
               </div>
             </div>

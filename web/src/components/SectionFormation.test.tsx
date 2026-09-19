@@ -4,7 +4,7 @@ import { FIELDS } from '@cherrytree/shared';
 import { QUESTION_CONFIG } from '../config/questionConfig.ts';
 import { completeSurveyData, makeSurveyData } from '../test/fixtures/project.ts';
 import { cardFor, isAnswered, isExpanded, sectionProps } from '../test/sections.ts';
-import SectionFormation from './SectionFormation';
+import SectionFormation from './SectionFormation.tsx';
 
 vi.mock('../contexts/UserContext', () => ({
   useUser: () => ({ currentUser: { id: 'user_admin' } }),
