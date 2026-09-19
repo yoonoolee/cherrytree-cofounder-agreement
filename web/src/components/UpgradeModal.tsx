@@ -1,8 +1,14 @@
-import React from 'react';
-import { PRICING_PLANS } from '../constants/pricing';
-import ProWaitlistForm from './ProWaitlistForm';
+import type { Plan } from '@cherrytree/shared';
 
-function UpgradeModal({ onClose, currentPlan = 'starter' }) {
+import { PRICING_PLANS } from '../constants/pricing.ts';
+import ProWaitlistForm from './ProWaitlistForm.tsx';
+
+interface UpgradeModalProps {
+  onClose: () => void;
+  currentPlan?: Plan;
+}
+
+function UpgradeModal({ onClose, currentPlan = 'starter' }: UpgradeModalProps) {
   // Only show Starter and Pro (not Enterprise) in upgrade modal
   const upgradePlans = PRICING_PLANS.filter((plan) => plan.name !== 'Enterprise');
 
