@@ -1,7 +1,7 @@
 /**
  * Request/response contracts of the `onCall` Cloud Functions, keyed by function name.
- * `sessionToken` is the Clerk session JWT the server verifies (see docs/REFACTOR_PLAN.md for
- * why it travels in the body rather than `Authorization`).
+ * Callers are identified by their Firebase session (`request.auth`), which the web app obtains
+ * through `getFirebaseToken` — the only callable that takes a Clerk session token in the body.
  */
 import type { Plan } from './domain/project.ts';
 
@@ -28,11 +28,12 @@ export interface CallableMap {
     response: { success: true };
   };
   createOrganizationInvitation: {
-    request: { sessionToken: string; emailAddress: string; organizationId: string; role?: string };
+    /** Invitees always join as `org:member`; the redirect URL is server-side configuration. */
+    request: { emailAddress: string; organizationId: string };
     response: { success: true; invitationId: string; redirectUrl: string };
   };
   removeOrganizationMember: {
-    request: { sessionToken: string; userId: string; organizationId: string };
+    request: { userId: string; organizationId: string };
     response: { success: true };
   };
 }

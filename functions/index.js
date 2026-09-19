@@ -47,15 +47,6 @@ const COLLABORATOR_FIELDS = {
 };
 
 // ============================================================================
-// ORGANIZATION MANAGEMENT (imported from organizations.js)
-// ============================================================================
-
-const { createOrganizationInvitation, removeOrganizationMember } = require('./organizations');
-
-exports.createOrganizationInvitation = createOrganizationInvitation;
-exports.removeOrganizationMember = removeOrganizationMember;
-
-// ============================================================================
 // CLERK WEBHOOKS
 // ============================================================================
 
