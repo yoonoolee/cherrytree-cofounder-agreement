@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
-import { usePageMeta } from '../hooks/usePageMeta';
-import MarketingNav from '../components/MarketingNav';
-import MarketingFooter from '../components/MarketingFooter';
-import MarketingGrain from '../components/MarketingGrain';
-import { callFunction } from '../lib/functions';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { FunctionsError } from 'firebase/functions';
+import type { CallableRequest } from '@cherrytree/shared';
 
-const EMPTY_FORM = { name: '', email: '', message: '' };
+import { usePageMeta } from '../hooks/usePageMeta.ts';
+import MarketingNav from '../components/MarketingNav.tsx';
+import MarketingFooter from '../components/MarketingFooter.tsx';
+import MarketingGrain from '../components/MarketingGrain.tsx';
+import { callFunction } from '../lib/functions.ts';
+
+type ContactForm = CallableRequest<'sendContactMessage'>;
+type Status = 'idle' | 'sending' | 'sent' | 'error';
+
+const EMPTY_FORM: ContactForm = { name: '', email: '', message: '' };
+const SEND_FAILED_MESSAGE =
+  'Something went wrong sending your message. Please try again or email us directly at hello@cherrytree.app.';
 
 function ContactPage() {
   usePageMeta({
@@ -15,14 +23,16 @@ function ContactPage() {
   });
 
   const [form, setForm] = useState(EMPTY_FORM);
-  const [status, setStatus] = useState('idle'); // idle | sending | sent | error
+  const [status, setStatus] = useState<Status>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleChange = (field) => (e) => {
-    setForm((prev) => ({ ...prev, [field]: e.target.value }));
-  };
+  const handleChange =
+    (field: keyof ContactForm) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const { value } = e.currentTarget; // read now: React nulls currentTarget after the handler
+      setForm((prev) => ({ ...prev, [field]: value }));
+    };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setStatus('sending');
     setErrorMessage('');
@@ -39,11 +49,10 @@ function ContactPage() {
       // Only surface the server's message for validation errors (e.g. "Please enter a valid
       // email address.") — other error codes (network, internal) get a friendly fallback
       // instead of leaking an opaque SDK error string.
-      const isValidationError = error?.code === 'functions/invalid-argument';
       setErrorMessage(
-        isValidationError
+        error instanceof FunctionsError && error.code === 'functions/invalid-argument'
           ? error.message
-          : 'Something went wrong sending your message. Please try again or email us directly at hello@cherrytree.app.',
+          : SEND_FAILED_MESSAGE,
       );
     }
   };
