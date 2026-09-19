@@ -29,15 +29,6 @@ export interface CallableMap {
     };
     response: { sessionId: string; url: string | null };
   };
-  deleteAccount: {
-    request: { sessionToken: string };
-    response: {
-      success: true;
-      message: string;
-      transferredProjects: { name: string; transferredTo: string }[];
-      archivedProjects: string[];
-    };
-  };
   sendContactMessage: {
     request: { name: string; email: string; message: string };
     response: { success: true };

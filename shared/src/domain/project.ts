@@ -22,9 +22,9 @@ export interface CollaboratorHistoryEntry {
 export interface Collaborator {
   role: CollaboratorRole;
   isActive: boolean;
-  /** Absent on the pseudonymized entry written by `deleteAccount`. */
-  firstName?: string;
-  lastName?: string;
+  /** Copied from the user document when the collaborator joins; `''` when unknown. */
+  firstName: string;
+  lastName: string;
   history: CollaboratorHistoryEntry[];
 }
 
@@ -74,13 +74,6 @@ export interface Project {
   lastEditedBy?: string;
   previewPdfUrl?: string;
   previewPdfGeneratedAt?: TimestampLike;
-  /** Set by `deleteAccount` when admin rights move to another collaborator. */
-  transferredFrom?: string;
-  transferredAt?: TimestampLike;
-  /** Set by `deleteAccount` when no collaborator remains. */
-  archived?: boolean;
-  archivedReason?: 'admin_deleted';
-  archivedAt?: TimestampLike;
   /** Read by the dashboard but never written (see docs/REFACTOR_PLAN.md). */
   updatedAt?: TimestampLike;
 }

@@ -18,8 +18,6 @@ export interface UserDoc {
   // Written after creation
   /** Set by `createCheckoutSession` on first purchase. */
   stripeCustomerId?: string;
-  /** Set by `deleteAccount` / the `user.deleted` webhook. */
+  /** Set by the `user.deleted` webhook. */
   deletedAt?: TimestampLike;
-  originalEmail?: string;
-  name?: string;
 }
