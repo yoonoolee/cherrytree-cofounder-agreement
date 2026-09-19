@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useOrganization } from '@clerk/clerk-react';
-import { callFunction } from '../lib/functions';
-import { isAfterEditDeadline } from '../utils/dateUtils';
+import { toErrorMessage } from '@cherrytree/shared';
+
+import { callFunction } from '../lib/functions.ts';
+import { isAfterEditDeadline } from '../utils/dateUtils.ts';
+import type { ProjectWithId } from '../hooks/useProjectSync.ts';
 
 const SUCCESS_MESSAGE_DURATION_MS = 10000;
 
-function CollaboratorManager({ project }) {
+interface CollaboratorManagerProps {
+  project: Pick<ProjectWithId, 'id' | 'name' | 'admin' | 'createdAt' | 'editDeadline'>;
+}
+
+/** Invite, list and remove the Clerk organization members behind a project (admin only). */
+function CollaboratorManager({ project }: CollaboratorManagerProps) {
   const { organization, memberships, invitations, membership } = useOrganization({
     memberships: { infinite: true, keepPreviousData: true },
     invitations: { infinite: true, keepPreviousData: true },
@@ -18,8 +26,8 @@ function CollaboratorManager({ project }) {
   const [inviting, setInviting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [removingUserId, setRemovingUserId] = useState(null);
-  const [revokingInvitationId, setRevokingInvitationId] = useState(null);
+  const [removingUserId, setRemovingUserId] = useState<string | null>(null);
+  const [revokingInvitationId, setRevokingInvitationId] = useState<string | null>(null);
 
   if (!project.id) {
     const subject = encodeURIComponent('[URGENT] Production Support Request - No Project ID');
@@ -50,7 +58,7 @@ function CollaboratorManager({ project }) {
     );
   }
 
-  if (organization?.id !== project.id) {
+  if (!organization || organization.id !== project.id) {
     return (
       <div style={{ textAlign: 'center', padding: '32px 0', fontFamily: 'Outfit, sans-serif' }}>
         <p style={{ fontSize: '13px', fontWeight: 300, color: '#555' }}>
@@ -60,7 +68,7 @@ function CollaboratorManager({ project }) {
     );
   }
 
-  const handleInvite = async (e) => {
+  const handleInvite = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -79,13 +87,13 @@ function CollaboratorManager({ project }) {
       setTimeout(() => setSuccess(''), SUCCESS_MESSAGE_DURATION_MS);
     } catch (err) {
       console.error('Invite error:', err);
-      setError(err.message || 'Failed to send invitation');
+      setError(toErrorMessage(err) || 'Failed to send invitation');
     } finally {
       setInviting(false);
     }
   };
 
-  const handleRemoveMember = async (userId) => {
+  const handleRemoveMember = async (userId: string) => {
     setRemovingUserId(userId);
     try {
       await callFunction('removeOrganizationMember', { userId, organizationId: organization.id });
@@ -97,7 +105,7 @@ function CollaboratorManager({ project }) {
     }
   };
 
-  const handleRevokeInvitation = async (invitationId) => {
+  const handleRevokeInvitation = async (invitationId: string) => {
     setRevokingInvitationId(invitationId);
     try {
       const invitation = invitations?.data?.find((inv) => inv.id === invitationId);
@@ -112,7 +120,8 @@ function CollaboratorManager({ project }) {
     }
   };
 
-  const formatRole = (role) => role.replace('org:', '').replace('_', ' ').replace('basic ', '');
+  const formatRole = (role: string) =>
+    role.replace('org:', '').replace('_', ' ').replace('basic ', '');
 
   return (
     <div style={{ fontFamily: 'Outfit, sans-serif', width: '100%' }}>
@@ -184,7 +193,8 @@ function CollaboratorManager({ project }) {
       )}
 
       {/* Members list */}
-      {(memberships?.data?.length > 0 || (isAdmin && invitations?.data?.length > 0)) && (
+      {((memberships?.data?.length ?? 0) > 0 ||
+        (isAdmin && (invitations?.data?.length ?? 0) > 0)) && (
         <div>
           <div
             style={{
@@ -198,54 +208,55 @@ function CollaboratorManager({ project }) {
             Members
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {memberships?.data?.map((m) => (
-              <div
-                key={m.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '10px 14px',
-                  background: '#E9E5DF',
-                  borderRadius: '5px',
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 400, color: '#1a1a1a' }}>
-                    {m.publicUserData.identifier}
+            {memberships?.data?.map((m) => {
+              // Clerk types publicUserData (and its userId) as optional; memberships always carry it.
+              const userId = m.publicUserData?.userId;
+              const removing = userId !== undefined && removingUserId === userId;
+              return (
+                <div
+                  key={m.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '10px 14px',
+                    background: '#E9E5DF',
+                    borderRadius: '5px',
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 400, color: '#1a1a1a' }}>
+                      {m.publicUserData?.identifier}
+                    </div>
+                    <div
+                      style={{ fontSize: '11px', fontWeight: 300, color: '#888', marginTop: '2px' }}
+                    >
+                      <span style={{ textTransform: 'capitalize' }}>{formatRole(m.role)}</span>
+                      <span style={{ margin: '0 5px' }}>·</span>
+                      <span style={{ color: '#4B7263' }}>Active</span>
+                    </div>
                   </div>
-                  <div
-                    style={{ fontSize: '11px', fontWeight: 300, color: '#888', marginTop: '2px' }}
-                  >
-                    <span style={{ textTransform: 'capitalize' }}>{formatRole(m.role)}</span>
-                    <span style={{ margin: '0 5px' }}>·</span>
-                    <span style={{ color: '#4B7263' }}>Active</span>
-                  </div>
+                  {isAdmin && m.role !== 'org:admin' && userId !== undefined && (
+                    <button
+                      onClick={() => handleRemoveMember(userId)}
+                      disabled={removing || isEditWindowExpired}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        fontSize: '12px',
+                        fontWeight: 300,
+                        color: '#b97070',
+                        cursor: removing || isEditWindowExpired ? 'not-allowed' : 'pointer',
+                        opacity: removing || isEditWindowExpired ? 0.5 : 1,
+                        fontFamily: 'Outfit, sans-serif',
+                      }}
+                    >
+                      {removing ? 'Removing...' : 'Remove'}
+                    </button>
+                  )}
                 </div>
-                {isAdmin && m.role !== 'org:admin' && (
-                  <button
-                    onClick={() => handleRemoveMember(m.publicUserData.userId)}
-                    disabled={removingUserId === m.publicUserData.userId || isEditWindowExpired}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      fontSize: '12px',
-                      fontWeight: 300,
-                      color: '#b97070',
-                      cursor:
-                        removingUserId === m.publicUserData.userId || isEditWindowExpired
-                          ? 'not-allowed'
-                          : 'pointer',
-                      opacity:
-                        removingUserId === m.publicUserData.userId || isEditWindowExpired ? 0.5 : 1,
-                      fontFamily: 'Outfit, sans-serif',
-                    }}
-                  >
-                    {removingUserId === m.publicUserData.userId ? 'Removing...' : 'Remove'}
-                  </button>
-                )}
-              </div>
-            ))}
+              );
+            })}
 
             {isAdmin &&
               invitations?.data?.map((inv) => (
