@@ -9,7 +9,7 @@ import type { ProjectWithId } from '../hooks/useProjectSync.ts';
 const SUCCESS_MESSAGE_DURATION_MS = 10000;
 
 interface CollaboratorManagerProps {
-  project: Pick<ProjectWithId, 'id' | 'name' | 'admin' | 'createdAt' | 'editDeadline'>;
+  project: Pick<ProjectWithId, 'id' | 'editDeadline'>;
 }
 
 /** Invite, list and remove the Clerk organization members behind a project (admin only). */
@@ -20,7 +20,7 @@ function CollaboratorManager({ project }: CollaboratorManagerProps) {
   });
 
   const isAdmin = membership?.role === 'org:admin';
-  const isEditWindowExpired = isAfterEditDeadline(project?.editDeadline);
+  const isEditWindowExpired = isAfterEditDeadline(project.editDeadline);
 
   const [email, setEmail] = useState('');
   const [inviting, setInviting] = useState(false);
@@ -28,35 +28,6 @@ function CollaboratorManager({ project }: CollaboratorManagerProps) {
   const [success, setSuccess] = useState('');
   const [removingUserId, setRemovingUserId] = useState<string | null>(null);
   const [revokingInvitationId, setRevokingInvitationId] = useState<string | null>(null);
-
-  if (!project.id) {
-    const subject = encodeURIComponent('[URGENT] Production Support Request - No Project ID');
-    const body = encodeURIComponent(
-      `Hi Cherrytree Support,\n\nI'm encountering an error with my project.\n\n--- Debug Info ---\nProject ID: ${project?.id || 'Unknown'}\nProject Name: ${project?.name || 'Unknown'}\nAdmin User ID: ${project?.admin || 'Unknown'}\nCreated At: ${project?.createdAt?.toDate?.()?.toISOString() || 'Unknown'}\nCurrent User ID: ${membership?.publicUserData?.userId || 'Unknown'}\nCurrent User Email: ${membership?.publicUserData?.identifier || 'Unknown'}\nError: Missing project ID\nTimestamp: ${new Date().toISOString()}\n------------------\n\nPlease help me resolve this issue.\n\nThank you.`,
-    );
-    return (
-      <div style={{ textAlign: 'center', padding: '32px 0', fontFamily: 'Outfit, sans-serif' }}>
-        <p style={{ fontSize: '13px', fontWeight: 300, color: '#555', marginBottom: '16px' }}>
-          Something went wrong. Please contact support.
-        </p>
-        <a
-          href={`mailto:hello@cherrytree.app?subject=${subject}&body=${body}`}
-          style={{
-            display: 'inline-block',
-            padding: '9px 20px',
-            background: '#4B7263',
-            color: '#fff',
-            borderRadius: '6px',
-            fontSize: '13px',
-            fontWeight: 400,
-            textDecoration: 'none',
-          }}
-        >
-          Contact Support
-        </a>
-      </div>
-    );
-  }
 
   if (!organization || organization.id !== project.id) {
     return (
