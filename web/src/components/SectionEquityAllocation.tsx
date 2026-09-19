@@ -1,20 +1,38 @@
-import React, { useRef, useState } from 'react';
-import EquityCalculatorModal from './EquityCalculatorModal';
-import CustomSelect from './CustomSelect';
-import './EquityCalculatorModal.css';
-import { useUser } from '../contexts/UserContext';
-import { useCollaborators } from '../hooks/useCollaborators';
-import { FIELDS, COLLABORATOR_FIELDS } from '@cherrytree/shared';
+import { useRef, useState } from 'react';
+import {
+  FIELDS,
+  COLLABORATOR_FIELDS,
+  type EquityCalculatorDraft,
+  type EquityEntry,
+} from '@cherrytree/shared';
 
-function SectionEquityAllocation({ formData, handleChange, isReadOnly, showValidation, project }) {
+import EquityCalculatorModal from './EquityCalculatorModal.tsx';
+import CustomSelect from './CustomSelect.tsx';
+import type { SurveySectionProps } from './sectionProps.ts';
+import './EquityCalculatorModal.css';
+import { useUser } from '../contexts/UserContext.tsx';
+import { useCollaborators } from '../hooks/useCollaborators.ts';
+
+/** `''`, or a number between 0 and 100. */
+const isValidPercentage = (value: string): boolean =>
+  value === '' ||
+  (!Number.isNaN(Number(value)) && parseFloat(value) >= 0 && parseFloat(value) <= 100);
+
+function SectionEquityAllocation({
+  formData,
+  handleChange,
+  isReadOnly,
+  showValidation,
+  project,
+}: SurveySectionProps) {
   const { currentUser } = useUser();
   const currentUserId = currentUser?.id;
   const { collaboratorIds, collaboratorsMap, isAdmin } = useCollaborators(project);
-  const finalEquityRef = useRef(null);
+  const finalEquityRef = useRef<HTMLDivElement>(null);
 
   const [showModal, setShowModal] = useState(false);
 
-  const getCollaboratorName = (userId) => {
+  const getCollaboratorName = (userId: string): string => {
     const collaborator = collaboratorsMap[userId];
     const accountName = [
       collaborator?.[COLLABORATOR_FIELDS.FIRST_NAME],
@@ -28,9 +46,9 @@ function SectionEquityAllocation({ formData, handleChange, isReadOnly, showValid
   };
 
   const cofounderEntries = formData[FIELDS.COFOUNDERS] || [];
-  const getCofounderName = (index) => {
+  const getCofounderName = (index: number): string => {
     const fullName = cofounderEntries[index]?.[FIELDS.COFOUNDER_FULL_NAME];
-    if (fullName && fullName.trim() !== '') return fullName.trim().split(' ')[0];
+    if (fullName && fullName.trim() !== '') return fullName.trim().split(' ')[0] ?? '';
     return `Cofounder ${String.fromCharCode(65 + index)}`;
   };
   const cofounderNames = cofounderEntries.length
@@ -41,11 +59,15 @@ function SectionEquityAllocation({ formData, handleChange, isReadOnly, showValid
   const drafts = formData[FIELDS.EQUITY_CALCULATOR_DRAFT] || {};
   const submitted = formData[FIELDS.EQUITY_CALCULATOR_SUBMITTED] || {};
 
-  const handleDraftChange = (data) => {
+  // The calculator answers are keyed by user id; without a signed-in user there is
+  // nothing to key them under (the old code would have written an "undefined" key).
+  const handleDraftChange = (data: EquityCalculatorDraft) => {
+    if (!currentUserId) return;
     handleChange(FIELDS.EQUITY_CALCULATOR_DRAFT, { ...drafts, [currentUserId]: data });
   };
 
-  const handleModalSubmit = (data) => {
+  const handleModalSubmit = (data: EquityCalculatorDraft) => {
+    if (!currentUserId) return;
     handleChange(FIELDS.EQUITY_CALCULATOR_DRAFT, { ...drafts, [currentUserId]: data });
     handleChange(FIELDS.EQUITY_CALCULATOR_SUBMITTED, {
       ...submitted,
@@ -53,7 +75,7 @@ function SectionEquityAllocation({ formData, handleChange, isReadOnly, showValid
     });
   };
 
-  const handleUseSplit = (percentages) => {
+  const handleUseSplit = (percentages: number[]) => {
     const newEntries = cofounderNames.map((name, i) => ({
       [FIELDS.EQUITY_ENTRY_NAME]: name,
       [FIELDS.EQUITY_ENTRY_PERCENTAGE]: (percentages[i] || 0).toFixed(1),
@@ -73,13 +95,17 @@ function SectionEquityAllocation({ formData, handleChange, isReadOnly, showValid
       name: getCollaboratorName(id),
       submitted: !!submitted[id],
     })),
-    entries: otherCollaboratorIds
-      .filter((id) => submitted[id])
-      .map((id) => ({
-        name: getCollaboratorName(id),
-        importance: submitted[id].importance,
-        scores: submitted[id].scores,
-      })),
+    entries: otherCollaboratorIds.flatMap((id) => {
+      const submission = submitted[id];
+      if (!submission) return [];
+      return [
+        {
+          name: getCollaboratorName(id),
+          importance: submission.importance,
+          scores: submission.scores,
+        },
+      ];
+    }),
   };
 
   const handleAddEquityEntry = () => {
@@ -90,7 +116,7 @@ function SectionEquityAllocation({ formData, handleChange, isReadOnly, showValid
     handleChange(FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION, {});
   };
 
-  const handleRemoveEquityEntry = (index) => {
+  const handleRemoveEquityEntry = (index: number) => {
     handleChange(
       FIELDS.EQUITY_ENTRIES,
       equityEntries.filter((_, i) => i !== index),
@@ -98,14 +124,20 @@ function SectionEquityAllocation({ formData, handleChange, isReadOnly, showValid
     handleChange(FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION, {});
   };
 
-  const handleEquityEntryChange = (index, field, value) => {
+  const handleEquityEntryChange = <K extends keyof EquityEntry>(
+    index: number,
+    field: K,
+    value: EquityEntry[K],
+  ) => {
+    const current = equityEntries[index];
+    if (!current) return;
     const newEntries = [...equityEntries];
-    newEntries[index] = { ...newEntries[index], [field]: value };
+    newEntries[index] = { ...current, [field]: value };
     handleChange(FIELDS.EQUITY_ENTRIES, newEntries);
     handleChange(FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION, {});
   };
 
-  const handleAcknowledgmentChange = (userId, checked) => {
+  const handleAcknowledgmentChange = (userId: string, checked: boolean) => {
     handleChange(FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION, {
       ...(formData[FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION] || {}),
       [userId]: checked,
@@ -232,7 +264,7 @@ function SectionEquityAllocation({ formData, handleChange, isReadOnly, showValid
       {showModal && (
         <EquityCalculatorModal
           cofounderNames={cofounderNames}
-          myDraft={drafts[currentUserId]}
+          myDraft={currentUserId ? drafts[currentUserId] : undefined}
           otherSubmissions={otherSubmissions}
           onDraftChange={handleDraftChange}
           onSubmit={handleModalSubmit}
@@ -322,10 +354,7 @@ function SectionEquityAllocation({ formData, handleChange, isReadOnly, showValid
                           value={entry[FIELDS.EQUITY_ENTRY_PERCENTAGE] ?? ''}
                           onChange={(e) => {
                             const value = e.target.value;
-                            if (
-                              value === '' ||
-                              (!isNaN(value) && parseFloat(value) >= 0 && parseFloat(value) <= 100)
-                            ) {
+                            if (isValidPercentage(value)) {
                               handleEquityEntryChange(index, FIELDS.EQUITY_ENTRY_PERCENTAGE, value);
                             }
                           }}
