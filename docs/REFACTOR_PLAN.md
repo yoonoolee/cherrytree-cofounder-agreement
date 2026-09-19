@@ -96,6 +96,7 @@ Rules: hard stop at every `⏸` checkpoint and wait for the user's "continue". *
 - Commands: `npm run dev` (was `npm start`), `npm run check` before pushing
 - **App Check debug token (Phase 4):** on first `npm run dev` the browser console prints `App Check debug token: …`; register it in the **dev** Firebase console → App Check → Apps → web app → Manage debug tokens. Once per browser profile. Until then every callable returns `unauthenticated` on localhost.
 - **Prod params (Phase 4):** fill `functions/.env.cherrytree-cofounder-agreement` with the LIVE Stripe price ids (placeholders today) before the next prod deploy; `APP_ORIGIN` is already set.
+- **Prod IAM (Phase 4):** the functions runtime service account `cloud-functions@cherrytree-cofounder-agreement.iam.gserviceaccount.com` needs `roles/firebaseappcheck.tokenVerifier` before the next prod deploy — with App Check enforced, every callable rejects until it can verify tokens (`app-check/permission-denied` in the logs). Granted on dev 2026-09-19 via `gcloud projects add-iam-policy-binding <project> --member=serviceAccount:cloud-functions@<project>.iam.gserviceaccount.com --role=roles/firebaseappcheck.tokenVerifier`.
 - `npm run test:rules` (Firestore rules under the emulator) needs Java on the machine
 
 ## Found during refactor — triaged 2026-09-18
