@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 /** One BreadcrumbList item; the last crumb (current page) has no url. */
-export interface Breadcrumb {
+interface Breadcrumb {
   name: string;
   url?: string;
 }

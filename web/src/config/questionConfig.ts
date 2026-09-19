@@ -77,26 +77,26 @@ interface QuestionBase {
   };
 }
 
-export interface TextQuestion extends QuestionBase {
+interface TextQuestion extends QuestionBase {
   type: 'text' | 'textarea' | 'number' | 'date';
 }
 
 /** Single choice; `otherField` adds a free-text "Other". */
-export interface ChoiceQuestion extends QuestionBase {
+interface ChoiceQuestion extends QuestionBase {
   type: 'radio' | 'dropdown';
   options: readonly (string | QuestionOption)[];
   otherField?: QuestionFieldName;
 }
 
 /** Multiple choice; stored as a string array. */
-export interface CheckboxQuestion extends QuestionBase {
+interface CheckboxQuestion extends QuestionBase {
   type: 'checkbox';
   options: readonly string[];
   otherField?: QuestionFieldName;
 }
 
 /** One checkbox per active collaborator; stored as `{ [userId]: boolean }`. */
-export interface AcknowledgmentQuestion extends QuestionBase {
+interface AcknowledgmentQuestion extends QuestionBase {
   type: 'acknowledgment';
   requiresAllCollaborators: true;
   /** Body text; a function fills in other answers. */
@@ -104,7 +104,7 @@ export interface AcknowledgmentQuestion extends QuestionBase {
 }
 
 /** Rendered by the section component itself. */
-export interface CustomQuestion extends QuestionBase {
+interface CustomQuestion extends QuestionBase {
   type: 'custom';
 }
 

@@ -1,5 +1,3 @@
-/// <reference types="google.maps" />
-
 /**
  * Browser globals the app touches that no package declares: scripts loaded from index.html
  * and the App Check debug switch (mirrors the SDK's own internal declaration).

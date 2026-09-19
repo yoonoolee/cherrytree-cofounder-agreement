@@ -13,7 +13,7 @@ import {
 } from 'firebase/firestore';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
-import type { Project, ProWaitlistSignup, UserDoc } from '@cherrytree/shared';
+import type { Project, UserDoc } from '@cherrytree/shared';
 
 import { env } from './env.ts';
 import { castConverter } from './firestore.ts';
@@ -47,15 +47,11 @@ if (env.isDev && env.useEmulators) {
   connectAuthEmulator(auth, 'http://localhost:9099');
 }
 
-/** `projects/{clerkOrgId}` */
-export const projects = collection(db, 'projects').withConverter(castConverter<Project>());
-/** `users/{clerkUserId}` */
-export const users = collection(db, 'users').withConverter(castConverter<UserDoc>());
-/** `proWaitlist/{autoId}` */
-export const proWaitlist = collection(db, 'proWaitlist').withConverter(
-  castConverter<ProWaitlistSignup>(),
-);
+const projects = collection(db, 'projects').withConverter(castConverter<Project>());
+const users = collection(db, 'users').withConverter(castConverter<UserDoc>());
 
+/** `projects/{clerkOrgId}` */
 export const projectRef = (projectId: string): DocumentReference<Project> =>
   doc(projects, projectId);
+/** `users/{clerkUserId}` */
 export const userRef = (userId: string): DocumentReference<UserDoc> => doc(users, userId);
