@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { TIE_RESOLUTION_OPTIONS } from '../config/surveySchema';
+import { TIE_RESOLUTION_OPTIONS, FIELDS } from '@cherrytree/shared';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
 import QuestionRenderer from './QuestionRenderer';
 import QuestionCard from './QuestionCard';
 import { QUESTION_CONFIG } from '../config/questionConfig';
-import { FIELDS } from '../config/surveySchema';
 import { getPreview } from '../utils/getPreview';
 
 const FIELD_ORDER = [

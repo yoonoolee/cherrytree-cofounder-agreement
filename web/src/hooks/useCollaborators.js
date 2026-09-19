@@ -3,7 +3,7 @@ import {
   getSortedCollaboratorIds,
   migrateCollaboratorPositions,
 } from '../utils/collaboratorPositions';
-import { COLLABORATOR_FIELDS } from '../config/surveySchema';
+import { COLLABORATOR_FIELDS } from '@cherrytree/shared';
 
 export function useCollaborators(project) {
   // Auto-migrate collaborators to have positions if they don't already

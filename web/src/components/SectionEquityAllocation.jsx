@@ -4,7 +4,7 @@ import CustomSelect from './CustomSelect';
 import './EquityCalculatorModal.css';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';
-import { FIELDS, COLLABORATOR_FIELDS } from '../config/surveySchema';
+import { FIELDS, COLLABORATOR_FIELDS } from '@cherrytree/shared';
 
 function SectionEquityAllocation({ formData, handleChange, isReadOnly, showValidation, project }) {
   const { currentUser } = useUser();

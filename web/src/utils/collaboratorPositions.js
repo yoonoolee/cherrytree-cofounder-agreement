@@ -5,7 +5,7 @@
  * Order is determined by the startAt timestamp of their current (active) history entry.
  */
 
-import { COLLABORATOR_FIELDS } from '../config/surveySchema';
+import { COLLABORATOR_FIELDS } from '@cherrytree/shared';
 
 /**
  * Get sorted collaborator IDs by join time (active collaborators only)

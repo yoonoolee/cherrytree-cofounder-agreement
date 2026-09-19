@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ROLES, FIELDS } from '../config/surveySchema';
+import { ROLES, FIELDS } from '@cherrytree/shared';
 import { useCollaborators } from '../hooks/useCollaborators';
 
 const EMPTY_CF = { fullName: '', title: '', email: '', roles: [], rolesOther: '' };

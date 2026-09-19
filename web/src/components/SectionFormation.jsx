@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { US_STATES } from '../config/surveySchema';
+import { US_STATES, FIELDS } from '@cherrytree/shared';
 import CustomSelect from './CustomSelect';
 import QuestionRenderer from './QuestionRenderer';
 import QuestionCard from './QuestionCard';
 import { QUESTION_CONFIG } from '../config/questionConfig';
-import { FIELDS } from '../config/surveySchema';
 import { getPreview } from '../utils/getPreview';
 
 // Constants

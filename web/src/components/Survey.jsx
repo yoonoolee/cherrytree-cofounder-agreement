@@ -5,7 +5,7 @@ import { db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useAuth, UserButton } from '@clerk/clerk-react';
-import { SECTION_IDS, SECTION_ORDER, getNextSection, isLastSection } from '../config/sectionConfig';
+import { SECTION_IDS, SECTION_ORDER, getNextSection, isLastSection } from '@cherrytree/shared';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useProjectSync } from '../hooks/useProjectSync';
 import { useValidation } from '../hooks/useValidation';

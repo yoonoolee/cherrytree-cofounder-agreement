@@ -1,5 +1,4 @@
-import { FIELDS, COLLABORATOR_FIELDS } from '../config/surveySchema';
-import { SECTION_IDS, SECTION_ORDER } from '../config/sectionConfig';
+import { FIELDS, COLLABORATOR_FIELDS, SECTION_IDS, SECTION_ORDER } from '@cherrytree/shared';
 
 /**
  * Standalone progress calculation utility

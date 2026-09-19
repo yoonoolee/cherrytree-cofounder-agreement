@@ -5,7 +5,7 @@ import { UserButton, useClerk } from '@clerk/clerk-react';
 import PaymentModal from '../components/PaymentModal';
 import { useProjects } from '../hooks/useProjects';
 import { calculateProjectProgress, countCompletedSections } from '../utils/progressCalculation';
-import { FIELDS } from '../config/surveySchema';
+import { FIELDS } from '@cherrytree/shared';
 
 function DashboardPage() {
   const navigate = useNavigate();

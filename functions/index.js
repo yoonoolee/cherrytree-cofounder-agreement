@@ -25,7 +25,7 @@ const {
   REQUIRED_ACKNOWLEDGMENT_FIELDS,
   CONDITIONAL_ACKNOWLEDGMENT_FIELDS,
   mergeOtherFields,
-} = require('./surveySchema');
+} = require('@cherrytree/shared');
 
 initializeApp();
 const db = getFirestore();

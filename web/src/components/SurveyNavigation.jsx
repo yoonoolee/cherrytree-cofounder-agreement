@@ -2,7 +2,7 @@ import React, { useState, useRef, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PaymentModal from './PaymentModal';
 import UpgradeModal from './UpgradeModal';
-import { SECTION_ORDER, SECTIONS as SECTION_CONFIG } from '../config/sectionConfig';
+import { SECTION_ORDER, SECTIONS as SECTION_CONFIG } from '@cherrytree/shared';
 import { useProjectSync } from '../hooks/useProjectSync';
 import { useValidation } from '../hooks/useValidation';
 import { useCollaborators } from '../hooks/useCollaborators';

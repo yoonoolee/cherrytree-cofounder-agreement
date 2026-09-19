@@ -2,6 +2,7 @@
   "name": "functions",
   "description": "Cloud Functions for Firebase",
   "scripts": {
+    "build": "node esbuild.config.mjs",
     "serve": "firebase emulators:start --only functions",
     "shell": "firebase functions:shell",
     "start": "npm run shell",
@@ -11,7 +12,7 @@
   "engines": {
     "node": "22"
   },
-  "main": "index.js",
+  "main": "lib/index.js",
   "dependencies": {
     "@clerk/backend": "^2.29.0",
     "axios": "^1.12.2",
@@ -24,6 +25,7 @@
   },
   "private": true,
   "devDependencies": {
-    "@types/node": "^22.20.4"
+    "@types/node": "^22.20.4",
+    "esbuild": "^0.28.2"
   }
 }

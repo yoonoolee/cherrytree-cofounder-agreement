@@ -9,9 +9,9 @@
  * - Progress tracking
  */
 
-import { FIELDS } from './surveySchema';
-import { SECTION_IDS } from './sectionConfig';
 import {
+  FIELDS,
+  SECTION_IDS,
   ENTITY_TYPES,
   INDUSTRIES,
   ROLES,
@@ -26,7 +26,7 @@ import {
   DISPUTE_RESOLUTION_OPTIONS,
   US_STATES,
   AMENDMENT_PROCESS_OPTIONS,
-} from './surveySchema';
+} from '@cherrytree/shared';
 
 // Input type constants
 const INPUT_TYPES = {

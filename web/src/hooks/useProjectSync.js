@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
-import { INITIAL_FORM_DATA } from '../config/surveySchema';
+import { INITIAL_FORM_DATA } from '@cherrytree/shared';
 
 /**
  * Get initial form data from survey schema

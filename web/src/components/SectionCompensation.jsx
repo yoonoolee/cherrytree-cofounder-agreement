@@ -3,7 +3,7 @@ import CustomSelect from './CustomSelect';
 import QuestionRenderer from './QuestionRenderer';
 import QuestionCard from './QuestionCard';
 import { QUESTION_CONFIG } from '../config/questionConfig';
-import { FIELDS } from '../config/surveySchema';
+import { FIELDS } from '@cherrytree/shared';
 import { getPreview } from '../utils/getPreview';
 
 const FIELD_ORDER = [FIELDS.TAKING_COMPENSATION, FIELDS.SPENDING_LIMIT];
