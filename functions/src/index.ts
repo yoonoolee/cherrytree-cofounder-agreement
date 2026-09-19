@@ -1,5 +1,4 @@
-// Modules still in ../index.js are re-exported until Phase 4 finishes converting them.
-export * from '../index.js';
+export { clerkWebhook } from './clerkWebhook.ts';
 export { sendContactMessage } from './contact.ts';
 export { getFirebaseToken } from './firebaseToken.ts';
 export { createOrganizationInvitation, removeOrganizationMember } from './organizations.ts';
