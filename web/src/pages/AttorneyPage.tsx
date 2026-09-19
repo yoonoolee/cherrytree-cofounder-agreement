@@ -1,10 +1,18 @@
-import React from 'react';
-import { usePageMeta } from '../hooks/usePageMeta';
-import MarketingNav from '../components/MarketingNav';
-import MarketingFooter from '../components/MarketingFooter';
-import MarketingGrain from '../components/MarketingGrain';
+import { usePageMeta } from '../hooks/usePageMeta.ts';
+import MarketingNav from '../components/MarketingNav.tsx';
+import MarketingFooter from '../components/MarketingFooter.tsx';
+import MarketingGrain from '../components/MarketingGrain.tsx';
 
-const ATTORNEYS = [
+interface Attorney {
+  id: number;
+  name: string;
+  title: string;
+  location: string;
+  description: string;
+}
+
+/** Placeholder cards until the Pro attorney network launches. */
+const ATTORNEYS: readonly Attorney[] = [
   {
     id: 1,
     name: 'Attorney Name',
