@@ -1,8 +1,24 @@
-import React, { useState } from 'react';
-import { ROLES, FIELDS } from '@cherrytree/shared';
-import { useCollaborators } from '../hooks/useCollaborators';
+import { useState } from 'react';
+import { ROLES, FIELDS, type Cofounder } from '@cherrytree/shared';
 
-const EMPTY_CF = { fullName: '', title: '', email: '', roles: [], rolesOther: '' };
+import type { SurveySectionProps } from './sectionProps.ts';
+import { useCollaborators } from '../hooks/useCollaborators.ts';
+
+/** What the form edits: a cofounder minus its id. */
+type CofounderValues = Omit<Cofounder, 'id'>;
+
+const EMPTY_CF: CofounderValues = { fullName: '', title: '', email: '', roles: [], rolesOther: '' };
+
+interface CofounderFormProps {
+  values: CofounderValues;
+  onChange: <K extends keyof CofounderValues>(field: K, value: CofounderValues[K]) => void;
+  onSubmit: () => void;
+  onCancel: () => void;
+  /** Absent for the add form and while read-only. */
+  onRemove?: () => void;
+  submitLabel: string;
+  isReadOnly: boolean;
+}
 
 function CofounderForm({
   values,
@@ -12,7 +28,7 @@ function CofounderForm({
   onRemove,
   submitLabel,
   isReadOnly,
-}) {
+}: CofounderFormProps) {
   return (
     <div className="cf-form-fields">
       <div className="cf-inline-form-grid">
@@ -101,7 +117,13 @@ function CofounderForm({
   );
 }
 
-function SectionCofounders({ formData, handleChange, isReadOnly, showValidation, project }) {
+function SectionCofounders({
+  formData,
+  handleChange,
+  isReadOnly,
+  showValidation,
+  project,
+}: SurveySectionProps) {
   const { collaboratorIds } = useCollaborators(project);
   const maxCofounders = collaboratorIds.length;
   const cofounders = formData[FIELDS.COFOUNDERS] || [];
@@ -110,22 +132,21 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
 
   const [expandedIndex, setExpandedIndex] = useState(-1);
   const [addingNew, setAddingNew] = useState(false);
-  const [newCf, setNewCf] = useState(EMPTY_CF);
+  const [newCf, setNewCf] = useState<CofounderValues>(EMPTY_CF);
 
-  const commitCofounderChange = (index, field, value) => {
+  const commitCofounderChange = <K extends keyof CofounderValues>(
+    index: number,
+    field: K,
+    value: CofounderValues[K],
+  ) => {
+    const current = cofounders[index];
+    if (!current) return;
     const updated = [...cofounders];
-    const fieldMap = {
-      fullName: FIELDS.COFOUNDER_FULL_NAME,
-      title: FIELDS.COFOUNDER_TITLE,
-      email: FIELDS.COFOUNDER_EMAIL,
-      roles: FIELDS.COFOUNDER_ROLES,
-      rolesOther: FIELDS.COFOUNDER_ROLES_OTHER,
-    };
-    updated[index] = { ...updated[index], [fieldMap[field]]: value };
+    updated[index] = { ...current, [field]: value };
     handleChange(FIELDS.COFOUNDERS, updated);
   };
 
-  const handleRemoveCofounder = (index) => {
+  const handleRemoveCofounder = (index: number) => {
     const next = cofounders.filter((_, i) => i !== index);
     handleChange(FIELDS.COFOUNDERS, next);
     handleChange(FIELDS.COFOUNDER_COUNT, next.length.toString());
@@ -150,7 +171,7 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
     setAddingNew(false);
   };
 
-  const getDisplayValues = (cf) => ({
+  const getDisplayValues = (cf: Cofounder): CofounderValues => ({
     fullName: cf[FIELDS.COFOUNDER_FULL_NAME] || '',
     title: cf[FIELDS.COFOUNDER_TITLE] || '',
     email: cf[FIELDS.COFOUNDER_EMAIL] || '',
@@ -158,7 +179,7 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
     rolesOther: cf[FIELDS.COFOUNDER_ROLES_OTHER] || '',
   });
 
-  const isAnswered = (cf) =>
+  const isAnswered = (cf: Cofounder) =>
     !!(
       cf[FIELDS.COFOUNDER_FULL_NAME] &&
       cf[FIELDS.COFOUNDER_TITLE] &&
@@ -166,7 +187,7 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
       (cf[FIELDS.COFOUNDER_ROLES] || []).length
     );
 
-  const getCofounderPreview = (values) => {
+  const getCofounderPreview = (values: CofounderValues) => {
     const rolesList = values.roles.map((r) =>
       r === 'Other' && values.rolesOther ? values.rolesOther : r,
     );
@@ -251,7 +272,7 @@ function SectionCofounders({ formData, handleChange, isReadOnly, showValidation,
                   onChange={(field, value) => commitCofounderChange(index, field, value)}
                   onSubmit={() => setExpandedIndex(-1)}
                   onCancel={() => setExpandedIndex(-1)}
-                  onRemove={!isReadOnly ? () => handleRemoveCofounder(index) : null}
+                  onRemove={!isReadOnly ? () => handleRemoveCofounder(index) : undefined}
                   submitLabel="Done"
                   isReadOnly={isReadOnly}
                 />
