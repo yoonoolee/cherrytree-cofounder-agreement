@@ -1,24 +1,47 @@
-import { useState, useRef, useCallback } from 'react';
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { useState, useRef, useCallback, type Dispatch, type SetStateAction } from 'react';
+import { serverTimestamp, updateDoc, type FieldValue, type UpdateData } from 'firebase/firestore';
+import type { Project, SurveyData, SurveyFieldName } from '@cherrytree/shared';
+
+import type { ClerkUser } from '../contexts/UserContext.tsx';
+import { projectRef } from '../lib/firebase.ts';
 
 // Constants
 const AUTO_SAVE_DELAY_MS = 2000; // Debounce delay before saving (2 seconds)
 const SAVE_COMPLETION_DELAY_MS = 500; // Delay before marking save as complete
 
+export type SaveStatus = 'saved' | 'saving' | 'error';
+
+/**
+ * Exactly what an auto-save writes (the Firestore rules allow only these client fields).
+ * Firestore's UpdateData<Project> cannot express the nested Record<string, object> survey
+ * fields, so the shape is pinned here and cast once at the call.
+ */
+interface AutoSaveUpdate {
+  surveyData: SurveyData;
+  lastUpdated: FieldValue;
+  lastEditedBy: string | undefined;
+  approvals?: Project['approvals'];
+}
+
+/** `handleChange(field, value)` as the section components call it. */
+export type ChangeHandler = <K extends SurveyFieldName>(field: K, value: SurveyData[K]) => void;
+
 /**
  * Custom hook for auto-saving form data to Firestore
  * Handles debouncing and save status tracking
  *
- * @param {string} projectId - The project ID
- * @param {object} project - The project object
- * @param {object} currentUser - The current user object
- * @returns {object} - { saveStatus, lastSaved, handleChange, saveFormData }
+ * @param projectId - The project ID
+ * @param project - The project object
+ * @param currentUser - The current user object
  */
-export function useAutoSave(projectId, project, currentUser) {
-  const [saveStatus, setSaveStatus] = useState('saved');
-  const [lastSaved, setLastSaved] = useState(null);
-  const saveTimeoutRef = useRef(null);
+export function useAutoSave(
+  projectId: string,
+  project: Pick<Project, 'surveyData'> | null | undefined,
+  currentUser: ClerkUser | null | undefined,
+) {
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSavingRef = useRef(false);
 
   /**
@@ -26,22 +49,20 @@ export function useAutoSave(projectId, project, currentUser) {
    * Keeps "Other" fields separate - merging happens only in cloud functions for PDF generation
    */
   const saveFormData = useCallback(
-    async (dataToSave) => {
+    async (dataToSave: SurveyData) => {
       if (!project) return;
 
       isSavingRef.current = true;
       setSaveStatus('saving');
 
       try {
-        const projectRef = doc(db, 'projects', projectId);
-
         // Check if there are actual changes
-        const oldData = project.surveyData || {};
-        const changedFields = Object.keys(dataToSave).filter((key) => {
+        const oldData: Partial<SurveyData> = project.surveyData || {};
+        const changedFields = (Object.keys(dataToSave) as SurveyFieldName[]).filter((key) => {
           return JSON.stringify(oldData[key]) !== JSON.stringify(dataToSave[key]);
         });
 
-        const updateData = {
+        const updateData: AutoSaveUpdate = {
           surveyData: dataToSave,
           lastUpdated: serverTimestamp(),
           lastEditedBy: currentUser?.primaryEmailAddress?.emailAddress,
@@ -52,7 +73,7 @@ export function useAutoSave(projectId, project, currentUser) {
           updateData.approvals = {};
         }
 
-        await updateDoc(projectRef, updateData);
+        await updateDoc(projectRef(projectId), updateData as UpdateData<Project>);
 
         setSaveStatus('saved');
         setLastSaved(new Date());
@@ -70,10 +91,10 @@ export function useAutoSave(projectId, project, currentUser) {
 
   /**
    * Handle form field changes with debounced auto-save
-   * @param {function} setFormData - Form data setter
+   * @param setFormData - Form data setter
    */
   const createChangeHandler = useCallback(
-    (setFormData) => {
+    (setFormData: Dispatch<SetStateAction<SurveyData>>): ChangeHandler => {
       return (field, value) => {
         setFormData((prevFormData) => {
           const newFormData = {
