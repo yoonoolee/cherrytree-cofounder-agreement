@@ -1,10 +1,14 @@
 import { act, renderHook } from '@testing-library/react';
 import { INITIAL_FORM_DATA } from '@cherrytree/shared';
 
-import { makeProject, timestamp } from '../test/fixtures/project';
-import { useProjectSync } from './useProjectSync';
+import { makeProject, timestamp } from '../test/fixtures/project.ts';
+import { useProjectSync } from './useProjectSync.ts';
 
-type SnapshotHandler = (snapshot: { id: string; exists: () => boolean; data: () => unknown }) => void;
+type SnapshotHandler = (snapshot: {
+  id: string;
+  exists: () => boolean;
+  data: () => unknown;
+}) => void;
 type ErrorHandler = (error: { code?: string; message: string }) => void;
 
 const { onSnapshot, unsubscribe, listeners } = vi.hoisted(() => {
@@ -24,7 +28,7 @@ vi.mock('firebase/firestore', () => ({
   doc: (_db: unknown, collection: string, id: string) => ({ path: `${collection}/${id}` }),
   onSnapshot,
 }));
-vi.mock('../lib/firebase', () => ({
+vi.mock('../lib/firebase.ts', () => ({
   db: {},
   projectRef: (id: string) => ({ path: `projects/${id}` }),
 }));

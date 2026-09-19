@@ -1,32 +1,35 @@
-import { useState, useEffect } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { INITIAL_FORM_DATA } from '@cherrytree/shared';
+import { useState, useEffect, type RefObject } from 'react';
+import { onSnapshot } from 'firebase/firestore';
+import { INITIAL_FORM_DATA, type Project, type SurveyData } from '@cherrytree/shared';
+
+import { projectRef } from '../lib/firebase.ts';
+
+/** A project document together with its id (the Clerk organization id). */
+export interface ProjectWithId extends Project {
+  id: string;
+}
 
 /**
  * Get initial form data from survey schema
  */
-const getInitialFormData = () => ({ ...INITIAL_FORM_DATA });
+const getInitialFormData = (): SurveyData => ({ ...INITIAL_FORM_DATA });
 
 /**
  * Custom hook for syncing project data from Firestore
  * Sets up real-time listener and manages project/form state
  *
- * @param {string} projectId - The project ID to sync
- * @param {React.RefObject} isSavingRef - Reference to track if save is in progress
- * @returns {object} - { project (with its document id), formData, setFormData, accessDenied, lastSaved, setLastSaved }
+ * @param projectId - The project ID to sync
+ * @param isSavingRef - Reference to track if save is in progress
  */
-export function useProjectSync(projectId, isSavingRef) {
-  const [project, setProject] = useState(null);
-  const [formData, setFormData] = useState(getInitialFormData());
+export function useProjectSync(projectId: string, isSavingRef: RefObject<boolean>) {
+  const [project, setProject] = useState<ProjectWithId | null>(null);
+  const [formData, setFormData] = useState<SurveyData>(getInitialFormData());
   const [accessDenied, setAccessDenied] = useState(false);
-  const [lastSaved, setLastSaved] = useState(null);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   useEffect(() => {
-    const projectRef = doc(db, 'projects', projectId);
-
     const unsubscribe = onSnapshot(
-      projectRef,
+      projectRef(projectId),
       (doc) => {
         if (doc.exists()) {
           const data = doc.data();
