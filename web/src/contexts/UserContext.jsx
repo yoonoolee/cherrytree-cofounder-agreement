@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser as useClerkUser, useAuth, useOrganizationList } from '@clerk/clerk-react';
-import { db, auth, functions } from '../lib/firebase';
+import { db, auth } from '../lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { signInWithCustomToken, signOut as firebaseSignOut } from 'firebase/auth';
-import { httpsCallable } from 'firebase/functions';
+import { callFunction } from '../lib/functions';
 
 const UserContext = createContext();
 
@@ -37,9 +37,7 @@ export const UserProvider = ({ children }) => {
           const sessionToken = await getToken();
           if (!sessionToken) return;
 
-          const getFirebaseToken = httpsCallable(functions, 'getFirebaseToken');
-          const result = await getFirebaseToken({ sessionToken });
-          const { firebaseToken } = result.data;
+          const { firebaseToken } = await callFunction('getFirebaseToken', { sessionToken });
 
           if (firebaseToken) {
             await signInWithCustomToken(auth, firebaseToken);

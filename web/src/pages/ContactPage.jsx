@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
-import { httpsCallable } from 'firebase/functions';
 import { usePageMeta } from '../hooks/usePageMeta';
 import MarketingNav from '../components/MarketingNav';
 import MarketingFooter from '../components/MarketingFooter';
 import MarketingGrain from '../components/MarketingGrain';
-import { functions } from '../lib/firebase';
-
-const sendContactMessage = httpsCallable(functions, 'sendContactMessage');
+import { callFunction } from '../lib/functions';
 
 const EMPTY_FORM = { name: '', email: '', message: '' };
 
@@ -30,7 +27,7 @@ function ContactPage() {
     setStatus('sending');
     setErrorMessage('');
     try {
-      await sendContactMessage({
+      await callFunction('sendContactMessage', {
         name: form.name.trim(),
         email: form.email.trim(),
         message: form.message.trim(),

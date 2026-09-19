@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { functions } from '../lib/firebase';
-import { httpsCallable } from 'firebase/functions';
+import { callFunction } from '../lib/functions';
 import ApprovalSection from './ApprovalSection';
 import SurveyNavigation from './SurveyNavigation';
 import AgreementHeader from './AgreementHeader';
@@ -103,11 +102,10 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
     setPdfError('');
 
     try {
-      const generatePreviewPDF = httpsCallable(functions, 'generatePreviewPDF');
-      const result = await generatePreviewPDF({ projectId });
+      const { pdfUrl: generatedUrl } = await callFunction('generatePreviewPDF', { projectId });
 
-      if (result.data && result.data.pdfUrl) {
-        setPdfUrl(result.data.pdfUrl);
+      if (generatedUrl) {
+        setPdfUrl(generatedUrl);
       } else {
         console.warn('No PDF URL returned from function');
         setPdfError('PDF was generated but no URL was returned. Please try again.');
@@ -170,8 +168,7 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
     setIsSubmitting(true);
 
     try {
-      const submitSurvey = httpsCallable(functions, 'submitSurvey');
-      await submitSurvey({ projectId });
+      await callFunction('submitSurvey', { projectId });
 
       // Navigate to Final Agreement page after successful submit
       navigate(`/final-agreement/${projectId}`);

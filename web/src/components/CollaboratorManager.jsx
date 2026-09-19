@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useOrganization } from '@clerk/clerk-react';
-import { httpsCallable } from 'firebase/functions';
-import { functions } from '../lib/firebase';
+import { callFunction } from '../lib/functions';
 import { isAfterEditDeadline } from '../utils/dateUtils';
 
 const SUCCESS_MESSAGE_DURATION_MS = 10000;
@@ -67,8 +66,10 @@ function CollaboratorManager({ project }) {
     setSuccess('');
     setInviting(true);
     try {
-      const createInvitation = httpsCallable(functions, 'createOrganizationInvitation');
-      await createInvitation({ emailAddress: email, organizationId: organization.id });
+      await callFunction('createOrganizationInvitation', {
+        emailAddress: email,
+        organizationId: organization.id,
+      });
       setSuccess(
         "An invitation has been sent if the email exists. Ask them to check their spam folder if they don't see it.",
       );
@@ -87,8 +88,7 @@ function CollaboratorManager({ project }) {
   const handleRemoveMember = async (userId) => {
     setRemovingUserId(userId);
     try {
-      const removeOrganizationMember = httpsCallable(functions, 'removeOrganizationMember');
-      await removeOrganizationMember({ userId, organizationId: organization.id });
+      await callFunction('removeOrganizationMember', { userId, organizationId: organization.id });
     } catch (err) {
       console.error('Error removing member:', err);
     } finally {

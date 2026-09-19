@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { functions } from '../lib/firebase';
-import { httpsCallable } from 'firebase/functions';
+import { callFunction } from '../lib/functions';
 import { useUser } from '../contexts/UserContext';
 import { PRICING_PLANS } from '../constants/pricing';
 import ProWaitlistForm from './ProWaitlistForm';
@@ -79,14 +78,16 @@ function PaymentModal({ onClose, onSuccess }) {
       }
 
       // The server maps the plan to its Stripe price and builds the redirect URLs.
-      const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
-      const result = await createCheckoutSession({ plan: selectedPlan, projectName: trimmedName });
+      const { url } = await callFunction('createCheckoutSession', {
+        plan: selectedPlan,
+        projectName: trimmedName,
+      });
 
       // Redirect to Stripe checkout
-      if (result.data.url) {
+      if (url) {
         // Save timestamp to detect new project after payment
         sessionStorage.setItem('paymentStartTime', Date.now().toString());
-        window.location.href = result.data.url;
+        window.location.href = url;
       } else {
         throw new Error('Failed to create checkout session');
       }
