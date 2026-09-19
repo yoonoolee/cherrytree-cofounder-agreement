@@ -1,32 +1,39 @@
-import React, { useState } from 'react';
-import { callFunction } from '../lib/functions';
-import { useUser } from '../contexts/UserContext';
-import { PRICING_PLANS } from '../constants/pricing';
-import ProWaitlistForm from './ProWaitlistForm';
+import { useState, type FormEvent } from 'react';
+import { toErrorMessage, type Plan } from '@cherrytree/shared';
+
+import { callFunction } from '../lib/functions.ts';
+import { useUser } from '../contexts/UserContext.tsx';
+import { PRICING_PLANS, type PricingPlan } from '../constants/pricing.ts';
+import ProWaitlistForm from './ProWaitlistForm.tsx';
 
 // Constants
 const WIGGLE_DURATION_MS = 500; // Duration of wiggle animation for validation errors
 const PROJECT_NAME_MIN_LENGTH = 1; // Minimum characters for project/company name
 const PROJECT_NAME_MAX_LENGTH = 100; // Maximum characters for project/company name
 
+/** A plan that can be bought (as opposed to the contact-us Enterprise tier). */
+type PurchasablePlan = PricingPlan & { key: Plan };
+
 // Filter to only Starter and Pro for payment modal
-const PLANS = PRICING_PLANS.filter((plan) => plan.key === 'starter' || plan.key === 'pro').reduce(
-  (acc, plan) => {
-    acc[plan.key] = plan;
-    return acc;
-  },
-  {},
+const PLANS = PRICING_PLANS.filter(
+  (plan): plan is PurchasablePlan => plan.key === 'starter' || plan.key === 'pro',
 );
 
-function PaymentModal({ onClose, onSuccess }) {
+interface PaymentModalProps {
+  onClose: () => void;
+  /** Never called: the modal hands off to Stripe, which returns the user to the dashboard. */
+  onSuccess?: (projectId?: string) => void;
+}
+
+function PaymentModal({ onClose, onSuccess: _onSuccess }: PaymentModalProps) {
   const { currentUser, loading: userLoading } = useUser();
   const [projectName, setProjectName] = useState('');
-  const [selectedPlan, setSelectedPlan] = useState('starter');
+  const [selectedPlan, setSelectedPlan] = useState<Plan>('starter');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isWiggling, setIsWiggling] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const trimmedName = projectName.trim();
@@ -93,7 +100,7 @@ function PaymentModal({ onClose, onSuccess }) {
       }
     } catch (err) {
       console.error('Error creating checkout session:', err);
-      setError(err.message || 'Failed to start payment. Please try again.');
+      setError(toErrorMessage(err) || 'Failed to start payment. Please try again.');
       setLoading(false);
     }
   };
@@ -142,7 +149,8 @@ function PaymentModal({ onClose, onSuccess }) {
           <div className="mb-4 md:mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-3">Select Plan</label>
             <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 items-stretch">
-              {Object.entries(PLANS).map(([key, plan]) => {
+              {PLANS.map((plan) => {
+                const { key } = plan;
                 const isProPlan = key === 'pro';
                 const isDisabled = isProPlan;
 
