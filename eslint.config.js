@@ -90,7 +90,7 @@ export default tseslint.config(
 
   // Config files at the repo root / package roots
   {
-    files: ['*.{js,ts,mjs}', 'web/*.{js,ts}', 'functions/*.{js,mjs}'],
+    files: ['*.{js,ts,mjs}', 'web/*.{js,ts}', 'shared/*.ts', 'functions/*.{js,mjs}'],
     languageOptions: { globals: globals.node },
   },
 

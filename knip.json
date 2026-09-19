@@ -5,8 +5,11 @@
     ".": {},
     "web": {
       "entry": ["index.html"],
-      "vite": { "config": ["vite.config.ts", "vitest.config.ts"] }
-    }
+      "vite": {
+        "config": ["vite.config.ts", "vitest.config.ts"]
+      }
+    },
+    "shared": {}
   },
   "ignore": ["functions/**"]
 }

@@ -6,7 +6,8 @@
     "node": ">=22"
   },
   "workspaces": [
-    "web"
+    "web",
+    "shared"
   ],
   "scripts": {
     "dev": "npm run dev -w web",
@@ -17,7 +18,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc -p web/tsconfig.app.json && tsc -p web/tsconfig.node.json && tsc -p functions",
+    "typecheck": "tsc -p web/tsconfig.app.json && tsc -p web/tsconfig.node.json && tsc -p shared && tsc -p functions",
     "test": "vitest run",
     "test:watch": "vitest",
     "knip": "knip",
