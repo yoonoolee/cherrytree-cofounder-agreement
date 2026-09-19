@@ -18,7 +18,6 @@ const { defineSecret } = require('firebase-functions/params');
 const { Webhook } = require('svix');
 const validator = require('validator');
 const { Resend } = require('resend');
-const { verifyClerkToken, CLERK_SECRET_KEY } = require('./auth-helpers');
 const {
   REQUIRED_ACKNOWLEDGMENT_FIELDS,
   CONDITIONAL_ACKNOWLEDGMENT_FIELDS,
@@ -32,8 +31,6 @@ const auth = getAuth();
 // Load secrets from environment config
 const CLERK_WEBHOOK_SECRET = defineSecret('CLERK_WEBHOOK_SECRET');
 const RESEND_API_KEY = defineSecret('RESEND_API_KEY');
-
-// Note: CLERK_SECRET_KEY and getClerk() are imported from auth-helpers.js
 
 // Shared Cloud Functions configuration
 // Optimized for free tier: 256MB memory
@@ -57,7 +54,6 @@ const COLLABORATOR_FIELDS = {
 
 // ============================================================================
 // INPUT VALIDATION & SANITIZATION HELPERS
-// Note: Authentication helpers (verifyClerkToken, getClerk) are in auth-helpers.js
 // ============================================================================
 
 /**
@@ -73,47 +69,6 @@ function isValidEmail(email) {
   // Basic validation using validator.js
   return validator.isEmail(email) && email.length <= EMAIL_MAX_LENGTH;
 }
-
-// ============================================================================
-// FIREBASE AUTH TOKEN EXCHANGE
-// ============================================================================
-
-// Exchange Clerk session token for Firebase custom token
-// This allows Clerk-authenticated users to access Firestore with security rules
-exports.getFirebaseToken = onCall(
-  {
-    ...FUNCTION_CONFIG,
-    secrets: [CLERK_SECRET_KEY],
-    invoker: 'public',
-    consumeAppCheckToken: true,
-  },
-  async (request) => {
-    try {
-      const { sessionToken } = request.data;
-
-      if (!sessionToken) {
-        throw new HttpsError('invalid-argument', 'Session token is required');
-      }
-
-      // Verify Clerk session token
-      const { userId } = await verifyClerkToken(sessionToken);
-
-      // Create Firebase custom token for this user
-      const firebaseToken = await auth.createCustomToken(userId);
-
-      return {
-        firebaseToken,
-        userId,
-      };
-    } catch (error) {
-      console.error('Error creating Firebase token:', error);
-      if (error instanceof HttpsError) {
-        throw error;
-      }
-      throw new HttpsError('internal', 'Failed to create Firebase token');
-    }
-  },
-);
 
 // ============================================================================
 // CONTACT FORM
