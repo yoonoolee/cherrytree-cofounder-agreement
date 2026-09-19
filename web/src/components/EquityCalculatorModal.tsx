@@ -1,74 +1,47 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import type { EquityCalculatorDraft } from '@cherrytree/shared';
+
+import { CATEGORIES, GROUPS, calculateSplit } from '../utils/equitySplit.ts';
 import './EquityCalculatorModal.css';
 
-// Category list grouped into buckets — matches Anika's final-eqc3 design.
-const GROUPS = [
-  {
-    name: 'Input',
-    categories: ['Cash Invested', 'Time Commitment', 'Existing Work & IP', 'Equipment & Tools'],
-  },
-  {
-    name: 'Execution',
-    categories: [
-      'Leadership & Management',
-      'Engineering',
-      'Sales',
-      'Product',
-      'Fundraising',
-      'Recruiting',
-      'Operations',
-    ],
-  },
-  {
-    name: 'Intangibles',
-    categories: [
-      'Domain Expertise',
-      'Network Value',
-      'Irreplaceability',
-      'Role Scalability',
-      'Opportunity Cost',
-      'Risk Tolerance',
-      'Idea Origination',
-    ],
-  },
-];
-const CATEGORIES = GROUPS.flatMap((g) => g.categories.map((name) => ({ name, group: g.name })));
+interface OtherSubmissions {
+  /** Every other cofounder and whether they have submitted. */
+  statusList: readonly { name: string; submitted: boolean }[];
+  /** The submissions themselves, once made. */
+  entries: readonly ({ name: string } & EquityCalculatorDraft)[];
+}
 
-// Weighted-average split: each cofounder's share = sum(importance * score) / sum(importance) for all
-// categories rated important, normalized to 100%.
-export function calculateSplit(importance, scores, numCofounders) {
-  const active = CATEGORIES.filter((c) => (importance[c.name] || 0) > 0);
-  if (!active.length) return null;
-  const weighted = Array.from({ length: numCofounders }, (_, ci) =>
-    active.reduce(
-      (sum, c) => sum + (importance[c.name] || 0) * ((scores[ci] || {})[c.name] || 0),
-      0,
-    ),
-  );
-  const total = weighted.reduce((a, b) => a + b, 0);
-  if (total === 0) return null;
-  return weighted.map((w) => (w / total) * 100);
+interface EquityCalculatorModalProps {
+  cofounderNames: readonly string[];
+  myDraft?: EquityCalculatorDraft;
+  otherSubmissions: OtherSubmissions;
+  onDraftChange: (draft: EquityCalculatorDraft) => void;
+  onSubmit: (draft: EquityCalculatorDraft) => void;
+  onUseSplit: (percentages: number[]) => void;
+  onClose: () => void;
 }
 
 function EquityCalculatorModal({
   cofounderNames,
   myDraft,
-  otherSubmissions, // { statusList: [{ name, submitted }], entries: [{ name, importance, scores }] }
+  otherSubmissions,
   onDraftChange,
   onSubmit,
   onUseSplit,
   onClose,
-}) {
+}: EquityCalculatorModalProps) {
   const numCofounders = cofounderNames.length;
-  const [step, setStep] = useState('quiz');
+  const [step, setStep] = useState<'quiz' | 'compare'>('quiz');
   const [catIdx, setCatIdx] = useState(0);
-  const [importance, setImportance] = useState(myDraft?.importance || {});
-  const [scores, setScores] = useState(myDraft?.scores || {});
+  const [importance, setImportance] = useState<EquityCalculatorDraft['importance']>(
+    myDraft?.importance || {},
+  );
+  const [scores, setScores] = useState<EquityCalculatorDraft['scores']>(myDraft?.scores || {});
   const [sectionsOpen, setSectionsOpen] = useState(false);
   const [previewAnyway, setPreviewAnyway] = useState(false);
 
-  const cat = CATEGORIES[catIdx];
+  const cat = CATEGORIES[catIdx]!;
   const isFirst = catIdx === 0;
   const isLast = catIdx === CATEGORIES.length - 1;
 
@@ -93,17 +66,20 @@ function EquityCalculatorModal({
     return weighted.map((w) => (w / total) * 100);
   }, [importance, scores, numCofounders]);
 
-  const persist = (nextImportance, nextScores) => {
+  const persist = (
+    nextImportance: EquityCalculatorDraft['importance'],
+    nextScores: EquityCalculatorDraft['scores'],
+  ) => {
     onDraftChange({ importance: nextImportance, scores: nextScores });
   };
 
-  const updateImportance = (val) => {
+  const updateImportance = (val: number) => {
     const next = { ...importance, [cat.name]: val };
     setImportance(next);
     persist(next, scores);
   };
 
-  const updateScore = (ci, val) => {
+  const updateScore = (ci: number, val: number) => {
     const next = { ...scores, [ci]: { ...(scores[ci] || {}), [cat.name]: val } };
     setScores(next);
     persist(importance, next);
@@ -126,7 +102,7 @@ function EquityCalculatorModal({
     setCatIdx(catIdx + 1);
   };
 
-  const jumpTo = (idx) => {
+  const jumpTo = (idx: number) => {
     setCatIdx(idx);
     setSectionsOpen(false);
   };
@@ -349,7 +325,7 @@ function EquityCalculatorModal({
                           <div className="eq-compare-bar-track">
                             <div
                               className="eq-compare-bar-fill"
-                              style={{ width: `${catScores[ci] * 10}%` }}
+                              style={{ width: `${catScores[ci]! * 10}%` }}
                             />
                           </div>
                           <span className="eq-compare-bar-val">{catScores[ci]}</span>
@@ -429,7 +405,7 @@ function EquityCalculatorModal({
               <span className="eq-float-name">{name}</span>
               <span className="eq-float-pct">
                 {previewSplit
-                  ? `${previewSplit[ci].toFixed(0)}%`
+                  ? `${previewSplit[ci]!.toFixed(0)}%`
                   : numCofounders === 1
                     ? '100%'
                     : '—'}
