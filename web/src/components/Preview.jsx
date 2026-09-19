@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { functions } from '../firebase';
+import { functions } from '../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
 import ApprovalSection from './ApprovalSection';
 import SurveyNavigation from './SurveyNavigation';

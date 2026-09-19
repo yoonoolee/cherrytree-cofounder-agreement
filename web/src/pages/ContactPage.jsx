@@ -4,7 +4,7 @@ import { usePageMeta } from '../hooks/usePageMeta';
 import MarketingNav from '../components/MarketingNav';
 import MarketingFooter from '../components/MarketingFooter';
 import MarketingGrain from '../components/MarketingGrain';
-import { functions } from '../firebase';
+import { functions } from '../lib/firebase';
 
 const sendContactMessage = httpsCallable(functions, 'sendContactMessage');
 

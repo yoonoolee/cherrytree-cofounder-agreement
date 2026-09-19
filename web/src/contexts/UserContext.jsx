@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser as useClerkUser, useAuth, useOrganizationList } from '@clerk/clerk-react';
-import { db, auth, functions } from '../firebase';
+import { db, auth, functions } from '../lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { signInWithCustomToken, signOut as firebaseSignOut } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';

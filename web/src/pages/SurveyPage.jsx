@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Survey from '../components/Survey';
 import PaymentModal from '../components/PaymentModal';
-import { db } from '../firebase';
+import { db } from '../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useProjects } from '../hooks/useProjects';

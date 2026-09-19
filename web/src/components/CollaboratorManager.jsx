@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useOrganization } from '@clerk/clerk-react';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../firebase';
+import { functions } from '../lib/firebase';
 import { isAfterEditDeadline } from '../utils/dateUtils';
 
 const SUCCESS_MESSAGE_DURATION_MS = 10000;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { functions } from '../firebase';
+import { functions } from '../lib/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { useUser } from '../contexts/UserContext';
 import { PRICING_PLANS } from '../constants/pricing';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { db } from '../firebase';
+import { db } from '../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useCollaborators } from '../hooks/useCollaborators';

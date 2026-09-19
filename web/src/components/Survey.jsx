@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLoadScript } from '@react-google-maps/api';
-import { db } from '../firebase';
+import { db } from '../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useUser } from '../contexts/UserContext';
 import { useAuth, UserButton } from '@clerk/clerk-react';
