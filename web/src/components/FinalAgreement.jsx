@@ -9,7 +9,6 @@ const FINAL_AGREEMENT_ID = 'final-agreement';
 function FinalAgreement({ projectId, onEdit }) {
   // UI state
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-  const [currentSection, setCurrentSection] = useState(FINAL_AGREEMENT_ID);
 
   // Refs and hooks for form data
   const isSavingRef = useRef(false);
@@ -31,10 +30,10 @@ function FinalAgreement({ projectId, onEdit }) {
       {/* Sidebar Navigation - self-contained with all hooks */}
       <SurveyNavigation
         projectId={projectId}
-        currentSection={currentSection}
+        currentSection={FINAL_AGREEMENT_ID}
         onSectionClick={(sectionId) => onEdit(sectionId)} // Navigate back to survey at specific section
         onReviewAndApproveClick={() => onEdit('generated-agreement')} // Navigate to Preview page
-        onFinalAgreementClick={() => setCurrentSection(FINAL_AGREEMENT_ID)}
+        onFinalAgreementClick={() => {}} // Already here; keeps the entry in the navigation
         isMobileNavOpen={isMobileNavOpen}
         setIsMobileNavOpen={setIsMobileNavOpen}
       />
