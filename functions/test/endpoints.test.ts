@@ -28,10 +28,12 @@ const golden: Golden = JSON.parse(
   readFileSync(path.join(import.meta.dirname, 'endpoints.golden.json'), 'utf8'),
 );
 
+/** JSON round-trip (unset options are `ResetValue` objects that serialize to `null`), secrets sorted. */
 function normalize(endpoint: Endpoint): Endpoint {
+  const plain: Endpoint = JSON.parse(JSON.stringify(endpoint));
   return {
-    ...endpoint,
-    secretEnvironmentVariables: [...(endpoint.secretEnvironmentVariables ?? [])].sort((a, b) =>
+    ...plain,
+    secretEnvironmentVariables: [...(plain.secretEnvironmentVariables ?? [])].sort((a, b) =>
       a.key.localeCompare(b.key),
     ),
   };
