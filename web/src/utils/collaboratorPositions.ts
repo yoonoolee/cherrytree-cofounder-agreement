@@ -34,14 +34,3 @@ export function getSortedCollaboratorIds(
     .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically by name
     .map((item) => item.userId);
 }
-
-/**
- * No migration needed - we use join time from history, not positions
- */
-export function migrateCollaboratorPositions(
-  collaboratorsMap: CollaboratorsMap,
-  _adminUserId: string | undefined,
-): CollaboratorsMap {
-  // No-op: positions are no longer used, join time is the source of truth
-  return collaboratorsMap;
-}

@@ -1,16 +1,9 @@
 import { useMemo } from 'react';
-import {
-  getSortedCollaboratorIds,
-  migrateCollaboratorPositions,
-} from '../utils/collaboratorPositions';
+import { getSortedCollaboratorIds } from '../utils/collaboratorPositions';
 import { COLLABORATOR_FIELDS } from '@cherrytree/shared';
 
 export function useCollaborators(project) {
-  // Auto-migrate collaborators to have positions if they don't already
-  const collaboratorsMap = useMemo(() => {
-    const rawCollaborators = project?.collaborators || {};
-    return migrateCollaboratorPositions(rawCollaborators, project?.admin);
-  }, [project?.collaborators, project?.admin]);
+  const collaboratorsMap = useMemo(() => project?.collaborators || {}, [project?.collaborators]);
 
   const collaborators = useMemo(() => {
     return Object.entries(collaboratorsMap).map(([userId, data]) => ({
