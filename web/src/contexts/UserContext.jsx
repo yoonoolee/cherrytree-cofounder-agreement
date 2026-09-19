@@ -20,7 +20,6 @@ export const UserProvider = ({ children }) => {
   const { getToken } = useAuth();
   const {
     userMemberships,
-    organizationList,
     setActive,
     isLoaded: orgsLoaded,
   } = useOrganizationList({ userMemberships: { infinite: true } });
@@ -108,7 +107,6 @@ export const UserProvider = ({ children }) => {
       'User',
     // Organization data (fetched once, shared everywhere)
     userMemberships,
-    organizationList,
     setActive,
     orgsLoaded,
   };

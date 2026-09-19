@@ -10,14 +10,7 @@ import { useProjects } from '../hooks/useProjects';
 function SurveyPage() {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const {
-    currentUser,
-    loading: authLoading,
-    userMemberships,
-    organizationList,
-    setActive,
-    orgsLoaded,
-  } = useUser();
+  const { currentUser, loading: authLoading, userMemberships, orgsLoaded } = useUser();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Use shared useProjects hook instead of duplicate fetching logic
@@ -27,24 +20,6 @@ function SurveyPage() {
     orgsLoaded,
     authLoading,
   );
-
-  // Set active organization based on projectId (projectId === clerkOrgId)
-  useEffect(() => {
-    const setActiveOrg = async () => {
-      if (!projectId || !orgsLoaded || !setActive) return;
-
-      try {
-        const org = organizationList?.find((o) => o.organization.id === projectId);
-        if (org) {
-          await setActive({ organization: projectId });
-        }
-      } catch (error) {
-        console.error('Error setting active organization:', error);
-      }
-    };
-
-    setActiveOrg();
-  }, [projectId, orgsLoaded, organizationList, setActive]);
 
   // Update lastOpened timestamp when project is accessed
   useEffect(() => {
