@@ -1,13 +1,21 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { getDoc } from 'firebase/firestore';
+
+import type { ClerkUser, UserContextValue } from '../contexts/UserContext.tsx';
+import { projectRef } from '../lib/firebase.ts';
+import type { ProjectWithId } from './useProjectSync.ts';
 
 /**
  * Hook to fetch all projects for a user via their Clerk organization memberships
  * orgId === projectId (Clerk org ID is the Firestore document ID)
  */
-export function useProjects(currentUser, userMemberships, orgsLoaded, authLoading) {
-  const [projects, setProjects] = useState([]);
+export function useProjects(
+  currentUser: ClerkUser | null | undefined,
+  userMemberships: UserContextValue['userMemberships'],
+  orgsLoaded: boolean,
+  authLoading: boolean,
+) {
+  const [projects, setProjects] = useState<ProjectWithId[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,17 +23,17 @@ export function useProjects(currentUser, userMemberships, orgsLoaded, authLoadin
       if (!currentUser || !orgsLoaded || authLoading) return;
 
       try {
-        const allProjects = [];
+        const allProjects: ProjectWithId[] = [];
         const orgIds = userMemberships?.data?.map((m) => m.organization.id) || [];
 
         for (const orgId of orgIds) {
           try {
-            const projectDoc = await getDoc(doc(db, 'projects', orgId));
+            const projectDoc = await getDoc(projectRef(orgId));
             if (projectDoc.exists()) {
               allProjects.push({ id: projectDoc.id, ...projectDoc.data() });
             }
           } catch (err) {
-            console.error(`Error fetching project ${orgId}:`, err.message);
+            console.error(`Error fetching project ${orgId}:`, (err as Error).message);
           }
         }
 
