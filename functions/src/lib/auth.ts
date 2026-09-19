@@ -11,6 +11,7 @@ import { logger } from 'firebase-functions';
 import { HttpsError, type CallableRequest } from 'firebase-functions/v2/https';
 
 import { CLERK_SECRET_KEY } from '../config.ts';
+import { rejectConsumedAppCheckToken } from './appCheck.ts';
 
 let clerkInstance: ClerkClient | null = null;
 
@@ -20,8 +21,9 @@ export function getClerk(): ClerkClient {
   return clerkInstance;
 }
 
-/** Clerk user id of the signed-in caller, or `unauthenticated`. */
+/** Clerk user id of the signed-in caller, or `unauthenticated`; rejects a replayed App Check token first. */
 export function requireAuth(request: CallableRequest<unknown>): string {
+  rejectConsumedAppCheckToken(request);
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError('unauthenticated', 'You must be signed in.');

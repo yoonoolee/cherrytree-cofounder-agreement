@@ -14,8 +14,8 @@ const { sendContactMessage } = await import('./contact.ts');
 
 const valid = { name: '  Ada Lovelace ', email: 'ada@example.com', message: ' Hello there. ' };
 
-function call(data: unknown): CallableRequest<never> {
-  return { data: data as never, rawRequest: {} as never, acceptsStreaming: false };
+function call(data: unknown, app?: CallableRequest['app']): CallableRequest<never> {
+  return { data: data as never, app, rawRequest: {} as never, acceptsStreaming: false };
 }
 
 async function codeOf(promise: Promise<unknown>): Promise<string | undefined> {
@@ -51,6 +51,12 @@ describe('sendContactMessage', () => {
       await codeOf(sendContactMessage.run(call({ ...valid, message: 'x'.repeat(5001) }))),
     ).toBe('invalid-argument');
     expect(await codeOf(sendContactMessage.run(call(undefined)))).toBe('invalid-argument');
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('rejects a replayed App Check token before sending anything', async () => {
+    const replayed = { appId: '1:123:web:abc', token: {} as never, alreadyConsumed: true };
+    expect(await codeOf(sendContactMessage.run(call(valid, replayed)))).toBe('permission-denied');
     expect(send).not.toHaveBeenCalled();
   });
 

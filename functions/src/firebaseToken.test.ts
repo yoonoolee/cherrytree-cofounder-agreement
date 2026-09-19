@@ -12,8 +12,8 @@ vi.mock('./lib/firebase.ts', () => ({ auth: { createCustomToken } }));
 
 const { getFirebaseToken } = await import('./firebaseToken.ts');
 
-function call(data: unknown): CallableRequest<never> {
-  return { data: data as never, rawRequest: {} as never, acceptsStreaming: false };
+function call(data: unknown, app?: CallableRequest['app']): CallableRequest<never> {
+  return { data: data as never, app, rawRequest: {} as never, acceptsStreaming: false };
 }
 
 async function codeOf(promise: Promise<unknown>): Promise<string | undefined> {
@@ -45,6 +45,15 @@ describe('getFirebaseToken', () => {
     });
     expect(clerk.verifyToken).toHaveBeenCalledWith('clerk-jwt', { secretKey: 'sk_clerk_x' });
     expect(createCustomToken).toHaveBeenCalledWith('user_1');
+  });
+
+  it('rejects a replayed App Check token before touching Clerk', async () => {
+    const replayed = { appId: '1:123:web:abc', token: {} as never, alreadyConsumed: true };
+    expect(await codeOf(getFirebaseToken.run(call({ sessionToken: 'clerk-jwt' }, replayed)))).toBe(
+      'permission-denied',
+    );
+    expect(clerk.verifyToken).not.toHaveBeenCalled();
+    expect(createCustomToken).not.toHaveBeenCalled();
   });
 
   it('requires a session token', async () => {

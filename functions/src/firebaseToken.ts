@@ -8,6 +8,7 @@ import { HttpsError, onCall, type CallableRequest } from 'firebase-functions/v2/
 import type { CallableRequest as CallableData, CallableResponse } from '@cherrytree/shared';
 
 import { CALLABLE_OPTIONS, CLERK_SECRET_KEY } from './config.ts';
+import { rejectConsumedAppCheckToken } from './lib/appCheck.ts';
 import { verifyClerkToken } from './lib/auth.ts';
 import { toHttpsError } from './lib/errors.ts';
 import { auth } from './lib/firebase.ts';
@@ -17,6 +18,7 @@ export const getFirebaseToken = onCall(
   async (
     request: CallableRequest<CallableData<'getFirebaseToken'>>,
   ): Promise<CallableResponse<'getFirebaseToken'>> => {
+    rejectConsumedAppCheckToken(request);
     try {
       const { sessionToken } = request.data ?? {};
       if (!sessionToken) {

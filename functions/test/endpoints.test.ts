@@ -82,6 +82,24 @@ describe('shared trigger options', () => {
     expect(WEBHOOK_OPTIONS).toMatchObject({ cors: false });
   });
 
+  it('every onCall handler rejects a replayed App Check token', () => {
+    // consumeAppCheckToken only flags a replay (request.app.alreadyConsumed); each handler must
+    // reject it, either through requireAuth or rejectConsumedAppCheckToken directly.
+    const offenders: string[] = [];
+    for (const file of listSourceFiles(srcDir)) {
+      const source = readFileSync(file, 'utf8');
+      const callables = source.match(/\bonCall\(/g)?.length ?? 0;
+      const guards =
+        source.match(/\b(?:requireAuth|rejectConsumedAppCheckToken)\(request\)/g)?.length ?? 0;
+      if (callables > 0 && guards < callables) {
+        offenders.push(
+          `${path.relative(functionsDir, file)}: ${callables} onCall, ${guards} guards`,
+        );
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
   it('every onCall / onRequest in src/ spreads the shared options first', () => {
     const offenders: string[] = [];
     for (const file of listSourceFiles(srcDir)) {

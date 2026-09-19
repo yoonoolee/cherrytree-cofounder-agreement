@@ -23,8 +23,31 @@ const clerkUser = {
   ],
 };
 
-function request(auth: CallableRequest['auth']): CallableRequest<unknown> {
-  return { data: {}, auth, rawRequest: {} as never, acceptsStreaming: false };
+function request(
+  auth: CallableRequest['auth'],
+  app?: CallableRequest['app'],
+): CallableRequest<unknown> {
+  return { data: {}, auth, app, rawRequest: {} as never, acceptsStreaming: false };
+}
+
+const signedIn: CallableRequest['auth'] = {
+  uid: 'user_1',
+  token: {} as never,
+  rawToken: 'id-token',
+};
+const appCheck = (alreadyConsumed?: boolean): CallableRequest['app'] => ({
+  appId: '1:123:web:abc',
+  token: {} as never,
+  alreadyConsumed,
+});
+
+function syncCodeOf(fn: () => unknown): string | undefined {
+  try {
+    fn();
+    return undefined;
+  } catch (error) {
+    return error instanceof HttpsError ? error.code : `not an HttpsError: ${String(error)}`;
+  }
 }
 
 async function codeOf(promise: Promise<unknown>): Promise<string | undefined> {
@@ -42,14 +65,18 @@ beforeEach(() => {
 
 describe('requireAuth', () => {
   it('returns the Firebase uid (the Clerk user id)', () => {
-    expect(requireAuth(request({ uid: 'user_1', token: {} as never, rawToken: 'id-token' }))).toBe(
-      'user_1',
-    );
+    expect(requireAuth(request(signedIn, appCheck(false)))).toBe('user_1');
   });
 
   it('throws unauthenticated without a verified caller', () => {
     expect(() => requireAuth(request(undefined))).toThrow(HttpsError);
     expect(() => requireAuth(request(undefined))).toThrow('signed in');
+  });
+
+  it('rejects a replayed App Check token even for a signed-in caller', () => {
+    expect(syncCodeOf(() => requireAuth(request(signedIn, appCheck(true))))).toBe(
+      'permission-denied',
+    );
   });
 });
 

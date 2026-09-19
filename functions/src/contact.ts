@@ -14,6 +14,7 @@ import {
   CONTACT_RECIPIENT_EMAIL,
   RESEND_API_KEY,
 } from './config.ts';
+import { rejectConsumedAppCheckToken } from './lib/appCheck.ts';
 import { toHttpsError } from './lib/errors.ts';
 import { isValidEmail } from './lib/validation.ts';
 
@@ -31,6 +32,7 @@ export const sendContactMessage = onCall(
   async (
     request: CallableRequest<CallableData<'sendContactMessage'>>,
   ): Promise<CallableResponse<'sendContactMessage'>> => {
+    rejectConsumedAppCheckToken(request);
     const { name, email, message } = request.data ?? {};
 
     if (!isFilledText(name, CONTACT_NAME_MAX_LENGTH)) {
