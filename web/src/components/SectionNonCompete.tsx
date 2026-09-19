@@ -1,31 +1,46 @@
-import React, { useState } from 'react';
-import QuestionRenderer from './QuestionRenderer';
-import QuestionCard from './QuestionCard';
-import { QUESTION_CONFIG } from '../config/questionConfig';
-import { FIELDS } from '@cherrytree/shared';
-import { getPreview } from '../utils/getPreview';
+import { useState } from 'react';
+import { FIELDS, type SurveyFieldName } from '@cherrytree/shared';
+
+import QuestionRenderer from './QuestionRenderer.tsx';
+import QuestionCard from './QuestionCard.tsx';
+import type { SurveySectionProps } from './sectionProps.ts';
+import { QUESTION_CONFIG } from '../config/questionConfig.ts';
+import { getPreview } from '../utils/getPreview.ts';
 
 const FIELD_ORDER = [
   FIELDS.ACKNOWLEDGE_CONFIDENTIALITY,
   FIELDS.NON_COMPETE_DURATION,
   FIELDS.NON_SOLICIT_DURATION,
-];
+] as const;
 
-function SectionNonCompete({ formData, handleChange, isReadOnly, project, showValidation }) {
-  const isAckAnswered = (f) => {
-    const v = formData[f];
-    return (
-      v && typeof v === 'object' && Object.values(v).length > 0 && Object.values(v).every(Boolean)
+type Field = (typeof FIELD_ORDER)[number];
+
+function SectionNonCompete({
+  formData,
+  handleChange,
+  isReadOnly,
+  project,
+  showValidation,
+}: SurveySectionProps) {
+  const isAckAnswered = (f: SurveyFieldName): boolean => {
+    const v: unknown = formData[f];
+    return !!(
+      v &&
+      typeof v === 'object' &&
+      Object.values(v).length > 0 &&
+      Object.values(v).every(Boolean)
     );
   };
   const firstUnanswered = FIELD_ORDER.find((f) => {
     if (f === FIELDS.ACKNOWLEDGE_CONFIDENTIALITY) return !isAckAnswered(f);
     return !formData[f];
   });
-  const [expandedField, setExpandedField] = useState(firstUnanswered || FIELD_ORDER[0]);
-  const advanceTo = (key) => {
+  const [expandedField, setExpandedField] = useState<Field | null>(
+    firstUnanswered || FIELD_ORDER[0],
+  );
+  const advanceTo = (key: Field) => {
     const idx = FIELD_ORDER.indexOf(key);
-    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1]);
+    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1] ?? null);
   };
   const collapse = () => setExpandedField(null);
 
