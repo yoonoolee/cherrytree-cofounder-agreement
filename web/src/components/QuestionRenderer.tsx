@@ -1,7 +1,33 @@
-import React from 'react';
-import CustomSelect from './CustomSelect';
-import { useUser } from '../contexts/UserContext';
-import { useCollaborators } from '../hooks/useCollaborators';
+import type { AcknowledgmentMap, SurveyData, SurveyFieldName } from '@cherrytree/shared';
+
+import CustomSelect from './CustomSelect.tsx';
+import { useUser } from '../contexts/UserContext.tsx';
+import { useCollaborators, type CollaboratorSource } from '../hooks/useCollaborators.ts';
+import type { ChangeHandler } from '../hooks/useAutoSave.ts';
+import type { QuestionConfig } from '../config/questionConfig.ts';
+
+/**
+ * A top-level survey question. The nested per-cofounder questions (whose `otherField` is a
+ * `Cofounder` key) are rendered by SectionCofounders, never through this component.
+ */
+type RenderableQuestion = QuestionConfig & { otherField?: SurveyFieldName };
+
+export interface QuestionRendererProps {
+  fieldName: SurveyFieldName;
+  config: RenderableQuestion | undefined;
+  formData: Partial<SurveyData>;
+  handleChange: ChangeHandler;
+  isReadOnly: boolean;
+  showValidation: boolean;
+  /** Needed for acknowledgment questions (one checkbox per collaborator). */
+  project?: CollaboratorSource;
+  hideLabel?: boolean;
+}
+
+const asText = (value: unknown): string => (typeof value === 'string' ? value : '');
+const asList = (value: unknown): string[] => (Array.isArray(value) ? (value as string[]) : []);
+const asAckMap = (value: unknown): AcknowledgmentMap =>
+  typeof value === 'object' && value !== null ? (value as AcknowledgmentMap) : {};
 
 /**
  * QuestionRenderer - Dynamically renders any question based on config
@@ -17,7 +43,7 @@ function QuestionRenderer({
   showValidation,
   project,
   hideLabel = false,
-}) {
+}: QuestionRendererProps) {
   const { currentUser } = useUser();
   const { collaboratorIds, getDisplayName, isAdmin } = useCollaborators(project);
 
@@ -40,20 +66,13 @@ function QuestionRenderer({
     }
   }
 
-  const {
-    question,
-    type,
-    required,
-    options,
-    placeholder,
-    description,
-    otherField,
-    acknowledgmentText,
-    clearsFields,
-  } = config;
+  const { question, type, required, placeholder, description, otherField, clearsFields } = config;
 
-  const value = formData[fieldName];
-  const otherValue = otherField ? formData[otherField] : null;
+  // `formData[fieldName]` is the union of every field's type; the config's `type` says which
+  // shape this field holds, so each branch narrows with the matching reader above.
+  const value: unknown = formData[fieldName];
+  const otherValue = asText(otherField ? formData[otherField] : null);
+  const otherMissing = !otherValue || otherValue.trim() === '';
 
   // Check if field is invalid for validation display
   const isInvalid =
@@ -61,20 +80,22 @@ function QuestionRenderer({
     required &&
     (() => {
       if (type === 'checkbox') {
-        if (!value || value.length === 0) return true;
+        const selected = asList(value);
+        if (selected.length === 0) return true;
         // Check if "Other" is selected but otherField is empty
-        if (value.includes('Other') && otherField && (!otherValue || otherValue.trim() === '')) {
+        if (selected.includes('Other') && otherField && otherMissing) {
           return true;
         }
         return false;
       }
       if (type === 'acknowledgment') {
         // Check if all collaborators have acknowledged
-        return !(collaboratorIds.length > 0 && collaboratorIds.every((userId) => value?.[userId]));
+        const acks = asAckMap(value);
+        return !(collaboratorIds.length > 0 && collaboratorIds.every((userId) => acks[userId]));
       }
       // For fields with "Other" option
       if (value === 'Other' && otherField) {
-        return !otherValue || otherValue.trim() === '';
+        return otherMissing;
       }
       return !value;
     })();
@@ -95,7 +116,7 @@ function QuestionRenderer({
         {renderLabel()}
         <input
           type={type}
-          value={value || ''}
+          value={asText(value)}
           onChange={(e) => handleChange(fieldName, e.target.value)}
           disabled={isReadOnly}
           placeholder={placeholder}
@@ -112,7 +133,7 @@ function QuestionRenderer({
       <div>
         {renderLabel()}
         <textarea
-          value={value || ''}
+          value={asText(value)}
           onChange={(e) => handleChange(fieldName, e.target.value)}
           disabled={isReadOnly}
           placeholder={placeholder}
@@ -125,7 +146,8 @@ function QuestionRenderer({
   }
 
   // RADIO BUTTONS
-  if (type === 'radio' && options) {
+  if (type === 'radio') {
+    const { options } = config;
     return (
       <div>
         {renderLabel()}
@@ -162,7 +184,11 @@ function QuestionRenderer({
                             }
                           });
                         } else {
-                          clearsFields.fields.forEach(({ field }) => handleChange(field, null));
+                          // Survey logic kept as-is: the cleared field is written as `null`,
+                          // which its readers treat like "unset" (`|| []`).
+                          clearsFields.fields.forEach(({ field }) =>
+                            handleChange(field, null as unknown as SurveyData[typeof field]),
+                          );
                         }
                       }
                     }
@@ -197,7 +223,7 @@ function QuestionRenderer({
         {value === 'Other' && otherField && (
           <input
             type="text"
-            value={otherValue || ''}
+            value={otherValue}
             onChange={(e) => handleChange(otherField, e.target.value)}
             disabled={isReadOnly}
             placeholder="Please specify"
@@ -211,8 +237,9 @@ function QuestionRenderer({
   }
 
   // CHECKBOXES
-  if (type === 'checkbox' && options) {
-    const selectedValues = value || [];
+  if (type === 'checkbox') {
+    const { options } = config;
+    const selectedValues = asList(value);
 
     return (
       <div>
@@ -245,7 +272,7 @@ function QuestionRenderer({
         {selectedValues.includes('Other') && otherField && (
           <input
             type="text"
-            value={otherValue || ''}
+            value={otherValue}
             onChange={(e) => handleChange(otherField, e.target.value)}
             disabled={isReadOnly}
             placeholder="Please specify"
@@ -259,12 +286,13 @@ function QuestionRenderer({
   }
 
   // DROPDOWN
-  if (type === 'dropdown' && options) {
+  if (type === 'dropdown') {
+    const { options } = config;
     return (
       <div>
         {renderLabel()}
         <CustomSelect
-          value={value || ''}
+          value={asText(value)}
           onChange={(selectedValue) => {
             handleChange(fieldName, selectedValue);
             if (otherField && selectedValue !== 'Other') {
@@ -279,7 +307,7 @@ function QuestionRenderer({
         {value === 'Other' && otherField && (
           <input
             type="text"
-            value={otherValue || ''}
+            value={otherValue}
             onChange={(e) => handleChange(otherField, e.target.value)}
             disabled={isReadOnly}
             className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-950 focus:border-transparent disabled:bg-gray-100"
@@ -294,7 +322,8 @@ function QuestionRenderer({
 
   // ACKNOWLEDGMENT (checkbox for each collaborator)
   if (type === 'acknowledgment') {
-    const approvals = value || {};
+    const { acknowledgmentText } = config;
+    const approvals = asAckMap(value);
     const currentUserId = currentUser?.id;
 
     // Support dynamic acknowledgmentText as function or string. The question is

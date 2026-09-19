@@ -82,9 +82,16 @@ interface TextQuestion extends QuestionBase {
 }
 
 /** Single choice; `otherField` adds a free-text "Other". */
-interface ChoiceQuestion extends QuestionBase {
-  type: 'radio' | 'dropdown';
+interface RadioQuestion extends QuestionBase {
+  type: 'radio';
   options: readonly (string | QuestionOption)[];
+  otherField?: QuestionFieldName;
+}
+
+/** Single choice rendered by `CustomSelect`, which needs value/label pairs. */
+interface DropdownQuestion extends QuestionBase {
+  type: 'dropdown';
+  options: readonly QuestionOption[];
   otherField?: QuestionFieldName;
 }
 
@@ -109,7 +116,12 @@ interface CustomQuestion extends QuestionBase {
 }
 
 export type QuestionConfig =
-  TextQuestion | ChoiceQuestion | CheckboxQuestion | AcknowledgmentQuestion | CustomQuestion;
+  | TextQuestion
+  | RadioQuestion
+  | DropdownQuestion
+  | CheckboxQuestion
+  | AcknowledgmentQuestion
+  | CustomQuestion;
 
 /**
  * Question configuration for all fields
