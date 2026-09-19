@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
-function WelcomePopup({ isOpen, onClose }) {
+interface WelcomePopupProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+/** Three-step onboarding tour shown once per user on a new project. */
+function WelcomePopup({ isOpen, onClose }: WelcomePopupProps) {
   const [step, setStep] = useState(1);
   const [wiggle, setWiggle] = useState(false);
 
