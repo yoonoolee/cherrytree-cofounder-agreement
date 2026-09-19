@@ -377,11 +377,10 @@ function SectionFormation({ formData, handleChange, isReadOnly, showValidation }
                         onMouseEnter={() => setHighlightedIndex(index)}
                       >
                         <div className="text-sm text-gray-900">
-                          {placePrediction.structuredFormat?.mainText?.text ||
-                            placePrediction.text?.text}
+                          {placePrediction.mainText?.text || placePrediction.text?.text}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {placePrediction.structuredFormat?.secondaryText?.text}
+                          {placePrediction.secondaryText?.text}
                         </div>
                       </div>
                     );
