@@ -1,43 +1,63 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useLoadScript } from '@react-google-maps/api';
-import { db } from '../lib/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
-import { useUser } from '../contexts/UserContext';
+import { useLoadScript, type Libraries } from '@react-google-maps/api';
+import { updateDoc, type UpdateData } from 'firebase/firestore';
 import { useAuth, UserButton } from '@clerk/clerk-react';
-import { SECTION_IDS, SECTION_ORDER, getNextSection, isLastSection } from '@cherrytree/shared';
-import { useAutoSave } from '../hooks/useAutoSave';
-import { useProjectSync } from '../hooks/useProjectSync';
-import { useValidation } from '../hooks/useValidation';
-import { isProjectReadOnly } from '../utils/dateUtils';
-import SectionFormation from './SectionFormation';
-import SectionCofounders from './SectionCofounders';
-import SectionEquityAllocation from './SectionEquityAllocation';
-import SectionDecisionMaking from './SectionDecisionMaking';
-import SectionEquityVesting from './SectionEquityVesting';
-import SectionIP from './SectionIP';
-import SectionCompensation from './SectionCompensation';
-import SectionPerformance from './SectionPerformance';
-import SectionNonCompete from './SectionNonCompete';
-import SectionFinal from './SectionFinal';
-import CollaboratorsModal from './CollaboratorsModal';
-import SurveyNavigation from './SurveyNavigation';
-import WelcomePopup from './WelcomePopup';
+import {
+  SECTION_IDS,
+  SECTION_ORDER,
+  getNextSection,
+  isLastSection,
+  isSectionId,
+  type Project,
+  type SectionId,
+} from '@cherrytree/shared';
 
-const libraries = ['places'];
+import { env } from '../lib/env.ts';
+import { projectRef } from '../lib/firebase.ts';
+import { useUser } from '../contexts/UserContext.tsx';
+import { useAutoSave } from '../hooks/useAutoSave.ts';
+import { useProjectSync } from '../hooks/useProjectSync.ts';
+import { useValidation } from '../hooks/useValidation.ts';
+import { isProjectReadOnly } from '../utils/dateUtils.ts';
+import SectionFormation from './SectionFormation.tsx';
+import SectionCofounders from './SectionCofounders.tsx';
+import SectionEquityAllocation from './SectionEquityAllocation.tsx';
+import SectionDecisionMaking from './SectionDecisionMaking.tsx';
+import SectionEquityVesting from './SectionEquityVesting.tsx';
+import SectionIP from './SectionIP.tsx';
+import SectionCompensation from './SectionCompensation.tsx';
+import SectionPerformance from './SectionPerformance.tsx';
+import SectionNonCompete from './SectionNonCompete.tsx';
+import SectionFinal from './SectionFinal.tsx';
+import CollaboratorsModal from './CollaboratorsModal.tsx';
+import SurveyNavigation from './SurveyNavigation.tsx';
+import WelcomePopup from './WelcomePopup.tsx';
 
-function Survey({ projectId, onPreview, onFinalAgreement }) {
+const libraries: Libraries = ['places'];
+
+/** Marks one user's onboarding flag without touching the other users' entries. */
+const onboardingUpdate = (userId: string, completed: boolean): UpdateData<Project> => ({
+  [`onboardingCompleted.${userId}`]: completed,
+});
+
+interface SurveyProps {
+  projectId: string;
+  /** Leave for the Review & Approve page. */
+  onPreview: () => void;
+  /** Leave for the Final Agreement page. */
+  onFinalAgreement: () => void;
+}
+
+function Survey({ projectId, onPreview, onFinalAgreement }: SurveyProps) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser, setActive, userMemberships, orgsLoaded } = useUser();
   const { orgId } = useAuth();
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries,
-  });
+  const { isLoaded } = useLoadScript({ googleMapsApiKey: env.googleMapsApiKey, libraries });
 
   // UI state
-  const [currentSection, setCurrentSection] = useState(SECTION_IDS.FORMATION);
+  const [currentSection, setCurrentSection] = useState<SectionId>(SECTION_IDS.FORMATION);
   const [showCollaborators, setShowCollaborators] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
@@ -61,10 +81,7 @@ function Survey({ projectId, onPreview, onFinalAgreement }) {
   // Read section from URL query parameter or default to Formation
   useEffect(() => {
     const sectionFromUrl = searchParams.get('section');
-    const validSection = SECTION_ORDER.includes(sectionFromUrl)
-      ? sectionFromUrl
-      : SECTION_IDS.FORMATION;
-    setCurrentSection(validSection);
+    setCurrentSection(isSectionId(sectionFromUrl) ? sectionFromUrl : SECTION_IDS.FORMATION);
   }, [projectId, searchParams]);
 
   // Show welcome popup on first visit per user per project
@@ -76,10 +93,7 @@ function Survey({ projectId, onPreview, onFinalAgreement }) {
         // If user is not in onboardingCompleted map at all, add them with false
         if (hasCompletedOnboarding === undefined) {
           try {
-            const projectRef = doc(db, 'projects', projectId);
-            await updateDoc(projectRef, {
-              [`onboardingCompleted.${currentUser.id}`]: false,
-            });
+            await updateDoc(projectRef(projectId), onboardingUpdate(currentUser.id, false));
           } catch (error) {
             console.error('Error initializing onboarding status:', error);
           }
@@ -101,10 +115,7 @@ function Survey({ projectId, onPreview, onFinalAgreement }) {
     // Mark onboarding as completed for this user on this project
     if (currentUser) {
       try {
-        const projectRef = doc(db, 'projects', projectId);
-        await updateDoc(projectRef, {
-          [`onboardingCompleted.${currentUser.id}`]: true,
-        });
+        await updateDoc(projectRef(projectId), onboardingUpdate(currentUser.id, true));
       } catch (error) {
         console.error('Error updating onboarding status:', error);
       }
@@ -142,17 +153,17 @@ function Survey({ projectId, onPreview, onFinalAgreement }) {
   // Project sync, auto-save, and validation are now handled by custom hooks
   // See: useProjectSync, useAutoSave, useValidation
 
-  // Check if survey should be read-only (logic in dateUtils.js)
+  // Check if survey should be read-only (logic in dateUtils.ts)
   const isReadOnly = isProjectReadOnly(project);
 
   // Show a section and mirror it in the URL
-  const goToSection = (sectionId) => {
+  const goToSection = (sectionId: SectionId) => {
     setCurrentSection(sectionId);
     setSearchParams({ section: sectionId });
   };
 
   // Find first incomplete section
-  const findFirstIncompleteSection = () => {
+  const findFirstIncompleteSection = (): SectionId | null => {
     for (const sectionId of SECTION_ORDER) {
       if (!isSectionCompleted(sectionId)) {
         return sectionId;
@@ -221,6 +232,8 @@ function Survey({ projectId, onPreview, onFinalAgreement }) {
     );
   }
 
+  const savedAt = autoSaveLastSaved || lastSaved;
+
   return (
     <div className="min-h-screen flex survey-bg">
       {/* Welcome Popup */}
@@ -256,10 +269,10 @@ function Survey({ projectId, onPreview, onFinalAgreement }) {
           {saveStatus === 'saving' && (
             <span style={{ fontSize: '11px', color: '#aaa', fontWeight: 300 }}>Saving...</span>
           )}
-          {saveStatus === 'saved' && (autoSaveLastSaved || lastSaved) && (
+          {saveStatus === 'saved' && savedAt && (
             <span style={{ fontSize: '11px', color: '#4B7263', fontWeight: 300 }}>
               Saved{' '}
-              {(autoSaveLastSaved || lastSaved).toLocaleTimeString([], {
+              {savedAt.toLocaleTimeString([], {
                 hour: 'numeric',
                 minute: '2-digit',
               })}

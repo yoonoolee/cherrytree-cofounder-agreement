@@ -10,7 +10,7 @@ import {
   makeSurveyData,
   timestamp,
 } from '../test/fixtures/project.ts';
-import Survey from './Survey';
+import Survey from './Survey.tsx';
 import type SurveyNavigation from './SurveyNavigation.tsx';
 import type CollaboratorsModal from './CollaboratorsModal.tsx';
 import type WelcomePopup from './WelcomePopup.tsx';
