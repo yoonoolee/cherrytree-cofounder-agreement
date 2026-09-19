@@ -7,7 +7,7 @@ import SurveyNavigation from './SurveyNavigation';
 import AgreementHeader from './AgreementHeader';
 import CollaboratorManager from './CollaboratorManager';
 import { useUser } from '../contexts/UserContext';
-import { useAuth, UserButton } from '@clerk/clerk-react';
+import { UserButton } from '@clerk/clerk-react';
 import { isProjectReadOnly } from '../utils/dateUtils';
 import { useProjectSync } from '../hooks/useProjectSync';
 
@@ -15,7 +15,6 @@ const GENERATED_AGREEMENT_ID = 'generated-agreement';
 
 function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreateProject }) {
   const { currentUser } = useUser();
-  const { getToken } = useAuth();
   const navigate = useNavigate();
 
   // UI state
@@ -104,9 +103,8 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
     setPdfError('');
 
     try {
-      const sessionToken = await getToken();
       const generatePreviewPDF = httpsCallable(functions, 'generatePreviewPDF');
-      const result = await generatePreviewPDF({ sessionToken, projectId });
+      const result = await generatePreviewPDF({ projectId });
 
       if (result.data && result.data.pdfUrl) {
         setPdfUrl(result.data.pdfUrl);
@@ -172,9 +170,8 @@ function Preview({ projectId, allProjects = [], onProjectSwitch, onEdit, onCreat
     setIsSubmitting(true);
 
     try {
-      const sessionToken = await getToken();
       const submitSurvey = httpsCallable(functions, 'submitSurvey');
-      await submitSurvey({ sessionToken, projectId });
+      await submitSurvey({ projectId });
 
       // Navigate to Final Agreement page after successful submit
       navigate(`/final-agreement/${projectId}`);

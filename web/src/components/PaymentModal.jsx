@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { functions } from '../firebase';
 import { httpsCallable } from 'firebase/functions';
 import { useUser } from '../contexts/UserContext';
-import { useAuth } from '@clerk/clerk-react';
 import { PRICING_PLANS } from '../constants/pricing';
 import ProWaitlistForm from './ProWaitlistForm';
 
@@ -22,7 +21,6 @@ const PLANS = PRICING_PLANS.filter((plan) => plan.key === 'starter' || plan.key 
 
 function PaymentModal({ onClose, onSuccess }) {
   const { currentUser, loading: userLoading } = useUser();
-  const { getToken } = useAuth();
   const [projectName, setProjectName] = useState('');
   const [selectedPlan, setSelectedPlan] = useState('starter');
   const [loading, setLoading] = useState(false);
@@ -80,28 +78,9 @@ function PaymentModal({ onClose, onSuccess }) {
         throw new Error('You must be logged in to create a project');
       }
 
-      const plan = PLANS[selectedPlan];
-
-      // Get Clerk session token
-      const sessionToken = await getToken();
-      if (!sessionToken) {
-        throw new Error('Unable to verify authentication. Please try logging in again.');
-      }
-
-      // Create Stripe checkout session
+      // The server maps the plan to its Stripe price and builds the redirect URLs.
       const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
-
-      // Always use current domain for redirects (works for localhost, dev, and prod)
-      const baseUrl = window.location.origin;
-
-      const result = await createCheckoutSession({
-        sessionToken,
-        priceId: plan.priceId,
-        plan: selectedPlan,
-        projectName: trimmedName,
-        successUrl: `${baseUrl}/dashboard?payment=success`,
-        cancelUrl: `${baseUrl}/dashboard?payment=cancelled`,
-      });
+      const result = await createCheckoutSession({ plan: selectedPlan, projectName: trimmedName });
 
       // Redirect to Stripe checkout
       if (result.data.url) {

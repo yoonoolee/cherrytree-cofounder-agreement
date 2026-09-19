@@ -20,18 +20,21 @@ export const db = getFirestore(app);
 export const functions = getFunctions(app, 'us-west2');
 export const auth = getAuth(app);
 
-// Initialize App Check for bot protection (production only)
-// To enable: Add VITE_RECAPTCHA_SITE_KEY to your .env file
-// Get key from: https://console.cloud.google.com/security/recaptcha
-if (import.meta.env.PROD && import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
-  try {
-    initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
-      isTokenAutoRefreshEnabled: true,
-    });
-  } catch (error) {
-    console.error('Error initializing App Check:', error);
-  }
+// App Check: every callable enforces it (functions/src/config.ts), so it runs in every mode.
+// Built bundles exchange reCAPTCHA v3 for tokens (site key from the reCAPTCHA admin console).
+// The dev server uses a debug token instead: the SDK prints one to the browser console on
+// first run; register it under App Check → Apps → Manage debug tokens in the Firebase console
+// of the dev project. It is stored in this browser profile, so this happens once per browser.
+if (import.meta.env.DEV) {
+  self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+}
+try {
+  initializeAppCheck(app, {
+    provider: new ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
+    isTokenAutoRefreshEnabled: true,
+  });
+} catch (error) {
+  console.error('Error initializing App Check:', error);
 }
 
 // Connect to emulators in development

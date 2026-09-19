@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useOrganization } from '@clerk/clerk-react';
-import { useAuth } from '@clerk/clerk-react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase';
 import { isAfterEditDeadline } from '../utils/dateUtils';
@@ -12,7 +11,6 @@ function CollaboratorManager({ project }) {
     memberships: { infinite: true, keepPreviousData: true },
     invitations: { infinite: true, keepPreviousData: true },
   });
-  const { getToken } = useAuth();
 
   const isAdmin = membership?.role === 'org:admin';
   const isEditWindowExpired = isAfterEditDeadline(project?.editDeadline);
@@ -69,14 +67,8 @@ function CollaboratorManager({ project }) {
     setSuccess('');
     setInviting(true);
     try {
-      const sessionToken = await getToken({ template: 'firebase' });
       const createInvitation = httpsCallable(functions, 'createOrganizationInvitation');
-      await createInvitation({
-        sessionToken,
-        emailAddress: email,
-        organizationId: organization.id,
-        role: 'org:member',
-      });
+      await createInvitation({ emailAddress: email, organizationId: organization.id });
       setSuccess(
         "An invitation has been sent if the email exists. Ask them to check their spam folder if they don't see it.",
       );
@@ -95,9 +87,8 @@ function CollaboratorManager({ project }) {
   const handleRemoveMember = async (userId) => {
     setRemovingUserId(userId);
     try {
-      const sessionToken = await getToken({ template: 'firebase' });
       const removeOrganizationMember = httpsCallable(functions, 'removeOrganizationMember');
-      await removeOrganizationMember({ sessionToken, userId, organizationId: organization.id });
+      await removeOrganizationMember({ userId, organizationId: organization.id });
     } catch (err) {
       console.error('Error removing member:', err);
     } finally {
