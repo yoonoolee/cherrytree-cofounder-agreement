@@ -9,6 +9,7 @@ import { useUser } from '../contexts/UserContext';
 import { UserButton } from '@clerk/clerk-react';
 import { isProjectReadOnly } from '../utils/dateUtils';
 import { useProjectSync } from '../hooks/useProjectSync';
+import { getEmbedUrl } from '../utils/getEmbedUrl';
 
 const GENERATED_AGREEMENT_ID = 'generated-agreement';
 
@@ -29,40 +30,6 @@ function Preview({ projectId, onEdit }) {
   // Refs and hooks for form data (SurveyNavigation has its own hooks now)
   const isSavingRef = useRef(false);
   const { project } = useProjectSync(projectId, isSavingRef);
-
-  // Convert Google Drive URL to embeddable format
-  const getEmbedUrl = (url) => {
-    if (!url) return null;
-
-    // Check if it's a Google Drive URL
-    if (url.includes('drive.google.com')) {
-      // Extract file ID from various Google Drive URL formats
-      let fileId = null;
-
-      // Format: https://drive.google.com/file/d/FILE_ID/view
-      // Format: https://drive.google.com/file/d/FILE_ID (without /view)
-      const match1 = url.match(/\/file\/d\/([^/?]+)/);
-      if (match1) {
-        fileId = match1[1];
-      }
-
-      // Format: https://drive.google.com/open?id=FILE_ID
-      if (!fileId) {
-        const match2 = url.match(/[?&]id=([^&]+)/);
-        if (match2) {
-          fileId = match2[1];
-        }
-      }
-
-      if (fileId) {
-        // Return embeddable URL with preview parameter
-        return `https://drive.google.com/file/d/${fileId}/preview`;
-      }
-    }
-
-    // If not Google Drive or already in correct format, return as-is
-    return url;
-  };
 
   // Update PDF URL when project changes
   useEffect(() => {
