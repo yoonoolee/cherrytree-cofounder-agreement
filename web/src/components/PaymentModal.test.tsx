@@ -85,6 +85,8 @@ describe('PaymentModal', () => {
       plan: 'starter',
       projectName: 'Acme & Co',
     });
+    // Nothing reads a payment marker after the round trip through Stripe.
+    expect(sessionStorage.length).toBe(0);
   });
 
   it('surfaces the callable error and re-enables the button', async () => {
