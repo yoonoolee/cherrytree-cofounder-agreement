@@ -1,41 +1,33 @@
-import { FIELDS, COLLABORATOR_FIELDS, SECTION_IDS } from '@cherrytree/shared';
-import { calculateProjectProgress } from '../utils/progressCalculation';
+import {
+  FIELDS,
+  COLLABORATOR_FIELDS,
+  SECTION_IDS,
+  type Project,
+  type SurveyData,
+} from '@cherrytree/shared';
+
+import {
+  calculateProjectProgress,
+  isOtherArrayFieldValid,
+  isOtherFieldValid,
+} from '../utils/progressCalculation.ts';
 
 /**
  * Custom hook for survey validation logic
  * Handles progress calculation and section completion checking
  *
- * @param {object} formData - Current form data
- * @param {object} project - Current project
- * @returns {object} - { calculateProgress, isSectionCompleted, isOtherFieldValid, isOtherArrayFieldValid }
+ * @param formData - Current form data
+ * @param project - Current project
  */
-export function useValidation(formData, project) {
-  /**
-   * Helper function to check if a field with "Other" option is properly filled
-   */
-  const isOtherFieldValid = (value, otherValue) => {
-    if (value === 'Other') {
-      return otherValue && otherValue.trim() !== '';
-    }
-    return !!value;
-  };
-
-  /**
-   * Helper function to check if an array field with "Other" option is properly filled
-   */
-  const isOtherArrayFieldValid = (array, otherValue) => {
-    if (!array || array.length === 0) return false;
-    if (array.includes('Other')) {
-      return otherValue && otherValue.trim() !== '';
-    }
-    return true;
-  };
-
+export function useValidation(
+  formData: Partial<SurveyData>,
+  project: Pick<Project, 'collaborators'> | null | undefined,
+) {
   /**
    * Calculate progress across all sections
    * Returns percentage (0-100) of completed required fields
    */
-  const calculateProgress = () => {
+  const calculateProgress = (): number => {
     return calculateProjectProgress({
       surveyData: formData,
       collaborators: project?.collaborators,
@@ -44,10 +36,10 @@ export function useValidation(formData, project) {
 
   /**
    * Check if a specific section is completed
-   * @param {number} sectionId - The section number (1-10)
-   * @returns {boolean} - Whether the section is complete
+   * @param sectionId - The section id (SECTION_IDS)
+   * @returns Whether the section is complete
    */
-  const isSectionCompleted = (sectionId) => {
+  const isSectionCompleted = (sectionId: string): boolean => {
     // Get active collaborator userIds from the project
     const collaboratorIds = Object.entries(project?.collaborators || {})
       .filter(([_, data]) => data[COLLABORATOR_FIELDS.IS_ACTIVE] !== false)
@@ -55,7 +47,7 @@ export function useValidation(formData, project) {
 
     switch (sectionId) {
       case SECTION_IDS.FORMATION: // Formation & Purpose
-        return (
+        return !!(
           formData[FIELDS.COMPANY_NAME] &&
           isOtherFieldValid(formData[FIELDS.ENTITY_TYPE], formData[FIELDS.ENTITY_TYPE_OTHER]) &&
           formData[FIELDS.REGISTERED_STATE] &&
@@ -67,13 +59,15 @@ export function useValidation(formData, project) {
           isOtherArrayFieldValid(formData[FIELDS.INDUSTRIES], formData[FIELDS.INDUSTRY_OTHER])
         );
 
-      case SECTION_IDS.COFOUNDERS: // Cofounder Info
+      case SECTION_IDS.COFOUNDERS: {
+        // Cofounder Info
+        const cofounders = formData[FIELDS.COFOUNDERS] || [];
         if (!formData[FIELDS.COFOUNDER_COUNT]) return false;
         // Block if more cofounders than collaborators (collaborator was removed from project)
-        if ((formData[FIELDS.COFOUNDERS] || []).length > collaboratorIds.length) return false;
-        if (formData[FIELDS.COFOUNDERS] && formData[FIELDS.COFOUNDERS].length > 0) {
+        if (cofounders.length > collaboratorIds.length) return false;
+        if (cofounders.length > 0) {
           // Check that all cofounders have all required fields filled
-          const allCofoundersFilled = formData[FIELDS.COFOUNDERS].every(
+          const allCofoundersFilled = cofounders.every(
             (cf) =>
               cf[FIELDS.COFOUNDER_FULL_NAME] &&
               cf[FIELDS.COFOUNDER_TITLE] &&
@@ -84,8 +78,10 @@ export function useValidation(formData, project) {
           return allCofoundersFilled;
         }
         return true;
+      }
 
-      case SECTION_IDS.EQUITY_ALLOCATION: // Equity Allocation
+      case SECTION_IDS.EQUITY_ALLOCATION: {
+        // Equity Allocation
         // Check that equity entries exist and all are filled
         const equityEntries = formData[FIELDS.EQUITY_ENTRIES] || [];
         if (equityEntries.length === 0) return false;
@@ -111,12 +107,14 @@ export function useValidation(formData, project) {
             (userId) => formData[FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION]?.[userId],
           );
         return allAcknowledgedEquityAllocation;
+      }
 
-      case SECTION_IDS.VESTING: // Vesting Schedule
+      case SECTION_IDS.VESTING: {
+        // Vesting Schedule
         const allAcknowledgedForfeiture =
           collaboratorIds.length > 0 &&
           collaboratorIds.every((userId) => formData[FIELDS.ACKNOWLEDGE_FORFEITURE]?.[userId]);
-        return (
+        return !!(
           formData[FIELDS.VESTING_START_DATE] &&
           isOtherFieldValid(
             formData[FIELDS.VESTING_SCHEDULE],
@@ -129,8 +127,10 @@ export function useValidation(formData, project) {
           allAcknowledgedForfeiture &&
           formData[FIELDS.VESTED_SHARES_DISPOSAL]
         );
+      }
 
-      case SECTION_IDS.DECISION_MAKING: // Decision-Making
+      case SECTION_IDS.DECISION_MAKING: {
+        // Decision-Making
         const allAcknowledgedTieResolution =
           collaboratorIds.length > 0 &&
           collaboratorIds.every((userId) => formData[FIELDS.ACKNOWLEDGE_TIE_RESOLUTION]?.[userId]);
@@ -141,7 +141,7 @@ export function useValidation(formData, project) {
                 (userId) => formData[FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE]?.[userId],
               )
             : true;
-        return (
+        return !!(
           isOtherArrayFieldValid(
             formData[FIELDS.MAJOR_DECISIONS],
             formData[FIELDS.MAJOR_DECISIONS_OTHER],
@@ -152,20 +152,25 @@ export function useValidation(formData, project) {
           formData[FIELDS.INCLUDE_SHOTGUN_CLAUSE] &&
           allAcknowledgedShotgunClause
         );
+      }
 
-      case SECTION_IDS.IP: // IP & Ownership
+      case SECTION_IDS.IP: {
+        // IP & Ownership
         const allAcknowledgedIPOwnership =
           collaboratorIds.length > 0 &&
           collaboratorIds.every((userId) => formData[FIELDS.ACKNOWLEDGE_IP_OWNERSHIP]?.[userId]);
-        return formData[FIELDS.HAS_PRE_EXISTING_IP] && allAcknowledgedIPOwnership;
+        return !!(formData[FIELDS.HAS_PRE_EXISTING_IP] && allAcknowledgedIPOwnership);
+      }
 
       case SECTION_IDS.COMPENSATION: // Compensation
-        return formData[FIELDS.TAKING_COMPENSATION] && formData[FIELDS.SPENDING_LIMIT];
+        return !!(formData[FIELDS.TAKING_COMPENSATION] && formData[FIELDS.SPENDING_LIMIT]);
 
-      case SECTION_IDS.PERFORMANCE: // Performance (Cofounder Performance & Departure)
-        return (
-          formData[FIELDS.PERFORMANCE_CONSEQUENCES] &&
-          formData[FIELDS.PERFORMANCE_CONSEQUENCES].length > 0 &&
+      case SECTION_IDS.PERFORMANCE: {
+        // Performance (Cofounder Performance & Departure)
+        const performanceConsequences = formData[FIELDS.PERFORMANCE_CONSEQUENCES];
+        return !!(
+          performanceConsequences &&
+          performanceConsequences.length > 0 &&
           formData[FIELDS.REMEDY_PERIOD_DAYS] &&
           isOtherArrayFieldValid(
             formData[FIELDS.TERMINATION_WITH_CAUSE],
@@ -173,12 +178,14 @@ export function useValidation(formData, project) {
           ) &&
           formData[FIELDS.VOLUNTARY_NOTICE_DAYS]
         );
+      }
 
-      case SECTION_IDS.NON_COMPETITION: // Non-Competition (Confidentiality, Non-Competition & Non-Solicitation)
+      case SECTION_IDS.NON_COMPETITION: {
+        // Non-Competition (Confidentiality, Non-Competition & Non-Solicitation)
         const allAcknowledgedConfidentiality =
           collaboratorIds.length > 0 &&
           collaboratorIds.every((userId) => formData[FIELDS.ACKNOWLEDGE_CONFIDENTIALITY]?.[userId]);
-        return (
+        return !!(
           allAcknowledgedConfidentiality &&
           isOtherFieldValid(
             formData[FIELDS.NON_COMPETE_DURATION],
@@ -189,8 +196,10 @@ export function useValidation(formData, project) {
             formData[FIELDS.NON_SOLICIT_DURATION_OTHER],
           )
         );
+      }
 
-      case SECTION_IDS.GENERAL_PROVISIONS: // Final Details
+      case SECTION_IDS.GENERAL_PROVISIONS: {
+        // Final Details
         const allAcknowledgedPeriodicReview =
           collaboratorIds.length > 0 &&
           collaboratorIds.every((userId) => formData[FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW]?.[userId]);
@@ -207,7 +216,7 @@ export function useValidation(formData, project) {
         const allAcknowledgedSeverability =
           collaboratorIds.length > 0 &&
           collaboratorIds.every((userId) => formData[FIELDS.ACKNOWLEDGE_SEVERABILITY]?.[userId]);
-        return (
+        return !!(
           isOtherFieldValid(
             formData[FIELDS.DISPUTE_RESOLUTION],
             formData[FIELDS.DISPUTE_RESOLUTION_OTHER],
@@ -223,6 +232,7 @@ export function useValidation(formData, project) {
           allAcknowledgedEntireAgreement &&
           allAcknowledgedSeverability
         );
+      }
 
       default:
         return false;

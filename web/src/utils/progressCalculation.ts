@@ -21,7 +21,10 @@ export interface ProgressInput {
 /**
  * Helper to check if "Other" field is valid
  */
-const isOtherFieldValid = (value: string | undefined, otherValue: string | undefined): boolean => {
+export const isOtherFieldValid = (
+  value: string | undefined,
+  otherValue: string | undefined,
+): boolean => {
   if (value === 'Other') {
     return !!otherValue && otherValue.trim() !== '';
   }
@@ -31,7 +34,7 @@ const isOtherFieldValid = (value: string | undefined, otherValue: string | undef
 /**
  * Helper to check if array with "Other" is valid
  */
-const isOtherArrayFieldValid = (
+export const isOtherArrayFieldValid = (
   array: readonly string[] | undefined,
   otherValue: string | undefined,
 ): boolean => {
