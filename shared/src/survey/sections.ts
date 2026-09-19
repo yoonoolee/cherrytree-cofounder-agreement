@@ -36,6 +36,10 @@ export const SECTION_ORDER: readonly SectionId[] = [
 const getSectionIndex = (sectionId: string): number =>
   (SECTION_ORDER as readonly string[]).indexOf(sectionId);
 
+/** True for one of the survey section ids (e.g. a `?section=` query parameter). */
+export const isSectionId = (value: unknown): value is SectionId =>
+  typeof value === 'string' && getSectionIndex(value) !== -1;
+
 /** Next section id, or `null` after the last one. An unknown id yields the first section. */
 export const getNextSection = (currentSectionId: string): SectionId | null => {
   const currentIndex = getSectionIndex(currentSectionId);
