@@ -10,14 +10,12 @@
  * Note: Authentication and email invitations are handled by Clerk.
  */
 
-const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
+const { onRequest } = require('firebase-functions/v2/https');
 const { getApps, initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
 const { defineSecret } = require('firebase-functions/params');
 const { Webhook } = require('svix');
-const validator = require('validator');
-const { Resend } = require('resend');
 const {
   REQUIRED_ACKNOWLEDGMENT_FIELDS,
   CONDITIONAL_ACKNOWLEDGMENT_FIELDS,
@@ -30,7 +28,6 @@ const auth = getAuth();
 
 // Load secrets from environment config
 const CLERK_WEBHOOK_SECRET = defineSecret('CLERK_WEBHOOK_SECRET');
-const RESEND_API_KEY = defineSecret('RESEND_API_KEY');
 
 // Shared Cloud Functions configuration
 // Optimized for free tier: 256MB memory
@@ -40,9 +37,6 @@ const FUNCTION_CONFIG = {
   serviceAccount: `cloud-functions@${process.env.GCLOUD_PROJECT}.iam.gserviceaccount.com`,
 };
 
-// Validation constants
-const EMAIL_MAX_LENGTH = 254; // RFC 5321 maximum email length
-
 // Collaborator field constants
 const COLLABORATOR_FIELDS = {
   FIRST_NAME: 'firstName',
@@ -51,100 +45,6 @@ const COLLABORATOR_FIELDS = {
   IS_ACTIVE: 'isActive',
   HISTORY: 'history',
 };
-
-// ============================================================================
-// INPUT VALIDATION & SANITIZATION HELPERS
-// ============================================================================
-
-/**
- * Validate email format - Basic check for early feedback
- * Note: Clerk handles full email validation. This is just for early user feedback
- * before making API calls to Clerk.
- * @param {string} email - Email to validate
- * @returns {boolean} - Whether email has basic valid format
- */
-function isValidEmail(email) {
-  if (typeof email !== 'string') return false;
-
-  // Basic validation using validator.js
-  return validator.isEmail(email) && email.length <= EMAIL_MAX_LENGTH;
-}
-
-// ============================================================================
-// CONTACT FORM
-// ============================================================================
-
-const CONTACT_RECIPIENT_EMAIL = 'hello@cherrytree.app';
-const CONTACT_NAME_MAX_LENGTH = 200;
-const CONTACT_MESSAGE_MAX_LENGTH = 5000;
-
-exports.sendContactMessage = onCall(
-  {
-    ...FUNCTION_CONFIG,
-    secrets: [RESEND_API_KEY],
-    invoker: 'public',
-    consumeAppCheckToken: true,
-  },
-  async (request) => {
-    const { name, email, message } = request.data || {};
-
-    if (
-      typeof name !== 'string' ||
-      name.trim().length === 0 ||
-      name.trim().length > CONTACT_NAME_MAX_LENGTH
-    ) {
-      throw new HttpsError('invalid-argument', 'Please enter your name.');
-    }
-    if (!isValidEmail(email)) {
-      throw new HttpsError('invalid-argument', 'Please enter a valid email address.');
-    }
-    if (
-      typeof message !== 'string' ||
-      message.trim().length === 0 ||
-      message.trim().length > CONTACT_MESSAGE_MAX_LENGTH
-    ) {
-      throw new HttpsError('invalid-argument', 'Please enter a message.');
-    }
-
-    const trimmedName = name.trim();
-    const trimmedEmail = email.trim();
-    const trimmedMessage = message.trim();
-
-    try {
-      const resend = new Resend(RESEND_API_KEY.value());
-      const { data, error } = await resend.emails.send({
-        from: `Cherrytree Contact Form <${CONTACT_RECIPIENT_EMAIL}>`,
-        to: CONTACT_RECIPIENT_EMAIL,
-        replyTo: trimmedEmail,
-        subject: `New contact form message from ${trimmedName}`,
-        text: `From: ${trimmedName} <${trimmedEmail}>\n\n${trimmedMessage}`,
-      });
-
-      if (error) {
-        console.error('Resend error sending contact message:', error);
-        throw new HttpsError(
-          'internal',
-          'Something went wrong sending your message. Please try again or email us directly.',
-        );
-      }
-
-      console.log('Contact message sent successfully', {
-        resendId: data?.id,
-        submitterEmail: trimmedEmail,
-      });
-      return { success: true };
-    } catch (error) {
-      if (error instanceof HttpsError) {
-        throw error;
-      }
-      console.error('Error sending contact message:', error);
-      throw new HttpsError(
-        'internal',
-        'Something went wrong sending your message. Please try again or email us directly.',
-      );
-    }
-  },
-);
 
 // ============================================================================
 // ORGANIZATION MANAGEMENT (imported from organizations.js)
