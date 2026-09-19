@@ -1,10 +1,17 @@
-import React from 'react';
-import { usePageMeta } from '../hooks/usePageMeta';
-import MarketingNav from '../components/MarketingNav';
-import MarketingFooter from '../components/MarketingFooter';
-import MarketingGrain from '../components/MarketingGrain';
+import type { ReactNode } from 'react';
 
-const SECTIONS = [
+import { usePageMeta } from '../hooks/usePageMeta.ts';
+import MarketingNav from '../components/MarketingNav.tsx';
+import MarketingFooter from '../components/MarketingFooter.tsx';
+import MarketingGrain from '../components/MarketingGrain.tsx';
+
+interface AboutSection {
+  overline: string;
+  title: string;
+  body: ReactNode;
+}
+
+const SECTIONS: readonly AboutSection[] = [
   {
     overline: 'Note from our CEO',
     title: 'The Backstory',
