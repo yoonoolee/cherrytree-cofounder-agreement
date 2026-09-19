@@ -1,11 +1,12 @@
-import React from 'react';
 import { SignIn } from '@clerk/clerk-react';
-import { usePageMeta } from '../hooks/usePageMeta';
 import { useSearchParams } from 'react-router-dom';
+
+import { usePageMeta } from '../hooks/usePageMeta.ts';
+import { CLERK_TICKET_PARAM, withClerkTicket } from '../utils/clerkTicket.ts';
 
 function LoginPage() {
   const [searchParams] = useSearchParams();
-  const ticket = searchParams.get('__clerk_ticket');
+  const ticket = searchParams.get(CLERK_TICKET_PARAM);
 
   usePageMeta({
     title: 'Login | Cherrytree',
@@ -15,7 +16,7 @@ function LoginPage() {
   });
 
   // Preserve ticket when switching to signup
-  const signUpUrl = ticket ? `/signup?__clerk_ticket=${ticket}` : '/signup';
+  const signUpUrl = withClerkTicket('/signup', ticket);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
