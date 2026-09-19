@@ -6,7 +6,7 @@ Temporary file for the JS → TS refactor. Deleted in Phase 8. Full design lives
 
 - Phase: 4 (Cloud Functions → TypeScript) — not started; **fresh session recommended**
 - Step: —
-- Last green commit: 0599087 (Phase 3 tagged refactor/p3-done at 7d873f3; SECTIONS follow-up after)
+- Last green commit: 0599087 (Phase 3 tagged refactor/p3-done at 7d873f3; SECTIONS follow-up + tracker triage after)
 - Next action: Phase 4 step 1 — tests first: `functions/test/endpoints.test.ts` (export set, `__endpoint` golden, `CALLABLE_OPTIONS` guard); copy `.refactor-baseline/endpoints.golden.json` → `functions/test/endpoints.golden.json`
 - Blocked on: user "continue"
 
@@ -29,7 +29,7 @@ Rules: hard stop at every `⏸` checkpoint and wait for the user's "continue". *
 - [x] **Phase 1 — Tooling skeleton (still JS)** — commits a04005c (move), 4576e4f (.jsx), 856fa7d (Vite), 3309b27 (ESLint), b6d2ffd (Prettier), 36efb68, 812d837 (Vitest/knip/scripts). Public routes pixel-identical to baseline (28/30 exact; 2 animation frames). `npm run check` green. Originally: 1. pure move into `web/` + root/web/shared `package.json` + workspaces; 2. pure rename `.js`→`.jsx` (`index.js`→`main.jsx`); 3. Vite 8 + `index.html` + `vite.config.ts` (port 3000) + `VITE_` env rename + `web/.env.dev`/`.env.production` + `lib/env.ts` + workflow heredocs + `firebase.json` hosting `web/dist`; verify dev, `build`, `build:dev`, no dev-bundle markers in dist; 4. ESLint 10 + Prettier, single format commit + `.git-blame-ignore-revs`; 5. Vitest 5 + RTL + jsdom + knip + root scripts + README quick-start. Full smoke. ⏸
 - [x] **Phase 2 — Dead code removal** — commit c33cf81; also removed unused config helpers, CRA default logos, un-exported internal helpers; `__endpoint` golden re-verified identical. Pre-existing bug fixed with user approval in bcf7b6a (nav Sign in → `/login`). Originally: knip-verified deletes: `DynamicSection`, `DomainRedirect`, `AppRedirect`, `SectionOnboarding`, `utils/errorHandler`, `App.css`, `.Rhistory`, `.DS_Store`, client `mergeOtherFields`/`OTHER_FIELD_CONFIG`, server `crypto`/`defineString` imports, deps `web-vitals`, `env-cmd`, `react-scripts`, `firebase-functions-test`. ⏸
 - [x] **Phase 3 — TypeScript foundation + `shared` package** — commits 79fe47a (tsconfigs + `typecheck` gate), e7c6e06 (`@cherrytree/shared` + 16 TS tests + move verification), ef9bd95 (web/functions consume shared; esbuild bundle; emulator lists 10; golden identical), 7d873f3 (functions vitest project). `npm run check` green (0 errors / 40 warnings / 18 tests). Deviations from the original step list: web uses the create-vite layout (`tsconfig.json` solution → `tsconfig.app.json` + `tsconfig.node.json`) so `@types/node` stays out of browser code; `shared/tsconfig.json` landed with the package commit; ack lists live in `survey/acknowledgments.ts`. Originally: 1. `tsconfig.base.json` (strict, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`, `isolatedModules`, `moduleResolution: bundler`, ES2022, `skipLibCheck`; `exactOptionalPropertyTypes` off) + `web/tsconfig.json` (`allowJs: true, checkJs: false`, `@/*` alias mirrored in `vite.config.ts`, `vite-env.d.ts` with typed `ImportMetaEnv`) + `functions/tsconfig.json` (`paths` → `../shared/src`) + `shared/tsconfig.json`; root `typecheck` script in `check`. 2. `shared/` (`@cherrytree/shared`, source-exported, zero deps): `domain/` types, `time.ts`, `survey/`, `callables.ts`; tests in TS; one-off move verification. 3. Point web (workspace) and functions (esbuild alias) at shared; delete old copies; `functions/esbuild.config.mjs`, `main: lib/index.js`, `firebase.json` predeploy; temporary `functions/src/index.ts`. 4. Root vitest projects `web`, `shared`, `functions`. ⏸
-- [ ] **Phase 4 — Functions → TS** — 1. Tests first: `functions/test/endpoints.test.ts` (export set; `__endpoint` deep-equals `functions/test/endpoints.golden.json` via `createRequire` with `GCLOUD_PROJECT=test-project`; guard that every `onCall` uses a shared `CALLABLE_OPTIONS` with `invoker: 'public'` + `consumeAppCheckToken: true`). 2. Split `index.js` directly into `functions/src/*.ts` one module per commit (`config`, `lib/{firebase,auth,validation,dates,logger,errors}`, `pdf`, `stripe`, `firebaseToken`, `account`, `contact`, `organizations`, `clerkWebhook` one handler per event, `index` re-exports); validation verbatim; `toErrorMessage(unknown)`; `new Stripe` + pinned `apiVersion`; `logger`; helper tests as each helper is extracted. 3. Delete the old JS files. Gate + golden + emulator; dev deploy only after explicit confirmation → purchase/webhook and preview-PDF on dev. ⏸ (fresh session)
+- [ ] **Phase 4 — Functions → TS** — 1. Tests first: `functions/test/endpoints.test.ts` (export set; `__endpoint` deep-equals `functions/test/endpoints.golden.json` via `createRequire` with `GCLOUD_PROJECT=test-project`; guard that every `onCall` uses a shared `CALLABLE_OPTIONS` with `invoker: 'public'` + `enforceAppCheck: true` + `consumeAppCheckToken: true`). 2. Split `index.js` directly into `functions/src/*.ts` one module per commit (`config`, `lib/{firebase,auth,validation,dates,logger,errors}`, `pdf`, `stripe`, `firebaseToken`, `contact`, `organizations`, `clerkWebhook` one handler per event, `index` re-exports) — `deleteAccount` is deleted, not ported (golden → 9 functions); the Phase 4 fixes in the triage list land as their own commits as each module is converted (auth via `request.auth`, App Check enforced, webhook idempotency/rawBody, checkout + invitation inputs server-side, `sanitizeInput` at the output boundary, rules); validation otherwise verbatim; `toErrorMessage(unknown)`; `new Stripe` + pinned `apiVersion`; `logger`; helper tests as each helper is extracted. 3. Delete the old JS files. Gate + golden + emulator; dev deploy only after explicit confirmation → purchase/webhook and preview-PDF on dev. ⏸ (fresh session)
 - [ ] **Phase 5 — Web → TS, leaf-first (rename + annotate in one commit; each module's test lands first)** — 5a non-component modules: `lib/firebase.ts` (cast-only `withConverter`), `lib/env.ts`, `lib/functions.ts` (`callFunction<K>`), `constants`, `utils` (tests: progressCalculation, equityCalculation, dateUtils, getPreview, collaboratorPositions), `config/questionConfig.ts` (discriminated union), `hooks` (tests: useValidation, useCollaborators, useAutoSave write-shape), `UserContext.tsx`, `Window` globals; fixtures in `web/src/test/fixtures/` typed with shared types ⏸ · 5b leaf/mid components + `calculateSplit` test ⏸ · 5c Sections + SurveyNavigation ⏸ · 5d Survey/Preview/FinalAgreement ⏸ · 5e pages/App/main, drop `allowJs`, type-checked lint, `TODO(ts-migration)` → 0, `no-explicit-any` → error. Full smoke. ⏸ (fresh session)
 - [ ] **Phase 6 — Structural cleanup** — 1. Guards first: 3-layer Section harness for 10 sections + SurveyNavigation (props-contract recording snapshots; interaction tests; DOM snapshots + byte-identical `<h2 style>`/intro) with a programmatic fixture matrix; pairwise-equivalence tests for the duplicated completion rules / name helpers with known divergences pinned. 2. `SectionHeading`, `useSectionFlow`, `SurveySection`; one section per commit, zero `.snap` changes. 3. Proven dedupes; `toDate`; `goToDashboard`; lint rules back to error; react-refresh fixes; `exhaustive-deps` disables annotated. 4. Feature folders as a final pure move. `ProjectContext` deferred. ⏸
 - [ ] **Phase 7 — Dependency modernization** — React 19.3; Router 6→7→8; firebase-functions 7 / admin 14 (regen golden, reviewed); `@clerk/react`, Sentry, firebase; Stripe 22 after `apiVersion` review; axios→fetch; TS bump if allowed; Tailwind 4 last/optional/screenshot-gated (user go/no-go). ⏸
@@ -82,44 +82,47 @@ Rules: hard stop at every `⏸` checkpoint and wait for the user's "continue". *
 - `npm ci && npm --prefix functions ci` (functions now needs its devDependencies — esbuild — for `firebase deploy`'s predeploy build)
 - Commands: `npm run dev` (was `npm start`), `npm run check` before pushing
 
-## Found during refactor — to fix in the phase that touches the module
+## Found during refactor — triaged 2026-09-18
 
-Rule changed 2026-09-18: these are fixed, not pinned. Each fix is its own commit with a test; items tagged **ASK** need a user decision first. Tick items as they land.
+Rule (user, 2026-09-18): bugs, security gaps and poor practice found while refactoring are **fixed**, not preserved — each as its own commit with a test guarding the corrected behavior. Scope: the *broader* stuff (auth, webhooks, rules, config, dead code). **Survey logic stays as-is for now** (validation/completion rules, field schema quirks, "Other" merging, display names, ordering). Abuse/scale hardening (rate limits etc.) is deferred — few users today. Ask for confirmation when unsure.
 
-Security
-- App Check not enforced: all callables set `consumeAppCheckToken: true` but not `enforceAppCheck: true` (`functions/index.js`, `functions/organizations.js`)
-- `sendContactMessage` is unauthenticated and un-rate-limited (`functions/index.js`)
-- Clerk session token is passed in the request body, not `Authorization`; Firebase `request.auth` never used server-side (`functions/auth-helpers.js`)
-- Firestore `projects` update rule only protects `admin`; collaborators can overwrite `collaborators`, `payments`, `editDeadline`, `pdfAgreements`, `currentPlan` (`firestore.rules`)
-- Firestore `projects` `list` rule has no field constraint (`firestore.rules`)
-- Stripe webhook is not idempotent (retry → duplicate Clerk org + project) and returns 200 on inner failures (`functions/index.js` stripeWebhook)
-- Clerk webhook verifies `JSON.stringify(req.body)` instead of `req.rawBody` (`functions/index.js` clerkWebhook)
-- `createOrganizationInvitation` trusts the `Origin` header for `redirectUrl` and accepts `role` from the client (`functions/organizations.js`)
-- `createCheckoutSession` accepts arbitrary `successUrl`/`cancelUrl`/`priceId`; `plan` not cross-checked with `priceId` (`functions/index.js`)
-- `sanitizeInput` HTML-escapes at storage time (`Acme & Co` → `Acme &amp; Co` in Firestore/Clerk/Stripe) (`functions/index.js`)
-- Contact-form submitter email logged (`functions/index.js`)
-- `deleteAccount` transfers admin to a nondeterministic first collaborator without consent (`functions/index.js`)
+### Fix — Phase 4 (functions + rules)
+- [ ] **App Check enforced**: `enforceAppCheck: true` on every callable; web initializes App Check in all modes (debug token for localhost/dev, reCAPTCHA v3 in prod). Currently `consumeAppCheckToken: true` without enforcement (`functions/index.js`, `functions/organizations.js`, `web/src/firebase.js`)
+- [ ] **Callables use `request.auth`**: web already signs into Firebase with a Clerk-minted custom token (`UserContext.jsx`), so `request.auth.uid` is available; delete the Clerk-session-token-in-body path (`functions/auth-helpers.js`) and the client code that sends it
+- [ ] **`deleteAccount` deleted** (no client caller; nondeterministic admin transfer; sets Clerk role `'admin'` vs `'org:admin'` check). Remove from `CallableMap` and the endpoint golden (→ 9 functions)
+- [ ] **Stripe webhook idempotent** on `event.id`; return 5xx on inner failure so Stripe retries (today: duplicate Clerk org + project on retry, 200 on failure)
+- [ ] **Clerk webhook verifies `req.rawBody`**, not `JSON.stringify(req.body)`
+- [ ] **`createCheckoutSession`**: server-side `plan → priceId` map; `successUrl`/`cancelUrl` from config, not the client
+- [ ] **`createOrganizationInvitation`**: `redirectUrl` from config, not the `Origin` header; role forced to member server-side
+- [ ] **`sanitizeInput`**: store raw; HTML-escape only when building the Make.com PDF payload (today `Acme & Co` → `Acme &amp; Co` in Firestore/Clerk/Stripe)
+- [ ] **Contact-form submitter email no longer logged**
+- [ ] **Firestore rules**: `projects` update locks `collaborators`/`payments`/`editDeadline`/`pdfAgreements`/`currentPlan` to server/admin; `list` gets a field constraint — verify client write/query paths first (`firestore.rules`)
+- [ ] `console.*` → `logger.*`; pinned Stripe `apiVersion` (allowed deviations, tick when applied)
 
-Bugs / inconsistencies
-- `CollaboratorManager` shows an error when `!project.id`, but `useProjectSync` never sets `id` (`src/components/CollaboratorManager.js:27`)
-- `FIELDS` declares `compensations` as `userId/name/amount/frequency`; code uses `who`/`amount` (`src/config/surveySchema.js`, `src/components/SectionCompensation.js`)
-- `lastOpened` written as a JS `Date` client-side vs `serverTimestamp()` server-side (`src/pages/SurveyPage.js:45`)
-- `updatedAt` is read in `DashboardPage` but never written anywhere
-- `deleteAccount` sets Clerk role `'admin'` while `organizations.js` checks `'org:admin'`
-- `firstUnanswered` treats an empty acknowledgment map `{}` as answered (`every` on empty), while `isAckAnswered` treats it as unanswered (all `Section*` components)
-- `mergeOtherFields` (server) mutates nested cofounder objects in place through a shallow copy (`functions/surveySchema.js`)
-- `finalEquityPercentages` is declared in the schema but never written
-- `CLAUDE.md` data model is stale: field is `surveyData` not `formData`; `users` has no `name`/`organizationIds`; there is no `organizations` collection; chat agent references are obsolete; `EquityCalculator.js`/`DynamicSection` references are wrong
-- `TODO.md` ESLint-warnings list is stale (baseline build has 0 warnings)
-- Completion rules diverge between `useValidation.isSectionCompleted` and `progressCalculation.countCompletedSections`: with zero active collaborators the former requires `length > 0` for the vesting/decision-making/final acknowledgments, the latter passes `every` on an empty list; an equity `percentage` of `0`/`undefined` is "unfilled" in the former (truthiness) but "filled" in the latter (`!== ''`). Pin in Phase 6 equivalence tests; do not dedupe these branches.
-- `getCollaboratorName` (SectionEquityAllocation) vs `useCollaborators().getDisplayName` diverge for inactive/unknown users (the former returns the stored name or `Cofounder @`; the latter returns `''`). Pin in Phase 6; do not replace one with the other.
-- `collaboratorPositions.getSortedCollaboratorIds` sorts alphabetically by name although its doc comment says "by join time"; `migrateCollaboratorPositions` is a documented no-op.
-- `FIELDS.COMPENSATION_*` constants are unused; `SectionCompensation` stores `{who, amount}`
-- `deleteAccount` Cloud Function has no client caller (`httpsCallable(functions, 'deleteAccount')` appears nowhere in `web/`)
-- `web/.env.example` documents `VITE_MARKETING_URL` and `VITE_STRIPE_PUBLISHABLE_KEY`, which nothing reads
-- `INITIAL_FORM_DATA` default arrays/objects are shared by reference: `getInitialFormData()` is `{ ...INITIAL_FORM_DATA }`, so every fresh form shares the same `[]`/`{}` instances until a field is replaced
-- `SURVEY_FIELDS.hasOther`/`otherField`/`options` metadata is not consumed by anything (the "Other" merge is driven by `OTHER_FIELD_CONFIG`, options by `questionConfig`); Phase 6 candidate: derive one from the other (they agree on the 9 top-level fields; `cofounders.roles` exists only in `OTHER_FIELD_CONFIG`)
-- `cherrytree-cofounder-agreement/CLAUDE.md` still documents `functions/surveySchema.js` and `src/config/surveySchema.js`/`sectionConfig.js` (now `@cherrytree/shared`) — Phase 8 docs
+### Fix — Phase 5 (web)
+- [ ] `useProjectSync` sets `project.id` (`CollaboratorManager` error branch is currently unreachable-by-design, `src/components/CollaboratorManager.js:27`)
+- [ ] `lastOpened` → `serverTimestamp()` (today a JS `Date` client-side, `src/pages/SurveyPage.js:45`); `updatedAt` written on every project save (today read in `DashboardPage`, never written)
+- [ ] `migrateCollaboratorPositions` (documented no-op) removed
+- [ ] `VITE_MARKETING_URL` / `VITE_STRIPE_PUBLISHABLE_KEY` removed from `web/.env.example` and `vite-env.d.ts` (nothing reads them)
+
+### Fix — Phase 8 (docs)
+- [ ] `CLAUDE.md` data model stale: field is `surveyData` not `formData`; `users` has no `name`/`organizationIds`; no `organizations` collection; chat-agent references obsolete; `EquityCalculator.js`/`DynamicSection` wrong; still documents `functions/surveySchema.js` and `src/config/surveySchema.js`/`sectionConfig.js`
+- [ ] `TODO.md` ESLint-warnings list stale (baseline build has 0 warnings)
+- [ ] `.claude/commands/localhost.md` says `npm start` (CRA) and references the retired chat agent
+
+### Deferred — survey logic, leave as-is (user, 2026-09-18); pin current behavior in Phase 6 tests
+- `FIELDS` declares `compensations` as `userId/name/amount/frequency`; code stores `{who, amount}`; `FIELDS.COMPENSATION_*` unused (`shared/src/survey/fields.ts`, `SectionCompensation`)
+- `firstUnanswered` treats an empty acknowledgment map `{}` as answered (`every` on empty) while `isAckAnswered` treats it as unanswered (all `Section*` components)
+- `mergeOtherFields` mutates nested cofounder objects in place through a shallow copy (`shared/src/survey/otherFields.ts`; pinned by a shared test)
+- `finalEquityPercentages` declared in the schema but never written
+- Completion rules diverge between `useValidation.isSectionCompleted` and `progressCalculation.countCompletedSections` (zero-collaborator acks; equity `0` vs `''`) — do not dedupe
+- `getCollaboratorName` (SectionEquityAllocation) vs `useCollaborators().getDisplayName` diverge for inactive/unknown users — do not replace one with the other
+- `collaboratorPositions.getSortedCollaboratorIds` sorts by name although its doc says "by join time"
+- `INITIAL_FORM_DATA` default arrays/objects shared by reference through `getInitialFormData()` = `{ ...INITIAL_FORM_DATA }`
+- `SURVEY_FIELDS.hasOther`/`otherField`/`options` metadata not consumed (the "Other" merge is driven by `OTHER_FIELD_CONFIG`; options by `questionConfig`)
+
+### Deferred — abuse/scale hardening (few users today)
+- `sendContactMessage` unauthenticated and un-rate-limited
 
 ## Phase 6 lint follow-ups (from the Phase 1 lint run)
 
