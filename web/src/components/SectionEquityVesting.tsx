@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import QuestionRenderer from './QuestionRenderer';
-import QuestionCard from './QuestionCard';
-import { QUESTION_CONFIG } from '../config/questionConfig';
+import { useState } from 'react';
 import { FIELDS } from '@cherrytree/shared';
-import { getPreview } from '../utils/getPreview';
+
+import QuestionRenderer from './QuestionRenderer.tsx';
+import QuestionCard from './QuestionCard.tsx';
+import type { SurveySectionProps } from './sectionProps.ts';
+import { QUESTION_CONFIG } from '../config/questionConfig.ts';
+import { getPreview } from '../utils/getPreview.ts';
 
 const FIELD_ORDER = [
   FIELDS.VESTING_START_DATE,
@@ -14,14 +16,30 @@ const FIELD_ORDER = [
   FIELDS.SHARES_BUYBACK_DAYS,
   FIELDS.ACKNOWLEDGE_FORFEITURE,
   FIELDS.VESTED_SHARES_DISPOSAL,
-];
+] as const;
 
-function SectionEquityVesting({ formData, handleChange, isReadOnly, project, showValidation }) {
+type Field = (typeof FIELD_ORDER)[number];
+
+/** `''`, or a number between 0 and 100. */
+const isValidPercentage = (value: string): boolean =>
+  value === '' ||
+  (!Number.isNaN(Number(value)) && parseFloat(value) >= 0 && parseFloat(value) <= 100);
+
+function SectionEquityVesting({
+  formData,
+  handleChange,
+  isReadOnly,
+  project,
+  showValidation,
+}: SurveySectionProps) {
+  // Survey logic kept as-is: an empty acknowledgment map is truthy, so it never opens the section.
   const firstUnanswered = FIELD_ORDER.find((f) => !formData[f]);
-  const [expandedField, setExpandedField] = useState(firstUnanswered || FIELD_ORDER[0]);
-  const advanceTo = (key) => {
+  const [expandedField, setExpandedField] = useState<Field | null>(
+    firstUnanswered || FIELD_ORDER[0],
+  );
+  const advanceTo = (key: Field) => {
     const idx = FIELD_ORDER.indexOf(key);
-    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1]);
+    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1] ?? null);
   };
   const collapse = () => setExpandedField(null);
 
@@ -149,13 +167,10 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
             type="text"
             value={formData[FIELDS.CLIFF_PERCENTAGE] ? `${formData[FIELDS.CLIFF_PERCENTAGE]}%` : ''}
             onChange={(e) => {
-              const input = e.target;
-              const cursorPos = input.selectionStart;
-              const value = e.target.value.replace('%', '');
-              if (
-                value === '' ||
-                (!isNaN(value) && parseFloat(value) >= 0 && parseFloat(value) <= 100)
-              ) {
+              const input = e.currentTarget;
+              const cursorPos = input.selectionStart ?? 0;
+              const value = input.value.replace('%', '');
+              if (isValidPercentage(value)) {
                 handleChange(FIELDS.CLIFF_PERCENTAGE, value);
                 setTimeout(() => {
                   const newPos = Math.min(cursorPos, value.length);
@@ -164,9 +179,9 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
               }
             }}
             onKeyDown={(e) => {
-              const input = e.target;
+              const input = e.currentTarget;
               const value = input.value.replace('%', '');
-              const cursorPos = input.selectionStart;
+              const cursorPos = input.selectionStart ?? 0;
               if (e.key === 'ArrowRight' && cursorPos >= value.length) e.preventDefault();
               if (e.key === 'ArrowLeft' && cursorPos > value.length) {
                 e.preventDefault();
@@ -174,13 +189,13 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
               }
             }}
             onClick={(e) => {
-              const input = e.target;
+              const input = e.currentTarget;
               const value = input.value.replace('%', '');
-              if (input.selectionStart > value.length)
+              if ((input.selectionStart ?? 0) > value.length)
                 setTimeout(() => input.setSelectionRange(value.length, value.length), 0);
             }}
             onFocus={(e) => {
-              const input = e.target;
+              const input = e.currentTarget;
               const value = input.value.replace('%', '');
               setTimeout(() => input.setSelectionRange(value.length, value.length), 0);
             }}
@@ -198,7 +213,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
               ? 'For how long after the acquisition should this protection apply?'
               : undefined
           }
-          subAnswerPreview={formData.accelerationProtectionMonths || ''}
+          subAnswerPreview={formData[FIELDS.ACCELERATION_PROTECTION_MONTHS] || ''}
           isExpanded={expandedField === FIELDS.ACCELERATION_TRIGGER}
           isAnswered={!!formData[FIELDS.ACCELERATION_TRIGGER]}
           onExpand={() => setExpandedField(FIELDS.ACCELERATION_TRIGGER)}
@@ -221,7 +236,8 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
                       const newValue =
                         formData[FIELDS.ACCELERATION_TRIGGER] === option ? '' : option;
                       handleChange(FIELDS.ACCELERATION_TRIGGER, newValue);
-                      if (newValue !== 'Yes') handleChange('accelerationProtectionMonths', '');
+                      if (newValue !== 'Yes')
+                        handleChange(FIELDS.ACCELERATION_PROTECTION_MONTHS, '');
                     }
                   }}
                   onChange={() => {}}
@@ -239,7 +255,7 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
                 alwaysExpanded
                 flat
               >
-                {showValidation && !formData.accelerationProtectionMonths && (
+                {showValidation && !formData[FIELDS.ACCELERATION_PROTECTION_MONTHS] && (
                   <span className="text-red-700 ml-0.5 validation-error">*</span>
                 )}
                 <div className="space-y-2">
@@ -247,14 +263,16 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
                     <label key={option} className="card-radio-option">
                       <input
                         type="radio"
-                        name="accelerationProtectionMonths"
+                        name={FIELDS.ACCELERATION_PROTECTION_MONTHS}
                         value={option}
-                        checked={formData.accelerationProtectionMonths === option}
+                        checked={formData[FIELDS.ACCELERATION_PROTECTION_MONTHS] === option}
                         onClick={() => {
                           if (!isReadOnly)
                             handleChange(
-                              'accelerationProtectionMonths',
-                              formData.accelerationProtectionMonths === option ? '' : option,
+                              FIELDS.ACCELERATION_PROTECTION_MONTHS,
+                              formData[FIELDS.ACCELERATION_PROTECTION_MONTHS] === option
+                                ? ''
+                                : option,
                             );
                         }}
                         onChange={() => {}}
@@ -345,8 +363,8 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
           answerPreview={getPreview(FIELDS.ACKNOWLEDGE_FORFEITURE, formData)}
           isExpanded={expandedField === FIELDS.ACKNOWLEDGE_FORFEITURE}
           isAnswered={(() => {
-            const v = formData[FIELDS.ACKNOWLEDGE_FORFEITURE];
-            return (
+            const v: unknown = formData[FIELDS.ACKNOWLEDGE_FORFEITURE];
+            return !!(
               v &&
               typeof v === 'object' &&
               Object.values(v).length > 0 &&
@@ -371,7 +389,6 @@ function SectionEquityVesting({ formData, handleChange, isReadOnly, project, sho
         <QuestionCard
           question={QUESTION_CONFIG[FIELDS.VESTED_SHARES_DISPOSAL].question}
           answerPreview={getPreview(FIELDS.VESTED_SHARES_DISPOSAL, formData)}
-          tooltip={QUESTION_CONFIG[FIELDS.VESTED_SHARES_DISPOSAL].tooltip}
           isExpanded={expandedField === FIELDS.VESTED_SHARES_DISPOSAL}
           isAnswered={!!formData[FIELDS.VESTED_SHARES_DISPOSAL]}
           onExpand={() => setExpandedField(FIELDS.VESTED_SHARES_DISPOSAL)}
