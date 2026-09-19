@@ -9,7 +9,8 @@ import {
   makeProject,
   timestamp,
 } from '../test/fixtures/project.ts';
-import Preview from './Preview';
+import Preview from './Preview.tsx';
+import { GENERATED_AGREEMENT_ID } from '../config/sectionConfig.ts';
 import type SurveyNavigation from './SurveyNavigation.tsx';
 import type CollaboratorsModal from './CollaboratorsModal.tsx';
 
@@ -154,13 +155,13 @@ describe('Preview', () => {
     it('routes the navigation: sections through onEdit, Final Agreement through the router', () => {
       const { onEdit } = renderPreview();
       expect(nav().projectId).toBe(PROJECT_ID);
-      expect(nav().currentSection).toBe('generated-agreement');
+      expect(nav().currentSection).toBe(GENERATED_AGREEMENT_ID);
 
       nav().onSectionClick(SECTION_IDS.VESTING);
       expect(onEdit).toHaveBeenCalledWith(SECTION_IDS.VESTING);
 
       act(() => nav().onReviewAndApproveClick());
-      expect(nav().currentSection).toBe('generated-agreement');
+      expect(nav().currentSection).toBe(GENERATED_AGREEMENT_ID);
       expect(onEdit).toHaveBeenCalledTimes(1);
       expect(path()).toBe(`/preview/${PROJECT_ID}`);
 

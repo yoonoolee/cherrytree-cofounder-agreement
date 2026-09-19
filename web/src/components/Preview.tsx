@@ -1,20 +1,27 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { callFunction } from '../lib/functions';
-import ApprovalSection from './ApprovalSection';
-import SurveyNavigation from './SurveyNavigation';
-import AgreementHeader from './AgreementHeader';
-import CollaboratorsModal from './CollaboratorsModal';
-import { useUser } from '../contexts/UserContext';
 import { UserButton } from '@clerk/clerk-react';
-import { isProjectReadOnly } from '../utils/dateUtils';
-import { useProjectSync } from '../hooks/useProjectSync';
-import { useCollaborators } from '../hooks/useCollaborators';
-import { getEmbedUrl } from '../utils/getEmbedUrl';
+import { toErrorMessage, type SectionId } from '@cherrytree/shared';
 
-const GENERATED_AGREEMENT_ID = 'generated-agreement';
+import { callFunction } from '../lib/functions.ts';
+import ApprovalSection from './ApprovalSection.tsx';
+import SurveyNavigation from './SurveyNavigation.tsx';
+import AgreementHeader from './AgreementHeader.tsx';
+import CollaboratorsModal from './CollaboratorsModal.tsx';
+import { useUser } from '../contexts/UserContext.tsx';
+import { isProjectReadOnly } from '../utils/dateUtils.ts';
+import { useProjectSync } from '../hooks/useProjectSync.ts';
+import { useCollaborators } from '../hooks/useCollaborators.ts';
+import { getEmbedUrl } from '../utils/getEmbedUrl.ts';
+import { GENERATED_AGREEMENT_ID } from '../config/sectionConfig.ts';
 
-function Preview({ projectId, onEdit }) {
+interface PreviewProps {
+  projectId: string;
+  /** Leave for the survey at the given section. */
+  onEdit: (sectionId: SectionId) => void;
+}
+
+function Preview({ projectId, onEdit }: PreviewProps) {
   const { currentUser } = useUser();
   const navigate = useNavigate();
 
@@ -23,7 +30,7 @@ function Preview({ projectId, onEdit }) {
   const [showCollaborators, setShowCollaborators] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const [pdfUrl, setPdfUrl] = useState(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfError, setPdfError] = useState('');
 
@@ -31,6 +38,10 @@ function Preview({ projectId, onEdit }) {
   const isSavingRef = useRef(false);
   const { project } = useProjectSync(projectId, isSavingRef);
   const { collaboratorIds } = useCollaborators(project);
+
+  const isAdmin = project?.admin === currentUser?.id;
+  // Check if survey should be read-only (logic in dateUtils.ts)
+  const isReadOnly = isProjectReadOnly(project);
 
   // Update PDF URL when project changes
   useEffect(() => {
@@ -80,12 +91,7 @@ function Preview({ projectId, onEdit }) {
       }
     } catch (error) {
       console.error('Error generating preview PDF:', error);
-      console.error('Error details:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-      });
-      setPdfError(error.message || 'Failed to generate preview. Please try again.');
+      setPdfError(toErrorMessage(error) || 'Failed to generate preview. Please try again.');
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -112,7 +118,7 @@ function Preview({ projectId, onEdit }) {
   const checkAllApproved = () => {
     if (collaboratorIds.length === 0) return true;
 
-    const approvals = project.approvals || {};
+    const approvals = project?.approvals || {};
 
     // Every active collaborator must approve (including admin). Removed members stay in
     // `collaborators` with isActive false and no approvals entry, so they are not counted —
@@ -142,14 +148,10 @@ function Preview({ projectId, onEdit }) {
       navigate(`/final-agreement/${projectId}`);
     } catch (error) {
       console.error('Submit error:', error);
-      setSubmitError(error.message || 'Failed to submit survey. Please try again.');
+      setSubmitError(toErrorMessage(error) || 'Failed to submit survey. Please try again.');
       setIsSubmitting(false);
     }
   };
-
-  const isAdmin = project?.admin === currentUser?.id;
-  // Check if survey should be read-only (logic in dateUtils.js)
-  const isReadOnly = isProjectReadOnly(project);
 
   if (!project) {
     return (
@@ -209,7 +211,7 @@ function Preview({ projectId, onEdit }) {
         >
           ← Back to Dashboard
         </button>
-        {project?.lastUpdated && (
+        {project.lastUpdated && (
           <span style={{ fontSize: '11px', color: '#4B7263', fontWeight: 300, marginLeft: '14px' }}>
             Saved{' '}
             {project.lastUpdated
