@@ -26,6 +26,10 @@ import {
   DISPUTE_RESOLUTION_OPTIONS,
   US_STATES,
   AMENDMENT_PROCESS_OPTIONS,
+  type Cofounder,
+  type SectionId,
+  type SurveyData,
+  type SurveyFieldName,
 } from '@cherrytree/shared';
 
 // Input type constants
@@ -39,7 +43,73 @@ const INPUT_TYPES = {
   DROPDOWN: 'dropdown', // Select dropdown
   ACKNOWLEDGMENT: 'acknowledgment', // Multi-user checkboxes
   CUSTOM: 'custom', // Custom components (Equity Calculator, etc.)
-};
+} as const;
+
+/** A configurable field: a survey field or one of the per-cofounder fields nested in `cofounders`. */
+export type QuestionFieldName = SurveyFieldName | keyof Cofounder;
+
+/** A radio/dropdown option: a plain value or a value with its own label (and optional blurb). */
+export interface QuestionOption {
+  value: string;
+  label: string;
+  description?: string;
+}
+
+interface QuestionBase {
+  section: SectionId;
+  /** Card title; acknowledgments whose text carries the wording may omit it. */
+  question?: string;
+  required: boolean;
+  tooltip?: string;
+  /** "The standard is …" hint shown under the question. */
+  standard?: string;
+  placeholder?: string;
+  description?: string;
+  /** Rendered per cofounder row inside `parentField`. */
+  nested?: boolean;
+  parentField?: SurveyFieldName;
+  /** Shown only when `field` has a value (any truthy value when `value` is omitted). */
+  conditionalOn?: { field: SurveyFieldName; value?: string };
+  /** Choosing `value` re-initializes `fields`; choosing anything else clears them. */
+  clearsFields?: {
+    value: string;
+    fields: readonly { field: SurveyFieldName; type?: 'acknowledgment' }[];
+  };
+}
+
+export interface TextQuestion extends QuestionBase {
+  type: 'text' | 'textarea' | 'number' | 'date';
+}
+
+/** Single choice; `otherField` adds a free-text "Other". */
+export interface ChoiceQuestion extends QuestionBase {
+  type: 'radio' | 'dropdown';
+  options: readonly (string | QuestionOption)[];
+  otherField?: QuestionFieldName;
+}
+
+/** Multiple choice; stored as a string array. */
+export interface CheckboxQuestion extends QuestionBase {
+  type: 'checkbox';
+  options: readonly string[];
+  otherField?: QuestionFieldName;
+}
+
+/** One checkbox per active collaborator; stored as `{ [userId]: boolean }`. */
+export interface AcknowledgmentQuestion extends QuestionBase {
+  type: 'acknowledgment';
+  requiresAllCollaborators: true;
+  /** Body text; a function fills in other answers. */
+  acknowledgmentText?: string | ((formData: Partial<SurveyData>) => string);
+}
+
+/** Rendered by the section component itself. */
+export interface CustomQuestion extends QuestionBase {
+  type: 'custom';
+}
+
+export type QuestionConfig =
+  TextQuestion | ChoiceQuestion | CheckboxQuestion | AcknowledgmentQuestion | CustomQuestion;
 
 /**
  * Question configuration for all fields
@@ -567,4 +637,4 @@ export const QUESTION_CONFIG = {
     required: true,
     requiresAllCollaborators: true,
   },
-};
+} satisfies Partial<Record<QuestionFieldName, QuestionConfig>>;
