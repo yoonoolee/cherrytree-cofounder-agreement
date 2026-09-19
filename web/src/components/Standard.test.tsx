@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import Standard from './Standard';
+
+import Standard from './Standard.tsx';
 
 describe('Standard', () => {
   it('renders the hint text', () => {
