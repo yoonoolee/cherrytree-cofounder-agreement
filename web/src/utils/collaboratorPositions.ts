@@ -5,14 +5,18 @@
  * Order is determined by the startAt timestamp of their current (active) history entry.
  */
 
-import { COLLABORATOR_FIELDS } from '@cherrytree/shared';
+import { COLLABORATOR_FIELDS, type Collaborator } from '@cherrytree/shared';
+
+/** `Project.collaborators`, keyed by Clerk user id. */
+export type CollaboratorsMap = Record<string, Collaborator>;
 
 /**
  * Get sorted collaborator IDs by join time (active collaborators only)
- * @param {Object} collaboratorsMap - Map of userId -> collaborator data
- * @returns {string[]} - Array of userIds sorted by join time (earliest first)
+ * @returns Array of userIds sorted by join time (earliest first)
  */
-export function getSortedCollaboratorIds(collaboratorsMap) {
+export function getSortedCollaboratorIds(
+  collaboratorsMap: CollaboratorsMap | null | undefined,
+): string[] {
   if (!collaboratorsMap || Object.keys(collaboratorsMap).length === 0) {
     return [];
   }
@@ -34,7 +38,10 @@ export function getSortedCollaboratorIds(collaboratorsMap) {
 /**
  * No migration needed - we use join time from history, not positions
  */
-export function migrateCollaboratorPositions(collaboratorsMap, adminUserId) {
+export function migrateCollaboratorPositions(
+  collaboratorsMap: CollaboratorsMap,
+  _adminUserId: string | undefined,
+): CollaboratorsMap {
   // No-op: positions are no longer used, join time is the source of truth
   return collaboratorsMap;
 }
