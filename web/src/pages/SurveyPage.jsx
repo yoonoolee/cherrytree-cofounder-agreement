@@ -51,13 +51,6 @@ function SurveyPage() {
     setShowPaymentModal(true);
   };
 
-  const handlePaymentSuccess = (newProjectId) => {
-    setShowPaymentModal(false);
-    if (newProjectId) {
-      navigate(`/survey/${newProjectId}`);
-    }
-  };
-
   const handleProjectSwitch = (newProjectId) => {
     navigate(`/survey/${newProjectId}`);
   };
@@ -72,9 +65,7 @@ function SurveyPage() {
         onCreateProject={handleCreateProject}
         onProjectSwitch={handleProjectSwitch}
       />
-      {showPaymentModal && (
-        <PaymentModal onClose={() => setShowPaymentModal(false)} onSuccess={handlePaymentSuccess} />
-      )}
+      {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} />}
     </>
   );
 }

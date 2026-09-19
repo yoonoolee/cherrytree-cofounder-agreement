@@ -21,11 +21,10 @@ const PLANS = PRICING_PLANS.filter(
 
 interface PaymentModalProps {
   onClose: () => void;
-  /** Never called: the modal hands off to Stripe, which returns the user to the dashboard. */
-  onSuccess?: (projectId?: string) => void;
 }
 
-function PaymentModal({ onClose, onSuccess: _onSuccess }: PaymentModalProps) {
+/** Names the project and starts a Stripe Checkout; Stripe returns the user to the dashboard. */
+function PaymentModal({ onClose }: PaymentModalProps) {
   const { currentUser, loading: userLoading } = useUser();
   const [projectName, setProjectName] = useState('');
   const [selectedPlan, setSelectedPlan] = useState<Plan>('starter');

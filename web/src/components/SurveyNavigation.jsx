@@ -1,5 +1,4 @@
 import React, { useState, useRef, useLayoutEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import PaymentModal from './PaymentModal';
 import UpgradeModal from './UpgradeModal';
 import { SECTION_ORDER } from '@cherrytree/shared';
@@ -43,7 +42,6 @@ function SurveyNavigation({
   setIsMobileNavOpen = () => {},
   onManageCollaborators = null,
 }) {
-  const navigate = useNavigate();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
@@ -384,15 +382,7 @@ function SurveyNavigation({
         </button>
       </div>
 
-      {showPaymentModal && (
-        <PaymentModal
-          onClose={() => setShowPaymentModal(false)}
-          onSuccess={(id) => {
-            setShowPaymentModal(false);
-            if (id) navigate(`/survey/${id}`);
-          }}
-        />
-      )}
+      {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} />}
       {showUpgradeModal && (
         <UpgradeModal
           onClose={() => setShowUpgradeModal(false)}

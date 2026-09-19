@@ -78,8 +78,6 @@ function DashboardPage() {
     };
   }, [authLoading, loading]);
 
-  const handlePaymentSuccess = () => setShowPaymentModal(false);
-
   if (authLoading || loading) {
     return (
       <div
@@ -711,9 +709,7 @@ function DashboardPage() {
         </div>
       )}
 
-      {showPaymentModal && (
-        <PaymentModal onClose={() => setShowPaymentModal(false)} onSuccess={handlePaymentSuccess} />
-      )}
+      {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} />}
     </div>
   );
 }

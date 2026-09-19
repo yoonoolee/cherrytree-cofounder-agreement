@@ -16,6 +16,7 @@ vi.mock('./ProWaitlistForm', () => ({
 const realLocation = window.location;
 
 function renderModal(onClose = vi.fn()) {
+  // The only prop: success is a full-page round trip through Stripe, never a callback.
   render(<PaymentModal onClose={onClose} />);
   return {
     onClose,

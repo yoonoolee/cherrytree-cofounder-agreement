@@ -17,13 +17,6 @@ function PreviewPage() {
     setShowPaymentModal(true);
   };
 
-  const handlePaymentSuccess = (newProjectId) => {
-    setShowPaymentModal(false);
-    if (newProjectId) {
-      navigate(`/survey/${newProjectId}`);
-    }
-  };
-
   const handleProjectSwitch = (newProjectId) => {
     navigate(`/survey/${newProjectId}`);
   };
@@ -36,9 +29,7 @@ function PreviewPage() {
         onCreateProject={handleCreateProject}
         onProjectSwitch={handleProjectSwitch}
       />
-      {showPaymentModal && (
-        <PaymentModal onClose={() => setShowPaymentModal(false)} onSuccess={handlePaymentSuccess} />
-      )}
+      {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} />}
     </>
   );
 }
