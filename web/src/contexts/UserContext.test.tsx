@@ -1,7 +1,6 @@
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
-import type { ReactNode } from 'react';
 
-import { UserProvider, useUser, type UserContextValue } from './UserContext';
+import { UserProvider, useUser } from './UserContext.tsx';
 
 type SnapshotHandler = (snapshot: { exists: () => boolean; data: () => unknown }) => void;
 
@@ -169,21 +168,12 @@ describe('UserProvider', () => {
   });
 
   it('exposes the organization memberships untouched', () => {
-    let value: UserContextValue | undefined;
-    function Capture({ children }: { children?: ReactNode }) {
-      value = useUser();
-      return children;
-    }
-    render(
-      <UserProvider>
-        <Capture />
-      </UserProvider>,
-    );
-    expect(value).toMatchObject({
+    const { result } = renderHook(() => useUser(), { wrapper: UserProvider });
+    expect(result.current).toMatchObject({
       userMemberships: orgList.userMemberships,
       setActive: orgList.setActive,
       orgsLoaded: true,
     });
-    expect(value).not.toHaveProperty('organizationList');
+    expect(result.current).not.toHaveProperty('organizationList');
   });
 });

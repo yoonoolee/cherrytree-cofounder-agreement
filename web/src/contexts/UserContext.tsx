@@ -1,13 +1,41 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useUser as useClerkUser, useAuth, useOrganizationList } from '@clerk/clerk-react';
-import { db, auth } from '../lib/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import {
+  useUser as useClerkUser,
+  useAuth,
+  useOrganizationList,
+  type useOrganizationList as UseOrganizationList,
+} from '@clerk/clerk-react';
+import { onSnapshot } from 'firebase/firestore';
 import { signInWithCustomToken, signOut as firebaseSignOut } from 'firebase/auth';
-import { callFunction } from '../lib/functions';
+import type { UserDoc } from '@cherrytree/shared';
 
-const UserContext = createContext();
+import { auth, userRef } from '../lib/firebase.ts';
+import { callFunction } from '../lib/functions.ts';
 
-export const useUser = () => {
+/** The signed-in Clerk user, as `useUser` from Clerk exposes it. */
+export type ClerkUser = NonNullable<ReturnType<typeof useClerkUser>['user']>;
+
+type OrganizationListValue = ReturnType<
+  typeof UseOrganizationList<{ userMemberships: { infinite: true } }>
+>;
+
+export interface UserContextValue {
+  currentUser: ClerkUser | null | undefined;
+  /** `users/{clerkUserId}`, kept in sync by the Clerk webhook; `null` until it exists. */
+  userProfile: UserDoc | null;
+  /** True until Clerk has loaded, the Firebase session is established and the profile read. */
+  loading: boolean;
+  /** Account name, else the email local part, else "User". */
+  displayName: string;
+  // Organization data (fetched once, shared everywhere)
+  userMemberships: OrganizationListValue['userMemberships'];
+  setActive: OrganizationListValue['setActive'];
+  orgsLoaded: boolean;
+}
+
+const UserContext = createContext<UserContextValue | null>(null);
+
+export const useUser = (): UserContextValue => {
   const context = useContext(UserContext);
   if (!context) {
     throw new Error('useUser must be used within UserProvider');
@@ -15,7 +43,7 @@ export const useUser = () => {
   return context;
 };
 
-export const UserProvider = ({ children }) => {
+export const UserProvider = ({ children }: { children: ReactNode }) => {
   const { user: clerkUser, isLoaded } = useClerkUser();
   const { getToken } = useAuth();
   const {
@@ -23,7 +51,7 @@ export const UserProvider = ({ children }) => {
     setActive,
     isLoaded: orgsLoaded,
   } = useOrganizationList({ userMemberships: { infinite: true } });
-  const [userProfile, setUserProfile] = useState(null);
+  const [userProfile, setUserProfile] = useState<UserDoc | null>(null);
   const [loading, setLoading] = useState(true);
   const [firebaseAuthReady, setFirebaseAuthReady] = useState(false);
 
@@ -50,7 +78,7 @@ export const UserProvider = ({ children }) => {
         setFirebaseAuthReady(false);
         try {
           await firebaseSignOut(auth);
-        } catch (error) {
+        } catch {
           // Ignore sign out errors
         }
       }
@@ -61,13 +89,12 @@ export const UserProvider = ({ children }) => {
   }, [clerkUser?.id, isLoaded, getToken]);
 
   useEffect(() => {
-    let unsubscribeFirestore = null;
+    let unsubscribeFirestore: (() => void) | null = null;
 
     if (isLoaded && firebaseAuthReady && clerkUser) {
       // Listen to Firestore user document in real-time
-      const userRef = doc(db, 'users', clerkUser.id);
       unsubscribeFirestore = onSnapshot(
-        userRef,
+        userRef(clerkUser.id),
         (docSnap) => {
           if (docSnap.exists()) {
             setUserProfile(docSnap.data());
@@ -97,7 +124,7 @@ export const UserProvider = ({ children }) => {
 
   const isAuthReady = isLoaded && (!clerkUser || firebaseAuthReady);
 
-  const value = {
+  const value: UserContextValue = {
     currentUser: clerkUser,
     userProfile,
     loading: !isAuthReady || loading,
