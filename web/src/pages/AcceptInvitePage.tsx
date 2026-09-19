@@ -1,6 +1,8 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useClerk } from '@clerk/clerk-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+
+import { CLERK_TICKET_PARAM, withClerkTicket } from '../utils/clerkTicket.ts';
 
 /**
  * Accept Invite Page
@@ -17,18 +19,19 @@ function AcceptInvitePage() {
   useEffect(() => {
     if (!loaded) return;
 
-    const ticket = searchParams.get('__clerk_ticket');
+    const ticket = searchParams.get(CLERK_TICKET_PARAM);
 
     if (!ticket) {
       navigate('/dashboard', { replace: true });
       return;
     }
 
+    const loginUrl = withClerkTicket('/login', ticket);
     const handleInvite = async () => {
       if (session) {
-        await signOut({ redirectUrl: `/login?__clerk_ticket=${ticket}` });
+        await signOut({ redirectUrl: loginUrl });
       } else {
-        navigate(`/login?__clerk_ticket=${ticket}`, { replace: true });
+        navigate(loginUrl, { replace: true });
       }
     };
 
