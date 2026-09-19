@@ -1,9 +1,14 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, type NavigateFunction } from 'react-router-dom';
 
-function goToDashboard(navigate) {
+import { env } from '../lib/env.ts';
+
+/**
+ * The marketing site and the app share one bundle but live on different hosts in production,
+ * so from a cherrytree.app page the dashboard is a full navigation to the app host.
+ */
+function goToDashboard(navigate: NavigateFunction) {
   const isProd = window.location.hostname.includes('cherrytree.app');
-  if (isProd) window.location.href = `${import.meta.env.VITE_APP_URL}/dashboard`;
+  if (isProd) window.location.href = `${env.appUrl}/dashboard`;
   else navigate('/dashboard', { replace: true });
 }
 
