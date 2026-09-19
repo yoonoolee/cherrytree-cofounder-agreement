@@ -1,8 +1,7 @@
-import React from 'react';
-import { usePageMeta } from '../hooks/usePageMeta';
-import MarketingNav from '../components/MarketingNav';
-import MarketingFooter from '../components/MarketingFooter';
-import MarketingGrain from '../components/MarketingGrain';
+import { usePageMeta } from '../hooks/usePageMeta.ts';
+import MarketingNav from '../components/MarketingNav.tsx';
+import MarketingFooter from '../components/MarketingFooter.tsx';
+import MarketingGrain from '../components/MarketingGrain.tsx';
 
 function TermsPage() {
   // SEO meta tags
