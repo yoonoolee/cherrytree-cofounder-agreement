@@ -1,2 +1,3 @@
-// Bridge until Phase 4 moves the handlers into src/: proves the esbuild bundle path now.
+// Modules still in ../index.js are re-exported until Phase 4 finishes converting them.
 export * from '../index.js';
+export { generatePreviewPDF, submitSurvey } from './pdf.ts';

@@ -14,9 +14,6 @@
       "secretEnvironmentVariables": [
         {
           "key": "MAKE_WEBHOOK_URL"
-        },
-        {
-          "key": "CLERK_SECRET_KEY"
         }
       ],
       "labels": {},
@@ -38,9 +35,6 @@
       "secretEnvironmentVariables": [
         {
           "key": "MAKE_WEBHOOK_URL"
-        },
-        {
-          "key": "CLERK_SECRET_KEY"
         }
       ],
       "labels": {},

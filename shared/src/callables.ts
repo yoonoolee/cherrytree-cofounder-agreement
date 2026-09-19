@@ -11,11 +11,11 @@ export interface CallableMap {
     response: { firebaseToken: string; userId: string };
   };
   submitSurvey: {
-    request: { sessionToken: string; projectId: string };
+    request: { projectId: string };
     response: { success: true; message: string; pdfUrl: string | null };
   };
   generatePreviewPDF: {
-    request: { sessionToken: string; projectId: string };
+    request: { projectId: string };
     response: { success: true; pdfUrl: string | null };
   };
   createCheckoutSession: {

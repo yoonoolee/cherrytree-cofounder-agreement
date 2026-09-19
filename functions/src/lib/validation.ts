@@ -13,7 +13,7 @@ export function isValidEmail(email: unknown): email is string {
  * Whether `url` is HTTPS and its hostname exactly matches one of `allowedDomains`.
  * Guards URLs received from external services (e.g. PDF links from Make.com) before storage.
  */
-export function isValidTrustedUrl(url: unknown, allowedDomains: readonly string[]): boolean {
+export function isValidTrustedUrl(url: unknown, allowedDomains: readonly string[]): url is string {
   if (typeof url !== 'string') return false;
 
   try {

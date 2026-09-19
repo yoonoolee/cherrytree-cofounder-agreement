@@ -14,7 +14,6 @@ const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https')
 const { getApps, initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
-const axios = require('axios');
 const { defineSecret } = require('firebase-functions/params');
 const Stripe = require('stripe');
 const { Webhook } = require('svix');
@@ -24,7 +23,6 @@ const { getClerk, verifyClerkToken, CLERK_SECRET_KEY } = require('./auth-helpers
 const {
   REQUIRED_ACKNOWLEDGMENT_FIELDS,
   CONDITIONAL_ACKNOWLEDGMENT_FIELDS,
-  mergeOtherFields,
 } = require('@cherrytree/shared');
 
 // Guarded: src/lib/firebase.ts also initializes the app while both files are bundled.
@@ -33,7 +31,6 @@ const db = getFirestore();
 const auth = getAuth();
 
 // Load secrets from environment config
-const MAKE_WEBHOOK_URL = defineSecret('MAKE_WEBHOOK_URL');
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');
 const CLERK_WEBHOOK_SECRET = defineSecret('CLERK_WEBHOOK_SECRET');
@@ -61,17 +58,6 @@ const COLLABORATOR_FIELDS = {
   IS_ACTIVE: 'isActive',
   HISTORY: 'history',
 };
-
-// Trusted domains for PDF URLs from Make.com webhook
-const PDF_ALLOWED_DOMAINS = [
-  'drive.google.com',
-  'storage.googleapis.com',
-  'firebasestorage.googleapis.com',
-  's3.amazonaws.com',
-  'www.dropbox.com',
-  'dropbox.com',
-  'onedrive.live.com',
-];
 
 // Edit window duration from purchase date (units: 'months', 'days', 'years', 'hours', 'minutes')
 const EDIT_WINDOW_CONFIG = {
@@ -176,219 +162,6 @@ function isValidEmail(email) {
   // Basic validation using validator.js
   return validator.isEmail(email) && email.length <= EMAIL_MAX_LENGTH;
 }
-
-/**
- * Validate URL and ensure it's HTTPS from a trusted domain
- * CRITICAL: Prevents malicious URLs from being stored (e.g., PDF URLs from webhooks)
- * Uses exact hostname matching for maximum security
- * @param {string} url - URL to validate
- * @param {string[]} allowedDomains - List of exact allowed hostnames
- * @returns {boolean} - Whether URL is valid and from trusted domain
- */
-function isValidTrustedUrl(url, allowedDomains) {
-  if (typeof url !== 'string') return false;
-
-  try {
-    const parsedUrl = new URL(url);
-
-    // Must be HTTPS
-    if (parsedUrl.protocol !== 'https:') {
-      return false;
-    }
-
-    // Check if hostname exactly matches any allowed domain
-    const hostname = parsedUrl.hostname.toLowerCase();
-    return allowedDomains.some((domain) => domain.toLowerCase() === hostname);
-  } catch (error) {
-    // Invalid URL format
-    return false;
-  }
-}
-
-// ============================================================================
-// SURVEY & PDF OPERATIONS
-// ============================================================================
-
-exports.submitSurvey = onCall(
-  {
-    ...FUNCTION_CONFIG,
-    secrets: [MAKE_WEBHOOK_URL, CLERK_SECRET_KEY],
-    invoker: 'public',
-    consumeAppCheckToken: true,
-  },
-  async (request) => {
-    // Verify Clerk authentication
-    const { sessionToken, projectId } = request.data;
-    const { userId, email } = await verifyClerkToken(sessionToken);
-
-    if (!projectId) {
-      throw new HttpsError('invalid-argument', 'Project ID is required');
-    }
-
-    try {
-      // Get project data
-      const projectRef = db.collection('projects').doc(projectId);
-      const projectDoc = await projectRef.get();
-
-      if (!projectDoc.exists) {
-        throw new HttpsError('not-found', 'Project not found');
-      }
-
-      const projectData = projectDoc.data();
-
-      // Check if user is the admin
-      if (projectData.admin !== userId) {
-        throw new HttpsError('permission-denied', 'Only the project admin can submit');
-      }
-
-      // NOTE: No longer blocking multiple submissions before deadline
-      // Read-only logic is now handled client-side based on editDeadline + pdfAgreements.length
-
-      // Prepare data for Make.com
-      // Merge "Other" fields before sending - keeps separate in Firestore, merged for PDF
-      const mergedSurveyData = mergeOtherFields(projectData.surveyData || {});
-
-      // Use consistent timestamp for this submission operation
-      const submissionTime = new Date();
-
-      const webhookData = {
-        projectId: projectId,
-        projectName: projectData.name,
-        submittedAt: submissionTime.toISOString(),
-        data: mergedSurveyData,
-      };
-
-      // Send to Make.com
-      const response = await axios.post(MAKE_WEBHOOK_URL.value(), webhookData, {
-        timeout: 30000, // 30 second timeout
-      });
-
-      // Update project with PDF URL (with validation)
-      if (response.data && response.data.pdfUrl) {
-        if (!isValidTrustedUrl(response.data.pdfUrl, PDF_ALLOWED_DOMAINS)) {
-          console.error('Invalid or untrusted PDF URL from Make.com:', response.data.pdfUrl);
-          throw new HttpsError('internal', 'Invalid PDF URL received from external service');
-        }
-
-        await projectRef.update({
-          pdfAgreements: FieldValue.arrayUnion({
-            url: response.data.pdfUrl,
-            generatedAt: submissionTime,
-            generatedBy: userId,
-          }),
-          latestPdfUrl: response.data.pdfUrl,
-        });
-      }
-
-      return {
-        success: true,
-        message: 'Survey submitted successfully',
-        pdfUrl: response.data?.pdfUrl || null,
-      };
-    } catch (error) {
-      console.error('Error submitting survey:', error);
-      if (error instanceof HttpsError) {
-        throw error; // Re-throw HttpsError
-      }
-      // Don't expose internal error details to client
-      throw new HttpsError('internal', 'An error occurred while submitting the survey');
-    }
-  },
-);
-
-// Generate preview PDF without submitting
-exports.generatePreviewPDF = onCall(
-  {
-    ...FUNCTION_CONFIG,
-    secrets: [MAKE_WEBHOOK_URL, CLERK_SECRET_KEY],
-    invoker: 'public',
-    consumeAppCheckToken: true,
-  },
-  async (request) => {
-    // Verify Clerk authentication
-    const { sessionToken, projectId } = request.data;
-    const { userId, email } = await verifyClerkToken(sessionToken);
-
-    if (!projectId) {
-      throw new HttpsError('invalid-argument', 'Project ID is required');
-    }
-
-    try {
-      // Get project data
-      const projectRef = db.collection('projects').doc(projectId);
-      const projectDoc = await projectRef.get();
-
-      if (!projectDoc.exists) {
-        throw new HttpsError('not-found', 'Project not found');
-      }
-
-      const projectData = projectDoc.data();
-
-      // Check if user has access to this project (active collaborator with endAt: null)
-      const collaborator = projectData.collaborators?.[userId];
-      const hasAccess = collaborator?.[COLLABORATOR_FIELDS.HISTORY]?.some((h) => h.endAt === null);
-
-      if (!hasAccess) {
-        throw new HttpsError('permission-denied', 'No access to this project');
-      }
-
-      // Check if preview PDF already exists and is recent
-      if (projectData.previewPdfUrl && projectData.previewPdfGeneratedAt) {
-        const generatedAt = projectData.previewPdfGeneratedAt.toDate();
-        const lastUpdated = projectData.lastUpdated?.toDate() || new Date(0);
-
-        // If preview PDF is newer than last update, return existing URL
-        if (generatedAt > lastUpdated) {
-          return {
-            success: true,
-            pdfUrl: projectData.previewPdfUrl,
-          };
-        }
-      }
-
-      // Prepare data for Make.com
-      // Merge "Other" fields before sending - keeps separate in Firestore, merged for PDF
-      const mergedSurveyData = mergeOtherFields(projectData.surveyData || {});
-
-      const webhookData = {
-        projectId: projectId,
-        projectName: projectData.name,
-        isPreview: true, // Flag to indicate this is a preview
-        data: mergedSurveyData,
-      };
-
-      // Send to Make.com
-      const response = await axios.post(MAKE_WEBHOOK_URL.value(), webhookData, {
-        timeout: 30000,
-      });
-
-      // Save preview PDF URL (with validation)
-      if (response.data && response.data.pdfUrl) {
-        if (!isValidTrustedUrl(response.data.pdfUrl, PDF_ALLOWED_DOMAINS)) {
-          console.error('Invalid or untrusted PDF URL from Make.com:', response.data.pdfUrl);
-          throw new HttpsError('internal', 'Invalid PDF URL received from external service');
-        }
-
-        await projectRef.update({
-          previewPdfUrl: response.data.pdfUrl,
-          previewPdfGeneratedAt: FieldValue.serverTimestamp(),
-        });
-      }
-
-      return {
-        success: true,
-        pdfUrl: response.data?.pdfUrl || null,
-      };
-    } catch (error) {
-      console.error('Error generating preview PDF:', error);
-      if (error instanceof HttpsError) {
-        throw error;
-      }
-      // Don't expose internal error details to client
-      throw new HttpsError('internal', 'An error occurred while generating the preview');
-    }
-  },
-);
 
 // ============================================================================
 // STRIPE PAYMENT OPERATIONS
