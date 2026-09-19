@@ -303,10 +303,11 @@ describe('Survey', () => {
   });
 
   describe('Review & Approve', () => {
-    it('saves, then hands over to the preview when every section is complete', async () => {
+    it('saves, then hands over to the preview as soon as the write settles', async () => {
+      vi.useFakeTimers();
       const { onPreview } = renderSurvey(`?section=${SECTION_IDS.GENERAL_PROVISIONS}`);
       fireEvent.click(reviewButton());
-      await flush();
+      await flush(); // microtasks only: no timer has run
       expect(mocks.updateDoc).toHaveBeenCalledTimes(1);
       expect(onPreview).toHaveBeenCalledTimes(1);
       expect(section().props.showValidation).toBe(false);

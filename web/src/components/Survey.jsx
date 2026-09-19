@@ -160,11 +160,6 @@ function Survey({ projectId, onPreview, onFinalAgreement }) {
     // Save immediately before preview
     await saveFormData(formData);
 
-    // Wait for any pending saves to complete
-    if (saveStatus === 'saving') {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-
     // Check if all sections are complete
     const firstIncompleteSection = findFirstIncompleteSection();
     if (firstIncompleteSection) {
