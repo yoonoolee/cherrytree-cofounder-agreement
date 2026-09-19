@@ -288,7 +288,7 @@ function Preview({ projectId, onEdit }) {
                 <div className="bg-red-50 border border-red-300 rounded-lg p-4">
                   <p className="text-sm text-red-950">Error generating preview: {pdfError}</p>
                   <button
-                    onClick={() => window.location.reload()}
+                    onClick={generatePreview}
                     className="mt-2 text-sm text-red-950 hover:text-red-700 underline"
                   >
                     Try again

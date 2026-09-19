@@ -224,8 +224,16 @@ describe('Preview', () => {
       expect(
         await screen.findByText('Error generating preview: Make.com is down'),
       ).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
       expect(screen.queryByTitle('Cofounder Agreement Preview')).not.toBeInTheDocument();
+
+      // Try again retries the call in place: the error clears and the new preview shows.
+      mocks.callFunction.mockResolvedValueOnce({ success: true, pdfUrl: FRESH_PREVIEW_URL });
+      fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+      expect(mocks.callFunction).toHaveBeenCalledTimes(2);
+      expect(screen.queryByText(/Error generating preview/)).not.toBeInTheDocument();
+      expect(generatingText()).toBeInTheDocument();
+      await waitFor(() => expect(generatingText()).not.toBeInTheDocument());
+      expect(iframe().src).toBe(embedOf('preview2'));
     });
 
     it('reports a generation that returned no URL', async () => {
