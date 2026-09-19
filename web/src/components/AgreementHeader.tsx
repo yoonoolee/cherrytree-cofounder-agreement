@@ -1,9 +1,9 @@
 import { toDate, type Project } from '@cherrytree/shared';
 
-import { formatDeadline, isAfterEditDeadline, isProjectReadOnly } from '../utils/dateUtils.ts';
+import { formatDeadline, isProjectReadOnly } from '../utils/dateUtils.ts';
 
 interface AgreementHeaderProps {
-  project: Pick<Project, 'pdfAgreements' | 'editDeadline' | 'previewPdfGeneratedAt'>;
+  project: Pick<Project, 'pdfAgreements' | 'editDeadline'>;
   title: string;
 }
 
@@ -18,14 +18,11 @@ function AgreementHeader({ project, title }: AgreementHeaderProps) {
         {lastAgreement ? (
           <>
             Last submitted on {toDate(lastAgreement.generatedAt).toLocaleDateString()}.
+            {/* Submitted and not read-only means the deadline has not passed yet. */}
             {!isReadOnly && project.editDeadline && (
               <>
                 {' '}
-                {isAfterEditDeadline(project.editDeadline)
-                  ? project.previewPdfGeneratedAt
-                    ? `Edit window expired on ${formatDeadline(project.editDeadline)}.`
-                    : 'You will not be able to edit this agreement once it has been generated.'
-                  : `You can continue to edit and regenerate the agreement until ${formatDeadline(project.editDeadline)}.`}
+                {`You can continue to edit and regenerate the agreement until ${formatDeadline(project.editDeadline)}.`}
               </>
             )}
           </>

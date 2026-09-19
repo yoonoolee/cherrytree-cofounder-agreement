@@ -26,14 +26,15 @@ describe('AgreementHeader', () => {
     expect(screen.getByText('Preview - Not yet submitted')).toBeInTheDocument();
   });
 
-  it('shows the last submission date and the remaining edit window', () => {
+  it('shows the last submission date and the remaining edit window, nothing else', () => {
     const project = makeProject({
       pdfAgreements: [pdf('2026-01-10T00:00:00Z'), pdf('2026-02-20T00:00:00Z')],
       editDeadline: timestamp('2026-07-16T12:00:00Z'),
+      previewPdfGeneratedAt: timestamp('2026-02-21T00:00:00Z'),
     });
     const { container } = render(<AgreementHeader project={project} title="Final Agreement" />);
     const last = new Date('2026-02-20T00:00:00Z').toLocaleDateString();
-    expect(container.querySelector('p')).toHaveTextContent(
+    expect(container.querySelector('p')!.textContent).toBe(
       `Last submitted on ${last}. You can continue to edit and regenerate the agreement until July 16, 2026.`,
     );
   });
