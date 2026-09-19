@@ -30,7 +30,6 @@ jobs:
         run: |
           cat > web/.env.production << EOF
           # Production Environment
-          VITE_MARKETING_URL=${{ secrets.PROD_MARKETING_URL }}
           VITE_APP_URL=${{ secrets.PROD_APP_URL }}
           VITE_GOOGLE_MAPS_API_KEY=${{ secrets.PROD_GOOGLE_MAPS_API_KEY }}
           VITE_FIREBASE_API_KEY=${{ secrets.PROD_FIREBASE_API_KEY }}
@@ -41,9 +40,6 @@ jobs:
           VITE_FIREBASE_APP_ID=${{ secrets.PROD_FIREBASE_APP_ID }}
           VITE_FIREBASE_MEASUREMENT_ID=${{ secrets.PROD_FIREBASE_MEASUREMENT_ID }}
           VITE_RECAPTCHA_SITE_KEY=${{ secrets.PROD_RECAPTCHA_SITE_KEY }}
-          VITE_STRIPE_PUBLISHABLE_KEY=${{ secrets.PROD_STRIPE_PUBLISHABLE_KEY }}
-          VITE_STRIPE_STARTER_PRICE_ID=${{ secrets.PROD_STRIPE_STARTER_PRICE_ID }}
-          VITE_STRIPE_PRO_PRICE_ID=${{ secrets.PROD_STRIPE_PRO_PRICE_ID }}
           VITE_ENFORCE_HTTPS=true
           VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.PROD_CLERK_PUBLISHABLE_KEY }}
           VITE_SENTRY_DSN=${{ secrets.SENTRY_DSN }}

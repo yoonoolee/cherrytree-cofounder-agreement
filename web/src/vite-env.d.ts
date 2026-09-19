@@ -12,10 +12,8 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_APP_ID: string;
   readonly VITE_FIREBASE_MEASUREMENT_ID: string;
   readonly VITE_RECAPTCHA_SITE_KEY: string;
-  readonly VITE_STRIPE_PUBLISHABLE_KEY: string;
   readonly VITE_ENFORCE_HTTPS: string;
   readonly VITE_CLERK_PUBLISHABLE_KEY: string;
-  readonly VITE_MARKETING_URL: string;
   readonly VITE_APP_URL: string;
   readonly VITE_SENTRY_DSN: string;
   readonly VITE_USE_EMULATORS: string;
