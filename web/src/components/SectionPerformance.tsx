@@ -1,23 +1,37 @@
-import React, { useState } from 'react';
-import QuestionRenderer from './QuestionRenderer';
-import QuestionCard from './QuestionCard';
-import { QUESTION_CONFIG } from '../config/questionConfig';
+import { useState } from 'react';
 import { FIELDS } from '@cherrytree/shared';
-import { getPreview } from '../utils/getPreview';
+
+import QuestionRenderer from './QuestionRenderer.tsx';
+import QuestionCard from './QuestionCard.tsx';
+import type { SurveySectionProps } from './sectionProps.ts';
+import { QUESTION_CONFIG } from '../config/questionConfig.ts';
+import { getPreview } from '../utils/getPreview.ts';
 
 const FIELD_ORDER = [
   FIELDS.PERFORMANCE_CONSEQUENCES,
   FIELDS.REMEDY_PERIOD_DAYS,
   FIELDS.TERMINATION_WITH_CAUSE,
   FIELDS.VOLUNTARY_NOTICE_DAYS,
-];
+] as const;
 
-function SectionPerformance({ formData, handleChange, isReadOnly, showValidation, project }) {
+type Field = (typeof FIELD_ORDER)[number];
+
+function SectionPerformance({
+  formData,
+  handleChange,
+  isReadOnly,
+  showValidation,
+  project,
+}: SurveySectionProps) {
+  // Survey logic kept as-is: an empty checkbox array is truthy, so only the number
+  // fields can be "unanswered" here.
   const firstUnanswered = FIELD_ORDER.find((f) => !formData[f]);
-  const [expandedField, setExpandedField] = useState(firstUnanswered || FIELD_ORDER[0]);
-  const advanceTo = (key) => {
+  const [expandedField, setExpandedField] = useState<Field | null>(
+    firstUnanswered || FIELD_ORDER[0],
+  );
+  const advanceTo = (key: Field) => {
     const idx = FIELD_ORDER.indexOf(key);
-    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1]);
+    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1] ?? null);
   };
   const collapse = () => setExpandedField(null);
 
