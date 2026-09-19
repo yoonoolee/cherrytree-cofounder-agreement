@@ -69,16 +69,13 @@ export default tseslint.config(
     },
   },
 
-  // Cloud Functions (Node)
+  // Cloud Functions (Node; TypeScript source, bundled to CommonJS by esbuild)
   {
-    files: ['functions/**/*.{js,ts}'],
+    files: ['functions/**/*.ts'],
     languageOptions: {
       ecmaVersion: 'latest',
-      sourceType: 'commonjs',
+      sourceType: 'module',
       globals: globals.node,
-    },
-    rules: {
-      '@typescript-eslint/no-require-imports': 'off',
     },
   },
 
