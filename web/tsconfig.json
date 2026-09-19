@@ -1,0 +1,6 @@
+{
+  // Solution file: lets editors and `tsc -b` pick the right project per file.
+  // Browser code is in tsconfig.app.json; the Vite/Vitest config files (Node) in tsconfig.node.json.
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }]
+}

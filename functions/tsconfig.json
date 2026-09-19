@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    // Migration only: the existing CommonJS modules are compiled but not
+    // type-checked. Both flags are removed in Phase 4 once nothing is left in JS.
+    "allowJs": true,
+    "checkJs": false,
+    // Mirrors the esbuild alias: shared is inlined into the bundle, never installed.
+    "paths": { "@cherrytree/shared": ["../shared/src/index.ts"] }
+  },
+  "include": ["src", "test", "*.js"]
+}
