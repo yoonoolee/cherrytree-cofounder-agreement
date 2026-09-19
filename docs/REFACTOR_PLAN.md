@@ -21,7 +21,7 @@ npm run check                           # must be green (from Phase 1 on; includ
 npm --prefix functions run build        # lib/index.js (esbuild) — what the emulator and deploy load
 ```
 
-Rules: hard stop at every `⏸` checkpoint and wait for the user's "continue". **Every new file is TypeScript (`.ts`/`.tsx`; `.mjs` only for the esbuild script) — never add `.js`/`.jsx`.** Tests are written in TS as the first step of the phase they guard (before that phase's code is touched); there is no separate test phase. One concern per commit, every commit green, no Claude attribution in commit messages. Merge `origin/master` locally at the start of every phase. Never push this branch. Mid-step stop → `wip:` commit noted here, squashed by the next session.
+Rules: hard stop at every `⏸` checkpoint and wait for the user's "continue". **Every new file is TypeScript (`.ts`/`.tsx`; `.mjs` only for the esbuild script) — never add `.js`/`.jsx`.** Tests are written in TS as the first step of the phase they guard (before that phase's code is touched); there is no separate test phase. One concern per commit, every commit green, no Claude attribution in commit messages. **Bugs, security gaps, nonsense and poor practice found along the way are fixed, not preserved** (user, 2026-09-18): fix each in the phase that converts that module, as its own commit with a test guarding the *corrected* behavior; when it is unclear whether or how to fix, ask the user rather than guess. Merge `origin/master` locally at the start of every phase. Never push this branch. Mid-step stop → `wip:` commit noted here, squashed by the next session.
 
 ## Phases
 
@@ -82,7 +82,9 @@ Rules: hard stop at every `⏸` checkpoint and wait for the user's "continue". *
 - `npm ci && npm --prefix functions ci` (functions now needs its devDependencies — esbuild — for `firebase deploy`'s predeploy build)
 - Commands: `npm run dev` (was `npm start`), `npm run check` before pushing
 
-## Found during refactor — recorded, NOT fixed (behavior must stay identical)
+## Found during refactor — to fix in the phase that touches the module
+
+Rule changed 2026-09-18: these are fixed, not pinned. Each fix is its own commit with a test; items tagged **ASK** need a user decision first. Tick items as they land.
 
 Security
 - App Check not enforced: all callables set `consumeAppCheckToken: true` but not `enforceAppCheck: true` (`functions/index.js`, `functions/organizations.js`)
