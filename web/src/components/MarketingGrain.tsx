@@ -1,5 +1,3 @@
-import React from 'react';
-
 function MarketingGrain() {
   return (
     <svg className="lp-grain" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
