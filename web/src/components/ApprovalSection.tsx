@@ -1,21 +1,30 @@
-import React from 'react';
-import { db } from '../lib/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
-import { useUser } from '../contexts/UserContext';
-import { useCollaborators } from '../hooks/useCollaborators';
-import { isProjectReadOnly } from '../utils/dateUtils';
+import { updateDoc } from 'firebase/firestore';
+import { toErrorMessage, type Project } from '@cherrytree/shared';
 
-function ApprovalSection({ project, projectId }) {
+import { projectRef } from '../lib/firebase.ts';
+import { useUser } from '../contexts/UserContext.tsx';
+import { useCollaborators } from '../hooks/useCollaborators.ts';
+import { isProjectReadOnly } from '../utils/dateUtils.ts';
+
+interface ApprovalSectionProps {
+  project: Pick<
+    Project,
+    'admin' | 'collaborators' | 'approvals' | 'lastEditedBy' | 'editDeadline' | 'pdfAgreements'
+  >;
+  projectId: string;
+}
+
+function ApprovalSection({ project, projectId }: ApprovalSectionProps) {
   const { currentUser, loading } = useUser();
   const { collaboratorIds, getDisplayName, isAdmin } = useCollaborators(project);
   const currentUserId = currentUser?.id;
-  const currentUserIsAdmin = isAdmin(currentUserId);
 
-  // Don't render until auth state is loaded
-  if (loading) {
+  // Don't render until auth state is loaded (a signed-in user is guaranteed after that)
+  if (loading || !currentUserId) {
     return null;
   }
 
+  const currentUserIsAdmin = isAdmin(currentUserId);
   const approvals = project.approvals || {};
 
   // Count approvals (everyone must approve, including admin)
@@ -25,7 +34,6 @@ function ApprovalSection({ project, projectId }) {
 
   const handleToggleApproval = async () => {
     try {
-      const projectRef = doc(db, 'projects', projectId);
       const newStatus = !approvals[currentUserId];
 
       // Create a new approvals object with the updated status
@@ -34,12 +42,12 @@ function ApprovalSection({ project, projectId }) {
         [currentUserId]: newStatus,
       };
 
-      await updateDoc(projectRef, {
+      await updateDoc(projectRef(projectId), {
         approvals: updatedApprovals,
       });
     } catch (error) {
       console.error('Error updating approval:', error);
-      alert('Failed to update approval status: ' + error.message);
+      alert('Failed to update approval status: ' + toErrorMessage(error));
     }
   };
 
