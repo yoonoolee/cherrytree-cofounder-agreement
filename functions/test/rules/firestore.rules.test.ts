@@ -147,12 +147,16 @@ describe('projects: updating', () => {
     await assertSucceeds(updateDoc(doc(asUser(ADMIN), 'projects', PROJECT), autoSave));
   });
 
-  it('allows approvals, onboarding flags, lastOpened and updatedAt', async () => {
+  it('allows approvals, onboarding flags and lastOpened', async () => {
     const ref = doc(asUser(MEMBER), 'projects', PROJECT);
     await assertSucceeds(updateDoc(ref, { approvals: { [ADMIN]: false, [MEMBER]: true } }));
     await assertSucceeds(updateDoc(ref, { [`onboardingCompleted.${MEMBER}`]: true }));
     await assertSucceeds(updateDoc(ref, { lastOpened: serverTimestamp() }));
-    await assertSucceeds(updateDoc(ref, { updatedAt: serverTimestamp() }));
+  });
+
+  it('rejects a field no code writes any more (updatedAt)', async () => {
+    const ref = doc(asUser(MEMBER), 'projects', PROJECT);
+    await assertFails(updateDoc(ref, { updatedAt: serverTimestamp() }));
   });
 
   it('locks every server-owned field, including for the admin', async () => {

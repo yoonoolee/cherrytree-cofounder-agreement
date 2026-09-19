@@ -74,6 +74,4 @@ export interface Project {
   lastEditedBy?: string;
   previewPdfUrl?: string;
   previewPdfGeneratedAt?: TimestampLike;
-  /** Read by the dashboard but never written (see docs/REFACTOR_PLAN.md). */
-  updatedAt?: TimestampLike;
 }

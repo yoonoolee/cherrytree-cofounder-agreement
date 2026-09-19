@@ -272,7 +272,7 @@ function DashboardPage() {
           const progress = calculateProjectProgress(project);
           const sectionsCompleted = countCompletedSections(project);
 
-          const lastEditTime = project.lastUpdated || project.updatedAt || project.createdAt;
+          const lastEditTime = project.lastUpdated || project.createdAt;
           let timeAgo = '';
           if (lastEditTime) {
             const now = new Date();

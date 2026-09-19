@@ -33,7 +33,7 @@ service cloud.firestore {
       // currentPlan, name, ... — is written server-side only.
       function onlyClientFields() {
         return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'surveyData', 'lastUpdated', 'lastEditedBy', 'updatedAt',
+          'surveyData', 'lastUpdated', 'lastEditedBy',
           'approvals', 'onboardingCompleted', 'lastOpened'
         ]);
       }
