@@ -1,4 +1,20 @@
-export const PRICING_PLANS = [
+import type { Plan } from '@cherrytree/shared';
+
+/** A purchasable plan (`Plan`) or the contact-us tier shown alongside them. */
+export interface PricingPlan {
+  name: string;
+  key: Plan | 'enterprise';
+  /** Display price, e.g. `'$200'` or `'Custom'`. */
+  price: string;
+  /** Numeric price in dollars; `null` for a quote-based tier. */
+  priceValue: number | null;
+  description: string;
+  features: string[];
+  /** Highlighted in the pricing grid. */
+  featured?: boolean;
+}
+
+export const PRICING_PLANS: readonly PricingPlan[] = [
   {
     name: 'Starter',
     key: 'starter',
