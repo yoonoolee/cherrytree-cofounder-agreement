@@ -6,7 +6,7 @@ Temporary file for the JS → TS refactor. Deleted in Phase 8. Full design lives
 
 - Phase: 4 (Cloud Functions → TypeScript) — not started; **fresh session recommended**
 - Step: —
-- Last green commit: 7d873f3 (Phase 3 tagged refactor/p3-done)
+- Last green commit: 0599087 (Phase 3 tagged refactor/p3-done at 7d873f3; SECTIONS follow-up after)
 - Next action: Phase 4 step 1 — tests first: `functions/test/endpoints.test.ts` (export set, `__endpoint` golden, `CALLABLE_OPTIONS` guard); copy `.refactor-baseline/endpoints.golden.json` → `functions/test/endpoints.golden.json`
 - Blocked on: user "continue"
 
@@ -47,8 +47,9 @@ Rules: hard stop at every `⏸` checkpoint and wait for the user's "continue". *
 - 2026-09-18 — Phase 3: `shared` internal imports use explicit `.ts` extensions so the package also runs under plain Node (type stripping) for one-off scripts; consumers import the bare package name.
 - 2026-09-18 — Phase 3: option lists are typed `readonly string[]`, not literal unions — stored survey values can be anything (merged "Other" text, older options), so `SurveyData` string fields are `string`.
 - 2026-09-18 — Phase 3: `Project` fields written at creation by `stripeWebhook` are required, later-written fields optional, stored `surveyData` is `Partial<SurveyData>`. Reads stay defensive; loosen if legacy documents lacking creation fields turn up.
-- 2026-09-18 — Phase 3: `mergeOtherFields` ported with `Array.isArray` guards and one shared helper for the identical top-level/nested branches. Only divergence (malformed data): an array-typed field holding a string that contains "Other" used to throw `TypeError` (→ `internal` HttpsError); it is now left untouched. Server `OTHER_FIELD_NAMES` not ported (unused). `SECTIONS` display copy moved with `sectionConfig.js` although only web reads it — move back to web in Phase 6 if preferred.
+- 2026-09-18 — Phase 3: `mergeOtherFields` ported with `Array.isArray` guards and one shared helper for the identical top-level/nested branches. Only divergence (malformed data): an array-typed field holding a string that contains "Other" used to throw `TypeError` (→ `internal` HttpsError); it is now left untouched. Server `OTHER_FIELD_NAMES` not ported (unused). `SECTIONS` display copy initially moved with `sectionConfig.js` although only web reads it; **moved back** to `web/src/config/sectionConfig.ts` in 0599087 (presentation stays out of `shared`).
 - 2026-09-18 — Phase 3: `CallableMap` covers all 8 `onCall` functions, including `deleteAccount` (no client caller today).
+- 2026-09-18 — Phase 3 checkpoint review (user): (1) `SECTIONS` UI copy → web (done, 0599087); (2) keep `Project` creation-time fields required — nothing is in prod yet, no legacy documents to loosen for; (3) `mergeOtherFields` malformed-data divergence accepted as-is; (4) dropping server `OTHER_FIELD_NAMES` confirmed.
 - 2026-09-18 — Phase 3: functions bundle: esbuild `external` = keys of `functions/package.json` `dependencies` (esbuild externalizes their subpaths too, verified: `firebase-functions/v2/https` etc. stay `require()`s); `@cherrytree/shared` inlined via `alias`; `absWorkingDir` so the build is cwd-independent. Firebase `predeploy` runs it; **CI must install functions devDependencies (`npm --prefix functions ci`) before `firebase deploy`** — Phase 8 workflow item.
 
 - 2026-09-18 — Phase 1: Prettier config `singleQuote: true, printWidth: 100`, `*.md` and `web/public` ignored. Format commit verified render-neutral (CSS byte-identical; JS diff = unquoted keys + JSX whitespace normalization; two double spaces in `TermsPage` collapsed to one, invisible under normal whitespace).
