@@ -374,7 +374,7 @@ function Survey({
               </button>
             </div>
             <div style={{ overflowY: 'auto', flex: 1, padding: '22px 26px 26px' }}>
-              <CollaboratorManager project={{ ...project, id: projectId }} />
+              <CollaboratorManager project={project} />
             </div>
           </div>
         </>

@@ -14,7 +14,7 @@ const getInitialFormData = () => ({ ...INITIAL_FORM_DATA });
  *
  * @param {string} projectId - The project ID to sync
  * @param {React.RefObject} isSavingRef - Reference to track if save is in progress
- * @returns {object} - { project, formData, setFormData, accessDenied, lastSaved, setLastSaved }
+ * @returns {object} - { project (with its document id), formData, setFormData, accessDenied, lastSaved, setLastSaved }
  */
 export function useProjectSync(projectId, isSavingRef) {
   const [project, setProject] = useState(null);
@@ -30,7 +30,7 @@ export function useProjectSync(projectId, isSavingRef) {
       (doc) => {
         if (doc.exists()) {
           const data = doc.data();
-          setProject(data);
+          setProject({ ...data, id: doc.id });
           setAccessDenied(false);
 
           // Only update form data if not currently saving
