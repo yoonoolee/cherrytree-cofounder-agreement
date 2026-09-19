@@ -145,6 +145,12 @@ function Survey({ projectId, onPreview, onFinalAgreement }) {
   // Check if survey should be read-only (logic in dateUtils.js)
   const isReadOnly = isProjectReadOnly(project);
 
+  // Show a section and mirror it in the URL
+  const goToSection = (sectionId) => {
+    setCurrentSection(sectionId);
+    setSearchParams({ section: sectionId });
+  };
+
   // Find first incomplete section
   const findFirstIncompleteSection = () => {
     for (const sectionId of SECTION_ORDER) {
@@ -164,11 +170,7 @@ function Survey({ projectId, onPreview, onFinalAgreement }) {
     const firstIncompleteSection = findFirstIncompleteSection();
     if (firstIncompleteSection) {
       setShowValidation(true);
-      // Simulate clicking the section button
-      const sectionButton = document.querySelector(`[data-section-id="${firstIncompleteSection}"]`);
-      if (sectionButton) {
-        sectionButton.click();
-      }
+      goToSection(firstIncompleteSection);
 
       // After section loads, scroll to first validation error
       setTimeout(() => {
@@ -280,10 +282,7 @@ function Survey({ projectId, onPreview, onFinalAgreement }) {
       <SurveyNavigation
         projectId={projectId}
         currentSection={currentSection}
-        onSectionClick={(sectionId) => {
-          setCurrentSection(sectionId);
-          setSearchParams({ section: sectionId });
-        }}
+        onSectionClick={goToSection}
         onReviewAndApproveClick={onPreview}
         onFinalAgreementClick={onFinalAgreement}
         isMobileNavOpen={isMobileNavOpen}
@@ -423,8 +422,7 @@ function Survey({ projectId, onPreview, onFinalAgreement }) {
                   onClick={() => {
                     const nextSection = getNextSection(currentSection);
                     if (nextSection) {
-                      setCurrentSection(nextSection);
-                      setSearchParams({ section: nextSection });
+                      goToSection(nextSection);
                     }
                   }}
                   style={{

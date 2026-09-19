@@ -205,7 +205,6 @@ function SurveyNavigation({
                 >
                   <span className={getSectionDotClass(sectionId)} />
                   <button
-                    data-section-id={sectionId}
                     onClick={() => {
                       onSectionClick(sectionId);
                       setIsMobileNavOpen(false);

@@ -313,13 +313,15 @@ describe('Survey', () => {
       expect(section().props.showValidation).toBe(false);
     });
 
-    it('turns validation on instead when a section is incomplete', async () => {
-      mocks.formData = makeSurveyData({ ...completeSurveyData(), companyName: '' });
+    it('jumps to the first incomplete section with validation on instead', async () => {
+      mocks.formData = makeSurveyData({ ...completeSurveyData(), vestingSchedule: '' });
       const { onPreview } = renderSurvey(`?section=${SECTION_IDS.GENERAL_PROVISIONS}`);
       fireEvent.click(reviewButton());
       await flush();
       expect(onPreview).not.toHaveBeenCalled();
+      expect(section().name).toBe('SectionEquityVesting');
       expect(section().props.showValidation).toBe(true);
+      expect(path()).toBe(`/survey/${PROJECT_ID}?section=${SECTION_IDS.VESTING}`);
     });
 
     it('is wired to the navigation together with the Final Agreement entry', () => {
