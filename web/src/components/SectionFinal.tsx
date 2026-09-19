@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import QuestionRenderer from './QuestionRenderer';
-import QuestionCard from './QuestionCard';
-import { QUESTION_CONFIG } from '../config/questionConfig';
-import { FIELDS } from '@cherrytree/shared';
-import { getPreview } from '../utils/getPreview';
+import { useState } from 'react';
+import { FIELDS, type SurveyFieldName } from '@cherrytree/shared';
+
+import QuestionRenderer from './QuestionRenderer.tsx';
+import QuestionCard from './QuestionCard.tsx';
+import type { SurveySectionProps } from './sectionProps.ts';
+import { QUESTION_CONFIG } from '../config/questionConfig.ts';
+import { getPreview } from '../utils/getPreview.ts';
 
 const FIELD_ORDER = [
   FIELDS.DISPUTE_RESOLUTION,
@@ -14,25 +16,38 @@ const FIELD_ORDER = [
   FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST,
   FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT,
   FIELDS.ACKNOWLEDGE_SEVERABILITY,
-];
+] as const;
 
-function SectionFinal({ formData, handleChange, isReadOnly, project, showValidation }) {
-  const isAckAnswered = (f) => {
-    const v = formData[f];
-    return (
-      v && typeof v === 'object' && Object.values(v).length > 0 && Object.values(v).every(Boolean)
+type Field = (typeof FIELD_ORDER)[number];
+
+function SectionFinal({
+  formData,
+  handleChange,
+  isReadOnly,
+  project,
+  showValidation,
+}: SurveySectionProps) {
+  const isAckAnswered = (f: SurveyFieldName): boolean => {
+    const v: unknown = formData[f];
+    return !!(
+      v &&
+      typeof v === 'object' &&
+      Object.values(v).length > 0 &&
+      Object.values(v).every(Boolean)
     );
   };
   const firstUnanswered = FIELD_ORDER.find((f) => {
-    const v = formData[f];
+    const v: unknown = formData[f];
     if (!v) return true;
     if (typeof v === 'object') return !Object.values(v).every(Boolean);
     return false;
   });
-  const [expandedField, setExpandedField] = useState(firstUnanswered || FIELD_ORDER[0]);
-  const advanceTo = (key) => {
+  const [expandedField, setExpandedField] = useState<Field | null>(
+    firstUnanswered || FIELD_ORDER[0],
+  );
+  const advanceTo = (key: Field) => {
     const idx = FIELD_ORDER.indexOf(key);
-    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1]);
+    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1] ?? null);
   };
   const collapse = () => setExpandedField(null);
 
@@ -72,7 +87,6 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
             formData,
             FIELDS.DISPUTE_RESOLUTION_OTHER,
           )}
-          tooltip={QUESTION_CONFIG[FIELDS.DISPUTE_RESOLUTION].tooltip}
           isExpanded={expandedField === FIELDS.DISPUTE_RESOLUTION}
           isAnswered={!!formData[FIELDS.DISPUTE_RESOLUTION]}
           onExpand={() => setExpandedField(FIELDS.DISPUTE_RESOLUTION)}
@@ -95,7 +109,6 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
           <QuestionCard
             question={QUESTION_CONFIG[FIELDS.GOVERNING_LAW].question}
             answerPreview={getPreview(FIELDS.GOVERNING_LAW, formData)}
-            tooltip={QUESTION_CONFIG[FIELDS.GOVERNING_LAW].tooltip}
             isExpanded={expandedField === FIELDS.GOVERNING_LAW}
             isAnswered={!!formData[FIELDS.GOVERNING_LAW]}
             onExpand={() => setExpandedField(FIELDS.GOVERNING_LAW)}
@@ -122,7 +135,6 @@ function SectionFinal({ formData, handleChange, isReadOnly, project, showValidat
             formData,
             FIELDS.AMENDMENT_PROCESS_OTHER,
           )}
-          tooltip={QUESTION_CONFIG[FIELDS.AMENDMENT_PROCESS].tooltip}
           isExpanded={expandedField === FIELDS.AMENDMENT_PROCESS}
           isAnswered={!!formData[FIELDS.AMENDMENT_PROCESS]}
           onExpand={() => setExpandedField(FIELDS.AMENDMENT_PROCESS)}
