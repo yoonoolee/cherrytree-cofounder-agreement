@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ComponentType } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLoadScript, type Libraries } from '@react-google-maps/api';
 import { updateDoc, type UpdateData } from 'firebase/firestore';
@@ -33,8 +33,22 @@ import SectionFinal from './SectionFinal.tsx';
 import CollaboratorsModal from './CollaboratorsModal.tsx';
 import SurveyNavigation from './SurveyNavigation.tsx';
 import WelcomePopup from './WelcomePopup.tsx';
+import type { SurveySectionProps } from './sectionProps.ts';
 
 const libraries: Libraries = ['places'];
+
+const SECTION_COMPONENTS: Record<SectionId, ComponentType<SurveySectionProps>> = {
+  [SECTION_IDS.FORMATION]: SectionFormation,
+  [SECTION_IDS.COFOUNDERS]: SectionCofounders,
+  [SECTION_IDS.EQUITY_ALLOCATION]: SectionEquityAllocation,
+  [SECTION_IDS.VESTING]: SectionEquityVesting,
+  [SECTION_IDS.DECISION_MAKING]: SectionDecisionMaking,
+  [SECTION_IDS.IP]: SectionIP,
+  [SECTION_IDS.COMPENSATION]: SectionCompensation,
+  [SECTION_IDS.PERFORMANCE]: SectionPerformance,
+  [SECTION_IDS.NON_COMPETITION]: SectionNonCompete,
+  [SECTION_IDS.GENERAL_PROVISIONS]: SectionFinal,
+};
 
 /** Marks one user's onboarding flag without touching the other users' entries. */
 const onboardingUpdate = (userId: string, completed: boolean): UpdateData<Project> => ({
@@ -233,6 +247,7 @@ function Survey({ projectId, onPreview, onFinalAgreement }: SurveyProps) {
   }
 
   const savedAt = autoSaveLastSaved || lastSaved;
+  const CurrentSection = SECTION_COMPONENTS[currentSection];
 
   return (
     <div className="min-h-screen flex survey-bg">
@@ -311,121 +326,22 @@ function Survey({ projectId, onPreview, onFinalAgreement }: SurveyProps) {
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto md:ml-[210px] mt-16 survey-bg">
         <div className="px-4 md:px-[52px] pt-7 pb-[60px]" key={currentSection}>
-          {/* Section Content */}
-          {currentSection === SECTION_IDS.FORMATION && (
-            <div className="animate-fade-down">
-              {isLoaded ? (
-                <SectionFormation
-                  formData={formData}
-                  handleChange={handleChange}
-                  isReadOnly={isReadOnly}
-                  showValidation={showValidation}
-                />
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-600">Loading...</p>
-                </div>
-              )}
-            </div>
-          )}
-          {currentSection === SECTION_IDS.COFOUNDERS && (
-            <div className="animate-fade-down">
-              <SectionCofounders
+          {/* Section Content (Formation waits for the Google Maps script) */}
+          <div className="animate-fade-down">
+            {currentSection === SECTION_IDS.FORMATION && !isLoaded ? (
+              <div className="text-center py-8">
+                <p className="text-gray-600">Loading...</p>
+              </div>
+            ) : (
+              <CurrentSection
                 formData={formData}
                 handleChange={handleChange}
                 isReadOnly={isReadOnly}
                 showValidation={showValidation}
                 project={project}
               />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.EQUITY_ALLOCATION && (
-            <div className="animate-fade-down">
-              <SectionEquityAllocation
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={isReadOnly}
-                project={project}
-                showValidation={showValidation}
-              />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.VESTING && (
-            <div className="animate-fade-down">
-              <SectionEquityVesting
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={isReadOnly}
-                project={project}
-                showValidation={showValidation}
-              />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.DECISION_MAKING && (
-            <div className="animate-fade-down">
-              <SectionDecisionMaking
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={isReadOnly}
-                project={project}
-                showValidation={showValidation}
-              />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.IP && (
-            <div className="animate-fade-down">
-              <SectionIP
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={isReadOnly}
-                project={project}
-                showValidation={showValidation}
-              />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.COMPENSATION && (
-            <div className="animate-fade-down">
-              <SectionCompensation
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={isReadOnly}
-                showValidation={showValidation}
-                project={project}
-              />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.PERFORMANCE && (
-            <div className="animate-fade-down">
-              <SectionPerformance
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={isReadOnly}
-                showValidation={showValidation}
-              />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.NON_COMPETITION && (
-            <div className="animate-fade-down">
-              <SectionNonCompete
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={isReadOnly}
-                project={project}
-                showValidation={showValidation}
-              />
-            </div>
-          )}
-          {currentSection === SECTION_IDS.GENERAL_PROVISIONS && (
-            <div className="animate-fade-down">
-              <SectionFinal
-                formData={formData}
-                handleChange={handleChange}
-                isReadOnly={isReadOnly}
-                project={project}
-                showValidation={showValidation}
-              />
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Next Button */}
           {!isReadOnly && (

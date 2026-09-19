@@ -1,7 +1,13 @@
 import { useState, type RefObject } from 'react';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
-import { SECTION_IDS, type Project, type SurveyData } from '@cherrytree/shared';
+import {
+  SECTION_IDS,
+  SECTION_ORDER,
+  type Project,
+  type SectionId,
+  type SurveyData,
+} from '@cherrytree/shared';
 
 import {
   ADMIN_ID,
@@ -233,6 +239,27 @@ describe('Survey', () => {
     it('falls back to Formation for an unknown section', () => {
       renderSurvey('?section=nope');
       expect(section().name).toBe('SectionFormation');
+    });
+
+    it('renders the component behind every section id', () => {
+      const expected: Record<SectionId, string> = {
+        [SECTION_IDS.FORMATION]: 'SectionFormation',
+        [SECTION_IDS.COFOUNDERS]: 'SectionCofounders',
+        [SECTION_IDS.EQUITY_ALLOCATION]: 'SectionEquityAllocation',
+        [SECTION_IDS.VESTING]: 'SectionEquityVesting',
+        [SECTION_IDS.DECISION_MAKING]: 'SectionDecisionMaking',
+        [SECTION_IDS.IP]: 'SectionIP',
+        [SECTION_IDS.COMPENSATION]: 'SectionCompensation',
+        [SECTION_IDS.PERFORMANCE]: 'SectionPerformance',
+        [SECTION_IDS.NON_COMPETITION]: 'SectionNonCompete',
+        [SECTION_IDS.GENERAL_PROVISIONS]: 'SectionFinal',
+      };
+      for (const id of SECTION_ORDER) {
+        cleanup();
+        renderSurvey(`?section=${id}`);
+        expect(section().name).toBe(expected[id]);
+        expect(section().props.project).toBe(mocks.project);
+      }
     });
 
     it('switches sections from the navigation and mirrors the choice in the URL', () => {
