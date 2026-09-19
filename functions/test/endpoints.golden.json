@@ -1,0 +1,206 @@
+{
+  "submitSurvey": {
+    "__endpoint": {
+      "availableMemoryMb": 256,
+      "timeoutSeconds": null,
+      "minInstances": null,
+      "maxInstances": null,
+      "ingressSettings": null,
+      "concurrency": null,
+      "serviceAccountEmail": "cloud-functions@test-project.iam.gserviceaccount.com",
+      "vpc": null,
+      "platform": "gcfv2",
+      "region": ["us-west2"],
+      "secretEnvironmentVariables": [
+        {
+          "key": "MAKE_WEBHOOK_URL"
+        },
+        {
+          "key": "CLERK_SECRET_KEY"
+        }
+      ],
+      "labels": {},
+      "callableTrigger": {}
+    }
+  },
+  "generatePreviewPDF": {
+    "__endpoint": {
+      "availableMemoryMb": 256,
+      "timeoutSeconds": null,
+      "minInstances": null,
+      "maxInstances": null,
+      "ingressSettings": null,
+      "concurrency": null,
+      "serviceAccountEmail": "cloud-functions@test-project.iam.gserviceaccount.com",
+      "vpc": null,
+      "platform": "gcfv2",
+      "region": ["us-west2"],
+      "secretEnvironmentVariables": [
+        {
+          "key": "MAKE_WEBHOOK_URL"
+        },
+        {
+          "key": "CLERK_SECRET_KEY"
+        }
+      ],
+      "labels": {},
+      "callableTrigger": {}
+    }
+  },
+  "createCheckoutSession": {
+    "__endpoint": {
+      "availableMemoryMb": 256,
+      "timeoutSeconds": null,
+      "minInstances": null,
+      "maxInstances": null,
+      "ingressSettings": null,
+      "concurrency": null,
+      "serviceAccountEmail": "cloud-functions@test-project.iam.gserviceaccount.com",
+      "vpc": null,
+      "platform": "gcfv2",
+      "region": ["us-west2"],
+      "secretEnvironmentVariables": [
+        {
+          "key": "STRIPE_SECRET_KEY"
+        },
+        {
+          "key": "CLERK_SECRET_KEY"
+        }
+      ],
+      "labels": {},
+      "callableTrigger": {}
+    }
+  },
+  "stripeWebhook": {
+    "__endpoint": {
+      "availableMemoryMb": 256,
+      "timeoutSeconds": null,
+      "minInstances": null,
+      "maxInstances": null,
+      "ingressSettings": null,
+      "concurrency": null,
+      "serviceAccountEmail": "cloud-functions@test-project.iam.gserviceaccount.com",
+      "vpc": null,
+      "platform": "gcfv2",
+      "region": ["us-west2"],
+      "secretEnvironmentVariables": [
+        {
+          "key": "STRIPE_SECRET_KEY"
+        },
+        {
+          "key": "STRIPE_WEBHOOK_SECRET"
+        },
+        {
+          "key": "CLERK_SECRET_KEY"
+        }
+      ],
+      "labels": {},
+      "httpsTrigger": {}
+    }
+  },
+  "getFirebaseToken": {
+    "__endpoint": {
+      "availableMemoryMb": 256,
+      "timeoutSeconds": null,
+      "minInstances": null,
+      "maxInstances": null,
+      "ingressSettings": null,
+      "concurrency": null,
+      "serviceAccountEmail": "cloud-functions@test-project.iam.gserviceaccount.com",
+      "vpc": null,
+      "platform": "gcfv2",
+      "region": ["us-west2"],
+      "secretEnvironmentVariables": [
+        {
+          "key": "CLERK_SECRET_KEY"
+        }
+      ],
+      "labels": {},
+      "callableTrigger": {}
+    }
+  },
+  "sendContactMessage": {
+    "__endpoint": {
+      "availableMemoryMb": 256,
+      "timeoutSeconds": null,
+      "minInstances": null,
+      "maxInstances": null,
+      "ingressSettings": null,
+      "concurrency": null,
+      "serviceAccountEmail": "cloud-functions@test-project.iam.gserviceaccount.com",
+      "vpc": null,
+      "platform": "gcfv2",
+      "region": ["us-west2"],
+      "secretEnvironmentVariables": [
+        {
+          "key": "RESEND_API_KEY"
+        }
+      ],
+      "labels": {},
+      "callableTrigger": {}
+    }
+  },
+  "createOrganizationInvitation": {
+    "__endpoint": {
+      "availableMemoryMb": 256,
+      "timeoutSeconds": null,
+      "minInstances": null,
+      "maxInstances": null,
+      "ingressSettings": null,
+      "concurrency": null,
+      "serviceAccountEmail": "cloud-functions@test-project.iam.gserviceaccount.com",
+      "vpc": null,
+      "platform": "gcfv2",
+      "region": ["us-west2"],
+      "secretEnvironmentVariables": [
+        {
+          "key": "CLERK_SECRET_KEY"
+        }
+      ],
+      "labels": {},
+      "callableTrigger": {}
+    }
+  },
+  "removeOrganizationMember": {
+    "__endpoint": {
+      "availableMemoryMb": 256,
+      "timeoutSeconds": null,
+      "minInstances": null,
+      "maxInstances": null,
+      "ingressSettings": null,
+      "concurrency": null,
+      "serviceAccountEmail": "cloud-functions@test-project.iam.gserviceaccount.com",
+      "vpc": null,
+      "platform": "gcfv2",
+      "region": ["us-west2"],
+      "secretEnvironmentVariables": [
+        {
+          "key": "CLERK_SECRET_KEY"
+        }
+      ],
+      "labels": {},
+      "callableTrigger": {}
+    }
+  },
+  "clerkWebhook": {
+    "__endpoint": {
+      "availableMemoryMb": 256,
+      "timeoutSeconds": null,
+      "minInstances": null,
+      "maxInstances": null,
+      "ingressSettings": null,
+      "concurrency": null,
+      "serviceAccountEmail": "cloud-functions@test-project.iam.gserviceaccount.com",
+      "vpc": null,
+      "platform": "gcfv2",
+      "region": ["us-west2"],
+      "secretEnvironmentVariables": [
+        {
+          "key": "CLERK_WEBHOOK_SECRET"
+        }
+      ],
+      "labels": {},
+      "httpsTrigger": {}
+    }
+  }
+}
