@@ -15,11 +15,10 @@ const { getApps, initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
 const { defineSecret } = require('firebase-functions/params');
-const Stripe = require('stripe');
 const { Webhook } = require('svix');
 const validator = require('validator');
 const { Resend } = require('resend');
-const { getClerk, verifyClerkToken, CLERK_SECRET_KEY } = require('./auth-helpers');
+const { verifyClerkToken, CLERK_SECRET_KEY } = require('./auth-helpers');
 const {
   REQUIRED_ACKNOWLEDGMENT_FIELDS,
   CONDITIONAL_ACKNOWLEDGMENT_FIELDS,
@@ -31,8 +30,6 @@ const db = getFirestore();
 const auth = getAuth();
 
 // Load secrets from environment config
-const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
-const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');
 const CLERK_WEBHOOK_SECRET = defineSecret('CLERK_WEBHOOK_SECRET');
 const RESEND_API_KEY = defineSecret('RESEND_API_KEY');
 
@@ -48,7 +45,6 @@ const FUNCTION_CONFIG = {
 
 // Validation constants
 const EMAIL_MAX_LENGTH = 254; // RFC 5321 maximum email length
-const PROJECT_NAME_MIN_LENGTH = 2; // Minimum characters for project/company name
 
 // Collaborator field constants
 const COLLABORATOR_FIELDS = {
@@ -59,95 +55,10 @@ const COLLABORATOR_FIELDS = {
   HISTORY: 'history',
 };
 
-// Edit window duration from purchase date (units: 'months', 'days', 'years', 'hours', 'minutes')
-const EDIT_WINDOW_CONFIG = {
-  amount: 6,
-  unit: 'months',
-};
-
-function calculateEditDeadline(startDate) {
-  if (!startDate || !(startDate instanceof Date)) {
-    throw new Error('startDate must be a valid Date object');
-  }
-
-  const { amount, unit } = EDIT_WINDOW_CONFIG;
-
-  if (!amount || amount <= 0) {
-    throw new Error('EDIT_WINDOW_CONFIG.amount must be a positive number');
-  }
-
-  const deadline = new Date(startDate);
-
-  switch (unit) {
-    case 'years':
-      deadline.setFullYear(deadline.getFullYear() + amount);
-      break;
-    case 'months':
-      deadline.setMonth(deadline.getMonth() + amount);
-      break;
-    case 'days':
-      deadline.setDate(deadline.getDate() + amount);
-      break;
-    case 'hours':
-      deadline.setHours(deadline.getHours() + amount);
-      break;
-    case 'minutes':
-      deadline.setMinutes(deadline.getMinutes() + amount);
-      break;
-    default:
-      throw new Error(
-        `Unsupported unit: ${unit}. Supported units: years, months, days, hours, minutes`,
-      );
-  }
-
-  // Set to 11:59:59 PM PST (UTC-8) on the deadline day
-  // 11:59:59 PM PST = 7:59:59 AM UTC the next day
-  const year = deadline.getUTCFullYear();
-  const month = deadline.getUTCMonth();
-  const day = deadline.getUTCDate();
-  return new Date(Date.UTC(year, month, day + 1, 7, 59, 59));
-}
-
-// Survey versioning
-const CURRENT_SURVEY_VERSION = '1.0.0';
-
 // ============================================================================
 // INPUT VALIDATION & SANITIZATION HELPERS
 // Note: Authentication helpers (verifyClerkToken, getClerk) are in auth-helpers.js
 // ============================================================================
-
-/**
- * Sanitize user input to prevent XSS and injection attacks
- * @param {string} input - The input to sanitize
- * @param {number} maxLength - Maximum allowed length
- * @returns {string} - Sanitized input
- */
-function sanitizeInput(input, maxLength = 100) {
-  if (typeof input !== 'string') {
-    return '';
-  }
-
-  // Trim and enforce length limit
-  let sanitized = input.trim().substring(0, maxLength);
-
-  // Use validator.js to escape HTML entities (converts < to &lt;, etc.)
-  sanitized = validator.escape(sanitized);
-
-  // Additional security layers
-  sanitized = sanitized
-    // Remove null bytes
-    .replace(/\0/g, '')
-    // Remove javascript: protocol (all variants including obfuscated)
-    .replace(/j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*:/gi, '')
-    // Remove data: protocol (can be used for XSS)
-    .replace(/data:/gi, '')
-    // Remove vbscript: protocol
-    .replace(/vbscript:/gi, '')
-    // Remove event handlers (onclick, onerror, etc.)
-    .replace(/on\w+\s*=/gi, '');
-
-  return sanitized.trim();
-}
 
 /**
  * Validate email format - Basic check for early feedback
@@ -162,276 +73,6 @@ function isValidEmail(email) {
   // Basic validation using validator.js
   return validator.isEmail(email) && email.length <= EMAIL_MAX_LENGTH;
 }
-
-// ============================================================================
-// STRIPE PAYMENT OPERATIONS
-// ============================================================================
-
-// Create Stripe checkout session
-exports.createCheckoutSession = onCall(
-  {
-    ...FUNCTION_CONFIG,
-    secrets: [STRIPE_SECRET_KEY, CLERK_SECRET_KEY],
-    invoker: 'public',
-    consumeAppCheckToken: true,
-  },
-  async (request) => {
-    // Verify Clerk authentication
-    const { sessionToken, priceId, plan, projectName } = request.data;
-    const { userId, email } = await verifyClerkToken(sessionToken);
-
-    // Initialize Stripe
-    const stripe = Stripe(STRIPE_SECRET_KEY.value());
-
-    if (!priceId || !plan) {
-      throw new HttpsError('invalid-argument', 'Price ID and plan are required');
-    }
-
-    if (!projectName) {
-      throw new HttpsError('invalid-argument', 'Project name is required');
-    }
-
-    // Validate and sanitize project name
-    const sanitizedProjectName = sanitizeInput(projectName, 100);
-    if (!sanitizedProjectName || sanitizedProjectName.length < PROJECT_NAME_MIN_LENGTH) {
-      throw new HttpsError('invalid-argument', 'Invalid project name');
-    }
-
-    // Validate plan is one of the allowed values
-    if (!['starter', 'pro'].includes(plan)) {
-      throw new HttpsError('invalid-argument', 'Invalid plan type');
-    }
-
-    try {
-      // Create or retrieve Stripe customer
-      const userRef = db.collection('users').doc(userId);
-      const userDoc = await userRef.get();
-      let stripeCustomerId;
-
-      if (userDoc.exists && userDoc.data().stripeCustomerId) {
-        stripeCustomerId = userDoc.data().stripeCustomerId;
-      } else {
-        // Create new Stripe customer
-        const customer = await stripe.customers.create({
-          email: email,
-          metadata: {
-            clerkUserId: userId,
-          },
-        });
-        stripeCustomerId = customer.id;
-
-        // Save to Firestore
-        await userRef.set(
-          {
-            stripeCustomerId: stripeCustomerId,
-          },
-          { merge: true },
-        );
-      }
-
-      // Create checkout session
-      const session = await stripe.checkout.sessions.create({
-        customer: stripeCustomerId,
-        payment_method_types: ['card'],
-        line_items: [
-          {
-            price: priceId,
-            quantity: 1,
-          },
-        ],
-        mode: 'payment', // one-time payment
-        success_url: `${request.data.successUrl || 'https://my.cherrytree.app/dashboard'}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${request.data.cancelUrl || 'https://my.cherrytree.app/dashboard'}?payment=cancelled`,
-        metadata: {
-          userId: userId,
-          plan: plan,
-          projectName: sanitizedProjectName,
-          userEmail: email,
-        },
-        client_reference_id: userId,
-      });
-
-      return {
-        sessionId: session.id,
-        url: session.url,
-      };
-    } catch (error) {
-      console.error('Error creating checkout session:', error);
-      if (error instanceof HttpsError) {
-        throw error;
-      }
-      // Don't expose internal error details to client
-      throw new HttpsError('internal', 'An error occurred while creating the checkout session');
-    }
-  },
-);
-
-// Handle Stripe webhooks
-exports.stripeWebhook = onRequest(
-  {
-    ...FUNCTION_CONFIG,
-    cors: false,
-    secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, CLERK_SECRET_KEY],
-  },
-  async (req, res) => {
-    // Initialize Stripe
-    const stripe = Stripe(STRIPE_SECRET_KEY.value());
-
-    const sig = req.headers['stripe-signature'];
-    let event;
-
-    try {
-      // Verify webhook signature for security
-      // This ensures the request actually came from Stripe
-      if (!sig) {
-        console.error('Missing stripe-signature header');
-        return res.status(400).send('Missing signature');
-      }
-
-      try {
-        event = stripe.webhooks.constructEvent(req.rawBody, sig, STRIPE_WEBHOOK_SECRET.value());
-      } catch (err) {
-        console.error('Webhook signature verification failed:', err.message);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
-      }
-
-      switch (event.type) {
-        case 'checkout.session.completed': {
-          const session = event.data.object;
-          const userId = session.client_reference_id || session.metadata?.userId;
-          const plan = session.metadata?.plan;
-          const projectName = session.metadata?.projectName;
-          const userEmail =
-            session.metadata?.userEmail ||
-            session.customer_email ||
-            session.customer_details?.email;
-
-          // Sanitize project name from metadata (defense in depth)
-          const sanitizedProjectName = sanitizeInput(projectName || 'New Project', 100);
-
-          if (userId && plan && sanitizedProjectName && userEmail) {
-            try {
-              // Fetch receipt URL and payment timestamp from the charge
-              let receiptUrl = null;
-              let purchasedAt = null;
-              if (session.payment_intent) {
-                try {
-                  const paymentIntent = await stripe.paymentIntents.retrieve(
-                    session.payment_intent,
-                  );
-                  if (paymentIntent.latest_charge) {
-                    const charge = await stripe.charges.retrieve(paymentIntent.latest_charge);
-                    receiptUrl = charge.receipt_url;
-                    purchasedAt = new Date(charge.created * 1000); // Unix timestamp to JS Date
-                  }
-                } catch (receiptError) {
-                  console.error('Error fetching charge details:', receiptError);
-                }
-              }
-
-              // Create Clerk Organization for this project
-              // clerkOrgId is used as the Firestore document ID (single source of truth)
-              const clerk = getClerk();
-              const organization = await clerk.organizations.createOrganization({
-                name: sanitizedProjectName,
-                createdBy: userId,
-              });
-              const clerkOrgId = organization.id;
-
-              // Use clerkOrgId as the Firestore document ID
-              const projectRef = db.collection('projects').doc(clerkOrgId);
-
-              // Fetch admin's name from their profile
-              let firstName = '';
-              let lastName = '';
-              try {
-                const userDoc = await db.collection('users').doc(userId).get();
-                if (userDoc.exists) {
-                  const userData = userDoc.data();
-                  firstName = userData[COLLABORATOR_FIELDS.FIRST_NAME] || '';
-                  lastName = userData[COLLABORATOR_FIELDS.LAST_NAME] || '';
-                }
-              } catch (userError) {
-                console.error('Error fetching admin user data:', userError);
-              }
-
-              // Calculate edit deadline based on EDIT_WINDOW_CONFIG
-              // This is calculated ONCE and stored forever - changing config later won't affect existing projects
-              const now = new Date();
-              const editDeadline = calculateEditDeadline(now);
-
-              await projectRef.set({
-                name: sanitizedProjectName,
-                admin: userId,
-                collaborators: {
-                  [userId]: {
-                    [COLLABORATOR_FIELDS.ROLE]: 'admin',
-                    [COLLABORATOR_FIELDS.IS_ACTIVE]: true,
-                    [COLLABORATOR_FIELDS.FIRST_NAME]: firstName,
-                    [COLLABORATOR_FIELDS.LAST_NAME]: lastName,
-                    [COLLABORATOR_FIELDS.HISTORY]: [{ startAt: now, endAt: null }],
-                  },
-                },
-                approvals: {
-                  [userId]: false,
-                },
-                onboardingCompleted: {
-                  [userId]: false,
-                },
-                surveyVersion: CURRENT_SURVEY_VERSION,
-                surveyData: Object.fromEntries(
-                  REQUIRED_ACKNOWLEDGMENT_FIELDS.map((field) => [field, { [userId]: false }]),
-                ),
-                // NOTE: No longer using 'submitted' field - tracking via pdfAgreements.length instead
-                pdfAgreements: [],
-                latestPdfUrl: null,
-                currentPlan: plan, // Current active plan (for easy access)
-                // Payment history - map keyed by checkout session ID to track initial purchase and upgrades
-                payments: {
-                  [session.id]: {
-                    plan: plan,
-                    type: 'initial',
-                    stripeCustomerId: session.customer,
-                    stripePaymentIntentId: session.payment_intent,
-                    amountPaidCents: session.amount_total,
-                    currency: session.currency,
-                    receiptUrl: receiptUrl,
-                    purchasedAt: purchasedAt || now,
-                  },
-                },
-                // Timestamps
-                createdAt: FieldValue.serverTimestamp(),
-                editDeadline: editDeadline, // Edit deadline - locked in at purchase time
-                lastUpdated: FieldValue.serverTimestamp(),
-                lastOpened: FieldValue.serverTimestamp(),
-              });
-            } catch (error) {
-              console.error('Error in project creation:', error);
-            }
-          } else {
-            console.error('Missing required metadata in checkout session:', {
-              userId,
-              plan,
-              projectName: sanitizedProjectName,
-              userEmail,
-            });
-          }
-          break;
-        }
-
-        case 'payment_intent.succeeded':
-        case 'payment_intent.payment_failed':
-        default:
-          break;
-      }
-
-      res.json({ received: true });
-    } catch (error) {
-      console.error('Webhook error:', error);
-      res.status(400).send(`Webhook Error: ${error.message}`);
-    }
-  },
-);
 
 // ============================================================================
 // FIREBASE AUTH TOKEN EXCHANGE

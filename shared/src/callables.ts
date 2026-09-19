@@ -19,14 +19,8 @@ export interface CallableMap {
     response: { success: true; pdfUrl: string | null };
   };
   createCheckoutSession: {
-    request: {
-      sessionToken: string;
-      priceId: string;
-      plan: Plan;
-      projectName: string;
-      successUrl?: string;
-      cancelUrl?: string;
-    };
+    /** The price and redirect URLs are server-side configuration keyed by `plan`. */
+    request: { plan: Plan; projectName: string };
     response: { sessionId: string; url: string | null };
   };
   sendContactMessage: {
