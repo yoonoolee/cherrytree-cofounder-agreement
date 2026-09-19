@@ -11,7 +11,7 @@
  */
 
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
-const { initializeApp } = require('firebase-admin/app');
+const { getApps, initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
 const axios = require('axios');
@@ -27,7 +27,8 @@ const {
   mergeOtherFields,
 } = require('@cherrytree/shared');
 
-initializeApp();
+// Guarded: src/lib/firebase.ts also initializes the app while both files are bundled.
+if (getApps().length === 0) initializeApp();
 const db = getFirestore();
 const auth = getAuth();
 

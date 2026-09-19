@@ -77,8 +77,13 @@ export const WEBHOOK_OPTIONS = {
 /** Survey schema version stamped on new projects. */
 export const CURRENT_SURVEY_VERSION = '1.0.0';
 
-/** Edit window granted at purchase (units: 'months', 'days', 'years', 'hours', 'minutes'). */
-export const EDIT_WINDOW_CONFIG = { amount: 6, unit: 'months' } as const;
+export type EditWindowUnit = 'years' | 'months' | 'days' | 'hours' | 'minutes';
+
+/** Edit window granted at purchase. Stored on the project at creation, so changing it never affects existing projects. */
+export const EDIT_WINDOW_CONFIG: { readonly amount: number; readonly unit: EditWindowUnit } = {
+  amount: 6,
+  unit: 'months',
+};
 
 /** Exact hostnames a PDF URL returned by the Make.com webhook may use. */
 export const PDF_ALLOWED_DOMAINS: readonly string[] = [
