@@ -1,15 +1,28 @@
 import { useEffect } from 'react';
 
+/** One BreadcrumbList item; the last crumb (current page) has no url. */
+export interface Breadcrumb {
+  name: string;
+  url?: string;
+}
+
+export interface PageMeta {
+  /** Page title */
+  title: string;
+  /** Page description */
+  description: string;
+  /** Open Graph title (defaults to title) */
+  ogTitle?: string;
+  /** Open Graph description (defaults to description) */
+  ogDescription?: string;
+  /** Breadcrumb items, e.g. [{name: "Home", url: "/"}, {name: "About"}] */
+  breadcrumbs?: readonly Breadcrumb[];
+}
+
 /**
  * Custom hook to update page title and meta tags for SEO
- * @param {Object} params
- * @param {string} params.title - Page title
- * @param {string} params.description - Page description
- * @param {string} params.ogTitle - Open Graph title (optional, defaults to title)
- * @param {string} params.ogDescription - Open Graph description (optional, defaults to description)
- * @param {Array} params.breadcrumbs - Breadcrumb items (optional) - [{name: "Home", url: "/"}, {name: "About"}]
  */
-export function usePageMeta({ title, description, ogTitle, ogDescription, breadcrumbs }) {
+export function usePageMeta({ title, description, ogTitle, ogDescription, breadcrumbs }: PageMeta) {
   useEffect(() => {
     // Update page title
     document.title = title;
