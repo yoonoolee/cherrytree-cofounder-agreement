@@ -1,34 +1,51 @@
-import React, { useEffect, useRef } from 'react';
-import Tooltip from './Tooltip';
-import Standard from './Standard';
+import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
+
+import Tooltip from './Tooltip.tsx';
+import Standard from './Standard.tsx';
+
+interface QuestionCardProps {
+  /** Question label text */
+  question: string;
+  /** Short preview of the current answer (shown when collapsed) */
+  answerPreview?: string;
+  /** Optional explanatory text, shown first when expanded */
+  tooltip?: string;
+  /** Optional "the standard is..." text, shown after the tooltip */
+  standard?: string;
+  isExpanded?: boolean;
+  isAnswered?: boolean;
+  /** Called when the header is clicked while collapsed */
+  onExpand?: () => void;
+  /** Called when the header is clicked while expanded */
+  onCollapse?: () => void;
+  /** Called when Enter is pressed to move to the next card */
+  onAdvance?: () => void;
+  /**
+   * For a nested conditional question with no collapse state of its own: permanently expanded
+   * (same large-serif format as a main question). Header click does nothing in this mode.
+   */
+  alwaysExpanded?: boolean;
+  /**
+   * Strips the card background/padding/hover chrome, for a nested conditional question that
+   * should sit flush below its parent question instead of looking like its own box.
+   */
+  flat?: boolean;
+  /**
+   * A conditional follow-up question's title. Only ever shown when THIS card is collapsed
+   * (never while expanded) - matches the main question/answerPreview row, right below it.
+   */
+  subQuestion?: string;
+  /** The follow-up question's answer preview. */
+  subAnswerPreview?: string;
+  /** The actual input element(s) */
+  children?: ReactNode;
+}
 
 /**
  * QuestionCard - expanding card wrapper for survey questions.
  * Collapsed: shows question text + answer preview, plus a sub-question row if given.
  * Expanded: shows Tooltip (optional), then Standard (optional), then children (the input).
  * Clicking the header row toggles: expands when collapsed, collapses when expanded.
- *
- * Props:
- *   question        {string}   - Question label text
- *   answerPreview   {string}   - Short preview of current answer (shown when collapsed)
- *   tooltip         {string}   - Optional explanatory text, shown first when expanded
- *   standard        {string}   - Optional "the standard is..." text, shown after tooltip
- *   isExpanded      {boolean}
- *   isAnswered      {boolean}
- *   onExpand        {function} - Called when the header is clicked while collapsed
- *   onCollapse      {function} - Called when the header is clicked while expanded
- *   onAdvance       {function} - Called when Enter is pressed to move to next card
- *   alwaysExpanded  {boolean}  - For a nested conditional question with no collapse state of
- *                                its own: permanently expanded (same large-serif format as a
- *                                main question). Header click does nothing in this mode.
- *   flat            {boolean}  - Strips the card background/padding/hover chrome, for a nested
- *                                conditional question that should sit flush below its parent
- *                                question instead of looking like its own box.
- *   subQuestion       {string} - A conditional follow-up question's title. Only ever shown when
- *                                THIS card is collapsed (never while expanded) - matches the
- *                                main question/answerPreview row, right below it.
- *   subAnswerPreview  {string} - The follow-up question's answer preview.
- *   children        {node}     - The actual input element(s)
  */
 function QuestionCard({
   question,
@@ -45,8 +62,8 @@ function QuestionCard({
   subQuestion,
   subAnswerPreview,
   children,
-}) {
-  const cardRef = useRef(null);
+}: QuestionCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
   const hasHint = !!(tooltip || standard);
   const expanded = alwaysExpanded || isExpanded;
 
@@ -60,10 +77,10 @@ function QuestionCard({
     }
   }, [expanded]);
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter' && expanded && onAdvance) {
       // Don't advance on Enter inside textarea
-      if (e.target.tagName === 'TEXTAREA') return;
+      if ((e.target as HTMLElement).tagName === 'TEXTAREA') return;
       e.preventDefault();
       onAdvance();
     }
