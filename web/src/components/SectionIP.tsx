@@ -1,34 +1,49 @@
-import React, { useState } from 'react';
-import QuestionRenderer from './QuestionRenderer';
-import QuestionCard from './QuestionCard';
-import { QUESTION_CONFIG } from '../config/questionConfig';
-import { FIELDS } from '@cherrytree/shared';
-import { getPreview } from '../utils/getPreview';
+import { useState } from 'react';
+import { FIELDS, type SurveyFieldName } from '@cherrytree/shared';
+
+import QuestionRenderer from './QuestionRenderer.tsx';
+import QuestionCard from './QuestionCard.tsx';
+import type { SurveySectionProps } from './sectionProps.ts';
+import { QUESTION_CONFIG } from '../config/questionConfig.ts';
+import { getPreview } from '../utils/getPreview.ts';
 
 const FIELD_ORDER = [
   FIELDS.HAS_PRE_EXISTING_IP,
   FIELDS.ACKNOWLEDGE_IP_ASSIGNMENT,
   FIELDS.ACKNOWLEDGE_IP_OWNERSHIP,
-];
+] as const;
 
-function SectionIP({ formData, handleChange, isReadOnly, project, showValidation }) {
+type Field = (typeof FIELD_ORDER)[number];
+
+function SectionIP({
+  formData,
+  handleChange,
+  isReadOnly,
+  project,
+  showValidation,
+}: SurveySectionProps) {
   const firstUnanswered = FIELD_ORDER.find((f) => {
-    const v = formData[f];
+    const v: unknown = formData[f];
     if (!v) return true;
     if (typeof v === 'object') return !Object.values(v).every(Boolean);
     return false;
   });
-  const [expandedField, setExpandedField] = useState(firstUnanswered || FIELD_ORDER[0]);
-  const advanceTo = (key) => {
+  const [expandedField, setExpandedField] = useState<Field | null>(
+    firstUnanswered || FIELD_ORDER[0],
+  );
+  const advanceTo = (key: Field) => {
     const idx = FIELD_ORDER.indexOf(key);
-    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1]);
+    if (idx < FIELD_ORDER.length - 1) setExpandedField(FIELD_ORDER[idx + 1] ?? null);
   };
   const collapse = () => setExpandedField(null);
 
-  const isAckAnswered = (fieldName) => {
-    const v = formData[fieldName];
-    return (
-      v && typeof v === 'object' && Object.values(v).length > 0 && Object.values(v).every(Boolean)
+  const isAckAnswered = (fieldName: SurveyFieldName): boolean => {
+    const v: unknown = formData[fieldName];
+    return !!(
+      v &&
+      typeof v === 'object' &&
+      Object.values(v).length > 0 &&
+      Object.values(v).every(Boolean)
     );
   };
 
