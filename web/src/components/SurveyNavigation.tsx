@@ -1,10 +1,11 @@
-import React, { useState, useRef, useLayoutEffect } from 'react';
-import UpgradeModal from './UpgradeModal';
-import { SECTION_ORDER } from '@cherrytree/shared';
-import { SECTIONS as SECTION_CONFIG } from '../config/sectionConfig';
-import { useProjectSync } from '../hooks/useProjectSync';
-import { useValidation } from '../hooks/useValidation';
-import { useCollaborators } from '../hooks/useCollaborators';
+import { useState, useRef, useLayoutEffect } from 'react';
+import { SECTION_ORDER, type SectionId } from '@cherrytree/shared';
+
+import UpgradeModal from './UpgradeModal.tsx';
+import { SECTIONS as SECTION_CONFIG } from '../config/sectionConfig.ts';
+import { useProjectSync } from '../hooks/useProjectSync.ts';
+import { useValidation } from '../hooks/useValidation.ts';
+import { useCollaborators } from '../hooks/useCollaborators.ts';
 
 // Sidebar is a fixed 210px with 32px padding on each side of the name (see style below).
 const NAME_MAX_FONT_SIZE = 42;
@@ -12,11 +13,14 @@ const NAME_MIN_FONT_SIZE = 20;
 const NAME_AVAILABLE_WIDTH = 210 - 32 * 2;
 const NAME_FONT_FAMILY = "'Instrument Serif', serif";
 
-function getFitFontSize(text) {
+/** One off-screen canvas, created on first use, for measuring the project name. */
+let measureCanvas: HTMLCanvasElement | null = null;
+
+function getFitFontSize(text: string | undefined): number {
   if (!text) return NAME_MAX_FONT_SIZE;
-  const canvas =
-    getFitFontSize.canvas || (getFitFontSize.canvas = document.createElement('canvas'));
-  const ctx = canvas.getContext('2d');
+  measureCanvas ??= document.createElement('canvas');
+  const ctx = measureCanvas.getContext('2d');
+  if (!ctx) return NAME_MAX_FONT_SIZE;
   for (let size = NAME_MAX_FONT_SIZE; size > NAME_MIN_FONT_SIZE; size -= 1) {
     ctx.font = `400 ${size}px ${NAME_FONT_FAMILY}`;
     if (ctx.measureText(text).width <= NAME_AVAILABLE_WIDTH) return size;
@@ -24,20 +28,34 @@ function getFitFontSize(text) {
   return NAME_MIN_FONT_SIZE;
 }
 
+interface SurveyNavigationProps {
+  projectId: string;
+  /** A survey SectionId, or the Preview / FinalAgreement pages' own ids. */
+  currentSection: string;
+  onSectionClick: (sectionId: SectionId) => void;
+  onReviewAndApproveClick: () => void;
+  /** Shows the Final Agreement entry when given. */
+  onFinalAgreementClick?: () => void;
+  isMobileNavOpen?: boolean;
+  setIsMobileNavOpen?: (open: boolean) => void;
+  /** Shows the Manage button under the cofounder list when given. */
+  onManageCollaborators?: () => void;
+}
+
 /**
  * Self-contained navigation component with all hooks and logic.
- * Used identically on both Survey and Preview pages.
+ * Used identically on the Survey, Preview and FinalAgreement pages.
  */
 function SurveyNavigation({
   projectId,
   currentSection,
   onSectionClick,
   onReviewAndApproveClick,
-  onFinalAgreementClick = null,
+  onFinalAgreementClick,
   isMobileNavOpen = false,
   setIsMobileNavOpen = () => {},
-  onManageCollaborators = null,
-}) {
+  onManageCollaborators,
+}: SurveyNavigationProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const isSavingRef = useRef(false);
@@ -53,17 +71,15 @@ function SurveyNavigation({
     setNameFontSize(getFitFontSize(project?.name));
   }, [project?.name]);
 
-  const progress = calculateProgress ? calculateProgress() : 0;
+  const progress = calculateProgress();
   const sectionsRemaining = SECTION_ORDER.filter((id) => !isSectionCompleted(id)).length;
 
-  const allSectionsComplete = isSectionCompleted
-    ? SECTION_ORDER.every((id) => isSectionCompleted(id))
-    : false;
+  const allSectionsComplete = SECTION_ORDER.every((id) => isSectionCompleted(id));
   const hasSubmittedAgreement = (project?.pdfAgreements?.length || 0) > 0;
 
-  const getSectionDotClass = (sectionId) => {
+  const getSectionDotClass = (sectionId: SectionId) => {
     if (currentSection === sectionId) return 'nav-dot active';
-    if (isSectionCompleted && isSectionCompleted(sectionId)) return 'nav-dot done';
+    if (isSectionCompleted(sectionId)) return 'nav-dot done';
     return 'nav-dot notstarted';
   };
 
@@ -175,7 +191,7 @@ function SurveyNavigation({
             {SECTION_ORDER.map((sectionId) => {
               const sectionConfig = SECTION_CONFIG[sectionId];
               const isActive = currentSection === sectionId;
-              const isDone = isSectionCompleted && isSectionCompleted(sectionId);
+              const isDone = isSectionCompleted(sectionId);
               return (
                 <li
                   key={sectionId}
@@ -242,7 +258,7 @@ function SurveyNavigation({
               }}
             >
               <span
-                className={`nav-dot ${allSectionsComplete ? 'notstarted' : 'notstarted'}`}
+                className="nav-dot notstarted"
                 style={{ borderColor: allSectionsComplete ? '#888' : '#ddd' }}
               />
               Review &amp; Approve
