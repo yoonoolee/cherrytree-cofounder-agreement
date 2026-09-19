@@ -1,20 +1,23 @@
-import React from 'react';
-import { formatDeadline, isAfterEditDeadline, isProjectReadOnly } from '../utils/dateUtils';
+import { toDate, type Project } from '@cherrytree/shared';
 
-function AgreementHeader({ project, title }) {
+import { formatDeadline, isAfterEditDeadline, isProjectReadOnly } from '../utils/dateUtils.ts';
+
+interface AgreementHeaderProps {
+  project: Pick<Project, 'pdfAgreements' | 'editDeadline' | 'previewPdfGeneratedAt'>;
+  title: string;
+}
+
+function AgreementHeader({ project, title }: AgreementHeaderProps) {
   const isReadOnly = isProjectReadOnly(project);
+  const lastAgreement = project.pdfAgreements?.[project.pdfAgreements.length - 1];
 
   return (
     <div className="mb-6">
       <h2 className="text-2xl font-bold text-gray-900 mb-2">{title}</h2>
       <p className="text-sm text-gray-500">
-        {project.pdfAgreements && project.pdfAgreements.length > 0 ? (
+        {lastAgreement ? (
           <>
-            Last submitted on{' '}
-            {project.pdfAgreements[project.pdfAgreements.length - 1].generatedAt
-              .toDate()
-              .toLocaleDateString()}
-            .
+            Last submitted on {toDate(lastAgreement.generatedAt).toLocaleDateString()}.
             {!isReadOnly && project.editDeadline && (
               <>
                 {' '}
