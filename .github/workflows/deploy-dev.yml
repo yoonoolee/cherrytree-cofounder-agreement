@@ -1,6 +1,9 @@
 name: Deploy to Dev
 
+# No `dev` branch exists today, so this runs from the Actions tab (workflow_dispatch);
+# day to day, dev is deployed locally with npm run deploy:dev.
 on:
+  workflow_dispatch:
   push:
     branches:
       - dev
