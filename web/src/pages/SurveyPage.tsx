@@ -1,18 +1,18 @@
-import React, { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import Survey from '../components/Survey';
-import { projectRef } from '../lib/firebase';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { serverTimestamp, updateDoc } from 'firebase/firestore';
 
+import Survey from '../components/Survey.tsx';
+import { useProjectId } from '../hooks/useProjectId.ts';
+import { projectRef } from '../lib/firebase.ts';
+
 function SurveyPage() {
-  const { projectId } = useParams();
+  const projectId = useProjectId();
   const navigate = useNavigate();
 
   // Update lastOpened timestamp when project is accessed
   useEffect(() => {
     const updateLastOpened = async () => {
-      if (!projectId) return;
-
       try {
         await updateDoc(projectRef(projectId), { lastOpened: serverTimestamp() });
       } catch (error) {

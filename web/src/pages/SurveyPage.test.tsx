@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 import type Survey from '../components/Survey.tsx';
-import SurveyPage from './SurveyPage';
+import SurveyPage from './SurveyPage.tsx';
 
 const mocks = vi.hoisted(() => ({
   surveyProps: null as null | Record<string, unknown>,
