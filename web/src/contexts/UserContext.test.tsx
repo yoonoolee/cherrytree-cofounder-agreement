@@ -148,6 +148,39 @@ describe('UserProvider', () => {
     expect(read()).toMatchObject({ displayName: 'ada', profile: null });
   });
 
+  it('switching users is loading, with no stale profile, until their document arrives', async () => {
+    const view = renderProvider();
+    await waitFor(() => expect(mocks.onSnapshot).toHaveBeenCalledTimes(1));
+    emitProfile({ firstName: 'Ada', lastName: 'Lovelace' });
+    expect(read()).toMatchObject({ loading: false, displayName: 'Ada Lovelace', userId: 'user_1' });
+
+    mocks.clerk.useUser.mockReturnValue({
+      user: { id: 'user_2', primaryEmailAddress: { emailAddress: 'grace@example.com' } },
+      isLoaded: true,
+    });
+    view.rerender(
+      <UserProvider>
+        <Probe />
+      </UserProvider>,
+    );
+    await waitFor(() =>
+      expect(mocks.onSnapshot).toHaveBeenCalledWith(
+        { path: 'users/user_2' },
+        expect.any(Function),
+        expect.any(Function),
+      ),
+    );
+    expect(read()).toEqual({
+      loading: true,
+      displayName: 'grace',
+      userId: 'user_2',
+      profile: null,
+    });
+
+    emitProfile({ firstName: 'Grace', lastName: 'Hopper' });
+    expect(read()).toMatchObject({ loading: false, displayName: 'Grace Hopper', userId: 'user_2' });
+  });
+
   it('stays loading when the Firebase exchange fails (pinned; no error state today)', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     mocks.callFunction.mockRejectedValue(new Error('app-check'));
