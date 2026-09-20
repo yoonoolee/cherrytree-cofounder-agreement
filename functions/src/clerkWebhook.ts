@@ -49,6 +49,11 @@ function firebaseAuthProfile(
   };
 }
 
+/** `CreateRequest.photoURL` cannot be `null` (nothing to clear on a new user); `UpdateRequest`'s can. */
+function createAuthUser(uid: string, profile: ReturnType<typeof firebaseAuthProfile>) {
+  return auth.createUser({ uid, ...profile, photoURL: profile.photoURL ?? undefined });
+}
+
 /** `code` of a Firebase Auth error, if any. */
 function authErrorCode(error: unknown): string | undefined {
   return typeof error === 'object' && error !== null && 'code' in error
@@ -61,7 +66,7 @@ async function handleUserCreated(user: UserJSON): Promise<void> {
   if (!user.id || !primaryEmail) return;
 
   try {
-    await auth.createUser({ uid: user.id, ...firebaseAuthProfile(user, primaryEmail) });
+    await createAuthUser(user.id, firebaseAuthProfile(user, primaryEmail));
   } catch (error) {
     // A redelivered event finds the user already there.
     if (authErrorCode(error) !== 'auth/uid-already-exists') {
@@ -96,7 +101,7 @@ async function handleUserUpdated(user: UserJSON): Promise<void> {
     } else {
       // Users that predate the webhook are created on their first update.
       try {
-        await auth.createUser({ uid: user.id, ...profile });
+        await createAuthUser(user.id, profile);
       } catch (createError) {
         logger.error('Error creating Firebase Auth user:', createError);
       }

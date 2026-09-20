@@ -194,7 +194,7 @@ describe('user.created', () => {
     });
 
     expect(authMock.createUser).toHaveBeenCalledWith(
-      expect.objectContaining({ displayName: 'ada', photoURL: null, emailVerified: false }),
+      expect.objectContaining({ displayName: 'ada', photoURL: undefined, emailVerified: false }),
     );
     expect(collections.users.store.get(USER)).toMatchObject({
       firstName: '',
