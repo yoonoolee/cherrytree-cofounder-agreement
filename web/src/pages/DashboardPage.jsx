@@ -12,8 +12,6 @@ function DashboardPage() {
   const { currentUser, loading: authLoading, userMemberships, orgsLoaded } = useUser();
   const { openUserProfile } = useClerk();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showReferPopup, setShowReferPopup] = useState(false);
-  const [referLinkCopied, setReferLinkCopied] = useState(false);
 
   const { projects, loading } = useProjects(currentUser, userMemberships, orgsLoaded, authLoading);
 
@@ -652,62 +650,6 @@ function DashboardPage() {
           </div>
         </button>
       </main>
-
-      {/* Refer a Friend popup */}
-      {showReferPopup && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
-          onClick={() => {
-            setShowReferPopup(false);
-            setReferLinkCopied(false);
-          }}
-        >
-          <div
-            className="bg-white rounded-lg shadow-xl p-10 max-w-lg w-full mx-4 relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => {
-                setShowReferPopup(false);
-                setReferLinkCopied(false);
-              }}
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Refer a Friend</h3>
-            <p className="text-sm text-gray-500 mb-6">
-              Share Cherrytree with a friend. When they sign up, you both get a reward.
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                readOnly
-                value={`${window.location.origin}?ref=${currentUser?.id || ''}`}
-                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-600"
-              />
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(
-                    `${window.location.origin}?ref=${currentUser?.id || ''}`,
-                  );
-                  setReferLinkCopied(true);
-                }}
-                className="py-2 bg-[#06271D] text-white text-sm rounded-lg hover:bg-[#0a3d2b] transition w-20 text-center flex-shrink-0"
-              >
-                {referLinkCopied ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} />}
     </div>
