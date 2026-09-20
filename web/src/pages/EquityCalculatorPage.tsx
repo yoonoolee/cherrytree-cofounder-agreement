@@ -1,18 +1,33 @@
-import React, { useState, useEffect, useRef } from 'react';
-import MarketingNav from '../components/MarketingNav';
-import MarketingFooter from '../components/MarketingFooter';
-import MarketingGrain from '../components/MarketingGrain';
-import { usePageMeta } from '../hooks/usePageMeta';
-import Spreadsheet from 'react-spreadsheet';
+import { useState, useEffect, useRef } from 'react';
+import Spreadsheet, { type CellBase, type Matrix } from 'react-spreadsheet';
+
+import MarketingNav from '../components/MarketingNav.tsx';
+import MarketingFooter from '../components/MarketingFooter.tsx';
+import MarketingGrain from '../components/MarketingGrain.tsx';
+import { usePageMeta } from '../hooks/usePageMeta.ts';
+import { calculateEquityPercentages } from '../utils/equityCalculation.ts';
+import { GROUPS } from '../utils/equitySplit.ts';
 import '../components/EquityCalculator.css';
-import { calculateEquityPercentages } from '../utils/equityCalculation';
-import { GROUPS } from '../utils/equitySplit';
+
+/**
+ * One sheet cell: a label in the header row and category column, a whole-number score
+ * elsewhere. react-spreadsheet hands an edited cell back as a string and a cleared one as
+ * `undefined`; handleChange normalises both.
+ */
+type SheetCell = CellBase<string | number | undefined>;
+type Sheet = Matrix<SheetCell>;
 
 /** Rows whose first cell is a group name are separators: read-only and never scored. */
-const GROUP_NAMES = new Set(GROUPS.map((g) => g.name));
+const GROUP_NAMES: ReadonlySet<string> = new Set(GROUPS.map((g) => g.name));
 
 /** The split as one bar segment per cofounder (greys from black to white) with a legend. */
-function EquityProgressBar({ equity, labels }) {
+function EquityProgressBar({
+  equity,
+  labels,
+}: {
+  equity: number[] | null;
+  labels: readonly string[];
+}) {
   if (!equity) {
     return null;
   }
@@ -84,25 +99,25 @@ function EquityCalculatorPage() {
   });
 
   const [numCofounders, setNumCofounders] = useState(2);
-  const [cofounderNames, setCofounderNames] = useState(['', '']);
+  const [cofounderNames, setCofounderNames] = useState<string[]>(['', '']);
   const [showCalculator, setShowCalculator] = useState(false);
-  const [wiggleIndex, setWiggleIndex] = useState(null);
+  const [wiggleIndex, setWiggleIndex] = useState<number | null>(null);
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
-  const spreadsheetRef = useRef(null);
+  const spreadsheetRef = useRef<HTMLDivElement>(null);
 
   // Get display name for cofounder
-  const getCofounderDisplayName = (index) => {
+  const getCofounderDisplayName = (index: number): string => {
     const name = cofounderNames[index]?.trim();
     if (name) {
-      return name.split(' ')[0]; // First name only
+      return name.split(' ')[0] ?? name; // First name only
     }
     return `Cofounder ${index + 1}`;
   };
 
   // Initialize spreadsheet data
-  const initializeData = () => {
-    const headerRow = [
+  const initializeData = (): Sheet => {
+    const headerRow: SheetCell[] = [
       { value: 'Category', readOnly: true, className: 'header-cell' },
       { value: 'Importance', readOnly: true, className: 'header-cell' },
       ...Array.from({ length: numCofounders }, (_, i) => ({
@@ -111,7 +126,7 @@ function EquityCalculatorPage() {
         className: 'header-cell',
       })),
     ];
-    const separatorRow = (name) => [
+    const separatorRow = (name: string): SheetCell[] => [
       { value: name, readOnly: true, className: 'category-cell separator-cell' },
       { value: '', readOnly: true, className: 'separator-cell' },
       ...Array.from({ length: numCofounders }, () => ({
@@ -120,7 +135,7 @@ function EquityCalculatorPage() {
         className: 'separator-cell',
       })),
     ];
-    const categoryRow = (name) => [
+    const categoryRow = (name: string): SheetCell[] => [
       { value: name, readOnly: true, className: 'category-cell' },
       { value: 0 },
       ...Array.from({ length: numCofounders }, () => ({ value: 0 })),
@@ -172,14 +187,16 @@ function EquityCalculatorPage() {
   const currentEquity = calculateEquityPercentages(data);
 
   // Handle spreadsheet changes
-  const handleChange = (newData) => {
+  const handleChange = (newData: Sheet) => {
     const preservedData = newData.map((row, rowIndex) => {
       return row.map((cell, colIndex) => {
+        if (!cell) return cell; // Matrix allows holes; the sheet never has any
+
         if (rowIndex === 0) {
           return { ...cell, readOnly: true, className: 'header-cell' };
         }
 
-        const isSeparatorRow = GROUP_NAMES.has(row[0]?.value);
+        const isSeparatorRow = GROUP_NAMES.has(String(row[0]?.value));
 
         if (colIndex === 0) {
           return {
@@ -205,8 +222,8 @@ function EquityCalculatorPage() {
           return { ...cell, value: oldValue };
         }
 
-        const numValue = parseInt(value, 10);
-        if (!isNaN(numValue) && numValue >= 0 && numValue <= 100) {
+        const numValue = parseInt(valueStr, 10);
+        if (!Number.isNaN(numValue) && numValue >= 0 && numValue <= 100) {
           return { ...cell, value: numValue };
         }
 
@@ -217,7 +234,7 @@ function EquityCalculatorPage() {
   };
 
   // Handle cofounder name change
-  const handleNameChange = (index, name) => {
+  const handleNameChange = (index: number, name: string) => {
     setCofounderNames((prev) => {
       const newNames = [...prev];
       newNames[index] = name;
@@ -229,7 +246,8 @@ function EquityCalculatorPage() {
   useEffect(() => {
     if (!showCalculator) return;
 
-    const handleClick = (e) => {
+    const handleClick = (e: MouseEvent) => {
+      if (!(e.target instanceof Element)) return;
       const cell = e.target.closest('.Spreadsheet__cell');
       if (cell && !cell.classList.contains('Spreadsheet__cell--readonly')) {
         e.preventDefault();
@@ -401,12 +419,7 @@ function EquityCalculatorPage() {
                       position: 'relative',
                     }}
                   >
-                    <Spreadsheet
-                      data={data}
-                      onChange={handleChange}
-                      columnLabels={false}
-                      rowLabels={false}
-                    />
+                    <Spreadsheet data={data} onChange={handleChange} />
                   </div>
                 </div>
 

@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 
 import { breadcrumbs } from '../test/pageMeta.ts';
-import EquityCalculatorPage from './EquityCalculatorPage';
+import EquityCalculatorPage from './EquityCalculatorPage.tsx';
 
 interface Cell {
   value: string | number;
