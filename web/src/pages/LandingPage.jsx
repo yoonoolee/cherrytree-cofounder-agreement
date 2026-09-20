@@ -13,26 +13,15 @@ import { MARKETING_PLANS } from '../constants/pricing';
 
 const S1_EMAILS = ['sarah@vc.io', 'priya@buildit.co', 'james@founder.io'];
 
-function PanelInvite({ active }) {
+function PanelInvite() {
   const [typed, setTyped] = useState('');
   const [showNew, setShowNew] = useState(false);
   const [pressed, setPressed] = useState(false);
   const [emailIdx, setEmailIdx] = useState(0);
-  const refs = useRef([]);
-
   useEffect(() => {
-    refs.current.forEach(clearTimeout);
-    refs.current = [];
-    if (!active) {
-      setTyped('');
-      setShowNew(false);
-      setPressed(false);
-      setEmailIdx(0);
-      return;
-    }
+    const timers = [];
     const t = (fn, ms) => {
-      const id = setTimeout(fn, ms);
-      refs.current.push(id);
+      timers.push(setTimeout(fn, ms));
     };
     let idx = 0;
     const type = () => {
@@ -57,8 +46,8 @@ function PanelInvite({ active }) {
       }, 180);
     };
     t(type, 800);
-    return () => refs.current.forEach(clearTimeout);
-  }, [active]);
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   return (
     <div className="lp-fp" style={{ backgroundImage: "url('/images/ambient.png?v=2')" }}>
@@ -105,24 +94,14 @@ const S2_QUESTIONS = [
   { q: 'Describe your company in one line.', a: 'AI tools for founders.' },
 ];
 
-function PanelCollab({ active }) {
+function PanelCollab() {
   const [answered, setAnswered] = useState([]);
   const [activeQ, setActiveQ] = useState(0);
   const [typed, setTyped] = useState('');
-  const refs = useRef([]);
-
   useEffect(() => {
-    refs.current.forEach(clearTimeout);
-    refs.current = [];
-    if (!active) {
-      setAnswered([]);
-      setActiveQ(0);
-      setTyped('');
-      return;
-    }
+    const timers = [];
     const t = (fn, ms) => {
-      const id = setTimeout(fn, ms);
-      refs.current.push(id);
+      timers.push(setTimeout(fn, ms));
     };
     const runQuestion = (idx) => {
       if (idx >= S2_QUESTIONS.length) {
@@ -149,8 +128,8 @@ function PanelCollab({ active }) {
       }, 80);
     };
     runQuestion(0);
-    return () => refs.current.forEach(clearTimeout);
-  }, [active]);
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   return (
     <div className="lp-fp" style={{ backgroundImage: "url('/images/wall.png?v=2')" }}>
@@ -186,34 +165,23 @@ function PanelCollab({ active }) {
   );
 }
 
-function PanelEquity({ active }) {
-  const cats = [
-    { name: 'Cash Invested', count: '1 / 18', imp: 5, scores: [8, 3] },
-    { name: 'Time Commitment', count: '2 / 18', imp: 8, scores: [9, 7] },
-    { name: 'Idea Origination', count: '3 / 18', imp: 6, scores: [7, 10] },
-  ];
-  const names = ['Alex Chen', 'Jordan Lee'];
+const S3_CATEGORIES = [
+  { name: 'Cash Invested', count: '1 / 18', imp: 5, scores: [8, 3] },
+  { name: 'Time Commitment', count: '2 / 18', imp: 8, scores: [9, 7] },
+  { name: 'Idea Origination', count: '3 / 18', imp: 6, scores: [7, 10] },
+];
+const S3_NAMES = ['Alex Chen', 'Jordan Lee'];
+
+function PanelEquity() {
   const [idx, setIdx] = useState(0);
   const [sliderPct, setSliderPct] = useState(0);
   const [sliderTransition, setSliderTransition] = useState(false);
   const [sliderVal, setSliderVal] = useState(null);
   const [selected, setSelected] = useState([null, null]);
-  const refs = useRef([]);
-
   useEffect(() => {
-    refs.current.forEach(clearTimeout);
-    refs.current = [];
-    if (!active) {
-      setIdx(0);
-      setSliderPct(0);
-      setSliderTransition(false);
-      setSliderVal(null);
-      setSelected([null, null]);
-      return;
-    }
+    const timers = [];
     const t = (fn, ms) => {
-      const id = setTimeout(fn, ms);
-      refs.current.push(id);
+      timers.push(setTimeout(fn, ms));
     };
     const run = (i) => {
       setIdx(i);
@@ -221,7 +189,7 @@ function PanelEquity({ active }) {
       setSliderTransition(false);
       setSliderVal(null);
       setSelected([null, null]);
-      const step = cats[i];
+      const step = S3_CATEGORIES[i];
       t(() => {
         setSliderTransition(true);
         setSliderPct(step.imp * 10);
@@ -239,14 +207,13 @@ function PanelEquity({ active }) {
         );
       });
       const totalDelay = 700 + step.scores.length * 420 + 800;
-      t(() => run((i + 1) % cats.length), totalDelay);
+      t(() => run((i + 1) % S3_CATEGORIES.length), totalDelay);
     };
     run(0);
-    return () => refs.current.forEach(clearTimeout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active]);
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
-  const cat = cats[idx];
+  const cat = S3_CATEGORIES[idx];
   return (
     <div className="lp-fp" style={{ backgroundImage: "url('/images/leaf.png?v=2')" }}>
       <div className="lp-fp-overlay" />
@@ -281,7 +248,7 @@ function PanelEquity({ active }) {
           <div className="lp-s1-label" style={{ marginTop: 10 }}>
             Score each cofounder
           </div>
-          {names.map((name, i) => (
+          {S3_NAMES.map((name, i) => (
             <div key={i} className="lp-s3-cf">
               <div className="lp-s3-cf-name">{name}</div>
               <div className="lp-s3-dots">
@@ -299,39 +266,31 @@ function PanelEquity({ active }) {
   );
 }
 
-function PanelReview({ active }) {
-  const sections = [
-    'Formation & Purpose',
-    'Cofounder Info',
-    'Equity Allocation',
-    'Vesting Schedule',
-    'Decision-Making',
-  ];
-  const [done, setDone] = useState([]);
-  const refs = useRef([]);
+const S2R_SECTIONS = [
+  'Formation & Purpose',
+  'Cofounder Info',
+  'Equity Allocation',
+  'Vesting Schedule',
+  'Decision-Making',
+];
 
+function PanelReview() {
+  const [done, setDone] = useState([]);
   useEffect(() => {
-    refs.current.forEach(clearTimeout);
-    refs.current = [];
-    if (!active) {
-      setDone([]);
-      return;
-    }
+    const timers = [];
     const t = (fn, ms) => {
-      const id = setTimeout(fn, ms);
-      refs.current.push(id);
+      timers.push(setTimeout(fn, ms));
     };
     const run = () => {
       setDone([]);
-      sections.forEach((_, i) => t(() => setDone((p) => [...p, i]), 500 + i * 650));
-      t(run, 500 + sections.length * 650 + 2000);
+      S2R_SECTIONS.forEach((_, i) => t(() => setDone((p) => [...p, i]), 500 + i * 650));
+      t(run, 500 + S2R_SECTIONS.length * 650 + 2000);
     };
     run();
-    return () => refs.current.forEach(clearTimeout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active]);
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
-  const pct = (done.length / sections.length) * 100;
+  const pct = (done.length / S2R_SECTIONS.length) * 100;
   return (
     <div className="lp-fp" style={{ backgroundImage: "url('/images/paper.png?v=2')" }}>
       <div className="lp-fp-overlay" />
@@ -344,7 +303,7 @@ function PanelReview({ active }) {
             <div className="lp-s2r-fill" style={{ width: `${pct}%` }} />
           </div>
           <div className="lp-s2r-list">
-            {sections.map((s, i) => (
+            {S2R_SECTIONS.map((s, i) => (
               <div key={i} className={`lp-s2r-row${done.includes(i) ? ' done' : ''}`}>
                 <span className="lp-s2r-check">{done.includes(i) ? '✓' : ''}</span>
                 <span>{s}</span>
@@ -363,22 +322,13 @@ const S4_MSGS = [
   { text: "I'd recommend 4-year vest with a 1-year cliff for both founders.", sent: false },
 ];
 
-function PanelExpert({ active }) {
+function PanelExpert() {
   const [shown, setShown] = useState([]);
   const [typingIdx, setTypingIdx] = useState(null);
-  const refs = useRef([]);
-
   useEffect(() => {
-    refs.current.forEach(clearTimeout);
-    refs.current = [];
-    if (!active) {
-      setShown([]);
-      setTypingIdx(null);
-      return;
-    }
+    const timers = [];
     const t = (fn, ms) => {
-      const id = setTimeout(fn, ms);
-      refs.current.push(id);
+      timers.push(setTimeout(fn, ms));
     };
     const showMsg = (idx) => {
       if (idx >= S4_MSGS.length) {
@@ -405,8 +355,8 @@ function PanelExpert({ active }) {
       }
     };
     showMsg(0);
-    return () => refs.current.forEach(clearTimeout);
-  }, [active]);
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   return (
     <div className="lp-fp" style={{ backgroundImage: "url('/images/chalk.png?v=2')" }}>
@@ -471,14 +421,12 @@ function HeroVisual() {
   const [ipCo, setIpCo] = useState('');
   const [ipJur, setIpJur] = useState('');
   const [clicking, setClicking] = useState(null);
-  const refs = useRef([]);
-  const activeIdxRef = useRef(0);
-
   useEffect(() => {
+    const timers = [];
     const t = (fn, ms) => {
-      const id = setTimeout(fn, ms);
-      refs.current.push(id);
+      timers.push(setTimeout(fn, ms));
     };
+    let currentIdx = 0;
 
     const clickContinue = (key, then) => {
       setClicking(key);
@@ -556,11 +504,11 @@ function HeroVisual() {
 
     const goTo = (idx) => {
       const next = idx % HV_SCENES.length;
-      setExitIdx(activeIdxRef.current);
+      setExitIdx(currentIdx);
       setActiveIdx(null);
       t(() => setExitIdx(null), 500);
       t(() => {
-        activeIdxRef.current = next;
+        currentIdx = next;
         setActiveIdx(next);
         setSidebar(HV_SCENES[next]);
         runScene(next);
@@ -568,11 +516,7 @@ function HeroVisual() {
     };
 
     t(() => runScene0(), 2400);
-    return () => {
-      refs.current.forEach(clearTimeout);
-      refs.current = [];
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => timers.forEach(clearTimeout);
   }, []);
 
   const screenCls = (i) =>
@@ -988,7 +932,7 @@ function LandingPage() {
         </div>
         <div className="lp-feat-body">
           <div className="lp-feat-visual">
-            <ActivePanel active={true} key={activeFeature} />
+            <ActivePanel key={activeFeature} />
           </div>
           <div className="lp-feat-list">
             {FEATURES.map((f, i) => (
