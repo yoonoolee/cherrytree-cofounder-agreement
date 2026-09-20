@@ -6,6 +6,7 @@ import { useEnterpriseCardHeight } from '../hooks/useEnterpriseCardHeight';
 import MarketingNav from '../components/MarketingNav';
 import MarketingFooter from '../components/MarketingFooter';
 import MarketingGrain from '../components/MarketingGrain';
+import FaqList from '../components/FaqList';
 
 // ── Panel sub-components ───────────────────────────────────────────────────────
 
@@ -854,8 +855,6 @@ function LandingPage() {
 
   // Hero typewriter — types once, cursor stays
   const typedHero = useTypewriter('with great company.');
-  const [openFaq, setOpenFaq] = useState(null);
-  const [hoveredFaq, setHoveredFaq] = useState(null);
   const [activeFeature, setActiveFeature] = useState(0);
   const [carouselIdx, setCarouselIdx] = useState(0);
   const [counts, setCounts] = useState(STATS.map(() => 0));
@@ -1255,31 +1254,7 @@ function LandingPage() {
           <div className="lp-faq-header">
             <h2 className="lp-rv lp-d1">FAQ</h2>
           </div>
-          <div className="lp-faq-list">
-            {FAQS.map((f, i) => {
-              const expanded = openFaq === i || hoveredFaq === i;
-              return (
-                <div
-                  key={i}
-                  className={`lp-faq-item lp-rv lp-d${Math.min(i, 4)}`}
-                  onMouseEnter={() => setHoveredFaq(i)}
-                  onMouseLeave={() => setHoveredFaq((prev) => (prev === i ? null : prev))}
-                >
-                  <button
-                    className="lp-faq-btn"
-                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  >
-                    <span className="lp-faq-q">{f.q}</span>
-                  </button>
-                  <div className={`lp-faq-body${expanded ? ' open' : ''}`}>
-                    <div className="lp-faq-body-inner">
-                      <p className="lp-faq-a">{f.a}</p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <FaqList faqs={FAQS} reveal />
         </div>
       </section>
 

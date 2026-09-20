@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { usePageMeta } from '../hooks/usePageMeta.ts';
@@ -7,6 +7,7 @@ import { useTypewriter } from '../hooks/useTypewriter.ts';
 import MarketingNav from '../components/MarketingNav.tsx';
 import MarketingFooter from '../components/MarketingFooter.tsx';
 import MarketingGrain from '../components/MarketingGrain.tsx';
+import FaqList, { type Faq } from '../components/FaqList.tsx';
 import { goToDashboard } from '../utils/goToDashboard.ts';
 
 interface Plan {
@@ -29,11 +30,6 @@ interface CompareRow {
   b: boolean;
   s: boolean;
   e: boolean;
-}
-
-interface Faq {
-  q: string;
-  a: string;
 }
 
 const PLANS: readonly Plan[] = [
@@ -130,8 +126,6 @@ function Check({ on }: { on: boolean }) {
 
 function PricingPage() {
   const navigate = useNavigate();
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [hoveredFaq, setHoveredFaq] = useState<number | null>(null);
   // Protect CTA: types "and your peace of mind." on an infinite loop — type out,
   // hold, clear, and after a slight pause type it out again.
   const typedProtect = useTypewriter('and your peace of mind.', { charDelay: 46, holdDelay: 2200 });
@@ -285,31 +279,7 @@ function PricingPage() {
             <div className="lp-overline">FAQ</div>
             <h2>Common questions.</h2>
           </div>
-          <div className="lp-faq-list">
-            {FAQS.map((f, i) => {
-              const expanded = openFaq === i || hoveredFaq === i;
-              return (
-                <div
-                  key={i}
-                  className="lp-faq-item"
-                  onMouseEnter={() => setHoveredFaq(i)}
-                  onMouseLeave={() => setHoveredFaq((prev) => (prev === i ? null : prev))}
-                >
-                  <button
-                    className="lp-faq-btn"
-                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  >
-                    <span className="lp-faq-q">{f.q}</span>
-                  </button>
-                  <div className={`lp-faq-body${expanded ? ' open' : ''}`}>
-                    <div className="lp-faq-body-inner">
-                      <p className="lp-faq-a">{f.a}</p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <FaqList faqs={FAQS} />
         </div>
       </section>
 
