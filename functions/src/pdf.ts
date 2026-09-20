@@ -91,7 +91,10 @@ function isActiveCollaborator(project: Project, userId: string): boolean {
   return project.collaborators?.[userId]?.history?.some((entry) => entry.endAt === null) ?? false;
 }
 
-/** Generates the final agreement PDF and records it on the project. Admin only. */
+/**
+ * Generates the final agreement PDF and records it on the project. Admin only, and only once
+ * every active collaborator has approved.
+ */
 export const submitSurvey = onCall(
   { ...CALLABLE_OPTIONS, secrets: [MAKE_WEBHOOK_URL] },
   async (
@@ -105,6 +108,19 @@ export const submitSurvey = onCall(
 
       if (project.admin !== userId) {
         throw new HttpsError('permission-denied', 'Only the project admin can submit');
+      }
+
+      // Every active collaborator (admin included) must have approved the current survey data.
+      // The client resets `approvals` to {} on each edit and removed members lose their entry,
+      // so a stale or partial approval set never reaches the final PDF.
+      const pending = Object.keys(project.collaborators ?? {}).filter(
+        (id) => isActiveCollaborator(project, id) && project.approvals?.[id] !== true,
+      );
+      if (pending.length > 0) {
+        throw new HttpsError(
+          'failed-precondition',
+          'All collaborators must approve before you can submit',
+        );
       }
 
       // Read-only status is derived client-side from editDeadline + pdfAgreements.length,

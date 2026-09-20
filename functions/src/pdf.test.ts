@@ -45,6 +45,7 @@ function project(overrides: Record<string, unknown> = {}) {
         history: [{ startAt: new Date(0), endAt: new Date(1) }],
       },
     },
+    approvals: { [ADMIN]: true, [MEMBER]: true },
     surveyData: { companyName: 'Acme', entityType: 'Other', entityTypeOther: 'Cooperative' },
     lastUpdated: timestamp('2026-01-01T00:00:00Z'),
     ...overrides,
@@ -127,6 +128,33 @@ describe('submitSurvey', () => {
       await codeOf(submitSurvey.run(call(MEMBER, { projectId: 'proj_1', userId: ADMIN }))),
     ).toBe('permission-denied');
     expect(post).not.toHaveBeenCalled();
+  });
+
+  it('refuses to submit until every active collaborator has approved', async () => {
+    const attempt = () => codeOf(submitSurvey.run(call(ADMIN, { projectId: 'proj_1' })));
+
+    // Legacy project without the field, and the client's reset to {} after a survey edit.
+    projects.current = fakeCollection({ proj_1: project({ approvals: undefined }) });
+    expect(await attempt()).toBe('failed-precondition');
+    projects.current = fakeCollection({ proj_1: project({ approvals: {} }) });
+    expect(await attempt()).toBe('failed-precondition');
+
+    // One active member still pending; the removed OUTSIDER's approval is neither required
+    // nor sufficient.
+    projects.current = fakeCollection({
+      proj_1: project({ approvals: { [ADMIN]: true, [MEMBER]: false, [OUTSIDER]: true } }),
+    });
+    expect(await attempt()).toBe('failed-precondition');
+    projects.current = fakeCollection({ proj_1: project({ approvals: { [ADMIN]: true } }) });
+    expect(await attempt()).toBe('failed-precondition');
+    expect(post).not.toHaveBeenCalled();
+
+    projects.current = fakeCollection({
+      proj_1: project({ approvals: { [ADMIN]: true, [MEMBER]: true } }),
+    });
+    await expect(submitSurvey.run(call(ADMIN, { projectId: 'proj_1' }))).resolves.toMatchObject({
+      success: true,
+    });
   });
 
   it('posts the escaped payload to Make.com and records the trusted PDF URL', async () => {
