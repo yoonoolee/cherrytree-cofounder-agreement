@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { usePageMeta } from '../hooks/usePageMeta.ts';
+import { useTypewriter } from '../hooks/useTypewriter.ts';
 import MarketingNav from '../components/MarketingNav.tsx';
 import MarketingFooter from '../components/MarketingFooter.tsx';
 import MarketingGrain from '../components/MarketingGrain.tsx';
@@ -130,8 +131,9 @@ function PricingPage() {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [hoveredFaq, setHoveredFaq] = useState<number | null>(null);
-  const [typedProtect, setTypedProtect] = useState('');
-  const protectTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Protect CTA: types "and your peace of mind." on an infinite loop — type out,
+  // hold, clear, and after a slight pause type it out again.
+  const typedProtect = useTypewriter('and your peace of mind.', { charDelay: 46, holdDelay: 2200 });
 
   usePageMeta({
     title: 'Pricing — Cherrytree',
@@ -158,33 +160,6 @@ function PricingPage() {
     return () => {
       const el = document.getElementById('faq-schema');
       if (el) document.head.removeChild(el);
-    };
-  }, []);
-
-  // Protect CTA: types "and your peace of mind." on an infinite loop — type out,
-  // hold, clear, and after a slight pause type it out again.
-  useEffect(() => {
-    const target = 'and your peace of mind.';
-    const t = (fn: () => void, ms: number) => {
-      const id = setTimeout(fn, ms);
-      protectTimersRef.current.push(id);
-    };
-    const cycle = () => {
-      setTypedProtect('');
-      let i = 0;
-      const typeTick = () => {
-        if (i < target.length) {
-          i++;
-          setTypedProtect(target.slice(0, i));
-          t(typeTick, 46);
-        } else t(cycle, 2200);
-      };
-      t(typeTick, 46);
-    };
-    t(cycle, 600);
-    return () => {
-      protectTimersRef.current.forEach(clearTimeout);
-      protectTimersRef.current = [];
     };
   }, []);
 

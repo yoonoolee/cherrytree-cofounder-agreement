@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePageMeta } from '../hooks/usePageMeta';
+import { useTypewriter } from '../hooks/useTypewriter';
 import MarketingNav from '../components/MarketingNav';
 import MarketingFooter from '../components/MarketingFooter';
 import MarketingGrain from '../components/MarketingGrain';
@@ -850,15 +851,17 @@ function LandingPage() {
       'Answer guided questions with your cofounders and get a complete Cofounder Agreement. No sketchy templates, no overpriced lawyers.',
   });
 
-  const [typedHero, setTypedHero] = useState('');
+  // Hero typewriter — types once, cursor stays
+  const typedHero = useTypewriter('with great company.');
   const [openFaq, setOpenFaq] = useState(null);
   const [hoveredFaq, setHoveredFaq] = useState(null);
   const [activeFeature, setActiveFeature] = useState(0);
   const [carouselIdx, setCarouselIdx] = useState(0);
   const [counts, setCounts] = useState(STATS.map(() => 0));
   const [lineIn, setLineIn] = useState(STATS.map(() => false));
-  const [typedProtect, setTypedProtect] = useState('');
-  const protectTimersRef = useRef([]);
+  // Protect CTA: types "and your peace of mind." on an infinite loop — type out,
+  // hold, clear, and after a slight pause type it out again.
+  const typedProtect = useTypewriter('and your peace of mind.', { charDelay: 46, holdDelay: 2200 });
   const statRowRefs = useRef([]);
   const featItemRefs = useRef([]);
   const pricingCardRefs = useRef([]);
@@ -893,19 +896,6 @@ function LandingPage() {
     );
     els.forEach((el) => obs.observe(el));
     return () => obs.disconnect();
-  }, []);
-
-  // Hero typewriter — types once, cursor stays
-  useEffect(() => {
-    const target = 'with great company.';
-    let i = 0;
-    const tick = () => {
-      if (i >= target.length) return;
-      i++;
-      setTypedHero(target.slice(0, i));
-      setTimeout(tick, 60);
-    };
-    setTimeout(tick, 600);
   }, []);
 
   // Feature switching via scroll
@@ -967,33 +957,6 @@ function LandingPage() {
       return obs;
     });
     return () => observers.forEach((o) => o && o.disconnect());
-  }, []);
-
-  // Protect CTA: types "and your peace of mind." on an infinite loop — type out,
-  // hold, clear, and after a slight pause type it out again.
-  useEffect(() => {
-    const target = 'and your peace of mind.';
-    const t = (fn, ms) => {
-      const id = setTimeout(fn, ms);
-      protectTimersRef.current.push(id);
-    };
-    const cycle = () => {
-      setTypedProtect('');
-      let i = 0;
-      const typeTick = () => {
-        if (i < target.length) {
-          i++;
-          setTypedProtect(target.slice(0, i));
-          t(typeTick, 46);
-        } else t(cycle, 2200);
-      };
-      t(typeTick, 46);
-    };
-    t(cycle, 600);
-    return () => {
-      protectTimersRef.current.forEach(clearTimeout);
-      protectTimersRef.current = [];
-    };
   }, []);
 
   // Enterprise has fewer features than Bootstrapped, so it naturally renders shorter.
