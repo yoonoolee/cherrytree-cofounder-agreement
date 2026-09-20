@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Survey from '../components/Survey';
-import { db } from '../lib/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { projectRef } from '../lib/firebase';
+import { serverTimestamp, updateDoc } from 'firebase/firestore';
 
 function SurveyPage() {
   const { projectId } = useParams();
@@ -14,10 +14,7 @@ function SurveyPage() {
       if (!projectId) return;
 
       try {
-        const projectRef = doc(db, 'projects', projectId);
-        await updateDoc(projectRef, {
-          lastOpened: new Date(),
-        });
+        await updateDoc(projectRef(projectId), { lastOpened: serverTimestamp() });
       } catch (error) {
         console.error('Error updating lastOpened:', error);
       }
