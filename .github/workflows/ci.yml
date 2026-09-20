@@ -7,8 +7,8 @@ on:
       - dev
 
 jobs:
-  build-and-test:
-    name: Build and Test
+  check:
+    name: Lint, typecheck, test, build
     runs-on: ubuntu-latest
 
     steps:
@@ -18,16 +18,28 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            functions/package-lock.json
+
+      # The Firestore emulator (npm run test:rules) is a Java process.
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm --prefix functions ci
 
-      - name: Create web/.env.production for build test
+      # Vite inlines VITE_* keys at build time; placeholders keep the CI bundle representative.
+      - name: Create web/.env.production for the build
         run: |
           cat > web/.env.production << EOF
-          # CI Build Test Environment
           VITE_APP_URL=https://my.cherrytree.app
           VITE_GOOGLE_MAPS_API_KEY=test_key
           VITE_FIREBASE_API_KEY=test_key
@@ -41,13 +53,26 @@ jobs:
           VITE_CLERK_PUBLISHABLE_KEY=pk_test_test
           EOF
 
-      - name: Build application
-        run: npm run build
+      # lint + format check + typecheck + unit tests + production build (web/dist)
+      - name: Check
+        run: npm run check
 
-      - name: Verify build output
+      - name: Unused files, exports and dependencies
+        run: npm run knip
+
+      # functions/ has its own lockfile, so the root audit does not cover it.
+      - name: Audit dependencies
         run: |
-          if [ ! -d "build" ]; then
-            echo "❌ Build directory not found!"
-            exit 1
-          fi
-          echo "✅ Build successful - ready for deployment"
+          npm audit --audit-level=high
+          npm --prefix functions audit --audit-level=high
+
+      - name: Cache Firebase emulators
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Firestore rules tests
+        run: |
+          npm install -g firebase-tools@15
+          npm run test:rules
