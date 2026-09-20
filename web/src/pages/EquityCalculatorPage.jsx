@@ -6,6 +6,10 @@ import { usePageMeta } from '../hooks/usePageMeta';
 import Spreadsheet from 'react-spreadsheet';
 import '../components/EquityCalculator.css';
 import { calculateEquityPercentages } from '../utils/equityCalculation';
+import { GROUPS } from '../utils/equitySplit';
+
+/** Rows whose first cell is a group name are separators: read-only and never scored. */
+const GROUP_NAMES = new Set(GROUPS.map((g) => g.name));
 
 /** The split as one bar segment per cofounder (greys from black to white) with a legend. */
 function EquityProgressBar({ equity, labels }) {
@@ -126,65 +130,37 @@ function EquityCalculatorPage() {
 
   // Initialize spreadsheet data
   const initializeData = () => {
-    const rows = [
-      'Category',
-      'Input',
-      'Cash Invested',
-      'Time Commitment',
-      'Existing Work & IP',
-      'Equipment & Tools',
-      'Execution',
-      'Leadership & Management',
-      'Engineering',
-      'Sales',
-      'Product',
-      'Fundraising',
-      'Recruiting',
-      'Operations',
-      'Intangibles',
-      'Domain Expertise',
-      'Network Value',
-      'Irreplaceability',
-      'Role Scalability',
-      'Opportunity Cost',
-      'Risk Tolerance',
-      'Idea Origination',
+    const headerRow = [
+      { value: 'Category', readOnly: true, className: 'header-cell' },
+      { value: 'Importance', readOnly: true, className: 'header-cell' },
+      ...Array.from({ length: numCofounders }, (_, i) => ({
+        value: getCofounderDisplayName(i),
+        readOnly: true,
+        className: 'header-cell',
+      })),
+    ];
+    const separatorRow = (name) => [
+      { value: name, readOnly: true, className: 'category-cell separator-cell' },
+      { value: '', readOnly: true, className: 'separator-cell' },
+      ...Array.from({ length: numCofounders }, () => ({
+        value: '',
+        readOnly: true,
+        className: 'separator-cell',
+      })),
+    ];
+    const categoryRow = (name) => [
+      { value: name, readOnly: true, className: 'category-cell' },
+      { value: 0 },
+      ...Array.from({ length: numCofounders }, () => ({ value: 0 })),
     ];
 
-    return rows.map((rowLabel, index) => {
-      // Header row
-      if (index === 0) {
-        return [
-          { value: 'Category', readOnly: true, className: 'header-cell' },
-          { value: 'Importance', readOnly: true, className: 'header-cell' },
-          ...Array.from({ length: numCofounders }, (_, i) => ({
-            value: getCofounderDisplayName(i),
-            readOnly: true,
-            className: 'header-cell',
-          })),
-        ];
-      }
-
-      // Section headers
-      if (rowLabel === 'Input' || rowLabel === 'Execution' || rowLabel === 'Intangibles') {
-        return [
-          { value: rowLabel, readOnly: true, className: 'category-cell separator-cell' },
-          { value: '', readOnly: true, className: 'separator-cell' },
-          ...Array.from({ length: numCofounders }, () => ({
-            value: '',
-            readOnly: true,
-            className: 'separator-cell',
-          })),
-        ];
-      }
-
-      // Regular rows
-      return [
-        { value: rowLabel, readOnly: true, className: 'category-cell' },
-        { value: 0 },
-        ...Array.from({ length: numCofounders }, () => ({ value: 0 })),
-      ];
-    });
+    return [
+      headerRow,
+      ...GROUPS.flatMap((group) => [
+        separatorRow(group.name),
+        ...group.categories.map(categoryRow),
+      ]),
+    ];
   };
 
   const [data, setData] = useState(initializeData());
@@ -208,11 +184,7 @@ function EquityCalculatorPage() {
           return { ...cell, readOnly: true, className: 'header-cell' };
         }
 
-        const categoryName = row[0]?.value;
-        const isSeparatorRow =
-          categoryName === 'Input' ||
-          categoryName === 'Execution' ||
-          categoryName === 'Intangibles';
+        const isSeparatorRow = GROUP_NAMES.has(row[0]?.value);
 
         if (colIndex === 0) {
           return {
