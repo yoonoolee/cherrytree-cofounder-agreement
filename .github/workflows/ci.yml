@@ -8,7 +8,8 @@ on:
 
 jobs:
   check:
-    name: Lint, typecheck, test, build
+    # The name is a required status check in master's branch protection; renaming it blocks merges.
+    name: Build and Test
     runs-on: ubuntu-latest
 
     steps:
