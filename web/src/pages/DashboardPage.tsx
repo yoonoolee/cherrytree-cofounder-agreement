@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserButton, useClerk } from '@clerk/clerk-react';
+import { UserButton, useClerk } from '@clerk/react';
 import { FIELDS } from '@cherrytree/shared';
 
 import { useUser } from '../hooks/useUser.ts';

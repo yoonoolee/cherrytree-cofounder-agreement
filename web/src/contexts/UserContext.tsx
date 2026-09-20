@@ -1,5 +1,5 @@
 import { useState, useEffect, type ReactNode } from 'react';
-import { useUser as useClerkUser, useAuth, useOrganizationList } from '@clerk/clerk-react';
+import { useUser as useClerkUser, useAuth, useOrganizationList } from '@clerk/react';
 import { onSnapshot } from 'firebase/firestore';
 import { signInWithCustomToken, signOut as firebaseSignOut } from 'firebase/auth';
 import type { UserDoc } from '@cherrytree/shared';

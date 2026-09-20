@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { ClerkProvider } from '@clerk/clerk-react';
+import { ClerkProvider } from '@clerk/react';
 import { Toaster } from 'react-hot-toast';
 import * as Sentry from '@sentry/react';
 

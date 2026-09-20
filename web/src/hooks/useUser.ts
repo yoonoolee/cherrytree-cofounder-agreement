@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react';
 import type {
   useUser as useClerkUser,
   useOrganizationList as UseOrganizationList,
-} from '@clerk/clerk-react';
+} from '@clerk/react';
 import type { UserDoc } from '@cherrytree/shared';
 
 /** The signed-in Clerk user, as `useUser` from Clerk exposes it. */

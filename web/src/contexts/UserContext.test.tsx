@@ -20,7 +20,7 @@ const mocks = vi.hoisted(() => ({
   snapshotListeners: [] as SnapshotHandler[],
 }));
 
-vi.mock('@clerk/clerk-react', () => mocks.clerk);
+vi.mock('@clerk/react', () => mocks.clerk);
 vi.mock('firebase/auth', () => ({
   signInWithCustomToken: mocks.signInWithCustomToken,
   signOut: mocks.signOut,

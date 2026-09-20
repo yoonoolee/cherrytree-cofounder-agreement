@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useClerk } from '@clerk/clerk-react';
+import { useClerk } from '@clerk/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { CLERK_TICKET_PARAM, withClerkTicket } from '../utils/clerkTicket.ts';

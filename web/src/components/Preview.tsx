@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserButton } from '@clerk/clerk-react';
+import { UserButton } from '@clerk/react';
 import { toErrorMessage, type SectionId } from '@cherrytree/shared';
 
 import { callFunction } from '../lib/functions.ts';

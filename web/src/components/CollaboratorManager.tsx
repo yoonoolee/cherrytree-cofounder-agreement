@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useOrganization } from '@clerk/clerk-react';
+import { useOrganization } from '@clerk/react';
 import { toErrorMessage } from '@cherrytree/shared';
 
 import { callFunction } from '../lib/functions.ts';

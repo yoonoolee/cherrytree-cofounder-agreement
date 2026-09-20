@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
   org: {} as Record<string, unknown>,
 }));
 
-vi.mock('@clerk/clerk-react', () => ({ useOrganization: () => mocks.org }));
+vi.mock('@clerk/react', () => ({ useOrganization: () => mocks.org }));
 vi.mock('../lib/functions', () => ({ callFunction: mocks.callFunction }));
 
 const member = (userId: string, identifier: string, role = 'org:member') => ({

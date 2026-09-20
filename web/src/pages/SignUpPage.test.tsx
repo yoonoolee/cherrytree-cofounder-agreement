@@ -6,7 +6,7 @@ import SignUpPage from './SignUpPage.tsx';
 
 const mocks = vi.hoisted(() => ({ signUpProps: null as null | Record<string, unknown> }));
 
-vi.mock('@clerk/clerk-react', () => ({
+vi.mock('@clerk/react', () => ({
   SignUp: (props: Record<string, unknown>) => {
     mocks.signUpProps = props;
     return <div data-testid="sign-up" />;
@@ -32,11 +32,12 @@ describe('SignUpPage', () => {
     expect(breadcrumbs()).toEqual(['Home', 'Sign Up']);
   });
 
-  it("renders Clerk's SignUp with virtual routing and the dashboard as the landing page", () => {
+  it("renders Clerk's SignUp with path routing under /signup and the dashboard as the landing page", () => {
     renderPage('/signup');
     expect(screen.getByTestId('sign-up')).toBeInTheDocument();
     expect(mocks.signUpProps).toMatchObject({
-      routing: 'virtual',
+      routing: 'path',
+      path: '/signup',
       signInUrl: '/login',
       fallbackRedirectUrl: '/dashboard',
     });

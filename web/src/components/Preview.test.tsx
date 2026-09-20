@@ -28,7 +28,7 @@ vi.mock('../hooks/useProjectSync', () => ({
 }));
 vi.mock('../hooks/useUser', () => ({ useUser: () => mocks.user }));
 vi.mock('../lib/functions', () => ({ callFunction: mocks.callFunction }));
-vi.mock('@clerk/clerk-react', () => ({ UserButton: () => <div data-testid="user-button" /> }));
+vi.mock('@clerk/react', () => ({ UserButton: () => <div data-testid="user-button" /> }));
 // These children have their own tests; here they are stubs that record their props.
 vi.mock('./SurveyNavigation', () => ({
   default: (props: Record<string, unknown>) => {

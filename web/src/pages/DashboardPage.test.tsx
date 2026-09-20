@@ -23,7 +23,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('../hooks/useUser', () => ({ useUser: () => mocks.user }));
 vi.mock('../hooks/useProjects', () => ({ useProjects: () => mocks.projects }));
-vi.mock('@clerk/clerk-react', () => ({
+vi.mock('@clerk/react', () => ({
   UserButton: () => <div data-testid="user-button" />,
   useClerk: () => ({ openUserProfile: mocks.openUserProfile }),
 }));

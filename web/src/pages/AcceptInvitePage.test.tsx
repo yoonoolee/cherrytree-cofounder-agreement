@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('@clerk/clerk-react', () => ({ useClerk: () => mocks.clerk }));
+vi.mock('@clerk/react', () => ({ useClerk: () => mocks.clerk }));
 
 function Location() {
   const { pathname, search } = useLocation();

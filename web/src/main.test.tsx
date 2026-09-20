@@ -21,7 +21,7 @@ vi.mock('react-dom/client', () => ({
   createRoot: mocks.createRoot,
 }));
 vi.mock('@sentry/react', () => ({ init: mocks.sentryInit }));
-vi.mock('@clerk/clerk-react', () => ({
+vi.mock('@clerk/react', () => ({
   ClerkProvider: (props: Record<string, unknown> & { children: ReactNode }) => {
     mocks.clerkProps = props;
     return <div data-testid="clerk">{props.children}</div>;

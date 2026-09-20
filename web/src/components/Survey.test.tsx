@@ -73,7 +73,7 @@ vi.mock('../lib/firebase', () => ({
 vi.mock('@react-google-maps/api', () => ({
   useLoadScript: () => ({ isLoaded: mocks.mapsLoaded }),
 }));
-vi.mock('@clerk/clerk-react', () => ({
+vi.mock('@clerk/react', () => ({
   useAuth: () => ({ orgId: mocks.orgId }),
   UserButton: () => <div data-testid="user-button" />,
 }));

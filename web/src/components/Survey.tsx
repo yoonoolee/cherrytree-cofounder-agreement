@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, type ComponentType } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLoadScript, type Libraries } from '@react-google-maps/api';
 import { updateDoc, type UpdateData } from 'firebase/firestore';
-import { useAuth, UserButton } from '@clerk/clerk-react';
+import { useAuth, UserButton } from '@clerk/react';
 import {
   SECTION_IDS,
   SECTION_ORDER,

@@ -5,9 +5,9 @@ import ProtectedRoute from './ProtectedRoute.tsx';
 
 const mocks = vi.hoisted(() => ({ signedIn: true }));
 
-vi.mock('@clerk/clerk-react', () => ({
-  SignedIn: ({ children }: { children: ReactNode }) => (mocks.signedIn ? children : null),
-  SignedOut: ({ children }: { children: ReactNode }) => (mocks.signedIn ? null : children),
+vi.mock('@clerk/react', () => ({
+  Show: ({ children, fallback }: { children: ReactNode; fallback: ReactNode }) =>
+    mocks.signedIn ? children : fallback,
   RedirectToSignIn: () => <div>redirecting to sign in</div>,
 }));
 

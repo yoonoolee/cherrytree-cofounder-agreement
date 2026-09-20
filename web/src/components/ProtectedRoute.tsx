@@ -1,14 +1,11 @@
 import type { ReactNode } from 'react';
-import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
+import { Show, RedirectToSignIn } from '@clerk/react';
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   return (
-    <>
-      <SignedIn>{children}</SignedIn>
-      <SignedOut>
-        <RedirectToSignIn />
-      </SignedOut>
-    </>
+    <Show when="signed-in" fallback={<RedirectToSignIn />}>
+      {children}
+    </Show>
   );
 }
 
