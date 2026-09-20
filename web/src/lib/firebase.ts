@@ -1,6 +1,6 @@
 /**
  * Firebase SDK singletons and typed references to the collections the app reads and writes.
- * Import `db`/`auth`/`functions` for anything else; prefer the typed refs for documents.
+ * Import `auth`/`functions` for anything else; documents go through the typed refs.
  */
 import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
@@ -19,7 +19,7 @@ import { env } from './env.ts';
 import { castConverter } from './firestore.ts';
 
 const app = initializeApp(env.firebase);
-export const db = getFirestore(app);
+const db = getFirestore(app);
 export const functions = getFunctions(app, 'us-west2');
 export const auth = getAuth(app);
 

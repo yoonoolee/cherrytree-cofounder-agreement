@@ -49,7 +49,7 @@ const INPUT_TYPES = {
 export type QuestionFieldName = SurveyFieldName | keyof Cofounder;
 
 /** A radio/dropdown option: a plain value or a value with its own label (and optional blurb). */
-export interface QuestionOption {
+interface QuestionOption {
   value: string;
   label: string;
   description?: string;

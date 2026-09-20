@@ -13,7 +13,6 @@ vi.mock('firebase/firestore', () => ({
   serverTimestamp: mocks.serverTimestamp,
 }));
 vi.mock('../lib/firebase', () => ({
-  db: {},
   proWaitlist: { path: 'proWaitlist' },
 }));
 

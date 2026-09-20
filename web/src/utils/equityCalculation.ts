@@ -3,7 +3,7 @@
  */
 
 /** One spreadsheet cell: a label in the header row / category column, a number elsewhere. */
-export interface EquityCell {
+interface EquityCell {
   value?: string | number | null;
   readOnly?: boolean;
   className?: string;

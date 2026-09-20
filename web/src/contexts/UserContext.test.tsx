@@ -29,7 +29,6 @@ vi.mock('firebase/firestore', () => ({
   onSnapshot: mocks.onSnapshot,
 }));
 vi.mock('../lib/firebase', () => ({
-  db: {},
   auth: { name: 'auth' },
   userRef: (id: string) => ({ path: `users/${id}` }),
 }));

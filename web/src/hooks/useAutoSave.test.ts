@@ -14,7 +14,6 @@ vi.mock('firebase/firestore', () => ({
   serverTimestamp: () => SERVER_TIMESTAMP,
 }));
 vi.mock('../lib/firebase.ts', () => ({
-  db: {},
   projectRef: (id: string) => ({ path: `projects/${id}` }),
 }));
 

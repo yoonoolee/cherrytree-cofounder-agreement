@@ -13,7 +13,6 @@ vi.mock('firebase/firestore', () => ({
   updateDoc: mocks.updateDoc,
 }));
 vi.mock('../lib/firebase', () => ({
-  db: {},
   projectRef: (id: string) => ({ path: `projects/${id}` }),
 }));
 vi.mock('../contexts/UserContext', () => ({ useUser: () => mocks.user }));

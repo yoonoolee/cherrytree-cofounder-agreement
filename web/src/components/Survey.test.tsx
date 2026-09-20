@@ -68,7 +68,6 @@ vi.mock('firebase/firestore', () => ({
   serverTimestamp: () => SERVER_TIMESTAMP,
 }));
 vi.mock('../lib/firebase', () => ({
-  db: {},
   projectRef: (id: string) => ({ path: `projects/${id}` }),
 }));
 vi.mock('@react-google-maps/api', () => ({

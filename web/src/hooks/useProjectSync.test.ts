@@ -29,7 +29,6 @@ vi.mock('firebase/firestore', () => ({
   onSnapshot,
 }));
 vi.mock('../lib/firebase.ts', () => ({
-  db: {},
   projectRef: (id: string) => ({ path: `projects/${id}` }),
 }));
 

@@ -10,7 +10,6 @@ vi.mock('firebase/firestore', () => ({
   getDoc,
 }));
 vi.mock('../lib/firebase.ts', () => ({
-  db: {},
   projectRef: (id: string) => ({ path: `projects/${id}`, id }),
 }));
 

@@ -16,7 +16,6 @@ vi.mock('firebase/firestore', () => ({
   serverTimestamp: () => mocks.SERVER_TIMESTAMP,
 }));
 vi.mock('../lib/firebase', () => ({
-  db: {},
   projectRef: (id: string) => ({ path: `projects/${id}` }),
 }));
 // Survey has its own tests; the stub records its props.
