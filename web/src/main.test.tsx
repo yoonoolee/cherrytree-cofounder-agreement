@@ -45,7 +45,7 @@ const realLocation = window.location;
 /** Imports the entry module afresh (it runs at import time). */
 async function boot() {
   vi.resetModules();
-  await import('./main');
+  await import('./main.tsx');
 }
 
 /** The element tree handed to root.render, walked to a flat list of element types/test ids. */
@@ -91,6 +91,12 @@ describe('main', () => {
     expect(provider.querySelector('[data-testid="app"]')).not.toBeNull();
     expect(provider.querySelector('[data-testid="toaster"]')).not.toBeNull();
     expect(mocks.toasterProps).toMatchObject({ position: 'bottom-right' });
+  });
+
+  it('refuses to start without a #root element', async () => {
+    document.body.innerHTML = '';
+    await expect(boot()).rejects.toThrow('index.html has no #root element');
+    expect(mocks.render).not.toHaveBeenCalled();
   });
 
   it('refuses to start without the Clerk publishable key', async () => {

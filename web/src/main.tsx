@@ -1,12 +1,12 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
+import { createRoot } from 'react-dom/client';
 import { ClerkProvider } from '@clerk/clerk-react';
-import { UserProvider } from './contexts/UserContext';
 import { Toaster } from 'react-hot-toast';
 import * as Sentry from '@sentry/react';
-import { env } from './lib/env';
+
+import './index.css';
+import App from './App.tsx';
+import { UserProvider } from './contexts/UserContext.tsx';
+import { env } from './lib/env.ts';
 
 // Initialize Sentry for error tracking
 if (env.sentryDsn) {
@@ -28,8 +28,12 @@ if (!clerkPubKey) {
   throw new Error('Missing Clerk Publishable Key');
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
+const container = document.getElementById('root');
+if (!container) {
+  throw new Error('index.html has no #root element');
+}
+
+createRoot(container).render(
   <ClerkProvider
     publishableKey={clerkPubKey}
     appearance={{
