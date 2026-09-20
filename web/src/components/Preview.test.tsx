@@ -26,7 +26,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('../hooks/useProjectSync', () => ({
   useProjectSync: () => ({ project: mocks.project }),
 }));
-vi.mock('../contexts/UserContext', () => ({ useUser: () => mocks.user }));
+vi.mock('../hooks/useUser', () => ({ useUser: () => mocks.user }));
 vi.mock('../lib/functions', () => ({ callFunction: mocks.callFunction }));
 vi.mock('@clerk/clerk-react', () => ({ UserButton: () => <div data-testid="user-button" /> }));
 // These children have their own tests; here they are stubs that record their props.

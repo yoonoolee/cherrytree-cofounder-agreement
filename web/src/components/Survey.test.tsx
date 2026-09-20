@@ -77,7 +77,7 @@ vi.mock('@clerk/clerk-react', () => ({
   useAuth: () => ({ orgId: mocks.orgId }),
   UserButton: () => <div data-testid="user-button" />,
 }));
-vi.mock('../contexts/UserContext', () => ({ useUser: () => mocks.user }));
+vi.mock('../hooks/useUser', () => ({ useUser: () => mocks.user }));
 // The listener is replaced by local state so a test controls the project and the form data;
 // it records the saving ref so the test can check it is the one the auto-save flips.
 vi.mock('../hooks/useProjectSync', () => ({

@@ -1,7 +1,7 @@
 import type { AcknowledgmentMap, SurveyData, SurveyFieldName } from '@cherrytree/shared';
 
 import CustomSelect from './CustomSelect.tsx';
-import { useUser } from '../contexts/UserContext.tsx';
+import { useUser } from '../hooks/useUser.ts';
 import { useCollaborators, type CollaboratorSource } from '../hooks/useCollaborators.ts';
 import type { ChangeHandler } from '../hooks/useAutoSave.ts';
 import type { QuestionConfig } from '../config/questionConfig.ts';

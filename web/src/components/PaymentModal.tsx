@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { toErrorMessage, type Plan } from '@cherrytree/shared';
 
 import { callFunction } from '../lib/functions.ts';
-import { useUser } from '../contexts/UserContext.tsx';
+import { useUser } from '../hooks/useUser.ts';
 import { PRICING_PLANS, type PricingPlan } from '../constants/pricing.ts';
 import ProWaitlistForm from './ProWaitlistForm.tsx';
 

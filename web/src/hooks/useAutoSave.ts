@@ -9,7 +9,7 @@ import {
 import { serverTimestamp, updateDoc, type FieldValue, type UpdateData } from 'firebase/firestore';
 import type { Project, SurveyData, SurveyFieldName } from '@cherrytree/shared';
 
-import type { ClerkUser } from '../contexts/UserContext.tsx';
+import type { ClerkUser } from './useUser.ts';
 import { projectRef } from '../lib/firebase.ts';
 
 // Constants

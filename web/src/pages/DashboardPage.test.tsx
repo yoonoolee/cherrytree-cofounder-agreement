@@ -21,7 +21,7 @@ const mocks = vi.hoisted(() => ({
   paymentModalProps: null as null | { onClose: () => void },
 }));
 
-vi.mock('../contexts/UserContext', () => ({ useUser: () => mocks.user }));
+vi.mock('../hooks/useUser', () => ({ useUser: () => mocks.user }));
 vi.mock('../hooks/useProjects', () => ({ useProjects: () => mocks.projects }));
 vi.mock('@clerk/clerk-react', () => ({
   UserButton: () => <div data-testid="user-button" />,

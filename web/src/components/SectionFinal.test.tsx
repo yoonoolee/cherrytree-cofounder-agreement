@@ -6,7 +6,7 @@ import { ADMIN_ID, MEMBER_ID, makeSurveyData } from '../test/fixtures/project.ts
 import { cardFor, isAnswered, isExpanded, sectionProps } from '../test/sections.ts';
 import SectionFinal from './SectionFinal.tsx';
 
-vi.mock('../contexts/UserContext', () => ({
+vi.mock('../hooks/useUser', () => ({
   useUser: () => ({ currentUser: { id: 'user_admin' } }),
 }));
 

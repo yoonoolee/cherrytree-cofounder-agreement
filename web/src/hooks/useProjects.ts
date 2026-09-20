@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getDoc } from 'firebase/firestore';
 
-import type { ClerkUser, UserContextValue } from '../contexts/UserContext.tsx';
+import type { ClerkUser, UserContextValue } from './useUser.ts';
 import { projectRef } from '../lib/firebase.ts';
 import type { ProjectWithId } from './useProjectSync.ts';
 

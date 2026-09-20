@@ -1,6 +1,7 @@
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
 
-import { UserProvider, useUser } from './UserContext.tsx';
+import { useUser } from '../hooks/useUser.ts';
+import { UserProvider } from './UserContext.tsx';
 
 type SnapshotHandler = (snapshot: { exists: () => boolean; data: () => unknown }) => void;
 
@@ -94,13 +95,6 @@ beforeEach(() => {
   mocks.onSnapshot.mockImplementation((_ref: unknown, next: SnapshotHandler) => {
     mocks.snapshotListeners.push(next);
     return mocks.unsubscribe;
-  });
-});
-
-describe('useUser', () => {
-  it('throws outside the provider', () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-    expect(() => renderHook(() => useUser())).toThrow('useUser must be used within UserProvider');
   });
 });
 

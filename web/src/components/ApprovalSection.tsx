@@ -2,7 +2,7 @@ import { updateDoc } from 'firebase/firestore';
 import { toErrorMessage, type Project } from '@cherrytree/shared';
 
 import { projectRef } from '../lib/firebase.ts';
-import { useUser } from '../contexts/UserContext.tsx';
+import { useUser } from '../hooks/useUser.ts';
 import { useCollaborators } from '../hooks/useCollaborators.ts';
 import { isProjectReadOnly } from '../utils/dateUtils.ts';
 

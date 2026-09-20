@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({
   modalProps: null as null | Record<string, unknown>,
 }));
 
-vi.mock('../contexts/UserContext', () => ({
+vi.mock('../hooks/useUser', () => ({
   useUser: () => ({ currentUser: mocks.currentUser }),
 }));
 

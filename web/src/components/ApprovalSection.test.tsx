@@ -15,7 +15,7 @@ vi.mock('firebase/firestore', () => ({
 vi.mock('../lib/firebase', () => ({
   projectRef: (id: string) => ({ path: `projects/${id}` }),
 }));
-vi.mock('../contexts/UserContext', () => ({ useUser: () => mocks.user }));
+vi.mock('../hooks/useUser', () => ({ useUser: () => mocks.user }));
 
 const PROJECT_ID = 'org_1';
 

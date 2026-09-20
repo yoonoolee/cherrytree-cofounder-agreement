@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserButton, useClerk } from '@clerk/clerk-react';
 import { FIELDS } from '@cherrytree/shared';
 
-import { useUser } from '../contexts/UserContext.tsx';
+import { useUser } from '../hooks/useUser.ts';
 import PaymentModal from '../components/PaymentModal.tsx';
 import { useProjects } from '../hooks/useProjects.ts';
 import { calculateProjectProgress, countCompletedSections } from '../utils/progressCalculation.ts';

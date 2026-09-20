@@ -9,7 +9,7 @@ type Config = NonNullable<QuestionRendererProps['config']>;
 
 const mocks = vi.hoisted(() => ({ currentUser: { id: 'user_admin' } as { id: string } | null }));
 
-vi.mock('../contexts/UserContext', () => ({
+vi.mock('../hooks/useUser', () => ({
   useUser: () => ({ currentUser: mocks.currentUser }),
 }));
 

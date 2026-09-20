@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('../lib/functions', () => ({ callFunction: mocks.callFunction }));
-vi.mock('../contexts/UserContext', () => ({ useUser: () => mocks.user }));
+vi.mock('../hooks/useUser', () => ({ useUser: () => mocks.user }));
 vi.mock('./ProWaitlistForm', () => ({
   default: ({ source }: { source: string }) => <div>waitlist:{source}</div>,
 }));

@@ -15,7 +15,7 @@ import {
 
 import { env } from '../lib/env.ts';
 import { projectRef } from '../lib/firebase.ts';
-import { useUser } from '../contexts/UserContext.tsx';
+import { useUser } from '../hooks/useUser.ts';
 import { useAutoSave } from '../hooks/useAutoSave.ts';
 import { useProjectSync } from '../hooks/useProjectSync.ts';
 import { useValidation } from '../hooks/useValidation.ts';

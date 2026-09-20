@@ -10,7 +10,7 @@ import EquityCalculatorModal from './EquityCalculatorModal.tsx';
 import CustomSelect from './CustomSelect.tsx';
 import type { SurveySectionProps } from './sectionProps.ts';
 import './EquityCalculatorModal.css';
-import { useUser } from '../contexts/UserContext.tsx';
+import { useUser } from '../hooks/useUser.ts';
 import { useCollaborators } from '../hooks/useCollaborators.ts';
 
 /** `''`, or a number between 0 and 100. */

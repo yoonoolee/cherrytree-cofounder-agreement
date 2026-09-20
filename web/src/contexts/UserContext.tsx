@@ -1,47 +1,12 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import {
-  useUser as useClerkUser,
-  useAuth,
-  useOrganizationList,
-  type useOrganizationList as UseOrganizationList,
-} from '@clerk/clerk-react';
+import { useState, useEffect, type ReactNode } from 'react';
+import { useUser as useClerkUser, useAuth, useOrganizationList } from '@clerk/clerk-react';
 import { onSnapshot } from 'firebase/firestore';
 import { signInWithCustomToken, signOut as firebaseSignOut } from 'firebase/auth';
 import type { UserDoc } from '@cherrytree/shared';
 
+import { UserContext, type UserContextValue } from '../hooks/useUser.ts';
 import { auth, userRef } from '../lib/firebase.ts';
 import { callFunction } from '../lib/functions.ts';
-
-/** The signed-in Clerk user, as `useUser` from Clerk exposes it. */
-export type ClerkUser = NonNullable<ReturnType<typeof useClerkUser>['user']>;
-
-type OrganizationListValue = ReturnType<
-  typeof UseOrganizationList<{ userMemberships: { infinite: true } }>
->;
-
-export interface UserContextValue {
-  currentUser: ClerkUser | null | undefined;
-  /** `users/{clerkUserId}`, kept in sync by the Clerk webhook; `null` until it exists. */
-  userProfile: UserDoc | null;
-  /** True until Clerk has loaded, the Firebase session is established and the profile read. */
-  loading: boolean;
-  /** Account name, else the email local part, else "User". */
-  displayName: string;
-  // Organization data (fetched once, shared everywhere)
-  userMemberships: OrganizationListValue['userMemberships'];
-  setActive: OrganizationListValue['setActive'];
-  orgsLoaded: boolean;
-}
-
-const UserContext = createContext<UserContextValue | null>(null);
-
-export const useUser = (): UserContextValue => {
-  const context = useContext(UserContext);
-  if (!context) {
-    throw new Error('useUser must be used within UserProvider');
-  }
-  return context;
-};
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const { user: clerkUser, isLoaded } = useClerkUser();

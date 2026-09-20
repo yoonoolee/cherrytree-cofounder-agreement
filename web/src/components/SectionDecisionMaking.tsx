@@ -4,7 +4,7 @@ import { TIE_RESOLUTION_OPTIONS, FIELDS, type AcknowledgmentMap } from '@cherryt
 import QuestionRenderer from './QuestionRenderer.tsx';
 import QuestionCard from './QuestionCard.tsx';
 import type { SurveySectionProps } from './sectionProps.ts';
-import { useUser } from '../contexts/UserContext.tsx';
+import { useUser } from '../hooks/useUser.ts';
 import { useCollaborators } from '../hooks/useCollaborators.ts';
 import { QUESTION_CONFIG } from '../config/questionConfig.ts';
 import { getPreview } from '../utils/getPreview.ts';

@@ -8,7 +8,7 @@ import ApprovalSection from './ApprovalSection.tsx';
 import SurveyNavigation from './SurveyNavigation.tsx';
 import AgreementHeader from './AgreementHeader.tsx';
 import CollaboratorsModal from './CollaboratorsModal.tsx';
-import { useUser } from '../contexts/UserContext.tsx';
+import { useUser } from '../hooks/useUser.ts';
 import { isProjectReadOnly } from '../utils/dateUtils.ts';
 import { useProjectSync } from '../hooks/useProjectSync.ts';
 import { useCollaborators } from '../hooks/useCollaborators.ts';
