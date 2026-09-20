@@ -7,6 +7,7 @@ import MarketingNav from '../components/MarketingNav';
 import MarketingFooter from '../components/MarketingFooter';
 import MarketingGrain from '../components/MarketingGrain';
 import FaqList from '../components/FaqList';
+import { MARKETING_PLANS } from '../constants/pricing';
 
 // ── Panel sub-components ───────────────────────────────────────────────────────
 
@@ -759,56 +760,6 @@ const CAROUSEL_SLIDES = [
   },
 ];
 
-const PRICING = [
-  {
-    tier: 'Bootstrapped',
-    price: '$200',
-    period: 'One-time payment',
-    desc: 'Ideal for early-stage or bootstrapped teams that need to move fast and start building now.',
-    features: [
-      'Expert-designed survey',
-      'Comprehensive agreements',
-      'Proprietary equity calculator',
-      'Best practices and tips',
-      'Up to 5 collaborators',
-    ],
-    cta: 'Get started',
-    ctaStyle: 'outline',
-  },
-  {
-    tier: 'Scale',
-    price: '$2,000',
-    period: 'One-time payment',
-    badge: 'Most popular',
-    desc: 'Built for funded teams that need deeper control, greater detail, and stronger foundations.',
-    features: [
-      'Everything in Bootstrapped',
-      'Final attorney review',
-      'Personalized onboarding',
-      'Cofounder coaching',
-      'Priority support',
-    ],
-    cta: 'Get started',
-    ctaStyle: 'filled',
-    featured: true,
-  },
-  {
-    tier: 'Enterprise',
-    price: 'Custom',
-    period: 'Contact for volume pricing',
-    desc: "Running a fund or accelerator and want to deploy in bulk? We'll set you up.",
-    features: [
-      'Everything in Scale, for your cohort',
-      'Cohort dashboard and progress tracking',
-      'Branded experience for your program',
-      'Dedicated account support',
-    ],
-    cta: 'Contact sales',
-    ctaStyle: 'solid',
-    enterprise: true,
-  },
-];
-
 const FAQS = [
   {
     q: "What's a cofounder agreement, and why do I need one?",
@@ -1201,7 +1152,7 @@ function LandingPage() {
           <p className="lp-rv lp-d2">Choose the plan that's right for your team.</p>
         </div>
         <div className="lp-pricing-grid">
-          {PRICING.map((p, i) => (
+          {MARKETING_PLANS.map((p, i) => (
             <div
               key={i}
               ref={(el) => (pricingCardRefs.current[i] = el)}

@@ -9,20 +9,7 @@ import MarketingFooter from '../components/MarketingFooter.tsx';
 import MarketingGrain from '../components/MarketingGrain.tsx';
 import FaqList, { type Faq } from '../components/FaqList.tsx';
 import { goToDashboard } from '../utils/goToDashboard.ts';
-
-interface Plan {
-  tier: string;
-  /** `$…` renders the sign in its own span; anything else verbatim. */
-  price: string;
-  period: string;
-  desc: string;
-  features: readonly string[];
-  cta: string;
-  badge?: string;
-  featured?: boolean;
-  /** Contact sales opens the Tally form instead of the dashboard. */
-  enterprise?: boolean;
-}
+import { MARKETING_PLANS } from '../constants/pricing.ts';
 
 interface CompareRow {
   label: string;
@@ -31,54 +18,6 @@ interface CompareRow {
   s: boolean;
   e: boolean;
 }
-
-const PLANS: readonly Plan[] = [
-  {
-    tier: 'Bootstrapped',
-    price: '$200',
-    period: 'One-time payment',
-    desc: 'Ideal for early-stage or bootstrapped teams that need to move fast and start building now.',
-    features: [
-      'Expert-designed survey',
-      'Comprehensive agreements',
-      'Proprietary equity calculator',
-      'Best practices and tips',
-      'Up to 5 collaborators',
-    ],
-    cta: 'Get started',
-    featured: false,
-  },
-  {
-    tier: 'Scale',
-    price: '$2,000',
-    period: 'One-time payment',
-    badge: 'Most popular',
-    desc: 'Built for funded teams that need deeper control, greater detail, and stronger foundations.',
-    features: [
-      'Everything in Bootstrapped',
-      'Final attorney review',
-      'Personalized onboarding',
-      'Cofounder coaching',
-      'Priority support',
-    ],
-    cta: 'Get started',
-    featured: true,
-  },
-  {
-    tier: 'Enterprise',
-    price: 'Custom',
-    period: 'Contact for volume pricing',
-    desc: "Running a fund or accelerator and want to deploy in bulk? We'll set you up.",
-    features: [
-      'Everything in Scale, for your cohort',
-      'Cohort dashboard and progress tracking',
-      'Branded experience for your program',
-      'Dedicated account support',
-    ],
-    cta: 'Contact sales',
-    enterprise: true,
-  },
-];
 
 const COMPARE_ROWS: readonly CompareRow[] = [
   { label: 'Equity & vesting schedules', b: true, s: true, e: true },
@@ -179,7 +118,7 @@ function PricingPage() {
       {/* Cards */}
       <section className="lp-pricing-pg-cards-wrap">
         <div className="lp-pricing-grid">
-          {PLANS.map((p, i) => (
+          {MARKETING_PLANS.map((p, i) => (
             <div
               key={i}
               ref={(el) => {
@@ -221,7 +160,7 @@ function PricingPage() {
                 ))}
               </ul>
               <button
-                className={`lp-pricing-cta ${p.featured ? 'filled' : p.enterprise ? 'solid' : 'outline'}`}
+                className={`lp-pricing-cta ${p.ctaStyle}`}
                 onClick={() =>
                   p.enterprise
                     ? window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })
