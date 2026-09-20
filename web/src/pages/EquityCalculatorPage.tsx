@@ -485,8 +485,10 @@ function EquityCalculatorPage() {
                         />
                         <button
                           onClick={() => {
-                            navigator.clipboard.writeText(window.location.href);
-                            setLinkCopied(true);
+                            navigator.clipboard.writeText(window.location.href).then(
+                              () => setLinkCopied(true),
+                              (error: unknown) => console.error('Error copying link:', error),
+                            );
                           }}
                           className="lp-btn-primary"
                           style={{ padding: '10px 18px', fontSize: 13 }}

@@ -282,7 +282,7 @@ describe('EquityCalculatorPage', () => {
       vi.unstubAllGlobals();
     });
 
-    it('shares the page link and copies it to the clipboard', () => {
+    it('shares the page link and confirms once it is on the clipboard', async () => {
       const writeText = vi.fn().mockResolvedValue(undefined);
       Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
       startWith(['Ada', 'Grace']);
@@ -295,12 +295,28 @@ describe('EquityCalculatorPage', () => {
       const copy = screen.getByRole('button', { name: 'Copy' });
       fireEvent.click(copy);
       expect(writeText).toHaveBeenCalledWith(window.location.href);
+      expect(screen.getByRole('button', { name: 'Copy' })).toBeInTheDocument(); // not yet
+      await act(async () => {});
       expect(screen.queryByRole('button', { name: 'Copy' })).toBeNull(); // check icon now
 
       fireEvent.click(document.querySelector('.lp-eq-modal-close')!);
       expect(screen.queryByRole('heading', { level: 3 })).toBeNull();
       fireEvent.click(screen.getByRole('button', { name: 'Share with cofounder' }));
       expect(screen.getByRole('button', { name: 'Copy' })).toBeInTheDocument();
+      Reflect.deleteProperty(navigator, 'clipboard');
+    });
+
+    it('keeps the Copy button and logs when the clipboard refuses', async () => {
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const writeText = vi.fn().mockRejectedValue(new Error('denied'));
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
+      startWith(['Ada', 'Grace']);
+      fireEvent.click(screen.getByRole('button', { name: 'Share with cofounder' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Copy' }));
+      await act(async () => {});
+      expect(screen.getByRole('button', { name: 'Copy' })).toBeInTheDocument();
+      expect(error).toHaveBeenCalledWith('Error copying link:', expect.any(Error));
+      error.mockRestore();
       Reflect.deleteProperty(navigator, 'clipboard');
     });
   });
