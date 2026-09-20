@@ -1,43 +1,110 @@
 # cherrytree-cofounder-agreement — Claude Context
 
-## Platform Overview
+Cherrytree is a SaaS platform for startup cofounders to create legally sound cofounder agreements. This repo is the only deployed product: a React web app plus Firebase Cloud Functions. (A Python chat agent used to sit beside it; it was retired in September 2026 and its replacement is still being designed outside this repo.)
 
-Cherrytree is a SaaS platform for startup cofounders to create legally sound cofounder agreements. Two subprojects work together:
-
-| Directory | Role | Stack |
-|-----------|------|-------|
-| `cherrytree-cofounder-agreement/` | Main web app (frontend + backend) | React 19, Firebase, Clerk, Stripe |
-| `cherrytree-chat-agent/` | AI advisor chatbot service | Python, FastAPI, LangGraph, Claude, Pinecone |
-
-The web app embeds the chat agent as a sidebar. The agent reads the user's in-progress agreement from Firestore and advises on equity, vesting, IP, decision-making, etc.
-
-## High-Level Architecture
+## Architecture
 
 ```
-User → React app (Firebase Hosting)
-         ├── Firestore (form data, chat history, orgs)
-         ├── Cloud Functions (Node.js, us-west2) — business logic, webhooks
-         └── Chat sidebar → Cloud Run (Python FastAPI) — LangGraph agent
-                               ├── Claude Sonnet 4.5 (LLM)
-                               ├── Pinecone (RAG knowledge base)
-                               └── Firestore (chat history)
+User → React app (Firebase Hosting, web/dist)
+         ├── Firestore — projects, users, proWaitlist (rules: firestore.rules)
+         └── Cloud Functions v2 (Node 22, us-west2, functions/src) — callables + webhooks
+               ├── Clerk (auth, organizations, invitations; webhook → users/)
+               ├── Stripe (checkout; webhook → projects/)
+               ├── Make.com (PDF generation → Google Drive URL)
+               └── Resend (contact form email)
 ```
+
+Everything is TypeScript. The repo is an npm workspace:
+
+| Package | Path | Role |
+|---------|------|------|
+| `web` | `web/` | Vite 8 + React 19 app. `src/lib/` (Firebase init, typed callables, env), `src/hooks/`, `src/contexts/UserContext.tsx`, `src/components/`, `src/pages/`, `src/config/` (survey question/section display config), `src/utils/` |
+| `@cherrytree/shared` | `shared/` | Types and pure logic used by both sides: Firestore document types (`domain/`), the callable request/response contracts (`callables.ts`), survey schema/fields/sections (`survey/`), error codes, timestamp helpers |
+| functions | `functions/` | **Not a workspace** — own `package.json` + lockfile (`npm --prefix functions ci`). `src/index.ts` re-exports one module per concern (`stripe.ts`, `clerkWebhook.ts`, `organizations.ts`, `pdf.ts`, `contact.ts`, `firebaseToken.ts`); `src/lib/` holds auth, App Check, validation, error helpers; `src/config.ts` holds secrets, params and trigger options. esbuild bundles `src/index.ts` (with `shared` inlined) into `lib/index.js` at deploy (`firebase.json` predeploy) |
+
+Web imports `shared` as `@cherrytree/shared`; the `@/` alias points at `web/src`.
+
+## Commands (run from the repo root)
+
+```bash
+nvm use                    # Node 22 (.nvmrc)
+npm ci && npm --prefix functions ci
+
+npm run dev                # Vite on http://localhost:3000, mode "dev" → web/.env.dev
+npm run check              # lint + prettier check + typecheck + tests + production build — run before every commit
+npm run typecheck          # tsc per project (web app, web node, shared, functions)
+npm test                   # Vitest: web (jsdom), shared, functions (node)
+npm run test:rules         # Firestore rules tests under the emulator (needs Java 21+)
+npm run knip               # unused files / exports / dependencies (functions excluded)
+npm run lint:fix / format  # ESLint --fix / Prettier --write
+npm --prefix functions run build   # esbuild bundle → functions/lib/index.js
+
+npm run deploy:dev         # build:dev + firebase use dev + firebase deploy (functions, hosting, rules, indexes)
+npm run deploy:functions:dev / deploy:hosting:dev
+firebase use               # check the current project — must be dev before any local deploy
+firebase functions:log     # runtime logs
+```
+
+Single test file: `cd web && npx vitest run src/…test.tsx` or `cd functions && npx vitest run src/pdf.test.ts`.
+
+**Deploy functions and hosting together.** The web app sends limited-use App Check tokens and the functions consume them; a mismatched pair breaks every callable.
 
 ## Environments
 
-| Env | Firebase Project | Frontend URL |
-|-----|-----------------|-------------|
-| Dev | `cherrytree-cofounder-agree-dev` | cherrytree-cofounder-agree-dev.web.app |
-| Prod | `cherrytree-cofounder-agreement` | cherrytree.app / my.cherrytree.app |
+| Env | Firebase project | URL | Deployed by |
+|-----|-----------------|-----|-------------|
+| Dev | `cherrytree-cofounder-agree-dev` | cherrytree-cofounder-agree-dev.web.app | `npm run deploy:dev` locally (the `deploy-dev` workflow is manual-only) |
+| Prod | `cherrytree-cofounder-agreement` | cherrytree.app / my.cherrytree.app | **GitHub Actions only** — push/merge to `master` runs `npm run check` then deploys with `--force` |
 
-Switch with: `firebase use dev` or `firebase use prod`
+Never deploy to prod locally: it bypasses CI and git history. Prod is still on Stripe **test mode** until launch (see `TODO.md` → Go-live).
 
-## Secrets
+## Configuration
 
-Never commit API keys. All keys are in:
-- `.env.development` / `.env.production` (frontend, git-ignored)
-- Firebase Secret Manager (Cloud Functions)
-- Cloud Run Secret Manager (Python agent: Anthropic, Pinecone, LangSmith keys)
+| Where | What | Committed |
+|-------|------|-----------|
+| `web/.env.dev` / `web/.env.production` | `VITE_*` browser keys (Firebase config, Clerk publishable key, reCAPTCHA site key, Maps key, Sentry DSN). Template: `web/.env.example`; typed in `web/src/vite-env.d.ts`; read only through `web/src/lib/env.ts` | No (CI writes them from GitHub secrets) |
+| `functions/.env.<projectId>` | Non-secret per-project params: `APP_ORIGIN`, `STRIPE_STARTER_PRICE_ID`, `STRIPE_PRO_PRICE_ID` (`defineString` in `functions/src/config.ts`) | Yes |
+| Firebase Secret Manager | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET`, `MAKE_WEBHOOK_URL`, `RESEND_API_KEY` (`defineSecret`; listed per function) | Never |
+
+`firebase functions:secrets:set NAME` then redeploy functions. Never put a secret in an env file.
+
+## Auth, App Check and trust boundaries
+
+- **Sign-in:** Clerk. The web app exchanges its Clerk session token for a Firebase custom token via the `getFirebaseToken` callable and signs into Firebase Auth with it, so Firestore rules and every other callable identify the caller by `request.auth.uid` = Clerk user id. `functions/src/lib/auth.ts` verifies Clerk tokens with `@clerk/backend`.
+- **App Check** is enforced on every callable (`enforceAppCheck` + `consumeAppCheckToken` in `functions/src/config.ts`, guarded by `functions/test/endpoints.test.ts` against `endpoints.golden.json`). Built bundles use reCAPTCHA v3; `npm run dev` uses a debug token printed to the browser console on first run — register it once per browser under the **dev** project → App Check → Apps → Manage debug tokens, or every callable returns `unauthenticated` on localhost.
+- **Server-authoritative data.** Firestore rules let the browser update only `surveyData`, `lastUpdated`, `lastEditedBy`, `approvals`, `onboardingCompleted`, `lastOpened` on a project it belongs to, and read its own `users/` doc; everything else (project creation, membership, payments, `editDeadline`, PDFs, `stripeEvents`) is written by Cloud Functions with the Admin SDK. `submitSurvey` re-checks approvals server-side. Keep it that way: new client-writable fields go into `onlyClientFields()` in `firestore.rules` with a rules test.
+- **Webhooks** (`stripeWebhook`, `clerkWebhook`) are `onRequest` with `cors: false` and verify signatures; Stripe events are deduplicated in `stripeEvents/{eventId}`.
+- Functions run as the least-privilege service account `cloud-functions@<project>.iam.gserviceaccount.com` (roles: `datastore.user`, `firebaseauth.admin`, `iam.serviceAccountTokenCreator`, `serviceusage.serviceUsageConsumer`, `firebaseappcheck.tokenVerifier`). Prod still needs `firebaseappcheck.tokenVerifier` granted before its next deploy (`TODO.md`).
+
+## Firestore data model
+
+Types live in `shared/src/domain/`; the web reads/writes through the typed refs in `web/src/lib/firebase.ts`.
+
+```
+projects/{clerkOrgId}         Project — name, admin (Clerk user id), collaborators{uid → role, isActive, history[]},
+                              approvals{uid → bool}, onboardingCompleted, surveyVersion, surveyData (Partial<SurveyData>),
+                              pdfAgreements[], latestPdfUrl, currentPlan, payments{checkoutSessionId → Payment},
+                              createdAt, editDeadline, lastUpdated, lastOpened, previewPdfUrl?
+users/{clerkUserId}           UserDoc — userId, email, firstName, lastName, picture, createdAt, lastLoginAt, deleted,
+                              stripeCustomerId?, deletedAt?   (written only by the Clerk webhook / checkout)
+proWaitlist/{autoId}          ProWaitlistSignup — email, timestamp, source   (anonymous create only)
+stripeEvents/{eventId}        webhook idempotency, server-only
+```
+
+`editDeadline` is set at purchase from `EDIT_WINDOW_CONFIG` (6 months, `functions/src/config.ts`); collaborator changes are refused after it. Projects predating a field may lack it — reads stay defensive.
+
+## Survey
+
+Ten sections in `shared/src/survey/sections.ts` (formation, cofounders, equity-allocation, vesting, decision-making, ip, compensation, performance, non-competition, general-provisions); each has a `web/src/components/Section*.tsx`, question metadata in `web/src/config/questionConfig.ts`, display config in `sectionConfig.ts`, completion rules in `web/src/hooks/useValidation.ts`. **The survey UI is slated for replacement** — keep changes there minimal, do not add survey tests or refactors, and leave its known quirks alone (they are documented inline). Keep the data model, functions, rules and the marketing/dashboard pages solid.
+
+## Conventions
+
+- `npm run check` must pass before every commit (CI runs it plus knip, `npm audit --audit-level=high` in both roots, and the rules tests on every PR).
+- One concern per commit; message prefix by area (`Web:`, `Functions:`, `Shared:`, `CI:`, `Docs:`). No AI attribution lines.
+- TypeScript strict; `.ts` extensions in relative imports (`allowImportingTsExtensions`); no new JS files. ESLint 10 flat config (`eslint.config.js`) with `typescript-eslint`, react-hooks (compiler rules), react-refresh; Prettier `singleQuote`, `printWidth: 100`. Formatting-only commits go in `.git-blame-ignore-revs`.
+- Tests sit beside the code as `*.test.ts(x)`; functions tests mock the Admin SDK (`functions/test/helpers/`), rules tests use `@firebase/rules-unit-testing`. Bugs found while touching code get a fix commit with a test guarding the corrected behavior.
+- Dedupe into `shared/` or a helper rather than patching per file.
+- Exact-pinned web dependencies (`web/package.json`); bump deliberately, one per commit.
 
 ## Code Standards (Apply to Every Task)
 
@@ -49,160 +116,19 @@ Never commit API keys. All keys are in:
 
 **Security:** On every task, do a quick security check on any code touched — exposed secrets, injection vulnerabilities (NoSQL/SQL/XSS), unauthenticated endpoints, insecure Firestore rules, CORS misconfiguration, hardcoded credentials. Flag anything suspicious even if outside the immediate scope of the change.
 
+**Security-first implementation:** Ask who controls the data, whether it can be tampered with, and whether the server should be the source of truth. The correct architecture here is server-authoritative — don't suggest client-side shortcuts that trade security for convenience.
+
 ## Team Collaboration
 
 Two people actively pushing to this repo. When working with Claude:
 
 - **Always confirm the Firebase environment** before deploying — `firebase use` to check current target. Default to dev unless explicitly deploying to prod.
-- **Don't assume solo context** — changes may affect the other developer. Flag anything that would break shared state (Firestore schema changes, Cloud Function renames, config changes).
-- **Coordinate on secrets** — both devs need matching `.env.development` / `.env.production` files locally. These are gitignored; share keys out-of-band.
+- **Don't assume solo context** — changes may affect the other developer. Flag anything that would break shared state (Firestore schema changes, Cloud Function renames, config changes, `functions/.env.<projectId>` params).
+- **Coordinate on secrets** — both devs need matching `web/.env.dev` / `web/.env.production` files locally. These are gitignored; share keys out-of-band.
 - **`.claude/settings.json` is committed** — changes to Claude permissions/commands apply to both teammates. Don't add personal preferences here; use `settings.local.json` (gitignored) for those.
 - **`.claude/commands/` is committed** — shared slash commands available to both teammates.
 
-React 19 frontend + Firebase backend for the Cherrytree cofounder agreement SaaS platform.
+## See Also
 
-## Stack
-
-- **Frontend:** React 19, React Router, Tailwind CSS
-- **Auth:** Clerk (OAuth, org invitations, JWT)
-- **Backend:** Firebase Cloud Functions (Node.js, us-west2)
-- **Database:** Firestore (real-time listeners in React)
-- **Payments:** Stripe (test keys in dev, live keys needed for prod — TODO)
-- **PDF generation:** Make.com webhook → Google Drive
-- **Address autocomplete:** Google Maps Places API (Section 1 only)
-
-## Key Directories
-
-```
-src/
-  config/
-    questionConfig.js   - Config-driven question definitions (add questions here, not in JSX)
-    sectionConfig.js    - Section metadata (10 sections)
-    surveySchema.js     - Client-side form validation
-  components/
-    DynamicSection.js   - Renders questions from questionConfig
-    QuestionRenderer.js - Renders individual question types (text, radio, checkbox, dropdown)
-    Survey.js           - Main survey container
-    EquityCalculator.js - Complex equity split UI
-    CollaboratorManager.js - Real-time cofounder collaboration
-    PaymentModal.js     - Stripe checkout
-  pages/              - LandingPage, SurveyPage, EquityCalculatorPage
-  contexts/
-    UserContext.js      - Global user state, Firestore listeners, Clerk auth
-  firebase.js         - Firebase init + emulator setup
-
-functions/
-  index.js            - All Cloud Functions (~40KB): business logic, webhooks, auth
-  auth-helpers.js     - Clerk JWT verification
-  organizations.js    - Org/collaborator management
-  surveySchema.js     - Server-side validation (mirrors client schema)
-```
-
-## Config-Driven Question System
-
-**Do not add questions by hardcoding JSX.** Questions are defined in `src/config/questionConfig.js` and rendered dynamically by `DynamicSection.js` + `QuestionRenderer.js`.
-
-To add a question: edit `questionConfig.js` with the question type, label, options, and validation — no component changes needed. Supported types: `text`, `radio`, `checkbox`, `dropdown`, and custom types.
-
-## Firestore Data Model
-
-```
-projects/{projectId}/
-  formData: { ...all survey answers }
-  editDeadline: timestamp  # 6 months from purchase; null = unlimited (legacy)
-  createdAt, updatedAt
-
-  chats/{chatId}/          # AI advisor conversations
-    messages: [{role, content, timestamp}]
-    metadata: {section, messageCount, lastTopic}
-
-organizations/{orgId}/
-  name, members[], createdBy
-
-users/{userId}/
-  email, name, organizationIds[]
-```
-
-## Survey Sections (10 total)
-
-1. Formation & Purpose
-2. Cofounder Info
-3. Equity Allocation
-4. Vesting Schedule
-5. Decision-Making
-6. IP & Ownership
-7. Compensation
-8. Performance
-9. Non-Competition
-10. General Provisions
-
-## Commands
-
-```bash
-# Dev
-npm start                          # localhost:3000, uses .env.development
-
-# Deploy to dev (local is fine)
-npm run deploy:dev                 # everything to dev
-npm run deploy:hosting:dev         # frontend only
-npm run deploy:functions:dev       # Cloud Functions only
-firebase deploy --only firestore:rules
-
-# Firebase
-firebase use dev / firebase use prod   # switch environment
-firebase functions:log                  # view logs
-firebase functions:secrets:set X       # set a secret (then redeploy functions)
-```
-
-## Prod Deployment Policy
-
-**Prod deploys only happen through GitHub Actions** (push/merge to `master`). Never deploy to prod locally.
-
-The `deploy:prod` npm scripts have been intentionally removed. You can still run `firebase deploy --project cherrytree-cofounder-agreement` directly from the CLI, but **don't** — it bypasses git history, CI checks, and can overwrite work that isn't committed.
-
-**Before launch:** revoke prod Firebase access from developer accounts so only the GitHub Actions service account can deploy to prod. See `TODO.md` for details.
-
-## Environment Files
-
-| File | Use | In Git |
-|------|-----|--------|
-| `.env.example` | Template | Yes |
-| `.env.development` | Dev keys | No |
-| `.env.production` | Prod keys | No |
-
-All sensitive keys (Stripe, Clerk, Make.com webhook) → Firebase Secret Manager, not .env files.
-
-## Edit Window Feature
-
-Users get 6 months from purchase to edit their agreement, enforced via `editDeadline` in Firestore. Config in `functions/index.js`:
-```js
-const EDIT_WINDOW_CONFIG = { amount: 6, unit: 'months' };
-```
-Legacy projects (no `editDeadline`) have unlimited editing.
-
-## Auth Flow
-
-Frontend → Clerk (sign in/up) → Clerk JWT → Cloud Functions verify JWT via `auth-helpers.js` → Firestore access
-
-## Config-Driven Question System — Full Reference
-
-See `DYNAMIC_SECTIONS_GUIDE.md` for the complete guide including conditional fields, dynamic acknowledgment text, "Other" option handling, and migration checklist for legacy sections.
-
-## Outstanding TODOs
-
-- Switch Stripe to live keys in production (see `TODO.md` for step-by-step)
-- BigQuery analytics integration
-- PDF storage (currently ephemeral via Make.com → Google Drive; consider Firebase Storage)
-- Update `firebase-functions` package version
-- ESLint cleanup (unused vars, missing hook deps — see `TODO.md` for full list)
-- Edit window production testing (verify `editDeadline` behavior end-to-end)
-
-## AI Advisor Integration (Planned)
-
-The `cherrytree-chat-agent` Python service needs to be wired into this app:
-
-1. **`AdvisorChat.js`** — React sidebar component (not yet built). Slide-out panel, message history, thumbs up/down per response, legal disclaimer footer, suggested questions based on current section.
-2. **Firebase Function gateway** — Add `chatWithAdvisor` function to `functions/index.js` that verifies Clerk JWT, extracts `user_id`, and proxies to Cloud Run. This is the same auth pattern used by all existing functions.
-3. **Firestore rules** — Chat subcollection rules already set up. Verify they're deployed.
-
-The Cloud Run service URL needs to be stored as a Firebase secret and read by the gateway function.
+- `README.md` — setup, deployment, webhooks, external services
+- `TODO.md` — open items, go-live checklist
