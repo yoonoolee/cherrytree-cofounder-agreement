@@ -54,12 +54,11 @@ export default tseslint.config(
 
   // Browser app
   {
-    files: ['web/**/*.{js,jsx,ts,tsx}'],
+    files: ['web/src/**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
       globals: globals.browser,
-      parserOptions: { ecmaFeatures: { jsx: true } },
     },
     plugins: { 'react-hooks': reactHooks, 'react-refresh': reactRefresh },
     rules: {
@@ -81,7 +80,7 @@ export default tseslint.config(
 
   // Tests (Vitest globals)
   {
-    files: ['**/*.test.{js,jsx,ts,tsx}', 'web/src/test/**'],
+    files: ['**/*.test.{ts,tsx}', 'web/src/test/**'],
     languageOptions: { globals: { ...globals.vitest } },
   },
 

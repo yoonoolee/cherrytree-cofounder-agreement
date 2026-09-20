@@ -4,10 +4,6 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "types": ["vite/client", "vitest/globals", "google.maps"],
-    // Migration only: the remaining .js/.jsx modules are compiled but not
-    // type-checked. Both flags are removed in Phase 5e once nothing is left in JS.
-    "allowJs": true,
-    "checkJs": false,
     "paths": { "@/*": ["./src/*"] }
   },
   "include": ["src"]
