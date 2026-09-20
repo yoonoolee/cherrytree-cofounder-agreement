@@ -27,15 +27,16 @@ function AcceptInvitePage() {
     }
 
     const loginUrl = withClerkTicket('/login', ticket);
-    const handleInvite = async () => {
-      if (session) {
-        await signOut({ redirectUrl: loginUrl });
-      } else {
-        navigate(loginUrl, { replace: true });
-      }
-    };
-
-    handleInvite();
+    if (!session) {
+      navigate(loginUrl, { replace: true });
+      return;
+    }
+    // Clerk redirects once the session is gone; if that fails, go to the login page anyway
+    // rather than leaving the visitor on the spinner.
+    signOut({ redirectUrl: loginUrl }).catch((error: unknown) => {
+      console.error('Error signing out before accepting the invite:', error);
+      navigate(loginUrl, { replace: true });
+    });
   }, [loaded, session, signOut, navigate, searchParams]);
 
   return (

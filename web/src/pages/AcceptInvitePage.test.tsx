@@ -72,4 +72,18 @@ describe('AcceptInvitePage', () => {
     });
     expect(path()).toBe(INVITE); // Clerk performs the redirect itself
   });
+
+  it('still sends a signed-in visitor to the login page when signing out fails', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    mocks.clerk.session = { id: 'sess_1' };
+    mocks.clerk.signOut = vi.fn().mockRejectedValue(new Error('offline'));
+    renderPage(INVITE);
+    await act(async () => {});
+    expect(error).toHaveBeenCalledWith(
+      'Error signing out before accepting the invite:',
+      expect.any(Error),
+    );
+    expect(path()).toBe('/login?__clerk_ticket=tkt_123');
+    error.mockRestore();
+  });
 });
