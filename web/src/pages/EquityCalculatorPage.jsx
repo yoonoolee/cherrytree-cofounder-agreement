@@ -91,34 +91,6 @@ function EquityCalculatorPage() {
   const [linkCopied, setLinkCopied] = useState(false);
   const spreadsheetRef = useRef(null);
 
-  // Handle start calculator with validation
-  const handleStartCalculator = () => {
-    // Check if first two cofounders have names
-    const firstName = cofounderNames[0]?.trim();
-    const secondName = cofounderNames[1]?.trim();
-
-    if (!firstName && !secondName) {
-      // Both empty - wiggle first
-      setWiggleIndex(0);
-      setTimeout(() => setWiggleIndex(null), 500);
-      return;
-    }
-
-    if (!firstName) {
-      setWiggleIndex(0);
-      setTimeout(() => setWiggleIndex(null), 500);
-      return;
-    }
-
-    if (!secondName) {
-      setWiggleIndex(1);
-      setTimeout(() => setWiggleIndex(null), 500);
-      return;
-    }
-
-    setShowCalculator(true);
-  };
-
   // Get display name for cofounder
   const getCofounderDisplayName = (index) => {
     const name = cofounderNames[index]?.trim();
@@ -163,15 +135,38 @@ function EquityCalculatorPage() {
     ];
   };
 
-  const [data, setData] = useState(initializeData());
+  const [data, setData] = useState(initializeData);
 
-  // Update data when cofounders change
-  useEffect(() => {
-    if (showCalculator) {
-      setData(initializeData());
+  // Handle start calculator with validation
+  const handleStartCalculator = () => {
+    // Check if first two cofounders have names
+    const firstName = cofounderNames[0]?.trim();
+    const secondName = cofounderNames[1]?.trim();
+
+    if (!firstName && !secondName) {
+      // Both empty - wiggle first
+      setWiggleIndex(0);
+      setTimeout(() => setWiggleIndex(null), 500);
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [numCofounders, cofounderNames, showCalculator]);
+
+    if (!firstName) {
+      setWiggleIndex(0);
+      setTimeout(() => setWiggleIndex(null), 500);
+      return;
+    }
+
+    if (!secondName) {
+      setWiggleIndex(1);
+      setTimeout(() => setWiggleIndex(null), 500);
+      return;
+    }
+
+    // The names and count can only change while the form is showing, so the sheet is
+    // rebuilt here rather than in an effect: every Start begins from a zeroed sheet.
+    setData(initializeData());
+    setShowCalculator(true);
+  };
 
   // Calculate equity percentages using shared utility (returns array for this standalone page)
   const currentEquity = calculateEquityPercentages(data);
