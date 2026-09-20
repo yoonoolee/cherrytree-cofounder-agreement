@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { useTypewriter } from '../hooks/useTypewriter';
+import { useEnterpriseCardHeight } from '../hooks/useEnterpriseCardHeight';
 import MarketingNav from '../components/MarketingNav';
 import MarketingFooter from '../components/MarketingFooter';
 import MarketingGrain from '../components/MarketingGrain';
@@ -864,7 +865,7 @@ function LandingPage() {
   const typedProtect = useTypewriter('and your peace of mind.', { charDelay: 46, holdDelay: 2200 });
   const statRowRefs = useRef([]);
   const featItemRefs = useRef([]);
-  const pricingCardRefs = useRef([]);
+  const pricingCardRefs = useEnterpriseCardHeight();
 
   const goToDashboard = () => {
     const isProd = window.location.hostname.includes('cherrytree.app');
@@ -957,23 +958,6 @@ function LandingPage() {
       return obs;
     });
     return () => observers.forEach((o) => o && o.disconnect());
-  }, []);
-
-  // Enterprise has fewer features than Bootstrapped, so it naturally renders shorter.
-  // Force its height to match Bootstrapped's rather than stretching every card to the
-  // tallest one, so Scale (the featured, transform: scale(1.03) card) can still read as
-  // visually larger the way it does in the source design.
-  useLayoutEffect(() => {
-    const matchEnterpriseHeight = () => {
-      const bootstrapped = pricingCardRefs.current[0];
-      const enterprise = pricingCardRefs.current[2];
-      if (!bootstrapped || !enterprise) return;
-      enterprise.style.height = 'auto';
-      enterprise.style.height = `${bootstrapped.offsetHeight}px`;
-    };
-    matchEnterpriseHeight();
-    window.addEventListener('resize', matchEnterpriseHeight);
-    return () => window.removeEventListener('resize', matchEnterpriseHeight);
   }, []);
 
   const ActivePanel = PANELS[FEATURES[activeFeature].panel];

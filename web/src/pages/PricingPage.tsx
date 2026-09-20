@@ -1,7 +1,8 @@
-import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { usePageMeta } from '../hooks/usePageMeta.ts';
+import { useEnterpriseCardHeight } from '../hooks/useEnterpriseCardHeight.ts';
 import { useTypewriter } from '../hooks/useTypewriter.ts';
 import MarketingNav from '../components/MarketingNav.tsx';
 import MarketingFooter from '../components/MarketingFooter.tsx';
@@ -165,23 +166,7 @@ function PricingPage() {
 
   const goDash = () => goToDashboard(navigate);
 
-  // Enterprise has fewer features than Bootstrapped, so it naturally renders shorter.
-  // Force its height to match Bootstrapped's rather than stretching every card to the
-  // tallest one, so Scale (the featured, transform: scale(1.03) card) can still read as
-  // visually larger the way it does in the source design.
-  const pricingCardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  useLayoutEffect(() => {
-    const matchEnterpriseHeight = () => {
-      const bootstrapped = pricingCardRefs.current[0];
-      const enterprise = pricingCardRefs.current[2];
-      if (!bootstrapped || !enterprise) return;
-      enterprise.style.height = 'auto';
-      enterprise.style.height = `${bootstrapped.offsetHeight}px`;
-    };
-    matchEnterpriseHeight();
-    window.addEventListener('resize', matchEnterpriseHeight);
-    return () => window.removeEventListener('resize', matchEnterpriseHeight);
-  }, []);
+  const pricingCardRefs = useEnterpriseCardHeight();
 
   return (
     <div className="lp" style={{ minHeight: '100vh' }}>
