@@ -4,7 +4,7 @@ import type { Cofounder } from '@cherrytree/shared';
 
 import type { ProjectWithId } from '../hooks/useProjectSync.ts';
 import { completeSurveyData, makeProject, timestamp } from '../test/fixtures/project.ts';
-import DashboardPage from './DashboardPage';
+import DashboardPage from './DashboardPage.tsx';
 
 const mocks = vi.hoisted(() => ({
   user: {

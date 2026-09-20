@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../contexts/UserContext';
 import { UserButton, useClerk } from '@clerk/clerk-react';
-import PaymentModal from '../components/PaymentModal';
-import { useProjects } from '../hooks/useProjects';
-import { calculateProjectProgress, countCompletedSections } from '../utils/progressCalculation';
-import { formatDeadline, formatTimeAgo } from '../utils/dateUtils';
 import { FIELDS } from '@cherrytree/shared';
+
+import { useUser } from '../contexts/UserContext.tsx';
+import PaymentModal from '../components/PaymentModal.tsx';
+import { useProjects } from '../hooks/useProjects.ts';
+import { calculateProjectProgress, countCompletedSections } from '../utils/progressCalculation.ts';
+import { formatDeadline, formatTimeAgo } from '../utils/dateUtils.ts';
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -16,8 +17,8 @@ function DashboardPage() {
 
   const { projects, loading } = useProjects(currentUser, userMemberships, orgsLoaded, authLoading);
 
-  const welcomeRef = useRef(null);
-  const subtitleRef = useRef(null);
+  const welcomeRef = useRef<HTMLHeadingElement>(null);
+  const subtitleRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     if (authLoading || loading) return;
@@ -36,7 +37,7 @@ function DashboardPage() {
       sub.style.transition = 'opacity 0.5s ease 0.12s, transform 0.5s ease 0.12s';
     }
 
-    const cards = document.querySelectorAll('[data-animate-card]');
+    const cards = document.querySelectorAll<HTMLElement>('[data-animate-card]');
     cards.forEach((card) => {
       card.style.opacity = '0';
       card.style.transform = 'translateY(16px)';
@@ -53,11 +54,11 @@ function DashboardPage() {
       }
     }, 60);
 
-    const cardArray = Array.from(cards);
+    const cardArray: Element[] = Array.from(cards);
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
+          if (entry.isIntersecting && entry.target instanceof HTMLElement) {
             const delay = cardArray.indexOf(entry.target) * 0.05;
             entry.target.style.transition = `opacity 0.45s ease ${delay}s, transform 0.45s ease ${delay}s, background 0.2s`;
             entry.target.style.opacity = '1';
@@ -275,7 +276,7 @@ function DashboardPage() {
           const cofounders = project.surveyData?.cofounders || [];
           const cofounderNames = cofounders
             .map((cf) => cf[FIELDS.COFOUNDER_FULL_NAME])
-            .filter(Boolean);
+            .filter((name) => name);
 
           const deadlineStr = formatDeadline(project.editDeadline);
 
@@ -484,7 +485,7 @@ function DashboardPage() {
                   </div>
                   <button
                     onClick={(e) => {
-                      const card = e.currentTarget.closest('[data-card]');
+                      const card = e.currentTarget.closest('[data-card]') ?? e.currentTarget;
                       const rect = card.getBoundingClientRect();
 
                       const overlay = document.createElement('div');
