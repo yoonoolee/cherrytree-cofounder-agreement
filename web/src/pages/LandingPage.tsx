@@ -1,13 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { Fragment, useState, useEffect, useRef, type ComponentType } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePageMeta } from '../hooks/usePageMeta';
-import { useTypewriter } from '../hooks/useTypewriter';
-import { useEnterpriseCardHeight } from '../hooks/useEnterpriseCardHeight';
-import MarketingNav from '../components/MarketingNav';
-import MarketingFooter from '../components/MarketingFooter';
-import MarketingGrain from '../components/MarketingGrain';
-import FaqList from '../components/FaqList';
-import { MARKETING_PLANS } from '../constants/pricing';
+
+import { usePageMeta } from '../hooks/usePageMeta.ts';
+import { useTypewriter } from '../hooks/useTypewriter.ts';
+import { useEnterpriseCardHeight } from '../hooks/useEnterpriseCardHeight.ts';
+import MarketingNav from '../components/MarketingNav.tsx';
+import MarketingFooter from '../components/MarketingFooter.tsx';
+import MarketingGrain from '../components/MarketingGrain.tsx';
+import FaqList, { type Faq } from '../components/FaqList.tsx';
+import { MARKETING_PLANS } from '../constants/pricing.ts';
+import { goToDashboard } from '../utils/goToDashboard.ts';
+
+type Timer = ReturnType<typeof setTimeout>;
 
 // ── Panel sub-components ───────────────────────────────────────────────────────
 
@@ -19,13 +23,13 @@ function PanelInvite() {
   const [pressed, setPressed] = useState(false);
   const [emailIdx, setEmailIdx] = useState(0);
   useEffect(() => {
-    const timers = [];
-    const t = (fn, ms) => {
+    const timers: Timer[] = [];
+    const t = (fn: () => void, ms: number) => {
       timers.push(setTimeout(fn, ms));
     };
     let idx = 0;
     const type = () => {
-      const email = S1_EMAILS[idx % S1_EMAILS.length];
+      const email = S1_EMAILS[idx % S1_EMAILS.length]!;
       setTyped('');
       setShowNew(false);
       email.split('').forEach((_, i) => t(() => setTyped(email.slice(0, i + 1)), i * 68));
@@ -95,15 +99,15 @@ const S2_QUESTIONS = [
 ];
 
 function PanelCollab() {
-  const [answered, setAnswered] = useState([]);
+  const [answered, setAnswered] = useState<number[]>([]);
   const [activeQ, setActiveQ] = useState(0);
   const [typed, setTyped] = useState('');
   useEffect(() => {
-    const timers = [];
-    const t = (fn, ms) => {
+    const timers: Timer[] = [];
+    const t = (fn: () => void, ms: number) => {
       timers.push(setTimeout(fn, ms));
     };
-    const runQuestion = (idx) => {
+    const runQuestion = (idx: number) => {
       if (idx >= S2_QUESTIONS.length) {
         t(() => {
           setAnswered([]);
@@ -115,7 +119,7 @@ function PanelCollab() {
       }
       setActiveQ(idx);
       setTyped('');
-      const target = S2_QUESTIONS[idx].a;
+      const target = S2_QUESTIONS[idx]!.a;
       t(() => {
         target.split('').forEach((_, ci) => t(() => setTyped(target.slice(0, ci + 1)), ci * 65));
         t(
@@ -176,20 +180,20 @@ function PanelEquity() {
   const [idx, setIdx] = useState(0);
   const [sliderPct, setSliderPct] = useState(0);
   const [sliderTransition, setSliderTransition] = useState(false);
-  const [sliderVal, setSliderVal] = useState(null);
-  const [selected, setSelected] = useState([null, null]);
+  const [sliderVal, setSliderVal] = useState<number | null>(null);
+  const [selected, setSelected] = useState<(number | null)[]>([null, null]);
   useEffect(() => {
-    const timers = [];
-    const t = (fn, ms) => {
+    const timers: Timer[] = [];
+    const t = (fn: () => void, ms: number) => {
       timers.push(setTimeout(fn, ms));
     };
-    const run = (i) => {
+    const run = (i: number) => {
       setIdx(i);
       setSliderPct(0);
       setSliderTransition(false);
       setSliderVal(null);
       setSelected([null, null]);
-      const step = S3_CATEGORIES[i];
+      const step = S3_CATEGORIES[i]!;
       t(() => {
         setSliderTransition(true);
         setSliderPct(step.imp * 10);
@@ -213,7 +217,7 @@ function PanelEquity() {
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  const cat = S3_CATEGORIES[idx];
+  const cat = S3_CATEGORIES[idx]!;
   return (
     <div className="lp-fp" style={{ backgroundImage: "url('/images/leaf.png?v=2')" }}>
       <div className="lp-fp-overlay" />
@@ -275,10 +279,10 @@ const S2R_SECTIONS = [
 ];
 
 function PanelReview() {
-  const [done, setDone] = useState([]);
+  const [done, setDone] = useState<number[]>([]);
   useEffect(() => {
-    const timers = [];
-    const t = (fn, ms) => {
+    const timers: Timer[] = [];
+    const t = (fn: () => void, ms: number) => {
       timers.push(setTimeout(fn, ms));
     };
     const run = () => {
@@ -323,14 +327,14 @@ const S4_MSGS = [
 ];
 
 function PanelExpert() {
-  const [shown, setShown] = useState([]);
-  const [typingIdx, setTypingIdx] = useState(null);
+  const [shown, setShown] = useState<number[]>([]);
+  const [typingIdx, setTypingIdx] = useState<number | null>(null);
   useEffect(() => {
-    const timers = [];
-    const t = (fn, ms) => {
+    const timers: Timer[] = [];
+    const t = (fn: () => void, ms: number) => {
       timers.push(setTimeout(fn, ms));
     };
-    const showMsg = (idx) => {
+    const showMsg = (idx: number) => {
       if (idx >= S4_MSGS.length) {
         t(() => {
           setShown([]);
@@ -339,7 +343,7 @@ function PanelExpert() {
         }, 2000);
         return;
       }
-      const msg = S4_MSGS[idx];
+      const msg = S4_MSGS[idx]!;
       if (msg.sent) {
         setShown((p) => [...p, idx]);
         t(() => showMsg(idx + 1), 1200);
@@ -403,7 +407,12 @@ const HV_NAV_ITEMS = [
   'Decision-Making',
   'IP & Ownership',
 ];
-const HV_SCENES = [
+interface HvScene {
+  navActive: number;
+  prog: string;
+  lbl: string;
+}
+const HV_SCENES: readonly HvScene[] = [
   { navActive: 2, prog: '30%', lbl: '30% Complete' },
   { navActive: 3, prog: '42%', lbl: '42% Complete' },
   { navActive: 4, prog: '54%', lbl: '54% Complete' },
@@ -411,24 +420,24 @@ const HV_SCENES = [
 ];
 
 function HeroVisual() {
-  const [activeIdx, setActiveIdx] = useState(0);
-  const [exitIdx, setExitIdx] = useState(null);
-  const [sidebar, setSidebar] = useState(HV_SCENES[0]);
+  const [activeIdx, setActiveIdx] = useState<number | null>(0);
+  const [exitIdx, setExitIdx] = useState<number | null>(null);
+  const [sidebar, setSidebar] = useState<HvScene>(HV_SCENES[0]!);
   const [eqText, setEqText] = useState('');
   const [eqCursorOff, setEqCursorOff] = useState(false);
-  const [vestSel, setVestSel] = useState(null);
-  const [decSel, setDecSel] = useState(null);
+  const [vestSel, setVestSel] = useState<number | null>(null);
+  const [decSel, setDecSel] = useState<number | null>(null);
   const [ipCo, setIpCo] = useState('');
   const [ipJur, setIpJur] = useState('');
-  const [clicking, setClicking] = useState(null);
+  const [clicking, setClicking] = useState<string | null>(null);
   useEffect(() => {
-    const timers = [];
-    const t = (fn, ms) => {
+    const timers: Timer[] = [];
+    const t = (fn: () => void, ms: number) => {
       timers.push(setTimeout(fn, ms));
     };
     let currentIdx = 0;
 
-    const clickContinue = (key, then) => {
+    const clickContinue = (key: string, then: () => void) => {
       setClicking(key);
       t(() => {
         setClicking(null);
@@ -495,14 +504,14 @@ function HeroVisual() {
       t(typeCo, 500);
     };
 
-    const runScene = (idx) => {
+    const runScene = (idx: number) => {
       if (idx === 0) runScene0();
       if (idx === 1) runScene1();
       if (idx === 2) runScene2();
       if (idx === 3) runScene3();
     };
 
-    const goTo = (idx) => {
+    const goTo = (idx: number) => {
       const next = idx % HV_SCENES.length;
       setExitIdx(currentIdx);
       setActiveIdx(null);
@@ -510,7 +519,7 @@ function HeroVisual() {
       t(() => {
         currentIdx = next;
         setActiveIdx(next);
-        setSidebar(HV_SCENES[next]);
+        setSidebar(HV_SCENES[next]!);
         runScene(next);
       }, 120);
     };
@@ -519,7 +528,7 @@ function HeroVisual() {
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  const screenCls = (i) =>
+  const screenCls = (i: number) =>
     `lp-hv-screen${activeIdx === i ? ' active' : ''}${exitIdx === i ? ' exit' : ''}`;
 
   return (
@@ -626,7 +635,13 @@ function HeroVisual() {
   );
 }
 
-const PANELS = [PanelInvite, PanelCollab, PanelEquity, PanelReview, PanelExpert];
+const PANELS: readonly ComponentType[] = [
+  PanelInvite,
+  PanelCollab,
+  PanelEquity,
+  PanelReview,
+  PanelExpert,
+];
 
 const LOGOS = [
   { name: 'Y Combinator', src: '/images/yc-logo.png' },
@@ -704,7 +719,7 @@ const CAROUSEL_SLIDES = [
   },
 ];
 
-const FAQS = [
+const FAQS: readonly Faq[] = [
   {
     q: "What's a cofounder agreement, and why do I need one?",
     a: "It's basically a prenup for your startup. It spells out equity, roles, and expectations so you don't end up in a messy breakup later. Think of it as cheap insurance against expensive fights.",
@@ -731,7 +746,13 @@ const FAQS = [
   },
 ];
 
-const STATS = [
+interface Stat {
+  num: number;
+  prefix?: string;
+  suffix: string;
+  label: string;
+}
+const STATS: readonly Stat[] = [
   { num: 2400, suffix: '+', label: 'Founding teams have started\ntheir agreement' },
   { num: 6100, suffix: '+', label: 'Founders have used\nCherrytree' },
   { num: 10, suffix: '', label: 'Sections covering every angle\nof your cofounder agreement' },
@@ -757,15 +778,11 @@ function LandingPage() {
   // Protect CTA: types "and your peace of mind." on an infinite loop — type out,
   // hold, clear, and after a slight pause type it out again.
   const typedProtect = useTypewriter('and your peace of mind.', { charDelay: 46, holdDelay: 2200 });
-  const statRowRefs = useRef([]);
-  const featItemRefs = useRef([]);
+  const statRowRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const featItemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const pricingCardRefs = useEnterpriseCardHeight();
 
-  const goToDashboard = () => {
-    const isProd = window.location.hostname.includes('cherrytree.app');
-    if (isProd) window.location.href = `${import.meta.env.VITE_APP_URL}/dashboard`;
-    else navigate('/dashboard', { replace: true });
-  };
+  const goDash = () => goToDashboard(navigate);
 
   // Scroll reveal — fades/slides in each .lp-rv/.lp-rv-l/.lp-rv-r element once as it enters view.
   // Elements already in the viewport at observe() time can have their IntersectionObserver
@@ -775,12 +792,12 @@ function LandingPage() {
   // state). Deferring the class add to a fresh macrotask guarantees a real paint of the
   // "from" state happens first, regardless of the element's positioning scheme.
   useEffect(() => {
-    const els = document.querySelectorAll('.lp-rv, .lp-rv-l, .lp-rv-r');
+    const els = document.querySelectorAll<HTMLElement>('.lp-rv, .lp-rv-l, .lp-rv-r');
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const target = entry.target;
+          const target = entry.target;
+          if (entry.isIntersecting && target instanceof HTMLElement) {
             obs.unobserve(target);
             void target.offsetHeight;
             setTimeout(() => target.classList.add('lp-rv-in'), 0);
@@ -822,14 +839,14 @@ function LandingPage() {
       if (!el) return null;
       const obs = new IntersectionObserver(
         (entries) => {
-          if (!entries[0].isIntersecting) return;
+          if (!entries[0]?.isIntersecting) return;
           obs.disconnect();
           setLineIn((prev) => {
             const n = [...prev];
             n[i] = true;
             return n;
           });
-          const s = STATS[i];
+          const s = STATS[i]!;
           if (s.num === 0) return;
           const dur = 1600,
             start = Date.now();
@@ -851,10 +868,10 @@ function LandingPage() {
       obs.observe(el);
       return obs;
     });
-    return () => observers.forEach((o) => o && o.disconnect());
+    return () => observers.forEach((o) => o?.disconnect());
   }, []);
 
-  const ActivePanel = PANELS[FEATURES[activeFeature].panel];
+  const ActivePanel = PANELS[FEATURES[activeFeature]!.panel]!;
 
   return (
     <div className="lp">
@@ -884,7 +901,7 @@ function LandingPage() {
           sketchy templates, no overpriced lawyers.
         </p>
         <div className="lp-hero-actions">
-          <button className="lp-btn-primary" onClick={goToDashboard}>
+          <button className="lp-btn-primary" onClick={goDash}>
             Get started
           </button>
           <a
@@ -908,12 +925,12 @@ function LandingPage() {
         <div className="lp-logowall-track-wrap">
           <div className="lp-logowall-track">
             {[...LOGOS, ...LOGOS].map((logo, i, arr) => (
-              <React.Fragment key={i}>
+              <Fragment key={i}>
                 <div className="lp-lw-logo">
                   <img className="lp-lw-img" src={logo.src} alt={logo.name} />
                 </div>
                 {i !== arr.length - 1 && <div className="lp-lw-divider" />}
-              </React.Fragment>
+              </Fragment>
             ))}
           </div>
         </div>
@@ -938,7 +955,9 @@ function LandingPage() {
             {FEATURES.map((f, i) => (
               <div
                 key={i}
-                ref={(el) => (featItemRefs.current[i] = el)}
+                ref={(el) => {
+                  featItemRefs.current[i] = el;
+                }}
                 className={`lp-feat-item${activeFeature === i ? ' active' : ''}`}
               >
                 <div className="lp-feat-item-line" />
@@ -970,12 +989,14 @@ function LandingPage() {
               <div
                 key={i}
                 className={`lp-stat-row${lineIn[i] ? ' lp-line-in' : ''}`}
-                ref={(el) => (statRowRefs.current[i] = el)}
+                ref={(el) => {
+                  statRowRefs.current[i] = el;
+                }}
               >
                 <div className="lp-stat-num-row">
                   <div className="lp-stat-num">
                     {s.prefix || ''}
-                    {counts[i].toLocaleString()}
+                    {(counts[i] ?? 0).toLocaleString()}
                     {s.suffix}
                   </div>
                   <div className="lp-stat-label">{s.label}</div>
@@ -1099,7 +1120,9 @@ function LandingPage() {
           {MARKETING_PLANS.map((p, i) => (
             <div
               key={i}
-              ref={(el) => (pricingCardRefs.current[i] = el)}
+              ref={(el) => {
+                pricingCardRefs.current[i] = el;
+              }}
               className={`lp-pricing-card lp-rv lp-d${i}${p.featured ? ' featured' : ''}`}
             >
               {p.badge && <div className="lp-pricing-badge">{p.badge}</div>}
@@ -1133,7 +1156,7 @@ function LandingPage() {
                 onClick={() =>
                   p.enterprise
                     ? window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })
-                    : goToDashboard()
+                    : goDash()
                 }
               >
                 {p.cta}
@@ -1164,7 +1187,7 @@ function LandingPage() {
           </em>
         </h2>
         <div className="lp-protect-cta-actions lp-rv lp-d1">
-          <button className="lp-btn-primary" onClick={goToDashboard}>
+          <button className="lp-btn-primary" onClick={goDash}>
             Get started
           </button>
           <a

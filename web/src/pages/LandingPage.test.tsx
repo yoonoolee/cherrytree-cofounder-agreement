@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 import { breadcrumbs } from '../test/pageMeta.ts';
-import LandingPage from './LandingPage';
+import LandingPage from './LandingPage.tsx';
 
 // The marketing chrome has its own tests.
 vi.mock('../components/MarketingNav', () => ({ default: () => <nav data-testid="nav" /> }));
