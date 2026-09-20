@@ -50,13 +50,11 @@ export default tseslint.config(
         'error',
         { checksVoidReturn: { attributes: false } },
       ],
-      // Downgraded to warnings during the TS migration; flipped back to errors in the
-      // structural-cleanup phase once the existing offenders are removed.
+      // `_`-prefixed names are deliberately unused (destructuring rests, ignored args).
       '@typescript-eslint/no-unused-vars': [
-        'warn',
+        'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
       ],
-      'no-case-declarations': 'warn',
     },
   },
 
