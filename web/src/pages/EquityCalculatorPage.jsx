@@ -7,6 +7,69 @@ import Spreadsheet from 'react-spreadsheet';
 import '../components/EquityCalculator.css';
 import { calculateEquityPercentages } from '../utils/equityCalculation';
 
+/** The split as one bar segment per cofounder (greys from black to white) with a legend. */
+function EquityProgressBar({ equity, labels }) {
+  if (!equity) {
+    return null;
+  }
+
+  const numCof = equity.length;
+  const colors = Array.from({ length: numCof }, (_, i) => {
+    const value = numCof === 1 ? 0 : Math.round((i * 255) / (numCof - 1));
+    const hex = value.toString(16).padStart(2, '0');
+    return `#${hex}${hex}${hex}`;
+  });
+
+  return (
+    <div className="w-full">
+      <div
+        className="w-full h-7 bg-gray-200 rounded-lg flex relative overflow-hidden"
+        style={{ border: '1px solid #000000' }}
+      >
+        {equity.map((percentage, index) => {
+          if (percentage === 0) return null;
+          return (
+            <div
+              key={index}
+              className="transition-all duration-300 flex items-center justify-center relative"
+              style={{
+                width: `${percentage}%`,
+                backgroundColor: colors[index],
+              }}
+            >
+              <span
+                className="font-semibold whitespace-nowrap"
+                style={{
+                  fontSize: percentage >= 10 ? '0.75rem' : '0.5rem',
+                  paddingLeft: percentage >= 10 ? '0.25rem' : '0.125rem',
+                  paddingRight: percentage >= 10 ? '0.25rem' : '0.125rem',
+                  color: index < Math.ceil(numCof / 2) ? '#FFFFFF' : '#000000',
+                  position: 'relative',
+                  zIndex: 1,
+                }}
+              >
+                {percentage.toFixed(2)}%
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 justify-center">
+        {equity.map((percentage, index) => (
+          <div key={index} className="flex items-center gap-2">
+            <div
+              className="w-3 h-3 rounded-sm"
+              style={{ backgroundColor: colors[index], border: '1px solid #000000' }}
+            />
+            <span className="text-sm text-gray-700">{labels[index]}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function EquityCalculatorPage() {
   // SEO meta tags
   usePageMeta({
@@ -227,69 +290,6 @@ function EquityCalculatorPage() {
     };
   }, [showCalculator]);
 
-  // Equity Progress Bar component
-  const EquityProgressBar = ({ equity }) => {
-    if (!equity) {
-      return null;
-    }
-
-    const numCof = equity.length;
-    const colors = Array.from({ length: numCof }, (_, i) => {
-      const value = numCof === 1 ? 0 : Math.round((i * 255) / (numCof - 1));
-      const hex = value.toString(16).padStart(2, '0');
-      return `#${hex}${hex}${hex}`;
-    });
-
-    return (
-      <div className="w-full">
-        <div
-          className="w-full h-7 bg-gray-200 rounded-lg flex relative overflow-hidden"
-          style={{ border: '1px solid #000000' }}
-        >
-          {equity.map((percentage, index) => {
-            if (percentage === 0) return null;
-            return (
-              <div
-                key={index}
-                className="transition-all duration-300 flex items-center justify-center relative"
-                style={{
-                  width: `${percentage}%`,
-                  backgroundColor: colors[index],
-                }}
-              >
-                <span
-                  className="font-semibold whitespace-nowrap"
-                  style={{
-                    fontSize: percentage >= 10 ? '0.75rem' : '0.5rem',
-                    paddingLeft: percentage >= 10 ? '0.25rem' : '0.125rem',
-                    paddingRight: percentage >= 10 ? '0.25rem' : '0.125rem',
-                    color: index < Math.ceil(numCof / 2) ? '#FFFFFF' : '#000000',
-                    position: 'relative',
-                    zIndex: 1,
-                  }}
-                >
-                  {percentage.toFixed(2)}%
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 justify-center">
-          {equity.map((percentage, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-sm"
-                style={{ backgroundColor: colors[index], border: '1px solid #000000' }}
-              />
-              <span className="text-sm text-gray-700">{getCofounderDisplayName(index)}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="lp" style={{ minHeight: '100vh' }}>
       <MarketingGrain />
@@ -445,7 +445,12 @@ function EquityCalculatorPage() {
 
                 {/* Equity Progress Bar */}
                 <div className="lp-eq-bar-wrap">
-                  <EquityProgressBar equity={currentEquity} />
+                  <EquityProgressBar
+                    equity={currentEquity}
+                    labels={Array.from({ length: numCofounders }, (_, i) =>
+                      getCofounderDisplayName(i),
+                    )}
+                  />
                 </div>
 
                 {/* Share button */}
