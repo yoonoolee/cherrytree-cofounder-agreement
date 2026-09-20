@@ -6,26 +6,23 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import { UserProvider } from './contexts/UserContext';
 import { Toaster } from 'react-hot-toast';
 import * as Sentry from '@sentry/react';
+import { env } from './lib/env';
 
 // Initialize Sentry for error tracking
-if (import.meta.env.VITE_SENTRY_DSN) {
+if (env.sentryDsn) {
   Sentry.init({
-    dsn: import.meta.env.VITE_SENTRY_DSN,
-    environment: import.meta.env.PROD ? 'production' : 'development',
+    dsn: env.sentryDsn,
+    environment: env.isProd ? 'production' : 'development',
     tracesSampleRate: 0.1,
   });
 }
 
 // Enforce HTTPS in production
-if (
-  import.meta.env.VITE_ENFORCE_HTTPS === 'true' &&
-  import.meta.env.PROD &&
-  window.location.protocol === 'http:'
-) {
+if (env.enforceHttps && env.isProd && window.location.protocol === 'http:') {
   window.location.href = window.location.href.replace('http:', 'https:');
 }
 
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const clerkPubKey = env.clerkPublishableKey;
 
 if (!clerkPubKey) {
   throw new Error('Missing Clerk Publishable Key');
