@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node", "vitest/globals"],
+    // Mirrors the esbuild alias: shared is inlined into the bundle, never installed.
+    "paths": { "@cherrytree/shared": ["../shared/src/index.ts"] }
+  },
+  "include": ["src", "test", "vitest.config.ts"]
+}

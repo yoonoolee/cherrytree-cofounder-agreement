@@ -1,0 +1,652 @@
+/**
+ * Question Configuration
+ *
+ * Single source of truth for all survey questions, their types, options, and metadata.
+ * Used for:
+ * - Rendering form fields
+ * - Search functionality
+ * - Validation
+ * - Progress tracking
+ */
+
+import {
+  FIELDS,
+  SECTION_IDS,
+  ENTITY_TYPES,
+  INDUSTRIES,
+  ROLES,
+  MAJOR_DECISIONS,
+  TIE_RESOLUTION_OPTIONS,
+  VESTING_SCHEDULES,
+  VESTED_SHARES_DISPOSAL_OPTIONS,
+  PERFORMANCE_CONSEQUENCES,
+  TERMINATION_WITH_CAUSE_OPTIONS,
+  NON_COMPETE_DURATIONS,
+  NON_SOLICIT_DURATIONS,
+  DISPUTE_RESOLUTION_OPTIONS,
+  US_STATES,
+  AMENDMENT_PROCESS_OPTIONS,
+  type Cofounder,
+  type SectionId,
+  type SurveyData,
+  type SurveyFieldName,
+} from '@cherrytree/shared';
+
+// Input type constants
+const INPUT_TYPES = {
+  TEXT: 'text',
+  TEXTAREA: 'textarea',
+  NUMBER: 'number',
+  DATE: 'date',
+  RADIO: 'radio', // Single selection, circular buttons
+  CHECKBOX: 'checkbox', // Multiple selections, square boxes
+  DROPDOWN: 'dropdown', // Select dropdown
+  ACKNOWLEDGMENT: 'acknowledgment', // Multi-user checkboxes
+  CUSTOM: 'custom', // Custom components (Equity Calculator, etc.)
+} as const;
+
+/** A configurable field: a survey field or one of the per-cofounder fields nested in `cofounders`. */
+export type QuestionFieldName = SurveyFieldName | keyof Cofounder;
+
+/** A radio/dropdown option: a plain value or a value with its own label (and optional blurb). */
+interface QuestionOption {
+  value: string;
+  label: string;
+  description?: string;
+}
+
+interface QuestionBase {
+  section: SectionId;
+  /** Card title; acknowledgments whose text carries the wording may omit it. */
+  question?: string;
+  required: boolean;
+  tooltip?: string;
+  /** "The standard is …" hint shown under the question. */
+  standard?: string;
+  placeholder?: string;
+  description?: string;
+  /** Rendered per cofounder row inside `parentField`. */
+  nested?: boolean;
+  parentField?: SurveyFieldName;
+  /** Shown only when `field` has a value (any truthy value when `value` is omitted). */
+  conditionalOn?: { field: SurveyFieldName; value?: string };
+  /** Choosing `value` re-initializes `fields`; choosing anything else clears them. */
+  clearsFields?: {
+    value: string;
+    fields: readonly { field: SurveyFieldName; type?: 'acknowledgment' }[];
+  };
+}
+
+interface TextQuestion extends QuestionBase {
+  type: 'text' | 'textarea' | 'number' | 'date';
+}
+
+/** Single choice; `otherField` adds a free-text "Other". */
+interface RadioQuestion extends QuestionBase {
+  type: 'radio';
+  options: readonly (string | QuestionOption)[];
+  otherField?: QuestionFieldName;
+}
+
+/** Single choice rendered by `CustomSelect`, which needs value/label pairs. */
+interface DropdownQuestion extends QuestionBase {
+  type: 'dropdown';
+  options: readonly QuestionOption[];
+  otherField?: QuestionFieldName;
+}
+
+/** Multiple choice; stored as a string array. */
+interface CheckboxQuestion extends QuestionBase {
+  type: 'checkbox';
+  options: readonly string[];
+  otherField?: QuestionFieldName;
+}
+
+/** One checkbox per active collaborator; stored as `{ [userId]: boolean }`. */
+interface AcknowledgmentQuestion extends QuestionBase {
+  type: 'acknowledgment';
+  requiresAllCollaborators: true;
+  /** Body text; a function fills in other answers. */
+  acknowledgmentText?: string | ((formData: Partial<SurveyData>) => string);
+}
+
+/** Rendered by the section component itself. */
+interface CustomQuestion extends QuestionBase {
+  type: 'custom';
+}
+
+export type QuestionConfig =
+  | TextQuestion
+  | RadioQuestion
+  | DropdownQuestion
+  | CheckboxQuestion
+  | AcknowledgmentQuestion
+  | CustomQuestion;
+
+/**
+ * Question configuration for all fields
+ * If otherField is present, "Other" option is automatically included
+ */
+export const QUESTION_CONFIG = {
+  // ============================================================================
+  // Section 1: Formation & Purpose
+  // ============================================================================
+
+  [FIELDS.COMPANY_NAME]: {
+    section: SECTION_IDS.FORMATION,
+    question: "What's your company's name?",
+    type: INPUT_TYPES.TEXT,
+    required: true,
+    placeholder: 'Enter your company name',
+    tooltip: "Make sure it's good, your company might go big one day.",
+  },
+
+  [FIELDS.ENTITY_TYPE]: {
+    section: SECTION_IDS.FORMATION,
+    question: "What is your company's current or intended legal structure?",
+    type: INPUT_TYPES.RADIO,
+    required: true,
+    options: ENTITY_TYPES,
+    otherField: FIELDS.ENTITY_TYPE_OTHER,
+    tooltip:
+      'This defines how your company is structured for ownership, taxes, and decision-making. If you plan to raise venture capital, a C-Corp is usually preferred.',
+  },
+
+  [FIELDS.REGISTERED_STATE]: {
+    section: SECTION_IDS.FORMATION,
+    question: 'What state will your company be registered in?',
+    type: INPUT_TYPES.DROPDOWN,
+    required: true,
+    options: US_STATES.map((state) => ({
+      value: state.label,
+      label: `${state.label} (${state.value})`,
+    })),
+    tooltip:
+      'Delaware is a popular choice for many startups because its laws and courts are well established. Just be aware you may have additional fees or filings if your business is based elsewhere.',
+  },
+
+  [FIELDS.MAILING_STREET]: {
+    section: SECTION_IDS.FORMATION,
+    question: 'Mailing Street Address',
+    type: INPUT_TYPES.TEXT,
+    required: true,
+  },
+
+  [FIELDS.MAILING_CITY]: {
+    section: SECTION_IDS.FORMATION,
+    question: 'City',
+    type: INPUT_TYPES.TEXT,
+    required: true,
+  },
+
+  [FIELDS.MAILING_STATE]: {
+    section: SECTION_IDS.FORMATION,
+    question: 'State',
+    type: INPUT_TYPES.TEXT,
+    required: true,
+  },
+
+  [FIELDS.MAILING_ZIP]: {
+    section: SECTION_IDS.FORMATION,
+    question: 'ZIP Code',
+    type: INPUT_TYPES.TEXT,
+    required: true,
+  },
+
+  [FIELDS.COMPANY_DESCRIPTION]: {
+    section: SECTION_IDS.FORMATION,
+    question: 'Can you describe your company in 1 line?',
+    type: INPUT_TYPES.TEXT,
+    required: true,
+    placeholder: 'Helping cofounders create Cofounder Agreements',
+    tooltip: 'Describe what you do in plain language. No buzzwords needed.',
+  },
+
+  [FIELDS.INDUSTRIES]: {
+    section: SECTION_IDS.FORMATION,
+    question: 'What industry is it in?',
+    type: INPUT_TYPES.CHECKBOX,
+    required: true,
+    options: INDUSTRIES,
+    otherField: FIELDS.INDUSTRY_OTHER,
+    tooltip:
+      'Pick the industry that best describes what you currently do. Aspirations to conquer all markets can wait.',
+  },
+
+  // ============================================================================
+  // Section 2: Cofounder Info
+  // ============================================================================
+
+  [FIELDS.COFOUNDER_COUNT]: {
+    section: SECTION_IDS.COFOUNDERS,
+    question: 'How many cofounders are there?',
+    type: INPUT_TYPES.NUMBER,
+    required: true,
+  },
+
+  // Nested fields (inside cofounders array)
+  [FIELDS.COFOUNDER_FULL_NAME]: {
+    section: SECTION_IDS.COFOUNDERS,
+    question: 'Full Name',
+    type: INPUT_TYPES.TEXT,
+    required: true,
+    nested: true,
+    parentField: FIELDS.COFOUNDERS,
+  },
+
+  [FIELDS.COFOUNDER_TITLE]: {
+    section: SECTION_IDS.COFOUNDERS,
+    question: 'Title',
+    type: INPUT_TYPES.TEXT,
+    required: true,
+    nested: true,
+    parentField: FIELDS.COFOUNDERS,
+  },
+
+  [FIELDS.COFOUNDER_EMAIL]: {
+    section: SECTION_IDS.COFOUNDERS,
+    question: 'Email',
+    type: INPUT_TYPES.TEXT,
+    required: true,
+    nested: true,
+    parentField: FIELDS.COFOUNDERS,
+  },
+
+  [FIELDS.COFOUNDER_ROLES]: {
+    section: SECTION_IDS.COFOUNDERS,
+    question: 'Roles & Responsibilities',
+    type: INPUT_TYPES.CHECKBOX,
+    required: true,
+    options: ROLES,
+    otherField: FIELDS.COFOUNDER_ROLES_OTHER,
+    nested: true,
+    parentField: FIELDS.COFOUNDERS,
+  },
+
+  // ============================================================================
+  // Section 3: Equity Allocation
+  // ============================================================================
+
+  [FIELDS.EQUITY_ENTRIES]: {
+    section: SECTION_IDS.EQUITY_ALLOCATION,
+    question: 'Final Equity Allocation',
+    type: INPUT_TYPES.CUSTOM,
+    required: true,
+  },
+
+  [FIELDS.ACKNOWLEDGE_EQUITY_ALLOCATION]: {
+    section: SECTION_IDS.EQUITY_ALLOCATION,
+    question: 'I acknowledge and accept this equity allocation.',
+    type: INPUT_TYPES.ACKNOWLEDGMENT,
+    required: true,
+    requiresAllCollaborators: true,
+  },
+
+  // ============================================================================
+  // Section 4: Vesting Schedule
+  // ============================================================================
+
+  [FIELDS.VESTING_START_DATE]: {
+    section: SECTION_IDS.VESTING,
+    question: 'What date should the vesting start?',
+    type: INPUT_TYPES.DATE,
+    required: true,
+    tooltip: 'This can start today or retroactively when the work began.',
+  },
+
+  [FIELDS.VESTING_SCHEDULE]: {
+    section: SECTION_IDS.VESTING,
+    question: 'What vesting schedule will you use?',
+    type: INPUT_TYPES.RADIO,
+    required: true,
+    options: VESTING_SCHEDULES,
+    otherField: FIELDS.VESTING_SCHEDULE_OTHER,
+    tooltip:
+      'You earn no equity until the "cliff" is hit. Then, once the cliff is reached, you immediately vest the first portion of your equity, and the rest continues to vest gradually over the remaining period.',
+    standard: 'The standard is 4 years with a 1-year cliff.',
+  },
+
+  [FIELDS.CLIFF_PERCENTAGE]: {
+    section: SECTION_IDS.VESTING,
+    question: 'What percent of equity will be vested once the cliff is complete?',
+    type: INPUT_TYPES.TEXT, // Percentage input with custom formatting
+    required: true,
+    tooltip: 'If you leave before the cliff, you get nothing.',
+    standard: 'The standard is 25% for 4 years with a 1-year cliff.',
+  },
+
+  [FIELDS.ACCELERATION_TRIGGER]: {
+    section: SECTION_IDS.VESTING,
+    question:
+      'If the company is acquired and a cofounder is terminated without cause, should their unvested shares accelerate?',
+    type: INPUT_TYPES.RADIO,
+    required: true,
+    options: ['Yes', 'No'],
+    tooltip:
+      "Acceleration decides if unvested shares vest early. Single-trigger happens when the company is acquired. Double-trigger only kicks in if the company is acquired and you're terminated without cause.",
+  },
+
+  [FIELDS.SHARES_SELL_NOTICE_DAYS]: {
+    section: SECTION_IDS.VESTING,
+    question:
+      'If a cofounder wants to sell their shares, how many days notice do they need to provide the Board and shareholders?',
+    type: INPUT_TYPES.NUMBER,
+    required: true,
+  },
+
+  [FIELDS.SHARES_BUYBACK_DAYS]: {
+    section: SECTION_IDS.VESTING,
+    question: 'If a cofounder resigns, how many days does the company have to buy back the shares?',
+    type: INPUT_TYPES.NUMBER,
+    required: true,
+  },
+
+  [FIELDS.ACKNOWLEDGE_FORFEITURE]: {
+    section: SECTION_IDS.VESTING,
+    question:
+      'I acknowledge that if a cofounder dies, becomes permanently disabled, or is otherwise incapacitated, their unvested shares are automatically forfeited and returned to the company.',
+    type: INPUT_TYPES.ACKNOWLEDGMENT,
+    required: true,
+    requiresAllCollaborators: true,
+    tooltip: 'Knock on wood.',
+  },
+
+  [FIELDS.VESTED_SHARES_DISPOSAL]: {
+    section: SECTION_IDS.VESTING,
+    question: 'If a cofounder dies, becomes permanently disabled, or is otherwise incapacitated:',
+    type: INPUT_TYPES.RADIO,
+    required: true,
+    options: VESTED_SHARES_DISPOSAL_OPTIONS,
+  },
+
+  // ============================================================================
+  // Section 5: Decision-Making
+  // ============================================================================
+
+  [FIELDS.MAJOR_DECISIONS]: {
+    section: SECTION_IDS.DECISION_MAKING,
+    question: 'What type of decisions require a discussion between all cofounders?',
+    type: INPUT_TYPES.CHECKBOX,
+    required: true,
+    options: MAJOR_DECISIONS,
+    otherField: FIELDS.MAJOR_DECISIONS_OTHER,
+    tooltip: "Which choices should never happen unless everyone's on board. Not office snacks.",
+  },
+
+  [FIELDS.EQUITY_VOTING_POWER]: {
+    section: SECTION_IDS.DECISION_MAKING,
+    question: 'Should equity ownership reflect voting power?',
+    type: INPUT_TYPES.RADIO,
+    required: true,
+    options: [
+      { value: 'Yes', label: 'Yes', description: 'Voting weight tied to equity %' },
+      { value: 'No', label: 'No', description: 'All founders have equal vote' },
+    ],
+  },
+
+  [FIELDS.TIE_RESOLUTION]: {
+    section: SECTION_IDS.DECISION_MAKING,
+    question: 'If cofounders are deadlocked, how should the tie be resolved?',
+    type: INPUT_TYPES.RADIO,
+    required: true,
+    options: TIE_RESOLUTION_OPTIONS,
+    tooltip: 'Decide how to break a stalemate before it becomes a staring contest nobody wins.',
+  },
+
+  [FIELDS.ACKNOWLEDGE_TIE_RESOLUTION]: {
+    section: SECTION_IDS.DECISION_MAKING,
+    type: INPUT_TYPES.ACKNOWLEDGMENT,
+    required: true,
+    requiresAllCollaborators: true,
+    conditionalOn: { field: FIELDS.TIE_RESOLUTION },
+    acknowledgmentText: (formData) =>
+      `I acknowledge that in the event of a deadlock, the Cofounders agree to first seek resolution through informal negotiation for a period of 30 days. If unresolved, the deadlock shall be resolved by ${formData[FIELDS.TIE_RESOLUTION]}.`,
+  },
+
+  [FIELDS.INCLUDE_SHOTGUN_CLAUSE]: {
+    section: SECTION_IDS.DECISION_MAKING,
+    question:
+      'Do you want to include a shotgun clause if you and your cofounder(s) cannot resolve deadlocks?',
+    type: INPUT_TYPES.RADIO,
+    required: true,
+    options: ['Yes', 'No'],
+    tooltip:
+      "You can essentially offer to buy each other out. You're incentivized to make a reasonable offer because you might be bought out.",
+  },
+
+  [FIELDS.ACKNOWLEDGE_SHOTGUN_CLAUSE]: {
+    section: SECTION_IDS.DECISION_MAKING,
+    type: INPUT_TYPES.ACKNOWLEDGMENT,
+    required: true,
+    requiresAllCollaborators: true,
+    conditionalOn: { field: FIELDS.INCLUDE_SHOTGUN_CLAUSE, value: 'Yes' },
+    acknowledgmentText:
+      'I acknowledge that no partial buy/sell is allowed and payment is due in cash within 60 days of acceptance.',
+  },
+
+  // ============================================================================
+  // Section 6: IP & Ownership
+  // ============================================================================
+
+  [FIELDS.HAS_PRE_EXISTING_IP]: {
+    section: SECTION_IDS.IP,
+    question:
+      'Has any cofounder created code, designs, or other assets before joining the company that might be used in the business?',
+    type: INPUT_TYPES.RADIO,
+    required: true,
+    options: ['Yes', 'No'],
+    tooltip:
+      'Nail down ownership now, or risk ugly debates later over who really owns what once the company takes off.',
+    clearsFields: {
+      value: 'Yes',
+      fields: [{ field: FIELDS.ACKNOWLEDGE_IP_ASSIGNMENT, type: 'acknowledgment' }],
+    },
+  },
+
+  [FIELDS.ACKNOWLEDGE_IP_ASSIGNMENT]: {
+    section: SECTION_IDS.IP,
+    question:
+      'I acknowledge that any pre-existing IP can be assigned to the company via a written agreement if the cofounders agree.',
+    type: INPUT_TYPES.ACKNOWLEDGMENT,
+    required: true,
+    requiresAllCollaborators: true,
+    conditionalOn: { field: FIELDS.HAS_PRE_EXISTING_IP, value: 'Yes' },
+  },
+
+  [FIELDS.ACKNOWLEDGE_IP_OWNERSHIP]: {
+    section: SECTION_IDS.IP,
+    question:
+      "I acknowledge that all inventions, discoveries, designs, developments, improvements, processes, works of authorship, trade secrets, and other intellectual property conceived, created, developed, or reduced to practice by the Cofounder, either alone or with others, in the course of their work for the Company or using the Company's resources, shall be the sole and exclusive property of the Company.",
+    type: INPUT_TYPES.ACKNOWLEDGMENT,
+    required: true,
+    requiresAllCollaborators: true,
+  },
+
+  // ============================================================================
+  // Section 7: Compensation
+  // ============================================================================
+
+  [FIELDS.TAKING_COMPENSATION]: {
+    section: SECTION_IDS.COMPENSATION,
+    question: 'Are any cofounders currently taking compensation or salary from the company?',
+    type: INPUT_TYPES.RADIO,
+    required: true,
+    options: ['Yes', 'No'],
+    clearsFields: { value: 'Yes', fields: [{ field: FIELDS.COMPENSATIONS }] },
+  },
+
+  [FIELDS.COMPENSATIONS]: {
+    section: SECTION_IDS.COMPENSATION,
+    question: 'Compensation Details',
+    type: INPUT_TYPES.CUSTOM,
+    required: false,
+    conditionalOn: { field: FIELDS.TAKING_COMPENSATION, value: 'Yes' },
+  },
+
+  [FIELDS.SPENDING_LIMIT]: {
+    section: SECTION_IDS.COMPENSATION,
+    question:
+      "What's the spending limit, in USD, before a cofounder needs to check with other cofounders?",
+    type: INPUT_TYPES.NUMBER,
+    required: true,
+  },
+
+  // ============================================================================
+  // Section 8: Performance
+  // ============================================================================
+
+  [FIELDS.PERFORMANCE_CONSEQUENCES]: {
+    section: SECTION_IDS.PERFORMANCE,
+    question: 'What happens if a cofounder fails to meet their agreed-upon obligations?',
+    type: INPUT_TYPES.CHECKBOX,
+    required: true,
+    options: PERFORMANCE_CONSEQUENCES,
+    tooltip:
+      'These measures are intended for serious, ongoing failures to meet material obligations, not for minor issues or temporary setbacks.',
+  },
+
+  [FIELDS.REMEDY_PERIOD_DAYS]: {
+    section: SECTION_IDS.PERFORMANCE,
+    question:
+      'How many days does a cofounder have to fix the issue after receiving written notice before termination can occur?',
+    type: INPUT_TYPES.NUMBER,
+    required: true,
+    tooltip:
+      'This period allows cofounders to address issues in good faith before more serious action is taken.',
+  },
+
+  [FIELDS.TERMINATION_WITH_CAUSE]: {
+    section: SECTION_IDS.PERFORMANCE,
+    question: 'Which of the following constitutes termination "with cause"?',
+    type: INPUT_TYPES.CHECKBOX,
+    required: true,
+    options: TERMINATION_WITH_CAUSE_OPTIONS,
+    otherField: FIELDS.TERMINATION_WITH_CAUSE_OTHER,
+    tooltip: 'Basically, what kind of bad behavior gets you booted.',
+  },
+
+  [FIELDS.VOLUNTARY_NOTICE_DAYS]: {
+    section: SECTION_IDS.PERFORMANCE,
+    question: 'How many days is the notice period if a Cofounder wishes to voluntarily leave?',
+    type: INPUT_TYPES.NUMBER,
+    required: true,
+  },
+
+  // ============================================================================
+  // Section 9: Non-Competition
+  // ============================================================================
+
+  [FIELDS.ACKNOWLEDGE_CONFIDENTIALITY]: {
+    section: SECTION_IDS.NON_COMPETITION,
+    question:
+      "I acknowledge that each Cofounder agrees to hold all Confidential Information in strict confidence and not to disclose any Confidential Information to any third party without the Company's prior written consent.",
+    type: INPUT_TYPES.ACKNOWLEDGMENT,
+    required: true,
+    requiresAllCollaborators: true,
+  },
+
+  [FIELDS.NON_COMPETE_DURATION]: {
+    section: SECTION_IDS.NON_COMPETITION,
+    question: 'How long should the non-competition obligation last after a cofounder leaves?',
+    type: INPUT_TYPES.RADIO,
+    required: true,
+    options: NON_COMPETE_DURATIONS,
+    otherField: FIELDS.NON_COMPETE_DURATION_OTHER,
+    tooltip:
+      'This includes joining or starting a competing company. Note: Non-compete agreements may not be enforceable in certain states (e.g., California).',
+  },
+
+  [FIELDS.NON_SOLICIT_DURATION]: {
+    section: SECTION_IDS.NON_COMPETITION,
+    question: 'How long should the non-solicitation obligation last after a cofounder leaves?',
+    type: INPUT_TYPES.RADIO,
+    required: true,
+    options: NON_SOLICIT_DURATIONS,
+    otherField: FIELDS.NON_SOLICIT_DURATION_OTHER,
+    tooltip:
+      "Non-solicitation prevents a cofounder who leaves from recruiting the Company's team or clients for a certain period.",
+  },
+
+  // ============================================================================
+  // Section 10: General Provisions
+  // ============================================================================
+
+  [FIELDS.DISPUTE_RESOLUTION]: {
+    section: SECTION_IDS.GENERAL_PROVISIONS,
+    question: 'How should disputes among cofounders be resolved?',
+    type: INPUT_TYPES.RADIO,
+    required: true,
+    options: DISPUTE_RESOLUTION_OPTIONS,
+    otherField: FIELDS.DISPUTE_RESOLUTION_OTHER,
+  },
+
+  [FIELDS.GOVERNING_LAW]: {
+    section: SECTION_IDS.GENERAL_PROVISIONS,
+    question: "Which state's laws will govern this agreement?",
+    type: INPUT_TYPES.DROPDOWN,
+    required: true,
+    options: US_STATES.map((state) => ({
+      value: state.label,
+      label: `${state.label} (${state.value})`,
+    })),
+  },
+
+  [FIELDS.AMENDMENT_PROCESS]: {
+    section: SECTION_IDS.GENERAL_PROVISIONS,
+    question: 'How can this agreement be amended or modified?',
+    type: INPUT_TYPES.RADIO,
+    required: true,
+    options: AMENDMENT_PROCESS_OPTIONS,
+    otherField: FIELDS.AMENDMENT_PROCESS_OTHER,
+  },
+
+  [FIELDS.REVIEW_FREQUENCY_MONTHS]: {
+    section: SECTION_IDS.GENERAL_PROVISIONS,
+    question: 'How often (in months) should this agreement be reviewed by the cofounders?',
+    type: INPUT_TYPES.NUMBER,
+    required: true,
+  },
+
+  [FIELDS.ACKNOWLEDGE_PERIODIC_REVIEW]: {
+    section: SECTION_IDS.GENERAL_PROVISIONS,
+    question:
+      'I acknowledge that this Agreement shall be reviewed periodically to ensure it remains current and effective.',
+    type: INPUT_TYPES.ACKNOWLEDGMENT,
+    required: true,
+    requiresAllCollaborators: true,
+    acknowledgmentText: (formData) => {
+      const months = formData[FIELDS.REVIEW_FREQUENCY_MONTHS];
+      const frequency = months
+        ? `${months} month${months !== '1' ? 's' : ''}`
+        : '[frequency not specified]';
+      return `I acknowledge that this Agreement shall be reviewed every ${frequency} to ensure it remains current and effective.`;
+    },
+  },
+
+  [FIELDS.ACKNOWLEDGE_AMENDMENT_REVIEW_REQUEST]: {
+    section: SECTION_IDS.GENERAL_PROVISIONS,
+    question:
+      "I acknowledge that any Cofounder may request a review of this Agreement in the event of material changes in circumstances affecting the Company or the Cofounder's role. Any amendments proposed pursuant to such review shall become effective only if approved and executed in writing according to the amendment process set forth in this Agreement.",
+    type: INPUT_TYPES.ACKNOWLEDGMENT,
+    required: true,
+    requiresAllCollaborators: true,
+  },
+
+  [FIELDS.ACKNOWLEDGE_ENTIRE_AGREEMENT]: {
+    section: SECTION_IDS.GENERAL_PROVISIONS,
+    question:
+      'I acknowledge that this Agreement constitutes the entire agreement between the Cofounders regarding the subject matter hereof and supersedes all prior agreements, understandings, negotiations, and discussions, whether oral or written.',
+    type: INPUT_TYPES.ACKNOWLEDGMENT,
+    required: true,
+    requiresAllCollaborators: true,
+  },
+
+  [FIELDS.ACKNOWLEDGE_SEVERABILITY]: {
+    section: SECTION_IDS.GENERAL_PROVISIONS,
+    question:
+      'I acknowledge that if any provision of this Agreement is held to be invalid or unenforceable, the remaining provisions shall continue in full force and effect.',
+    type: INPUT_TYPES.ACKNOWLEDGMENT,
+    required: true,
+    requiresAllCollaborators: true,
+  },
+} satisfies Partial<Record<QuestionFieldName, QuestionConfig>>;

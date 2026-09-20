@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "ignoreBinaries": ["firebase"],
+  "workspaces": {
+    ".": {},
+    "web": {
+      "entry": ["index.html"],
+      "vite": {
+        "config": ["vite.config.ts", "vitest.config.ts"]
+      }
+    },
+    "shared": {}
+  },
+  "ignore": ["functions/**"]
+}

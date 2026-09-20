@@ -1,0 +1,244 @@
+import { useState, type FormEvent } from 'react';
+import { toErrorMessage, type Plan } from '@cherrytree/shared';
+
+import { callFunction } from '../lib/functions.ts';
+import { useUser } from '../hooks/useUser.ts';
+import { PRICING_PLANS, type PricingPlan } from '../constants/pricing.ts';
+import ProWaitlistForm from './ProWaitlistForm.tsx';
+
+// Constants
+const WIGGLE_DURATION_MS = 500; // Duration of wiggle animation for validation errors
+// Mirror functions/src/config.ts (normalizeProjectName) so the server never rejects a name
+// the client accepted.
+const PROJECT_NAME_MIN_LENGTH = 2;
+const PROJECT_NAME_MAX_LENGTH = 100;
+
+/** A plan that can be bought (as opposed to the contact-us Enterprise tier). */
+type PurchasablePlan = PricingPlan & { key: Plan };
+
+// Filter to only Starter and Pro for payment modal
+const PLANS = PRICING_PLANS.filter(
+  (plan): plan is PurchasablePlan => plan.key === 'starter' || plan.key === 'pro',
+);
+
+interface PaymentModalProps {
+  onClose: () => void;
+}
+
+/** Names the project and starts a Stripe Checkout; Stripe returns the user to the dashboard. */
+function PaymentModal({ onClose }: PaymentModalProps) {
+  const { currentUser, loading: userLoading } = useUser();
+  const [projectName, setProjectName] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState<Plan>('starter');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [isWiggling, setIsWiggling] = useState(false);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const trimmedName = projectName.trim();
+
+    // Validate project name
+    if (!trimmedName) {
+      setIsWiggling(true);
+      setTimeout(() => setIsWiggling(false), WIGGLE_DURATION_MS);
+      return;
+    }
+
+    if (trimmedName.length < PROJECT_NAME_MIN_LENGTH) {
+      setError(`Company name must be at least ${PROJECT_NAME_MIN_LENGTH} characters`);
+      setIsWiggling(true);
+      setTimeout(() => setIsWiggling(false), WIGGLE_DURATION_MS);
+      return;
+    }
+
+    if (trimmedName.length > PROJECT_NAME_MAX_LENGTH) {
+      setError(`Company name must be less than ${PROJECT_NAME_MAX_LENGTH} characters`);
+      return;
+    }
+
+    // Prevent script injection and malicious patterns
+    // Note: Server-side sanitization is the real protection, this is just early feedback
+    const dangerousPatterns = [
+      /<|>/, // HTML tags
+      /javascript:/i, // javascript: protocol
+      /data:/i, // data: protocol
+      /vbscript:/i, // vbscript: protocol
+      /on\w+=/i, // event handlers (onclick, onerror, etc.)
+    ];
+
+    if (dangerousPatterns.some((pattern) => pattern.test(trimmedName))) {
+      setError('Company name contains invalid characters');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      if (userLoading) {
+        throw new Error('Please wait while we load your account...');
+      }
+
+      if (!currentUser) {
+        throw new Error('You must be logged in to create a project');
+      }
+
+      // The server maps the plan to its Stripe price and builds the redirect URLs.
+      const { url } = await callFunction('createCheckoutSession', {
+        plan: selectedPlan,
+        projectName: trimmedName,
+      });
+
+      // Redirect to Stripe checkout
+      if (url) {
+        window.location.href = url;
+      } else {
+        throw new Error('Failed to create checkout session');
+      }
+    } catch (err) {
+      console.error('Error creating checkout session:', err);
+      setError(toErrorMessage(err) || 'Failed to start payment. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-3 md:p-4 z-[9999]"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white/95 backdrop-blur-xl rounded-lg shadow-2xl border border-gray-200/50 max-w-2xl w-full p-4 md:p-8 relative z-[10000] max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-start mb-4 md:mb-6">
+          <div className="flex-1 pr-4">
+            <h2 className="text-lg md:text-2xl font-bold text-gray-900">
+              Start a New Cofounder Agreement
+            </h2>
+            <p className="text-xs md:text-sm text-gray-600 mt-1">
+              Choose your plan and get started
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-2xl flex-shrink-0"
+          >
+            ×
+          </button>
+        </div>
+
+        {error && <p className="text-xs text-red-950 mb-4">{error}</p>}
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4 md:mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+            <input
+              type="text"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              className={`w-full px-0 py-2 border-0 border-b-2 border-gray-300 focus:border-black focus:ring-0 bg-transparent text-gray-900 ${isWiggling ? 'animate-wiggle' : ''}`}
+              placeholder="Enter company name"
+            />
+          </div>
+
+          {/* Plan Selection */}
+          <div className="mb-4 md:mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">Select Plan</label>
+            <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 items-stretch">
+              {PLANS.map((plan) => {
+                const { key } = plan;
+                const isProPlan = key === 'pro';
+                const isDisabled = isProPlan;
+
+                const cardContent = (
+                  <>
+                    {!isProPlan && (
+                      <div
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 mb-2 ${
+                          selectedPlan === key ? 'border-black' : 'border-gray-300'
+                        }`}
+                      >
+                        {selectedPlan === key && (
+                          <div className="w-2 h-2 rounded-full bg-black"></div>
+                        )}
+                      </div>
+                    )}
+                    <div className="mb-2">
+                      <h3 className="text-sm md:text-base font-semibold text-gray-900">
+                        {plan.name}
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-0.5">{plan.description}</p>
+                    </div>
+                    <p className="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-3">
+                      {plan.price}
+                    </p>
+                    <ul className="space-y-1.5">
+                      {plan.features.map((feature, idx) => (
+                        <li key={idx} className="text-xs text-gray-600 flex items-start">
+                          <span className="mr-1.5 flex-shrink-0 mt-0.5">✓</span>
+                          <span className="leading-tight">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    {isProPlan && (
+                      <div className="mt-3 pt-3 border-t border-gray-200 md:mt-4 md:pt-4">
+                        <ProWaitlistForm source="payment_modal" />
+                      </div>
+                    )}
+                  </>
+                );
+
+                return (
+                  <div key={key} className="relative">
+                    {/* Coming Soon Badge for Pro */}
+                    {isProPlan && (
+                      <div
+                        className="absolute -top-2 -right-2 text-white text-xs font-semibold px-3 py-1 rounded-full z-10"
+                        style={{ backgroundColor: '#eae6e5', color: '#000000' }}
+                      >
+                        Coming Soon
+                      </div>
+                    )}
+                    {isProPlan ? (
+                      <div className="p-3 md:p-4 rounded-lg border-2 transition text-left w-full h-full border-gray-200 bg-gray-50 cursor-not-allowed">
+                        {cardContent}
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => !isDisabled && setSelectedPlan(key)}
+                        disabled={isDisabled}
+                        className={`p-3 md:p-4 rounded-lg border-2 transition text-left w-full h-full ${
+                          isDisabled
+                            ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                            : selectedPlan === key
+                              ? 'border-black bg-gray-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        {cardContent}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="button-shimmer w-full bg-[#06271D] text-white py-2.5 md:py-3 rounded text-sm md:text-base font-medium hover:bg-[#0a3d2e] transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Processing...' : 'Continue to Payment'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default PaymentModal;

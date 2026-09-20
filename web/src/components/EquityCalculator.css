@@ -1,0 +1,429 @@
+.equity-calculator-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Container matching: bg-white rounded border border-gray-200 overflow-x-auto */
+.spreadsheet-wrapper {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: 0 !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Scrollable container for spreadsheet */
+.spreadsheet-scroll-container {
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+  position: relative !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Table matching: min-w-full divide-y divide-gray-200 */
+.Spreadsheet {
+  border: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  line-height: 0 !important;
+}
+
+.Spreadsheet__table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  font-family: inherit !important;
+  table-layout: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Header row matching: bg-gray-50 */
+.Spreadsheet thead,
+.Spreadsheet__header {
+  background-color: #ffffff !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 20 !important;
+}
+
+/* Make the first row sticky - header row stays at top when scrolling */
+.spreadsheet-scroll-container .Spreadsheet tbody tr:first-child,
+.spreadsheet-scroll-container .Spreadsheet__table tbody tr:first-child,
+.single-click-edit .Spreadsheet tbody tr:first-child,
+.single-click-edit .Spreadsheet__table tbody tr:first-child {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 25 !important;
+  background-color: #ffffff !important;
+  isolation: isolate !important;
+}
+
+.spreadsheet-scroll-container .Spreadsheet tbody tr:first-child td,
+.spreadsheet-scroll-container .Spreadsheet__table tbody tr:first-child td,
+.spreadsheet-scroll-container .Spreadsheet tbody tr:first-child .Spreadsheet__cell,
+.spreadsheet-scroll-container .Spreadsheet__table tbody tr:first-child .Spreadsheet__cell,
+.single-click-edit .Spreadsheet tbody tr:first-child td,
+.single-click-edit .Spreadsheet__table tbody tr:first-child td,
+.single-click-edit .Spreadsheet tbody tr:first-child .Spreadsheet__cell,
+.single-click-edit .Spreadsheet__table tbody tr:first-child .Spreadsheet__cell {
+  background-color: #ffffff !important;
+  font-weight: 600 !important;
+  color: #6b7280 !important;
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 25 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+.Spreadsheet tbody {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Header cells matching: px-4 py-3 text-left text-sm font-medium text-gray-900 border-r border-gray-200 */
+.Spreadsheet th,
+.Spreadsheet thead .Spreadsheet__cell {
+  padding: 0.5rem 0.5rem !important;
+  text-align: left !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: #6b7280 !important;
+  background-color: #ffffff !important;
+  border-right: none !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  border-top: none !important;
+  border-left: none !important;
+  line-height: 1.5 !important;
+  cursor: default !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 20 !important;
+}
+
+.Spreadsheet th:last-child,
+.Spreadsheet thead .Spreadsheet__cell:last-child {
+  border-right: 0 !important;
+}
+
+/* Body cells matching: px-4 py-3 text-sm border-r border-gray-200 */
+.Spreadsheet tbody .Spreadsheet__cell,
+.Spreadsheet td {
+  padding: 0.5rem 0.5rem !important;
+  font-size: 0.875rem !important;
+  color: #374151 !important;
+  background-color: #ffffff !important;
+  border-right: none !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  border-top: none !important;
+  border-left: none !important;
+  text-align: left !important;
+  line-height: 1.5 !important;
+}
+
+.Spreadsheet tbody .Spreadsheet__cell:last-child,
+.Spreadsheet td:last-child,
+.Spreadsheet th:last-child {
+  border-right: 0 !important;
+}
+
+/* Remove bottom border from last row to match divide-y behavior */
+.Spreadsheet tbody tr:last-child .Spreadsheet__cell,
+.Spreadsheet tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+/* Apply max-width only to columns 2+ (importance and cofounder columns) */
+.Spreadsheet th:nth-child(n + 2),
+.Spreadsheet thead .Spreadsheet__cell:nth-child(n + 2),
+.Spreadsheet tbody .Spreadsheet__cell:nth-child(n + 2),
+.Spreadsheet td:nth-child(n + 2) {
+  max-width: 120px !important;
+}
+
+/* Ensure consistent row height */
+.Spreadsheet tr {
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.Spreadsheet tbody tr {
+  background-color: #ffffff !important;
+}
+
+/* Remove any vertical align issues */
+.Spreadsheet td,
+.Spreadsheet th,
+.Spreadsheet__cell {
+  vertical-align: middle !important;
+}
+
+/* Ensure no extra space from the wrapper */
+.spreadsheet-wrapper::after {
+  content: none !important;
+  display: none !important;
+}
+
+.Spreadsheet__cell input {
+  width: 100% !important;
+  border: none !important;
+  outline: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 0.875rem !important;
+  font-family: inherit !important;
+  background: transparent !important;
+  text-align: inherit !important;
+  color: inherit !important;
+  font-weight: inherit !important;
+}
+
+.Spreadsheet__cell input:focus {
+  background-color: #f0f9ff !important;
+  outline: 2px solid #000000 !important;
+  outline-offset: -2px !important;
+}
+
+/* Force left align for first column inputs */
+.Spreadsheet__cell:first-child input,
+.Spreadsheet td:first-child input,
+.Spreadsheet tr td:first-of-type input,
+.Spreadsheet tbody tr td:first-child input {
+  text-align: left !important;
+}
+
+/* Extra override for tbody first cells */
+.Spreadsheet tbody tr td:first-child,
+.Spreadsheet tbody tr td:first-of-type {
+  text-align: left !important;
+}
+
+/* Hide row index column (only the actual index, not data columns) */
+.Spreadsheet tbody th {
+  display: none !important;
+}
+
+/* First column (category names) */
+.Spreadsheet tbody .Spreadsheet__cell:first-child:not(.header-cell),
+.Spreadsheet tbody td:first-child:not(.header-cell),
+.Spreadsheet tbody tr td:first-child:not(.header-cell),
+.Spreadsheet tbody tr:not(:first-child) td:first-child:not(.header-cell) {
+  font-weight: 500 !important;
+  color: #111827 !important;
+  background-color: #ffffff !important;
+  cursor: default !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 10 !important;
+  min-width: 150px !important;
+}
+
+/* First header cell - needs both sticky top and left */
+.Spreadsheet th:first-child,
+.Spreadsheet thead .Spreadsheet__cell:first-child,
+.Spreadsheet tbody tr:first-child td:first-child,
+.Spreadsheet tbody tr:first-child .Spreadsheet__cell:first-child {
+  position: sticky !important;
+  left: 0 !important;
+  top: 0 !important;
+  z-index: 30 !important;
+  min-width: 150px !important;
+}
+
+/* Header cell styling using className */
+.spreadsheet-scroll-container .Spreadsheet .header-cell,
+.spreadsheet-scroll-container .Spreadsheet td.header-cell,
+.spreadsheet-scroll-container td.header-cell {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: #6b7280 !important;
+  background-color: #ffffff !important;
+  cursor: default !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 20 !important;
+  border-right: none !important;
+}
+
+/* Ensure header cell text is always visible */
+.spreadsheet-scroll-container .Spreadsheet .header-cell *,
+.spreadsheet-scroll-container .Spreadsheet td.header-cell *,
+.spreadsheet-scroll-container td.header-cell * {
+  color: #6b7280 !important;
+  opacity: 1 !important;
+}
+
+/* First header cell with header-cell class needs higher z-index */
+.spreadsheet-scroll-container .Spreadsheet tbody tr:first-child td:first-child.header-cell,
+.spreadsheet-scroll-container
+  .Spreadsheet
+  tbody
+  tr:first-child
+  .Spreadsheet__cell:first-child.header-cell {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  z-index: 30 !important;
+  left: 0 !important;
+  top: 0 !important;
+}
+
+/* Category cell styling */
+.Spreadsheet .category-cell,
+.Spreadsheet td.category-cell,
+.Spreadsheet tbody td.category-cell,
+.Spreadsheet tbody .Spreadsheet__cell.category-cell,
+td.category-cell {
+  font-weight: 500 !important;
+  color: #111827 !important;
+  background-color: #ffffff !important;
+  cursor: default !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* Separator cell styling - completely non-interactive */
+.Spreadsheet .separator-cell,
+.Spreadsheet td.separator-cell,
+.Spreadsheet tbody td.separator-cell,
+.Spreadsheet tbody .Spreadsheet__cell.separator-cell,
+td.separator-cell {
+  cursor: default !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  background-color: #f3f4f6 !important;
+}
+
+/* Second column (importance) styling - center aligned */
+.Spreadsheet__cell:nth-child(2),
+.Spreadsheet td:nth-child(2) {
+  text-align: center !important;
+}
+
+/* Cofounder columns (3+) - center aligned */
+.Spreadsheet__cell:nth-child(n + 3),
+.Spreadsheet td:nth-child(n + 3),
+.Spreadsheet th:nth-child(n + 3) {
+  text-align: center !important;
+}
+
+/* Cofounder column inputs - center aligned */
+.Spreadsheet__cell:nth-child(n + 3) input,
+.Spreadsheet td:nth-child(n + 3) input {
+  text-align: center !important;
+}
+
+/* Make cells editable on single click */
+.Spreadsheet__cell--readonly {
+  pointer-events: auto !important;
+}
+
+.Spreadsheet__cell:not(.Spreadsheet__cell--readonly) {
+  cursor: text !important;
+}
+
+/* Ensure input is visible and clickable immediately */
+.Spreadsheet__cell input {
+  pointer-events: auto !important;
+  cursor: text !important;
+}
+
+/* Make single click behave like double click for edit mode */
+.single-click-edit .Spreadsheet__cell:not(.Spreadsheet__cell--readonly) {
+  cursor: text !important;
+}
+
+.single-click-edit .Spreadsheet__cell:not(.Spreadsheet__cell--readonly):active {
+  pointer-events: none !important;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  /* Make spreadsheet container much wider on mobile by extending beyond padding */
+  .equity-calculator-container {
+    margin-left: -1.5rem !important;
+    margin-right: -1.5rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  /* Reduce padding in wrapper to maximize spreadsheet width */
+  .spreadsheet-wrapper {
+    border-radius: 0.25rem !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Optimize cell padding for mobile - more compact */
+  .Spreadsheet tbody .Spreadsheet__cell,
+  .Spreadsheet td {
+    padding: 0.4rem 0.5rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  /* Optimize header cell padding for mobile */
+  .Spreadsheet th,
+  .Spreadsheet thead .Spreadsheet__cell {
+    padding: 0.4rem 0.5rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* Make header cells more compact */
+  .spreadsheet-scroll-container .Spreadsheet .header-cell,
+  .spreadsheet-scroll-container .Spreadsheet td.header-cell,
+  .spreadsheet-scroll-container td.header-cell {
+    font-size: 0.85rem !important;
+    padding: 0.4rem 0.5rem !important;
+  }
+
+  /* Ensure smooth horizontal scrolling on mobile */
+  .spreadsheet-scroll-container {
+    -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: smooth !important;
+  }
+
+  /* Make first column (category) more compact on mobile */
+  .Spreadsheet tbody .Spreadsheet__cell:first-child,
+  .Spreadsheet tbody td:first-child,
+  .Spreadsheet th:first-child,
+  .Spreadsheet thead .Spreadsheet__cell:first-child {
+    min-width: 120px !important;
+    font-size: 0.7rem !important;
+  }
+
+  /* Make cofounder columns more compact on mobile */
+  .Spreadsheet__cell:nth-child(n + 2),
+  .Spreadsheet td:nth-child(n + 2),
+  .Spreadsheet th:nth-child(n + 2) {
+    min-width: 70px !important;
+  }
+
+  /* Reduce input font size on mobile */
+  .Spreadsheet__cell input {
+    font-size: 0.75rem !important;
+  }
+}

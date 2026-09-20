@@ -1,18 +1,21 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.js
 
 # testing
-/coverage
+coverage/
 
-# production
-/build
+# build output
+web/dist
+functions/lib
+*.tsbuildinfo
 
 # firebase
 /.firebase
+*-debug.log
 
 # misc
 .DS_Store
@@ -20,7 +23,9 @@
 !.env.example
 .Rhistory
 
-# Firebase Functions environment
+# Firebase Functions environment: only the non-secret per-project parameter files are tracked
+!functions/.env.cherrytree-cofounder-agree-dev
+!functions/.env.cherrytree-cofounder-agreement
 functions/.env
 functions/.env.local
 

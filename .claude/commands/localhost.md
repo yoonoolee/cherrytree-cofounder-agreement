@@ -1,22 +1,16 @@
-Open the local dev server in the browser. Arguments: `web`, `agent`, or `both`. If no argument ($ARGUMENTS), infer from conversation context which one we've been working on.
+Open the local dev server (the React app) in the browser at http://localhost:3000. Ignore $ARGUMENTS other than `web` — there is only one local server now (the chat agent was retired).
 
-- **web** → http://localhost:3000 (React app — `npm start` in `cherrytree-cofounder-agreement/`)
-- **agent** → http://localhost:8000 (FastAPI — `uvicorn main:app --reload` in `cherrytree-chat-agent/`)
-- **both** → both of the above
+1. Check if port 3000 is already listening: `lsof -ti :3000`. If it is, open http://localhost:3000 in the browser and stop.
 
-For each server:
+2. If it is not listening, start the Vite dev server in the background from the repo root: `cd cherrytree-cofounder-agreement && npm run dev` (from inside the repo, just `npm run dev`). It uses `web/.env.dev`.
 
-1. Check if the port is already listening: `lsof -ti :<port>`. If it is, open the URL in the browser and stop.
+3. Wait up to 15 seconds for the port to become available (poll with `lsof -ti :3000` every 2 seconds).
 
-2. If the port is not listening, try to start the server:
-   - **web**: `cd cherrytree-cofounder-agreement && npm start` (run in background)
-   - **agent**: `cd cherrytree-chat-agent && source venv/bin/activate && uvicorn main:app --reload` (run in background)
-
-3. Wait up to 15 seconds for the port to become available (poll with `lsof -ti :<port>` every 2 seconds).
-
-4. If the server comes up, open the URL in the browser.
+4. If the server comes up, open http://localhost:3000 in the browser.
 
 5. If it still isn't up after 15 seconds, check for errors:
-   - For **agent**: check if `venv/` exists — if not, tell the user to run `python -m venv venv && source venv/bin/activate && pip install -r requirements.txt` first.
-   - For **web**: check if `node_modules/` exists — if not, tell the user to run `npm install` first.
+   - If `node_modules/` is missing, tell the user to run `nvm use && npm ci && npm --prefix functions ci` first.
+   - If `web/.env.dev` is missing, tell the user to `cp web/.env.example web/.env.dev` and fill in the keys from a teammate.
    - Otherwise, show the startup output so the user can see what went wrong.
+
+Note: callables from localhost need an App Check debug token registered once per browser profile (see README → First-Time Setup step 4); a console line `App Check debug token: …` on first load means it is not registered yet.
