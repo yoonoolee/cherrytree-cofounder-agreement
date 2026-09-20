@@ -5,6 +5,7 @@ import { UserButton, useClerk } from '@clerk/clerk-react';
 import PaymentModal from '../components/PaymentModal';
 import { useProjects } from '../hooks/useProjects';
 import { calculateProjectProgress, countCompletedSections } from '../utils/progressCalculation';
+import { formatDeadline, formatTimeAgo } from '../utils/dateUtils';
 import { FIELDS } from '@cherrytree/shared';
 
 function DashboardPage() {
@@ -269,38 +270,14 @@ function DashboardPage() {
           const sectionsCompleted = countCompletedSections(project);
 
           const lastEditTime = project.lastUpdated || project.createdAt;
-          let timeAgo = '';
-          if (lastEditTime) {
-            const now = new Date();
-            const lastEdit = lastEditTime.toDate ? lastEditTime.toDate() : new Date(lastEditTime);
-            const hoursAgo = Math.floor((now - lastEdit) / (1000 * 60 * 60));
-            if (hoursAgo < 1) {
-              const minutesAgo = Math.floor((now - lastEdit) / (1000 * 60));
-              timeAgo = minutesAgo < 1 ? 'just now' : `${minutesAgo}m ago`;
-            } else if (hoursAgo < 24) {
-              timeAgo = `${hoursAgo}h ago`;
-            } else {
-              timeAgo = `${Math.floor(hoursAgo / 24)}d ago`;
-            }
-          }
+          const timeAgo = lastEditTime ? formatTimeAgo(lastEditTime) : '';
 
           const cofounders = project.surveyData?.cofounders || [];
           const cofounderNames = cofounders
             .map((cf) => cf[FIELDS.COFOUNDER_FULL_NAME])
             .filter(Boolean);
 
-          const deadline = project.editDeadline
-            ? project.editDeadline.toDate
-              ? project.editDeadline.toDate()
-              : new Date(project.editDeadline)
-            : null;
-          const deadlineStr = deadline
-            ? deadline.toLocaleDateString('en-US', {
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric',
-              })
-            : null;
+          const deadlineStr = formatDeadline(project.editDeadline);
 
           return (
             <div
