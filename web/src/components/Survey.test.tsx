@@ -369,7 +369,7 @@ describe('Survey', () => {
         { [`onboardingCompleted.${ADMIN_ID}`]: false },
       );
 
-      await act(() => welcome().onClose());
+      await act(async () => welcome().onClose());
       expect(screen.queryByTestId('welcome-popup')).not.toBeInTheDocument();
       expect(mocks.updateDoc).toHaveBeenLastCalledWith(
         { path: `projects/${PROJECT_ID}` },

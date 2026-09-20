@@ -52,7 +52,7 @@ export function useProjects(
       }
     };
 
-    fetchProjects();
+    void fetchProjects();
   }, [currentUser, userMemberships, orgsLoaded, authLoading]);
 
   return { projects, loading };

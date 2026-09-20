@@ -33,8 +33,10 @@ export function calculateEquityPercentages(data: EquitySheet | null | undefined)
   if (!data) return null;
 
   try {
-    // Validate data structure
-    if (!Array.isArray(data) || data.length < 2) return null;
+    // Validate data structure (checked on an alias: narrowing a readonly array through
+    // Array.isArray would turn `data` into any[])
+    const rows: unknown = data;
+    if (!Array.isArray(rows) || data.length < 2) return null;
 
     // Skip header row (index 0)
     // Column 0 = Category name

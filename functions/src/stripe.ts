@@ -15,7 +15,6 @@ import {
   type Payment,
   type Plan,
   type Project,
-  type SurveyData,
 } from '@cherrytree/shared';
 
 import {
@@ -219,7 +218,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     surveyVersion: CURRENT_SURVEY_VERSION,
     surveyData: Object.fromEntries(
       REQUIRED_ACKNOWLEDGMENT_FIELDS.map((field) => [field, { [userId]: false }]),
-    ) as Partial<SurveyData>,
+    ),
     // Submission status is derived from pdfAgreements.length.
     pdfAgreements: [],
     latestPdfUrl: null,

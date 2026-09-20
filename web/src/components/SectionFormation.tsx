@@ -79,7 +79,7 @@ function SectionFormation({
         }
       }
     };
-    initAutocomplete();
+    void initAutocomplete();
   }, [isReadOnly]);
 
   const handleInputChange = async (value: string) => {
@@ -130,7 +130,7 @@ function SectionFormation({
     } else if (e.key === 'Enter') {
       e.preventDefault();
       const placeId = suggestions[highlightedIndex]?.placePrediction?.placeId;
-      if (placeId) handleSelectAddress(placeId);
+      if (placeId) void handleSelectAddress(placeId);
     } else if (e.key === 'Escape') {
       setShowSuggestions(false);
       setHighlightedIndex(0);
@@ -369,7 +369,7 @@ function SectionFormation({
                 onChange={(e) => {
                   if (!isReadOnly) {
                     const newValue = e.target.value;
-                    handleInputChange(newValue);
+                    void handleInputChange(newValue);
                     if (!newValue) handleChange(FIELDS.MAILING_STREET, '');
                   }
                 }}

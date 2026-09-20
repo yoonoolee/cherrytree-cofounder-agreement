@@ -118,7 +118,7 @@ export function useAutoSave(
           }
 
           saveTimeoutRef.current = setTimeout(() => {
-            saveFormData(newFormData);
+            void saveFormData(newFormData);
           }, AUTO_SAVE_DELAY_MS);
 
           return newFormData;

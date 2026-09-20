@@ -38,10 +38,18 @@ export default tseslint.config(
   },
 
   js.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
 
   {
+    languageOptions: {
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
     rules: {
+      // An async handler on a JSX attribute (onClick, onSubmit) is idiomatic React.
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        { checksVoidReturn: { attributes: false } },
+      ],
       // Downgraded to warnings during the TS migration; flipped back to errors in the
       // structural-cleanup phase once the existing offenders are removed.
       '@typescript-eslint/no-unused-vars': [
@@ -78,16 +86,35 @@ export default tseslint.config(
     },
   },
 
-  // Tests (Vitest globals)
+  // Tests (Vitest globals). Mocks and fixtures are `any`-typed by design; React 19's `act`
+  // returns a thenable even for a synchronous callback; `expr as T` is how a generic query
+  // or a hoisted mock object gets its type; `expect(obj.method)` is the spy idiom. The
+  // type-aware rules that would flag those stay off here.
   {
-    files: ['**/*.test.{ts,tsx}', 'web/src/test/**'],
+    files: ['**/*.test.{ts,tsx}', 'web/src/test/**', 'functions/test/**'],
     languageOptions: { globals: { ...globals.vitest } },
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/unbound-method': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+    },
   },
 
   // Config files at the repo root / package roots
   {
     files: ['*.{js,ts,mjs}', 'web/*.{js,ts}', 'shared/*.ts', 'functions/*.{js,mjs,ts}'],
     languageOptions: { globals: globals.node },
+  },
+  // …of which these belong to no tsconfig: syntax-only rules.
+  {
+    files: ['**/*.{js,mjs}', 'vitest.config.ts'],
+    ...tseslint.configs.disableTypeChecked,
   },
 
   prettier,

@@ -109,7 +109,7 @@ function Preview({ projectId, onEdit }: PreviewProps) {
       const needsRegeneration = !project.previewPdfUrl || isPreviewStale();
 
       if (needsRegeneration) {
-        generatePreview();
+        void generatePreview();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -20,7 +20,7 @@ function SurveyPage() {
       }
     };
 
-    updateLastOpened();
+    void updateLastOpened();
   }, [projectId]);
 
   const handlePreview = () => {

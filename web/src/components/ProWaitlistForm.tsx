@@ -70,7 +70,7 @@ function ProWaitlistForm({ source = 'unknown' }: ProWaitlistFormProps) {
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();
-              handleWaitlistSubmit(e);
+              void handleWaitlistSubmit(e);
             }
           }}
         />

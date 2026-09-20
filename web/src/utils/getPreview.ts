@@ -19,7 +19,8 @@ export const getPreview = (
   const otherVal: unknown = otherFieldName ? formData[otherFieldName] : undefined;
   if (!val) return '';
   if (Array.isArray(val)) {
-    return val.map((v) => (v === 'Other' && otherVal ? otherVal : v)).join(', ');
+    const items: unknown[] = val;
+    return items.map((v) => (v === 'Other' && otherVal ? text(otherVal) : text(v))).join(', ');
   }
   if (typeof val === 'object') {
     const vals = Object.values(val);
@@ -28,6 +29,13 @@ export const getPreview = (
     if (vals.some(Boolean)) return 'In progress';
     return '';
   }
-  if (val === 'Other' && otherVal) return String(otherVal);
-  return String(val);
+  if (val === 'Other' && otherVal) return text(otherVal);
+  return text(val);
 };
+
+/** A stored answer as display text: strings as-is, numbers/booleans stringified, else ''. */
+function text(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return '';
+}

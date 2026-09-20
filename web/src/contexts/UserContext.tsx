@@ -84,7 +84,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    signInToFirebase();
+    void signInToFirebase();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clerkUser?.id, isLoaded, getToken]);
 

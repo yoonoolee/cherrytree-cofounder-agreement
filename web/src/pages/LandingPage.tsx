@@ -256,7 +256,7 @@ function PanelEquity() {
             <div key={i} className="lp-s3-cf">
               <div className="lp-s3-cf-name">{name}</div>
               <div className="lp-s3-dots">
-                {[...Array(10)].map((_, d) => (
+                {Array.from({ length: 10 }, (_, d) => (
                   <div key={d} className={`lp-s3-dot${selected[i] === d + 1 ? ' selected' : ''}`}>
                     {d + 1}
                   </div>

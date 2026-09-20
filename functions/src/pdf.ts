@@ -58,7 +58,7 @@ async function requestPdf(payload: PdfWebhookPayload): Promise<string | null> {
 
   if (!isValidTrustedUrl(pdfUrl, PDF_ALLOWED_DOMAINS)) {
     throw toHttpsError(
-      new Error(`Invalid or untrusted PDF URL from Make.com: ${String(pdfUrl)}`),
+      new Error(`Invalid or untrusted PDF URL from Make.com: ${JSON.stringify(pdfUrl)}`),
       'Invalid or untrusted PDF URL from Make.com:',
       'Invalid PDF URL received from external service',
     );

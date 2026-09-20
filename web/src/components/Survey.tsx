@@ -120,7 +120,7 @@ function Survey({ projectId, onPreview, onFinalAgreement }: SurveyProps) {
       }
     };
 
-    initializeOnboarding();
+    void initializeOnboarding();
   }, [project, currentUser, projectId]);
 
   const dismissWelcomePopup = async () => {
@@ -161,7 +161,7 @@ function Survey({ projectId, onPreview, onFinalAgreement }: SurveyProps) {
       }
     };
 
-    switchToProjectOrg();
+    void switchToProjectOrg();
   }, [projectId, orgId, setActive, userMemberships, orgsLoaded]);
 
   // Project sync, auto-save, and validation are now handled by custom hooks

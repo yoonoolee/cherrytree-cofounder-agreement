@@ -68,7 +68,8 @@ function mergeAtLevel(container: Loose, key: string, otherField: string, type: '
   const value = container[key];
   const other = container[otherField];
   if (type === 'array' && Array.isArray(value) && value.includes('Other') && other) {
-    container[key] = value.map((item) => (item === 'Other' ? other : item));
+    const items: unknown[] = value;
+    container[key] = items.map((item) => (item === 'Other' ? other : item));
   } else if (type === 'string' && value === 'Other' && other) {
     container[key] = other;
   }
