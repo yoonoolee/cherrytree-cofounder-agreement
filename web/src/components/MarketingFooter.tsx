@@ -11,7 +11,7 @@ function MarketingFooter() {
       <div className="lp-footer-top">
         <div className="lp-footer-brand">
           <button className="lp-footer-logo" onClick={() => navigate('/')}>
-            <img src="/images/cherries.png" alt="Cherrytree" width={20} height={20} />
+            <img src="/images/cherries.png" alt="Cherrytree" width={22} height={22} />
             <span className="lp-footer-logo-name">Cherrytree</span>
           </button>
           <span className="lp-footer-copy">© 2026 Cherrytree, LLC</span>

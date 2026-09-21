@@ -108,8 +108,7 @@ function PricingPage() {
 
       {/* Hero */}
       <section className="lp-pricing-pg-hero">
-        <div className="lp-overline">Pricing</div>
-        <h1 className="lp-pricing-pg-h1">Founder-friendly pricing.</h1>
+        <h1 className="lp-pricing-pg-h1">Pricing</h1>
         <p className="lp-pricing-pg-sub">
           Choose the plan that's right for your team. No subscriptions, no surprises.
         </p>

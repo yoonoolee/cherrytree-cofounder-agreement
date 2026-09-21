@@ -1,14 +1,12 @@
-import { Fragment, useState, useEffect, useRef, type ComponentType } from 'react';
+import { useState, useEffect, useRef, type ComponentType } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { usePageMeta } from '../hooks/usePageMeta.ts';
 import { useTypewriter } from '../hooks/useTypewriter.ts';
-import { useEnterpriseCardHeight } from '../hooks/useEnterpriseCardHeight.ts';
 import MarketingNav from '../components/MarketingNav.tsx';
 import MarketingFooter from '../components/MarketingFooter.tsx';
 import MarketingGrain from '../components/MarketingGrain.tsx';
 import FaqList, { type Faq } from '../components/FaqList.tsx';
-import { MARKETING_PLANS } from '../constants/pricing.ts';
 import { goToDashboard } from '../utils/goToDashboard.ts';
 
 type Timer = ReturnType<typeof setTimeout>;
@@ -399,258 +397,12 @@ function PanelExpert() {
   );
 }
 
-const HV_NAV_ITEMS = [
-  'Formation',
-  'Cofounder Info',
-  'Equity Allocation',
-  'Vesting',
-  'Decision-Making',
-  'IP & Ownership',
-];
-interface HvScene {
-  navActive: number;
-  prog: string;
-  lbl: string;
-}
-const HV_SCENES: readonly HvScene[] = [
-  { navActive: 2, prog: '30%', lbl: '30% Complete' },
-  { navActive: 3, prog: '42%', lbl: '42% Complete' },
-  { navActive: 4, prog: '54%', lbl: '54% Complete' },
-  { navActive: 5, prog: '66%', lbl: '66% Complete' },
-];
-
-function HeroVisual() {
-  const [activeIdx, setActiveIdx] = useState<number | null>(0);
-  const [exitIdx, setExitIdx] = useState<number | null>(null);
-  const [sidebar, setSidebar] = useState<HvScene>(HV_SCENES[0]!);
-  const [eqText, setEqText] = useState('');
-  const [eqCursorOff, setEqCursorOff] = useState(false);
-  const [vestSel, setVestSel] = useState<number | null>(null);
-  const [decSel, setDecSel] = useState<number | null>(null);
-  const [ipCo, setIpCo] = useState('');
-  const [ipJur, setIpJur] = useState('');
-  const [clicking, setClicking] = useState<string | null>(null);
-  useEffect(() => {
-    const timers: Timer[] = [];
-    const t = (fn: () => void, ms: number) => {
-      timers.push(setTimeout(fn, ms));
-    };
-    let currentIdx = 0;
-
-    const clickContinue = (key: string, then: () => void) => {
-      setClicking(key);
-      t(() => {
-        setClicking(null);
-        t(then, 160);
-      }, 260);
-    };
-
-    const runScene0 = () => {
-      setEqText('');
-      setEqCursorOff(false);
-      const answer = 'We agreed on an equal 50 / 50 split.';
-      let i = 0;
-      const step = () => {
-        if (i < answer.length) {
-          i++;
-          setEqText(answer.slice(0, i));
-          t(step, 44);
-        } else
-          t(() => {
-            setEqCursorOff(true);
-            t(() => clickContinue('c1', () => goTo(1)), 700);
-          }, 900);
-      };
-      t(step, 500);
-    };
-
-    const runScene1 = () => {
-      setVestSel(null);
-      t(() => {
-        setVestSel(1);
-        t(() => clickContinue('c2', () => goTo(2)), 900);
-      }, 700);
-    };
-
-    const runScene2 = () => {
-      setDecSel(null);
-      t(() => {
-        setDecSel(0);
-        t(() => clickContinue('c3', () => goTo(3)), 900);
-      }, 700);
-    };
-
-    const runScene3 = () => {
-      setIpCo('');
-      setIpJur('');
-      const coText = 'Acme Technologies, Inc.';
-      const jurText = 'Delaware';
-      let i = 0,
-        j = 0;
-      const typeJur = () => {
-        if (j < jurText.length) {
-          j++;
-          setIpJur(jurText.slice(0, j));
-          t(typeJur, 60);
-        } else t(() => clickContinue('c4', () => goTo(0)), 800);
-      };
-      const typeCo = () => {
-        if (i < coText.length) {
-          i++;
-          setIpCo(coText.slice(0, i));
-          t(typeCo, 46);
-        } else t(typeJur, 300);
-      };
-      t(typeCo, 500);
-    };
-
-    const runScene = (idx: number) => {
-      if (idx === 0) runScene0();
-      if (idx === 1) runScene1();
-      if (idx === 2) runScene2();
-      if (idx === 3) runScene3();
-    };
-
-    const goTo = (idx: number) => {
-      const next = idx % HV_SCENES.length;
-      setExitIdx(currentIdx);
-      setActiveIdx(null);
-      t(() => setExitIdx(null), 500);
-      t(() => {
-        currentIdx = next;
-        setActiveIdx(next);
-        setSidebar(HV_SCENES[next]!);
-        runScene(next);
-      }, 120);
-    };
-
-    t(() => runScene0(), 2400);
-    return () => timers.forEach(clearTimeout);
-  }, []);
-
-  const screenCls = (i: number) =>
-    `lp-hv-screen${activeIdx === i ? ' active' : ''}${exitIdx === i ? ' exit' : ''}`;
-
-  return (
-    <div className="lp-hero-visual lp-rv">
-      <div className="lp-hv-bar">
-        <span className="lp-dot-r" />
-        <span className="lp-dot-y" />
-        <span className="lp-dot-g" />
-        <div className="lp-hv-url">cherrytree.app / agreement</div>
-      </div>
-      <div className="lp-hv-body">
-        <div className="lp-hv-sidebar">
-          <div className="lp-hv-logo">
-            <div className="lp-hv-logo-mark" />
-            <div className="lp-hv-logo-name">Cherrytree</div>
-          </div>
-          <div className="lp-hv-prog-lbl">{sidebar.lbl}</div>
-          <div className="lp-hv-prog-bar">
-            <div className="lp-hv-prog-fill" style={{ width: sidebar.prog }} />
-          </div>
-          {HV_NAV_ITEMS.map((label, i) => (
-            <div key={i} className={`lp-hv-nav-item${i === sidebar.navActive ? ' active' : ''}`}>
-              <span
-                className={`lp-hv-dot${i < sidebar.navActive ? ' done' : i === sidebar.navActive ? ' act' : ''}`}
-              />
-              {label}
-            </div>
-          ))}
-        </div>
-        <div className="lp-hv-main">
-          <div className={screenCls(0)}>
-            <div className="lp-hv-sec-lbl">Section 3 of 10 · Equity Allocation</div>
-            <div className="lp-hv-q-title">How will you split equity?</div>
-            <div className="lp-hv-q-hint">
-              Describe your approach or run the equity calculator to surface each founder's
-              contribution.
-            </div>
-            <div className="lp-hv-input-field focused">
-              <span>{eqText}</span>
-              <span className={`lp-hv-inp-cursor${eqCursorOff ? ' off' : ''}`} />
-            </div>
-            <button className={`lp-hv-continue${clicking === 'c1' ? ' clicking' : ''}`}>
-              Continue →
-            </button>
-          </div>
-          <div className={screenCls(1)}>
-            <div className="lp-hv-sec-lbl">Section 4 of 10 · Vesting</div>
-            <div className="lp-hv-q-title">How long should shares vest?</div>
-            <div className="lp-hv-q-hint">
-              Most startups use a 4-year vesting schedule with a 1-year cliff to protect both
-              founders.
-            </div>
-            <div className="lp-hv-options">
-              {['2 years', '4 years', '6 years'].map((label, i) => (
-                <div key={i} className={`lp-hv-opt${vestSel === i ? ' selected' : ''}`}>
-                  {label}
-                </div>
-              ))}
-            </div>
-            <button className={`lp-hv-continue${clicking === 'c2' ? ' clicking' : ''}`}>
-              Continue →
-            </button>
-          </div>
-          <div className={screenCls(2)}>
-            <div className="lp-hv-sec-lbl">Section 5 of 10 · Decision-Making</div>
-            <div className="lp-hv-q-title">How will major decisions be made?</div>
-            <div className="lp-hv-q-hint">
-              Agreeing on a framework now prevents costly disputes later.
-            </div>
-            <div className="lp-hv-options">
-              {['Unanimous vote', 'Majority vote', 'CEO decides'].map((label, i) => (
-                <div key={i} className={`lp-hv-opt${decSel === i ? ' selected' : ''}`}>
-                  {label}
-                </div>
-              ))}
-            </div>
-            <button className={`lp-hv-continue${clicking === 'c3' ? ' clicking' : ''}`}>
-              Continue →
-            </button>
-          </div>
-          <div className={screenCls(3)}>
-            <div className="lp-hv-sec-lbl">Section 6 of 10 · IP &amp; Ownership</div>
-            <div className="lp-hv-q-title">Who owns what you build?</div>
-            <div className="lp-hv-q-hint">
-              All IP created for the company should be assigned to the entity, not individuals.
-            </div>
-            <div className="lp-hv-two-col">
-              <div className="lp-hv-field-group">
-                <div className="lp-hv-field-lbl">Company name</div>
-                <div className="lp-hv-field-val">{ipCo}</div>
-              </div>
-              <div className="lp-hv-field-group">
-                <div className="lp-hv-field-lbl">Jurisdiction</div>
-                <div className="lp-hv-field-val">{ipJur}</div>
-              </div>
-            </div>
-            <button className={`lp-hv-continue${clicking === 'c4' ? ' clicking' : ''}`}>
-              Continue →
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 const PANELS: readonly ComponentType[] = [
   PanelInvite,
   PanelCollab,
   PanelEquity,
   PanelReview,
   PanelExpert,
-];
-
-const LOGOS = [
-  { name: 'Y Combinator', src: '/images/yc-logo.png' },
-  { name: 'Hubble', src: '/images/hubble-logo.png' },
-  { name: 'a16z', src: '/images/a16z-logo.jpg' },
-  { name: 'UC Berkeley', src: '/images/berkeley-logo.png' },
-  { name: 'Stanford', src: '/images/stanford-logo.png' },
-  { name: 'Sequoia', src: '/images/sequoia-logo.png' },
-  { name: 'Startup Grind', src: '/images/startupgrind-logo.png' },
 ];
 
 const FEATURES = [
@@ -746,19 +498,6 @@ const FAQS: readonly Faq[] = [
   },
 ];
 
-interface Stat {
-  num: number;
-  prefix?: string;
-  suffix: string;
-  label: string;
-}
-const STATS: readonly Stat[] = [
-  { num: 2400, suffix: '+', label: 'Founding teams have started\ntheir agreement' },
-  { num: 6100, suffix: '+', label: 'Founders have used\nCherrytree' },
-  { num: 10, suffix: '', label: 'Sections covering every angle\nof your cofounder agreement' },
-  { num: 0, prefix: '$', suffix: '', label: 'To get started.\nNo lawyer required.' },
-];
-
 // ── Main component ─────────────────────────────────────────────────────────────
 
 function LandingPage() {
@@ -770,17 +509,12 @@ function LandingPage() {
   });
 
   // Hero typewriter — types once, cursor stays
-  const typedHero = useTypewriter('with great company.');
   const [activeFeature, setActiveFeature] = useState(0);
   const [carouselIdx, setCarouselIdx] = useState(0);
-  const [counts, setCounts] = useState(STATS.map(() => 0));
-  const [lineIn, setLineIn] = useState(STATS.map(() => false));
   // Protect CTA: types "and your peace of mind." on an infinite loop — type out,
   // hold, clear, and after a slight pause type it out again.
   const typedProtect = useTypewriter('and your peace of mind.', { charDelay: 46, holdDelay: 2200 });
-  const statRowRefs = useRef<(HTMLDivElement | null)[]>([]);
   const featItemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const pricingCardRefs = useEnterpriseCardHeight();
 
   const goDash = () => goToDashboard(navigate);
 
@@ -831,46 +565,6 @@ function LandingPage() {
     return () => window.removeEventListener('scroll', handle);
   }, []);
 
-  // Stats: each row draws in its underline and counts up independently as it
-  // individually scrolls into view (matching the source design's per-row observers,
-  // rather than firing every stat at once when the section appears).
-  useEffect(() => {
-    const observers = statRowRefs.current.map((el, i) => {
-      if (!el) return null;
-      const obs = new IntersectionObserver(
-        (entries) => {
-          if (!entries[0]?.isIntersecting) return;
-          obs.disconnect();
-          setLineIn((prev) => {
-            const n = [...prev];
-            n[i] = true;
-            return n;
-          });
-          const s = STATS[i]!;
-          if (s.num === 0) return;
-          const dur = 1600,
-            start = Date.now();
-          const tick = () => {
-            const elapsed = Date.now() - start;
-            const pct = Math.min(elapsed / dur, 1);
-            const ease = 1 - Math.pow(1 - pct, 3);
-            setCounts((prev) => {
-              const n = [...prev];
-              n[i] = Math.round(ease * s.num);
-              return n;
-            });
-            if (pct < 1) requestAnimationFrame(tick);
-          };
-          requestAnimationFrame(tick);
-        },
-        { threshold: 0.4 },
-      );
-      obs.observe(el);
-      return obs;
-    });
-    return () => observers.forEach((o) => o?.disconnect());
-  }, []);
-
   const ActivePanel = PANELS[FEATURES[activeFeature]!.panel]!;
 
   return (
@@ -880,20 +574,12 @@ function LandingPage() {
 
       {/* ── Hero ── */}
       <section className="lp-hero">
-        <div className="lp-orb lp-orb-1" />
-        <div className="lp-orb lp-orb-2" />
-        <div className="lp-orb lp-orb-3" />
         <h1 className="lp-hero-headline">
           <span className="lp-hl-line">
             <span className="lp-hl-inner">Great companies start</span>
           </span>
           <span className="lp-hl-line lp-d1">
-            <span className="lp-hl-inner">
-              <em>
-                {typedHero}
-                <span className="lp-cursor" />
-              </em>
-            </span>
+            <span className="lp-hl-inner">with great company.</span>
           </span>
         </h1>
         <p className="lp-hero-sub">
@@ -904,155 +590,50 @@ function LandingPage() {
           <button className="lp-btn-primary" onClick={goDash}>
             Get started
           </button>
-          <a
-            className="lp-btn-ghost"
-            href="https://cal.com/tim-he/15min"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Book a demo →
-          </a>
         </div>
 
-        {/* Product mockup */}
-        <div className="lp-hero-strip" />
-        <HeroVisual />
-      </section>
-
-      {/* ── Logo Wall ── */}
-      <section className="lp-logowall">
-        <div className="lp-logowall-label">Trusted by founding teams from</div>
-        <div className="lp-logowall-track-wrap">
-          <div className="lp-logowall-track">
-            {[...LOGOS, ...LOGOS].map((logo, i, arr) => (
-              <Fragment key={i}>
-                <div className="lp-lw-logo">
-                  <img className="lp-lw-img" src={logo.src} alt={logo.name} />
-                </div>
-                {i !== arr.length - 1 && <div className="lp-lw-divider" />}
-              </Fragment>
-            ))}
-          </div>
+        <div className="lp-hero-strip">
+          <div className="lp-hero-strip-placeholder" />
         </div>
       </section>
 
       {/* ── Features ── */}
       <section className="lp-features" id="features">
-        <div className="lp-feat-header">
-          <h2 className="lp-rv lp-d1">
-            Built for <br />
-            <em>early-stage</em> cofounders.
-          </h2>
-          <p className="lp-rv lp-d2">
-            Get your equity, expectations, and everything else right from the start.
-          </p>
-        </div>
-        <div className="lp-feat-body">
-          <div className="lp-feat-visual">
-            <ActivePanel key={activeFeature} />
-          </div>
-          <div className="lp-feat-list">
-            {FEATURES.map((f, i) => (
-              <div
-                key={i}
-                ref={(el) => {
-                  featItemRefs.current[i] = el;
-                }}
-                className={`lp-feat-item${activeFeature === i ? ' active' : ''}`}
-              >
-                <div className="lp-feat-item-line" />
-                <div className="lp-feat-item-num">{f.num}</div>
-                <div className="lp-feat-item-title">{f.title}</div>
-                <p className="lp-feat-item-desc">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Stats ── */}
-      <section className="lp-stats">
-        <div className="lp-stats-inner">
-          <div className="lp-stats-left">
+        <div className="lp-feat-scroll">
+          <div className="lp-feat-header">
             <h2 className="lp-rv lp-d1">
-              The proof is in the
-              <br />
-              <em>partnership.</em>
+              Built for <br />
+              <em>early-stage</em> cofounders.
             </h2>
             <p className="lp-rv lp-d2">
-              Founding teams across the country have used Cherrytree to get aligned before they
-              build. No lawyers required. No legal background needed.
+              Get your equity, expectations, and everything else right from the start.
             </p>
           </div>
-          <div className="lp-stats-right">
-            {STATS.map((s, i) => (
-              <div
-                key={i}
-                className={`lp-stat-row${lineIn[i] ? ' lp-line-in' : ''}`}
-                ref={(el) => {
-                  statRowRefs.current[i] = el;
-                }}
-              >
-                <div className="lp-stat-num-row">
-                  <div className="lp-stat-num">
-                    {s.prefix || ''}
-                    {(counts[i] ?? 0).toLocaleString()}
-                    {s.suffix}
-                  </div>
-                  <div className="lp-stat-label">{s.label}</div>
+          <div className="lp-feat-body">
+            <div className="lp-feat-visual">
+              <ActivePanel key={activeFeature} />
+            </div>
+            <div className="lp-feat-list">
+              {FEATURES.map((f, i) => (
+                <div
+                  key={i}
+                  ref={(el) => {
+                    featItemRefs.current[i] = el;
+                  }}
+                  className={`lp-feat-item${activeFeature === i ? ' active' : ''}`}
+                >
+                  <div className="lp-feat-item-line" />
+                  <div className="lp-feat-item-num">{f.num}</div>
+                  <div className="lp-feat-item-title">{f.title}</div>
+                  <p className="lp-feat-item-desc">{f.desc}</p>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── Testimonials ── */}
-      <section className="lp-testi">
-        <div className="lp-testi-header">
-          <h2 className="lp-rv lp-d1">What founders are saying.</h2>
-        </div>
-        <div className="lp-testi-grid">
-          {[
-            {
-              init: 'M',
-              name: 'Maya R.',
-              role: 'Co-founder, Stealth startup',
-              quote:
-                '"We thought we were aligned on equity until Cherrytree showed us we weren\'t. It surfaced a real disagreement before it became a real problem. Worth every minute."',
-            },
-            {
-              init: 'J',
-              name: 'James T.',
-              role: 'Founder, YC S24',
-              quote:
-                '"Our accelerator recommended this and I\'m glad they did. We got through IP and vesting in one sitting and actually understood what we were agreeing to."',
-            },
-            {
-              init: 'S',
-              name: 'Sarah K.',
-              role: 'Co-founder, FinTech startup',
-              quote:
-                '"The equity calculator alone is worth it. We scored each other independently and compared — it was the most honest conversation we\'d had about the company."',
-            },
-          ].map((t, i) => (
-            <div
-              key={i}
-              className={`lp-testi-card lp-rv lp-d${i}`}
-              style={{ backgroundImage: "url('/images/testimonial-paper.jpg')" }}
-            >
-              <p className="lp-testi-quote">{t.quote}</p>
-              <div className="lp-testi-author">
-                <div>
-                  <div className="lp-testi-name">{t.name}</div>
-                  <div className="lp-testi-role">{t.role}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* ── Carousel ── */}
       <section className="lp-carousel" id="who">
         <div className="lp-carousel-header lp-rv">
@@ -1110,62 +691,6 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* ── Pricing ── */}
-      <section className="lp-pricing" id="pricing">
-        <div className="lp-pricing-header">
-          <h2 className="lp-rv lp-d1">Founder-friendly pricing.</h2>
-          <p className="lp-rv lp-d2">Choose the plan that's right for your team.</p>
-        </div>
-        <div className="lp-pricing-grid">
-          {MARKETING_PLANS.map((p, i) => (
-            <div
-              key={i}
-              ref={(el) => {
-                pricingCardRefs.current[i] = el;
-              }}
-              className={`lp-pricing-card lp-rv lp-d${i}${p.featured ? ' featured' : ''}`}
-            >
-              {p.badge && <div className="lp-pricing-badge">{p.badge}</div>}
-              <div className="lp-pricing-tier">{p.tier}</div>
-              <div className={`lp-pricing-price${p.enterprise ? ' lp-pricing-price-custom' : ''}`}>
-                {p.price}
-              </div>
-              <div className="lp-pricing-period">{p.period}</div>
-              <div className="lp-pricing-divider" />
-              <p className="lp-pricing-desc">{p.desc}</p>
-              <ul className="lp-pricing-features">
-                {p.features.map((f, j) => (
-                  <li key={j} className="lp-pricing-feat">
-                    <span className="lp-pf-check">
-                      <svg viewBox="0 0 8 8" fill="none">
-                        <path
-                          d="M1.5 4l2 2 3-3"
-                          stroke={p.featured ? '#6a9e8a' : '#4B7263'}
-                          strokeWidth="1.2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <button
-                className={`lp-pricing-cta ${p.ctaStyle}`}
-                onClick={() =>
-                  p.enterprise
-                    ? window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })
-                    : goDash()
-                }
-              >
-                {p.cta}
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* ── FAQ ── */}
       <section className="lp-faq" id="faq">
         <div className="lp-faq-inner">
@@ -1190,14 +715,6 @@ function LandingPage() {
           <button className="lp-btn-primary" onClick={goDash}>
             Get started
           </button>
-          <a
-            className="lp-btn-ghost"
-            href="https://cal.com/tim-he/15min"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Book a demo →
-          </a>
         </div>
       </section>
 

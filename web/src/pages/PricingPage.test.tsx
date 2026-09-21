@@ -64,9 +64,7 @@ describe('PricingPage', () => {
 
   it('renders the three plans with their prices, features and calls to action', () => {
     renderPage();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'Founder-friendly pricing.',
-    );
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Pricing');
 
     const [bootstrapped, scale, enterprise] = cards();
     expect(cards()).toHaveLength(3);
