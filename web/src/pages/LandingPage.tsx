@@ -508,7 +508,8 @@ function LandingPage() {
       'Answer guided questions with your cofounders and get a complete Cofounder Agreement. No sketchy templates, no overpriced lawyers.',
   });
 
-  // Hero typewriter — types once, cursor stays
+  // Hero typewriter — types once on load
+  const typedHero = useTypewriter('great company.');
   const [activeFeature, setActiveFeature] = useState(0);
   const [carouselIdx, setCarouselIdx] = useState(0);
   // Protect CTA: types "and your peace of mind." on an infinite loop — type out,
@@ -579,7 +580,12 @@ function LandingPage() {
             <span className="lp-hl-inner">Great companies start</span>
           </span>
           <span className="lp-hl-line lp-d1">
-            <span className="lp-hl-inner">with great company.</span>
+            <span className="lp-hl-inner">
+              with {typedHero}
+              <span style={{ visibility: 'hidden' }}>
+                {'great company.'.slice(typedHero.length)}
+              </span>
+            </span>
           </span>
         </h1>
         <p className="lp-hero-sub">
