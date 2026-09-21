@@ -54,34 +54,36 @@ function PanelInvite() {
   return (
     <div className="lp-fp" style={{ backgroundImage: "url('/images/ambient.png?v=2')" }}>
       <div className="lp-fp-overlay" />
-      <div className="lp-fp-content">
-        <div className="lp-fp-tag">Step 1</div>
-        <div className="lp-fp-title">Invite your cofounders</div>
-        <div className="lp-s1-card">
-          <div className="lp-s1-label">Team</div>
-          <div className="lp-s1-row">
-            <span className="lp-dot green" />
-            <span className="lp-s1-email">you@email.com</span>
-            <span className="lp-badge owner">Owner</span>
-          </div>
-          <div className="lp-s1-row">
-            <span className="lp-dot light" />
-            <span className="lp-s1-email">alex@startup.co</span>
-            <span className="lp-badge added">Added</span>
-          </div>
-          {showNew && (
-            <div className="lp-s1-row lp-s1-new">
+      <div className="lp-fp-white">
+        <div className="lp-fp-content">
+          <div className="lp-fp-tag">Step 1</div>
+          <div className="lp-fp-title">Invite your cofounders</div>
+          <div className="lp-s1-card">
+            <div className="lp-s1-label">Team</div>
+            <div className="lp-s1-row">
+              <span className="lp-dot green" />
+              <span className="lp-s1-email">you@email.com</span>
+              <span className="lp-badge owner">Owner</span>
+            </div>
+            <div className="lp-s1-row">
               <span className="lp-dot light" />
-              <span className="lp-s1-email">{S1_EMAILS[emailIdx % S1_EMAILS.length]}</span>
+              <span className="lp-s1-email">alex@startup.co</span>
               <span className="lp-badge added">Added</span>
             </div>
-          )}
-          <div className="lp-s1-input-row">
-            <div className="lp-s1-input">
-              <span>{typed}</span>
-              {!showNew && <span className="lp-icursor" />}
+            {showNew && (
+              <div className="lp-s1-row lp-s1-new">
+                <span className="lp-dot light" />
+                <span className="lp-s1-email">{S1_EMAILS[emailIdx % S1_EMAILS.length]}</span>
+                <span className="lp-badge added">Added</span>
+              </div>
+            )}
+            <div className="lp-s1-input-row">
+              <div className="lp-s1-input">
+                <span>{typed}</span>
+                {!showNew && <span className="lp-icursor lp-dark" />}
+              </div>
+              <button className={`lp-s1-btn${pressed ? ' pressed' : ''}`}>+ Add</button>
             </div>
-            <button className={`lp-s1-btn${pressed ? ' pressed' : ''}`}>+ Add</button>
           </div>
         </div>
       </div>
@@ -136,31 +138,33 @@ function PanelCollab() {
   return (
     <div className="lp-fp" style={{ backgroundImage: "url('/images/wall.png?v=2')" }}>
       <div className="lp-fp-overlay" />
-      <div className="lp-fp-content">
-        <div className="lp-fp-tag">Step 2</div>
-        <div className="lp-fp-title">Collab on the agreement</div>
-        <div className="lp-s2-card">
-          <div className="lp-s1-label">Formation &amp; Purpose</div>
-          {S2_QUESTIONS.map((q, i) => (
-            <div
-              key={i}
-              className={`lp-s2-q${answered.includes(i) ? ' answered' : ''}${activeQ === i ? ' active' : ''}`}
-            >
-              <div className="lp-s2-q-row">
-                <span className="lp-s2-q-text">{q.q}</span>
-                <span className="lp-s2-q-answer">{q.a}</span>
-                <span className="lp-s2-check">✓</span>
-              </div>
-              <div className="lp-s2-body">
-                <div className="lp-s2-body-inner">
-                  <div className="lp-s2-input">
-                    <span>{activeQ === i ? typed : ''}</span>
-                    <span className="lp-icursor lp-dark" />
+      <div className="lp-fp-white">
+        <div className="lp-fp-content">
+          <div className="lp-fp-tag">Step 2</div>
+          <div className="lp-fp-title">Collab on the agreement</div>
+          <div className="lp-s2-card">
+            <div className="lp-s1-label">Formation &amp; Purpose</div>
+            {S2_QUESTIONS.map((q, i) => (
+              <div
+                key={i}
+                className={`lp-s2-q${answered.includes(i) ? ' answered' : ''}${activeQ === i ? ' active' : ''}`}
+              >
+                <div className="lp-s2-q-row">
+                  <span className="lp-s2-q-text">{q.q}</span>
+                  <span className="lp-s2-q-answer">{q.a}</span>
+                  <span className="lp-s2-check">✓</span>
+                </div>
+                <div className="lp-s2-body">
+                  <div className="lp-s2-body-inner">
+                    <div className="lp-s2-input">
+                      <span>{activeQ === i ? typed : ''}</span>
+                      <span className="lp-icursor lp-dark" />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -219,49 +223,53 @@ function PanelEquity() {
   return (
     <div className="lp-fp" style={{ backgroundImage: "url('/images/leaf.png?v=2')" }}>
       <div className="lp-fp-overlay" />
-      <div className="lp-fp-content">
-        <div className="lp-fp-tag">Step 3</div>
-        <div className="lp-fp-title">Equity Calculator</div>
-        <div className="lp-s3-card">
-          <div className="lp-s3-top">
-            <span className="lp-s3-category">{cat.name}</span>
-            <span className="lp-s3-counter">{cat.count}</span>
-          </div>
-          <div className="lp-s1-label">How important is this?</div>
-          <div className="lp-s3-slider-row">
-            <div className="lp-s3-track">
-              <div
-                className="lp-s3-fill"
-                style={{
-                  width: `${sliderPct}%`,
-                  transition: sliderTransition ? 'width 0.7s cubic-bezier(0.16,1,0.3,1)' : 'none',
-                }}
-              />
-              <div
-                className="lp-s3-thumb"
-                style={{
-                  left: `${sliderPct}%`,
-                  transition: sliderTransition ? 'left 0.7s cubic-bezier(0.16,1,0.3,1)' : 'none',
-                }}
-              />
+      <div className="lp-fp-white">
+        <div className="lp-fp-content">
+          <div className="lp-fp-tag">Step 3</div>
+          <div className="lp-fp-title">Equity Calculator</div>
+          <div className="lp-s3-card">
+            <div className="lp-s3-top">
+              <span className="lp-s3-category">{cat.name}</span>
+              <span className="lp-s3-counter">{cat.count}</span>
             </div>
-            <span className="lp-s3-val">{sliderVal ?? '—'}</span>
-          </div>
-          <div className="lp-s1-label" style={{ marginTop: 10 }}>
-            Score each cofounder
-          </div>
-          {S3_NAMES.map((name, i) => (
-            <div key={i} className="lp-s3-cf">
-              <div className="lp-s3-cf-name">{name}</div>
-              <div className="lp-s3-dots">
-                {Array.from({ length: 10 }, (_, d) => (
-                  <div key={d} className={`lp-s3-dot${selected[i] === d + 1 ? ' selected' : ''}`}>
-                    {d + 1}
-                  </div>
-                ))}
+            <div className="lp-s1-label">How important is this?</div>
+            <div className="lp-s3-slider-row">
+              <div className="lp-s3-track">
+                <div
+                  className="lp-s3-fill"
+                  style={{
+                    width: `${sliderPct}%`,
+                    transition: sliderTransition
+                      ? 'width 0.7s cubic-bezier(0.16,1,0.3,1)'
+                      : 'none',
+                  }}
+                />
+                <div
+                  className="lp-s3-thumb"
+                  style={{
+                    left: `${sliderPct}%`,
+                    transition: sliderTransition ? 'left 0.7s cubic-bezier(0.16,1,0.3,1)' : 'none',
+                  }}
+                />
               </div>
+              <span className="lp-s3-val">{sliderVal ?? '—'}</span>
             </div>
-          ))}
+            <div className="lp-s1-label" style={{ marginTop: 10 }}>
+              Score each cofounder
+            </div>
+            {S3_NAMES.map((name, i) => (
+              <div key={i} className="lp-s3-cf">
+                <div className="lp-s3-cf-name">{name}</div>
+                <div className="lp-s3-dots">
+                  {Array.from({ length: 10 }, (_, d) => (
+                    <div key={d} className={`lp-s3-dot${selected[i] === d + 1 ? ' selected' : ''}`}>
+                      {d + 1}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -296,21 +304,23 @@ function PanelReview() {
   return (
     <div className="lp-fp" style={{ backgroundImage: "url('/images/paper.png?v=2')" }}>
       <div className="lp-fp-overlay" />
-      <div className="lp-fp-content">
-        <div className="lp-fp-tag">Step 4</div>
-        <div className="lp-fp-title">Do a final review</div>
-        <div className="lp-s2r-card">
-          <div className="lp-s1-label">Cofounder Agreement</div>
-          <div className="lp-s2r-track">
-            <div className="lp-s2r-fill" style={{ width: `${pct}%` }} />
-          </div>
-          <div className="lp-s2r-list">
-            {S2R_SECTIONS.map((s, i) => (
-              <div key={i} className={`lp-s2r-row${done.includes(i) ? ' done' : ''}`}>
-                <span className="lp-s2r-check">{done.includes(i) ? '✓' : ''}</span>
-                <span>{s}</span>
-              </div>
-            ))}
+      <div className="lp-fp-white">
+        <div className="lp-fp-content">
+          <div className="lp-fp-tag">Step 4</div>
+          <div className="lp-fp-title">Do a final review</div>
+          <div className="lp-s2r-card">
+            <div className="lp-s1-label">Cofounder Agreement</div>
+            <div className="lp-s2r-track">
+              <div className="lp-s2r-fill" style={{ width: `${pct}%` }} />
+            </div>
+            <div className="lp-s2r-list">
+              {S2R_SECTIONS.map((s, i) => (
+                <div key={i} className={`lp-s2r-row${done.includes(i) ? ' done' : ''}`}>
+                  <span className="lp-s2r-check">{done.includes(i) ? '✓' : ''}</span>
+                  <span>{s}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -363,33 +373,35 @@ function PanelExpert() {
   return (
     <div className="lp-fp" style={{ backgroundImage: "url('/images/chalk.png?v=2')" }}>
       <div className="lp-fp-overlay" />
-      <div className="lp-fp-content">
-        <div className="lp-fp-tag">Step 5</div>
-        <div className="lp-fp-title">Expert Guidance</div>
-        <div className="lp-s4-card">
-          <div className="lp-s4-expert-row">
-            <div className="lp-s4-avatar">T</div>
-            <div>
-              <div className="lp-s4-name">Tim</div>
-              <div className="lp-s4-role">Cofounder Coach</div>
-            </div>
-          </div>
-          <div className="lp-s4-msgs">
-            {S4_MSGS.map(
-              (m, i) =>
-                shown.includes(i) && (
-                  <div key={i} className={`lp-s4-msg${m.sent ? ' user' : ''}`}>
-                    {m.text}
-                  </div>
-                ),
-            )}
-            {typingIdx !== null && (
-              <div className="lp-s4-typing">
-                <div className="lp-s4-dot-anim" />
-                <div className="lp-s4-dot-anim" />
-                <div className="lp-s4-dot-anim" />
+      <div className="lp-fp-white">
+        <div className="lp-fp-content">
+          <div className="lp-fp-tag">Step 5</div>
+          <div className="lp-fp-title">Expert Guidance</div>
+          <div className="lp-s4-card">
+            <div className="lp-s4-expert-row">
+              <div className="lp-s4-avatar">T</div>
+              <div>
+                <div className="lp-s4-name">Tim</div>
+                <div className="lp-s4-role">Cofounder Coach</div>
               </div>
-            )}
+            </div>
+            <div className="lp-s4-msgs">
+              {S4_MSGS.map(
+                (m, i) =>
+                  shown.includes(i) && (
+                    <div key={i} className={`lp-s4-msg${m.sent ? ' user' : ''}`}>
+                      {m.text}
+                    </div>
+                  ),
+              )}
+              {typingIdx !== null && (
+                <div className="lp-s4-typing">
+                  <div className="lp-s4-dot-anim" />
+                  <div className="lp-s4-dot-anim" />
+                  <div className="lp-s4-dot-anim" />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -481,10 +493,6 @@ const FAQS: readonly Faq[] = [
     a: 'As early as possible. Day 1 is ideal, but day 100 is still better than never. The earlier you do it, the easier (and less awkward) it is.',
   },
   {
-    q: 'How long does it take to complete with Cherrytree?',
-    a: "Around 30–60 minutes. That's less time than a pitch deck tweak or your daily doomscroll.",
-  },
-  {
     q: 'Can I update the agreement later if things change?',
     a: 'Absolutely. Startups evolve, and so can your agreement. You can revisit and revise as roles, equity, or goals shift.',
   },
@@ -512,9 +520,9 @@ function LandingPage() {
   const typedHero = useTypewriter('great company.');
   const [activeFeature, setActiveFeature] = useState(0);
   const [carouselIdx, setCarouselIdx] = useState(0);
-  // Protect CTA: types "and your peace of mind." on an infinite loop — type out,
-  // hold, clear, and after a slight pause type it out again.
-  const typedProtect = useTypewriter('and your peace of mind.', { charDelay: 46, holdDelay: 2200 });
+  // Protect CTA: "and your" stays fixed in place; only "peace of mind." types out on
+  // an infinite loop — type out, hold, clear, and after a slight pause type it out again.
+  const typedProtect = useTypewriter('peace of mind.', { charDelay: 46, holdDelay: 2200 });
   const featItemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const goDash = () => goToDashboard(navigate);
@@ -590,7 +598,7 @@ function LandingPage() {
         </h1>
         <p className="lp-hero-sub">
           Answer guided questions with your cofounders and get a complete Cofounder Agreement. No
-          sketchy templates, no overpriced lawyers.
+          sketchy templates or overpriced lawyers.
         </p>
         <div className="lp-hero-actions">
           <button className="lp-btn-primary" onClick={goDash}>
@@ -700,22 +708,31 @@ function LandingPage() {
       {/* ── FAQ ── */}
       <section className="lp-faq" id="faq">
         <div className="lp-faq-inner">
-          <div className="lp-faq-header">
-            <h2 className="lp-rv lp-d1">FAQ</h2>
+          <div className="lp-faq-card">
+            <div className="lp-faq-visual">
+              <h2>Frequently asked questions.</h2>
+            </div>
+            <div className="lp-faq-panel">
+              <FaqList faqs={FAQS} />
+            </div>
           </div>
-          <FaqList faqs={FAQS} reveal />
         </div>
       </section>
 
       {/* ── Protect CTA ── */}
       <section className="lp-protect-cta">
         <h2>
-          Protect your piece of the pie
-          <br />
-          <em>
-            {typedProtect}
-            <span className="lp-cursor" />
-          </em>
+          <span className="lp-hl-line">
+            <span className="lp-hl-inner">Protect your piece of the pie</span>
+          </span>
+          <span className="lp-hl-line">
+            <span className="lp-hl-inner">
+              and your <span className="lp-protect-typed">{typedProtect}</span>
+              <span style={{ visibility: 'hidden' }}>
+                {'peace of mind.'.slice(typedProtect.length)}
+              </span>
+            </span>
+          </span>
         </h2>
         <div className="lp-protect-cta-actions lp-rv lp-d1">
           <button className="lp-btn-primary" onClick={goDash}>

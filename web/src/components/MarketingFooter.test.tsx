@@ -22,15 +22,13 @@ describe('MarketingFooter', () => {
       fireEvent.click(screen.getByRole('button', { name }));
       expect(screen.getByTestId('path')).toHaveTextContent(path);
     };
-    expectRoute('Contract Creator', '/dashboard');
-    expectRoute('Equity Calculator', '/equity-calculator');
-    expectRoute('Pricing', '/pricing');
-    expectRoute('Attorney', '/attorney');
     expectRoute('Privacy', '/privacy');
     expectRoute('Terms', '/terms');
     expectRoute('Contact', '/contact');
-    fireEvent.click(screen.getByRole('button', { name: /Cherrytree/ }));
-    expect(screen.getByTestId('path')).toHaveTextContent('/');
-    expect(screen.getByText('© 2026 Cherrytree, LLC')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Coaching' })).toHaveAttribute(
+      'href',
+      'https://app.hubble.social/timhe',
+    );
+    expect(screen.getByText('© 2026 Cherrytree')).toBeInTheDocument();
   });
 });

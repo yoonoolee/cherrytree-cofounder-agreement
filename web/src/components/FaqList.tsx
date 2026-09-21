@@ -11,25 +11,20 @@ interface FaqListProps {
   reveal?: boolean;
 }
 
-/** The expandable question list of an `.lp-faq` section: an item opens on hover or click. */
+/** The expandable question list of an `.lp-faq` section: an item opens on click. */
 function FaqList({ faqs, reveal = false }: FaqListProps) {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [hoveredFaq, setHoveredFaq] = useState<number | null>(null);
 
   return (
     <div className="lp-faq-list">
       {faqs.map((f, i) => {
-        const expanded = openFaq === i || hoveredFaq === i;
+        const expanded = openFaq === i;
         const revealClass = reveal ? ` lp-rv lp-d${Math.min(i, 4)}` : '';
         return (
-          <div
-            key={i}
-            className={`lp-faq-item${revealClass}`}
-            onMouseEnter={() => setHoveredFaq(i)}
-            onMouseLeave={() => setHoveredFaq((prev) => (prev === i ? null : prev))}
-          >
+          <div key={i} className={`lp-faq-item${revealClass}`}>
             <button className="lp-faq-btn" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
               <span className="lp-faq-q">{f.q}</span>
+              <span className={`lp-faq-icon${expanded ? ' open' : ''}`} aria-hidden="true" />
             </button>
             <div className={`lp-faq-body${expanded ? ' open' : ''}`}>
               <div className="lp-faq-body-inner">

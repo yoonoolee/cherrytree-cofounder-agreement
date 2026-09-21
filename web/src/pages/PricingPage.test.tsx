@@ -128,20 +128,12 @@ describe('PricingPage', () => {
     expect(rows[6]?.querySelectorAll('td')[1]).toHaveTextContent('—');
   });
 
-  it('opens an FAQ on hover or click and closes it again', () => {
+  it('opens an FAQ on click and closes it again', () => {
     renderPage();
     const question = 'Do you offer discounts?';
-    const item = screen.getByRole('button', { name: question }).parentElement!;
-    expect(faqBody(question)).not.toHaveClass('open');
-
-    fireEvent.mouseEnter(item);
-    expect(faqBody(question)).toHaveClass('open');
-    fireEvent.mouseLeave(item);
     expect(faqBody(question)).not.toHaveClass('open');
 
     fireEvent.click(screen.getByRole('button', { name: question }));
-    expect(faqBody(question)).toHaveClass('open');
-    fireEvent.mouseLeave(item); // a clicked-open item stays open
     expect(faqBody(question)).toHaveClass('open');
     fireEvent.click(screen.getByRole('button', { name: question }));
     expect(faqBody(question)).not.toHaveClass('open');

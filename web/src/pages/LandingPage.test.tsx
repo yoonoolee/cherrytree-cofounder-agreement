@@ -50,7 +50,7 @@ function renderPage() {
 const path = () => screen.getByTestId('path').textContent;
 const advance = (ms: number) => act(() => vi.advanceTimersByTime(ms));
 const heroTyped = () => document.querySelector('.lp-hero-headline em')?.textContent;
-const protectTyped = () => document.querySelector('.lp-protect-cta em')?.textContent;
+const protectTyped = () => document.querySelector('.lp-protect-typed')?.textContent;
 const featureItems = () => Array.from(document.querySelectorAll<HTMLElement>('.lp-feat-item'));
 const observersFor = (threshold: number) =>
   FakeIntersectionObserver.instances.filter((o) => o.options?.threshold === threshold);
@@ -345,36 +345,31 @@ describe('LandingPage', () => {
     });
   });
 
-  it('opens an FAQ on hover or click and closes it again', () => {
+  it('opens an FAQ on click and closes it again', () => {
     renderPage();
     const question = 'Do you offer discounts?';
     expect(screen.queryByRole('button', { name: question })).toBeNull(); // pricing page's FAQ
-    const q = 'How long does it take to complete with Cherrytree?';
-    const item = screen.getByRole('button', { name: q }).parentElement!;
-    expect(faqBody(q)).not.toHaveClass('open');
-    fireEvent.mouseEnter(item);
-    expect(faqBody(q)).toHaveClass('open');
-    fireEvent.mouseLeave(item);
+    const q = 'Can I update the agreement later if things change?';
     expect(faqBody(q)).not.toHaveClass('open');
     fireEvent.click(screen.getByRole('button', { name: q }));
     expect(faqBody(q)).toHaveClass('open');
     fireEvent.click(screen.getByRole('button', { name: q }));
     expect(faqBody(q)).not.toHaveClass('open');
-    expect(document.querySelectorAll('.lp-faq-item')).toHaveLength(6);
+    expect(document.querySelectorAll('.lp-faq-item')).toHaveLength(5);
   });
 
   it('types the closing line out, holds, and starts over; unmount stops the timers', () => {
     const { unmount } = renderPage();
-    const line = 'and your peace of mind.';
+    const line = 'peace of mind.';
     expect(protectTyped()).toBe('');
     advance(600 + 46);
-    expect(protectTyped()).toBe('a');
+    expect(protectTyped()).toBe('p');
     advance(46 * (line.length - 1));
     expect(protectTyped()).toBe(line);
     advance(46 + 2200);
     expect(protectTyped()).toBe('');
     advance(46);
-    expect(protectTyped()).toBe('a');
+    expect(protectTyped()).toBe('p');
     unmount();
     expect(vi.getTimerCount()).toBe(0);
   });

@@ -213,11 +213,15 @@ function PricingPage() {
       {/* FAQ */}
       <section className="lp-faq">
         <div className="lp-faq-inner">
-          <div className="lp-faq-header">
-            <div className="lp-overline">FAQ</div>
-            <h2>Common questions.</h2>
+          <div className="lp-faq-card">
+            <div className="lp-faq-visual">
+              <div className="lp-overline">FAQ</div>
+              <h2>Common questions.</h2>
+            </div>
+            <div className="lp-faq-panel">
+              <FaqList faqs={FAQS} />
+            </div>
           </div>
-          <FaqList faqs={FAQS} />
         </div>
       </section>
 

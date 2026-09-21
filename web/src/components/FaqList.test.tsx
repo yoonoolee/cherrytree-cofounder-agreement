@@ -23,19 +23,9 @@ describe('FaqList', () => {
     expect(item('One?').className).toBe('lp-faq-item');
   });
 
-  it('opens an item while hovered', () => {
-    render(<FaqList faqs={FAQS} />);
-    fireEvent.mouseEnter(item('Two?'));
-    expect(body('Two?')).toHaveClass('open');
-    expect(body('One?')).not.toHaveClass('open');
-    fireEvent.mouseLeave(item('Two?'));
-    expect(body('Two?')).not.toHaveClass('open');
-  });
-
-  it('keeps a clicked item open after the pointer leaves and toggles it closed on a second click', () => {
+  it('opens an item on click and toggles it closed on a second click', () => {
     render(<FaqList faqs={FAQS} />);
     fireEvent.click(screen.getByRole('button', { name: 'One?' }));
-    fireEvent.mouseLeave(item('One?'));
     expect(body('One?')).toHaveClass('open');
 
     fireEvent.click(screen.getByRole('button', { name: 'Two?' })); // one open at a time
