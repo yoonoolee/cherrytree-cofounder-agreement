@@ -7,19 +7,22 @@ export interface TypewriterOptions {
   charDelay?: number;
   /** When set, the finished line is held this long, cleared, and typed out again. */
   holdDelay?: number;
+  /** Gates the typing start — set true (e.g. once scrolled into view) to begin. Defaults to true. */
+  start?: boolean;
 }
 
 /**
  * Types `text` out one character at a time — once, or on a loop when `holdDelay` is given.
- * Every timer is cleared on unmount.
+ * Waits for `start` to be true before beginning. Every timer is cleared on unmount.
  */
 export function useTypewriter(
   text: string,
-  { startDelay = 600, charDelay = 60, holdDelay }: TypewriterOptions = {},
+  { startDelay = 600, charDelay = 60, holdDelay, start = true }: TypewriterOptions = {},
 ): string {
   const [typed, setTyped] = useState('');
 
   useEffect(() => {
+    if (!start) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const t = (fn: () => void, ms: number) => {
       timers.push(setTimeout(fn, ms));
@@ -41,7 +44,7 @@ export function useTypewriter(
     };
     t(holdDelay === undefined ? tick : restart, startDelay);
     return () => timers.forEach(clearTimeout);
-  }, [text, startDelay, charDelay, holdDelay]);
+  }, [text, startDelay, charDelay, holdDelay, start]);
 
   return typed;
 }

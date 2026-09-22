@@ -516,16 +516,42 @@ function LandingPage() {
       'Answer guided questions with your cofounders and get a complete Cofounder Agreement. No sketchy templates, no overpriced lawyers.',
   });
 
-  // Hero typewriter — types once on load
-  const typedHero = useTypewriter('great company.');
+  // Hero typewriter — types once, when scrolled into view
+  const heroHeadlineRef = useRef<HTMLHeadingElement>(null);
+  const [heroInView, setHeroInView] = useState(false);
+  const typedHero = useTypewriter('great company.', { start: heroInView });
   const [activeFeature, setActiveFeature] = useState(0);
   const [carouselIdx, setCarouselIdx] = useState(0);
-  // Protect CTA: "and your" stays fixed in place; only "peace of mind." types out on
-  // an infinite loop — type out, hold, clear, and after a slight pause type it out again.
-  const typedProtect = useTypewriter('peace of mind.', { charDelay: 46, holdDelay: 2200 });
+  // Protect CTA: "and your" stays fixed in place; only "peace of mind." types out once,
+  // when scrolled into view.
+  const protectHeadlineRef = useRef<HTMLHeadingElement>(null);
+  const [protectInView, setProtectInView] = useState(false);
+  const typedProtect = useTypewriter('peace of mind.', { charDelay: 46, start: protectInView });
   const featItemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const goDash = () => goToDashboard(navigate);
+
+  // Trigger each typewriter once, the first time its headline scrolls into view.
+  useEffect(() => {
+    const targets: [HTMLElement | null, (v: boolean) => void][] = [
+      [heroHeadlineRef.current, setHeroInView],
+      [protectHeadlineRef.current, setProtectInView],
+    ];
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const hit = targets.find(([el]) => el === entry.target);
+          if (entry.isIntersecting && hit) {
+            obs.unobserve(entry.target);
+            hit[1](true);
+          }
+        });
+      },
+      { threshold: 0.2 },
+    );
+    targets.forEach(([el]) => el && obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
 
   // Scroll reveal — fades/slides in each .lp-rv/.lp-rv-l/.lp-rv-r element once as it enters view.
   // Elements already in the viewport at observe() time can have their IntersectionObserver
@@ -583,7 +609,7 @@ function LandingPage() {
 
       {/* ── Hero ── */}
       <section className="lp-hero">
-        <h1 className="lp-hero-headline">
+        <h1 className="lp-hero-headline" ref={heroHeadlineRef}>
           <span className="lp-hl-line">
             <span className="lp-hl-inner">Great companies start</span>
           </span>
@@ -721,7 +747,7 @@ function LandingPage() {
 
       {/* ── Protect CTA ── */}
       <section className="lp-protect-cta">
-        <h2>
+        <h2 ref={protectHeadlineRef}>
           <span className="lp-hl-line">
             <span className="lp-hl-inner">Protect your piece of the pie</span>
           </span>
