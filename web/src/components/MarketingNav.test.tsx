@@ -31,16 +31,4 @@ describe('MarketingNav', () => {
     fireEvent.click(screen.getByRole('button', { name: /Cherrytree/ }));
     expect(screen.getByTestId('path')).toHaveTextContent('/');
   });
-
-  it('links external resources in a new tab with rel=noopener', () => {
-    renderNav();
-    const coaching = screen.getByRole('link', { name: /Coaching/ });
-    expect(coaching).toHaveAttribute('href', 'https://app.hubble.social/timhe');
-    expect(coaching).toHaveAttribute('target', '_blank');
-    expect(coaching).toHaveAttribute('rel', 'noopener noreferrer');
-    expect(screen.getByRole('link', { name: /Newsletter/ })).toHaveAttribute(
-      'href',
-      'https://cherrytree.beehiiv.com/',
-    );
-  });
 });

@@ -13,6 +13,8 @@
   --ct-card-bg: #f1eee9;
   --ct-card-answered: #b3c2bb;
   --ct-card-hover: #e9e5df;
+  /* Side margin for marketing pages: scales with the viewport, then holds content to ~1280px. */
+  --lp-gutter: max(clamp(24px, 6vw, 80px), calc((100vw - 1280px) / 2));
 }
 
 /* ── Survey fonts ── */
@@ -953,7 +955,7 @@ select:disabled {
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   width: 100%;
-  padding: 14px 60px;
+  padding: 14px var(--lp-gutter);
   background: var(--lp-bg);
   white-space: nowrap;
 }
@@ -1201,7 +1203,7 @@ select:disabled {
 /* ── Hero ── */
 .lp-hero {
   min-height: 100vh;
-  padding: 170px 52px 100px;
+  padding: 170px var(--lp-gutter) 100px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1592,7 +1594,7 @@ select:disabled {
 
 /* ── Logo Wall ── */
 .lp-logowall {
-  padding: 48px 52px 72px;
+  padding: 48px var(--lp-gutter) 72px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1661,7 +1663,7 @@ select:disabled {
 
 /* ── Features ── */
 .lp-features {
-  padding: 140px 52px 0;
+  padding: 140px var(--lp-gutter) 0;
 }
 .lp-feat-scroll {
   margin-bottom: 140px;
@@ -1671,20 +1673,105 @@ select:disabled {
 }
 .lp-feat-header h2 {
   font-family: 'Instrument Serif', serif;
-  font-size: clamp(32px, 4.5vw, 58px);
+  font-size: clamp(28px, 3.4vw, 44px);
   font-weight: 400;
   letter-spacing: 0.02em;
-  line-height: 1.05;
+  line-height: 1.1;
   margin-bottom: 14px;
-}
-.lp-feat-header h2 em {
-  font-style: italic;
-  color: var(--lp-green-text);
 }
 .lp-feat-header p {
   font-size: 20px;
   font-weight: 300;
   color: #47433f;
+}
+
+/* ── Features v2 (draft) ── */
+/* Painted valley scene in a rounded panel under the heading. */
+.lp-feat-v2-scene {
+  position: relative;
+  aspect-ratio: 1754 / 807;
+  border-radius: 14px;
+  overflow: hidden;
+  background: url('/images/blossom-valley-cropped.webp') center / cover no-repeat;
+}
+/* Canvas-weave grain so the image reads as a painted surface. */
+.lp-feat-v2-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.3;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+/* The section-above step animation, centered as a card on the painting. */
+.lp-feat-v2-scene .lp-fp {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none !important;
+  border-radius: 0;
+}
+.lp-feat-v2-scene .lp-fp-overlay {
+  display: none;
+}
+.lp-feat-v2-scene .lp-fp-white {
+  position: relative;
+  inset: auto;
+  width: min(520px, 86%);
+  height: min(420px, 86%);
+}
+@media (max-width: 700px) {
+  .lp-feat-v2-scene {
+    aspect-ratio: auto;
+    min-height: 480px;
+  }
+}
+
+/* Titles under the scene; the selected one is dark and shows its description. */
+.lp-feat-v2-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  margin-top: 48px;
+  align-items: start;
+}
+.lp-feat-v2-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: #c4c0bb;
+  transition: color 0.2s;
+}
+.lp-feat-v2-tab:hover {
+  color: #8a867f;
+}
+.lp-feat-v2-tab.active {
+  color: var(--lp-ink);
+}
+.lp-feat-v2-tab-title {
+  font-size: 18px;
+  font-weight: 400;
+}
+.lp-feat-v2-tab-desc {
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: #47433f;
+}
+@media (max-width: 900px) {
+  .lp-feat-v2-tabs {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 }
 
 .lp-feat-body {
@@ -2254,7 +2341,7 @@ select:disabled {
 
 /* ── Stats ── */
 .lp-stats {
-  padding: 140px 52px;
+  padding: 140px var(--lp-gutter);
   background-color: var(--lp-bg);
 }
 .lp-stats-inner {
@@ -2335,7 +2422,7 @@ select:disabled {
 
 /* ── Testimonials ── */
 .lp-testi {
-  padding: 140px 52px;
+  padding: 140px var(--lp-gutter);
 }
 .lp-testi-header {
   margin-bottom: 60px;
@@ -2426,7 +2513,7 @@ select:disabled {
 
 /* ── Carousel ── */
 .lp-carousel {
-  padding: 140px 0 140px 52px;
+  padding: 140px 0 140px var(--lp-gutter);
   overflow: hidden;
 }
 .lp-carousel-header {
@@ -2437,7 +2524,7 @@ select:disabled {
 }
 .lp-carousel-title {
   font-family: 'Instrument Serif', serif;
-  font-size: clamp(30px, 4vw, 50px);
+  font-size: clamp(28px, 3.4vw, 44px);
   font-weight: 400;
   letter-spacing: 0.02em;
   line-height: 1.1;
@@ -2536,7 +2623,7 @@ select:disabled {
   display: flex;
   gap: 6px;
   margin-top: 28px;
-  padding-right: 52px;
+  padding-right: var(--lp-gutter);
   justify-content: flex-end;
 }
 .lp-cs-dot {
@@ -2556,7 +2643,7 @@ select:disabled {
 
 /* ── Pricing ── */
 .lp-pricing {
-  padding: 140px 52px;
+  padding: 140px var(--lp-gutter);
 }
 .lp-pricing-header {
   margin-bottom: 60px;
@@ -2698,7 +2785,7 @@ select:disabled {
 
 /* ── FAQ ── */
 .lp-faq {
-  padding: 80px 52px 120px;
+  padding: 80px var(--lp-gutter) 120px;
 }
 .lp-faq-inner {
   margin: 0 8px;
@@ -2839,7 +2926,7 @@ select:disabled {
 
 /* ── Protect CTA ── */
 .lp-protect-cta {
-  padding: 110px 52px 180px;
+  padding: 110px var(--lp-gutter) 180px;
   text-align: center;
 }
 .lp-protect-cta h2 {
@@ -2859,7 +2946,7 @@ select:disabled {
 
 /* ── Footer ── */
 .lp-footer {
-  padding: 100px 60px 48px;
+  padding: 100px var(--lp-gutter) 48px;
   background-color: var(--lp-bg);
 }
 .lp-footer-top {
@@ -2996,7 +3083,7 @@ select:disabled {
 
 /* ── Generic marketing page hero (Attorney, Contact, etc.) ── */
 .lp-page-hero {
-  padding: 180px 52px 80px;
+  padding: 180px var(--lp-gutter) 80px;
   text-align: center;
   background-color: var(--lp-bg);
 }
@@ -3019,7 +3106,7 @@ select:disabled {
   animation: lpPageFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both;
 }
 .lp-page-section {
-  padding: 60px 52px 140px;
+  padding: 60px var(--lp-gutter) 140px;
   max-width: 1040px;
   margin: 0 auto;
 }
@@ -3034,7 +3121,7 @@ select:disabled {
 
 /* ── Legal pages (Privacy, Terms) ── */
 .lp-legal-section {
-  padding: 14px 52px;
+  padding: 14px var(--lp-gutter);
 }
 .lp-legal-h2 {
   font-family: 'Instrument Serif', serif;
@@ -3282,7 +3369,7 @@ input.lp-eq-modal-input[type='text'] {
   min-height: 100vh;
 }
 .lp-about-hero {
-  padding: 180px 52px 120px;
+  padding: 180px var(--lp-gutter) 120px;
   text-align: center;
 }
 @keyframes lpPageFadeUp {
@@ -3307,7 +3394,7 @@ input.lp-eq-modal-input[type='text'] {
   font-style: italic;
 }
 .lp-about-sections {
-  padding: 0 52px 140px;
+  padding: 0 var(--lp-gutter) 140px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -3598,7 +3685,7 @@ textarea.lp-form-input {
 
 /* ── Pricing Page specific ── */
 .lp-pricing-pg-hero {
-  padding: 180px 52px 80px;
+  padding: 180px var(--lp-gutter) 80px;
   text-align: center;
   background-color: var(--lp-bg);
 }
@@ -3619,7 +3706,7 @@ textarea.lp-form-input {
   margin: 0 auto;
 }
 .lp-pricing-pg-cards-wrap {
-  padding: 20px 52px 140px;
+  padding: 20px var(--lp-gutter) 140px;
 }
 .lp-pricing-pg-cards-wrap .lp-pricing-grid {
   max-width: 1360px;
@@ -3634,7 +3721,7 @@ textarea.lp-form-input {
 
 /* Compare table */
 .lp-pricing-pg-compare {
-  padding: 0 52px 140px;
+  padding: 0 var(--lp-gutter) 140px;
 }
 .lp-pricing-pg-compare-inner {
   max-width: 860px;

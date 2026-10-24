@@ -423,30 +423,35 @@ const FEATURES = [
     panel: 0,
     title: 'Invite your cofounders',
     desc: 'Add your cofounders as collaborators. They must be added to be included in the Cofounder Agreement.',
+    short: 'Add your cofounders so they are part of the agreement.',
   },
   {
     num: '02',
     panel: 1,
     title: 'Collab on the agreement',
     desc: 'You and your cofounders answer a set of guided questions together. Nobody has to play "project manager" or relay answers.',
+    short: 'Answer guided questions together. No project manager needed.',
   },
   {
     num: '03',
     panel: 2,
     title: 'Equity Calculator',
     desc: 'Use our proprietary equity calculator to determine ownership. Instant, precise splits so everyone knows their stake.',
+    short: 'Instant, precise splits so everyone knows their stake.',
   },
   {
     num: '04',
     panel: 3,
     title: 'Do a final review',
     desc: 'We take your responses and turn them into a Cofounder Agreement, ready for your final review and signature.',
+    short: 'We turn your answers into an agreement, ready to review and sign.',
   },
   {
     num: '05',
     panel: 4,
     title: 'Expert Guidance',
     desc: "We are a team of cofounder coaches, founders, and attorneys ready to help. You're in good hands every step of the way.",
+    short: 'Cofounder coaches and attorneys, ready to help every step of the way.',
   },
 ];
 
@@ -521,6 +526,7 @@ function LandingPage() {
   const [heroInView, setHeroInView] = useState(false);
   const typedHero = useTypewriter('great company.', { start: heroInView });
   const [activeFeature, setActiveFeature] = useState(0);
+  const [v2Feature, setV2Feature] = useState(0);
   const [carouselIdx, setCarouselIdx] = useState(0);
   // Protect CTA: "and your" stays fixed in place; only "peace of mind." types out once,
   // when scrolled into view.
@@ -601,6 +607,7 @@ function LandingPage() {
   }, []);
 
   const ActivePanel = PANELS[FEATURES[activeFeature]!.panel]!;
+  const V2Panel = PANELS[FEATURES[v2Feature]!.panel]!;
 
   return (
     <div className="lp">
@@ -642,8 +649,7 @@ function LandingPage() {
         <div className="lp-feat-scroll">
           <div className="lp-feat-header">
             <h2 className="lp-rv lp-d1">
-              Built for <br />
-              <em>early-stage</em> cofounders.
+              Built for early-stage cofounders.
             </h2>
             <p className="lp-rv lp-d2">
               Get your equity, expectations, and everything else right from the start.
@@ -669,6 +675,36 @@ function LandingPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Features v2 (draft — for comparison with the section above) ── */}
+      <section className="lp-features" id="features-v2">
+        <div className="lp-feat-scroll">
+          <div className="lp-feat-header">
+            <h2 className="lp-rv lp-d1">
+              Built for early-stage cofounders.
+            </h2>
+          </div>
+          <div className="lp-feat-v2-scene lp-rv lp-d2">
+            <div className="lp-feat-v2-grain" aria-hidden="true" />
+            <V2Panel key={v2Feature} />
+          </div>
+          <div className="lp-feat-v2-tabs" role="tablist">
+            {FEATURES.slice(0, 4).map((f, i) => (
+              <button
+                key={f.num}
+                type="button"
+                role="tab"
+                aria-selected={v2Feature === i}
+                className={`lp-feat-v2-tab${v2Feature === i ? ' active' : ''}`}
+                onClick={() => setV2Feature(i)}
+              >
+                <span className="lp-feat-v2-tab-title">{f.title}</span>
+                {v2Feature === i && <span className="lp-feat-v2-tab-desc">{f.short}</span>}
+              </button>
+            ))}
           </div>
         </div>
       </section>
