@@ -424,7 +424,7 @@ const PANELS: readonly ComponentType[] = [
 const AGREEMENT_SECTIONS = [
   {
     tab: 'Equity',
-    title: 'Agree how ownership is split',
+    title: 'Agree on ownership splits',
     desc: 'Set each cofounder’s share up front, with a fair split that everyone understands and signs.',
   },
   {
@@ -434,17 +434,17 @@ const AGREEMENT_SECTIONS = [
   },
   {
     tab: 'Decisions',
-    title: 'Decide who decides what',
+    title: 'Decide who decides',
     desc: 'Spell out who signs off on what, when a vote is needed, and how ties get broken.',
   },
   {
     tab: 'IP',
-    title: 'Keep what you build with the company',
+    title: 'Own what you build',
     desc: 'Everything created for the company belongs to it, in writing, from the very first day.',
   },
   {
     tab: 'Compensation',
-    title: 'Be clear on how money flows',
+    title: 'Set pay and expenses',
     desc: 'Agree on pay, expenses, and reimbursements now, before anyone is frustrated later.',
   },
 ] as const;
@@ -786,7 +786,7 @@ function LandingPage() {
       <section className="lp-features" id="agreement">
         <div className="lp-feat-scroll">
           <div className="lp-feat-header">
-            <h2 className="lp-rv lp-d1">What&apos;s in your agreement.</h2>
+            <h2 className="lp-rv lp-d1">Everything your agreement covers.</h2>
           </div>
           <div className="lp-ag-shell lp-rv lp-d2">
             <div className="lp-ag-left">
