@@ -1248,7 +1248,8 @@ select:disabled {
   margin-bottom: 70px;
 }
 .lp-hero-actions .lp-btn-primary,
-.lp-protect-cta-actions .lp-btn-primary {
+.lp-protect-cta-actions .lp-btn-primary,
+.lp-ctl-actions .lp-btn-primary {
   border-radius: 999px;
 }
 
@@ -1714,6 +1715,27 @@ select:disabled {
   background: none !important;
   border-radius: 0;
 }
+@keyframes lp-v2-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* The white card stays put between steps; only what's inside it fades. */
+.lp-feat-v2-scene .lp-fp-content {
+  animation: lp-v2-card-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
+}
+.lp-feat-v2-scene[data-fading] .lp-fp-content {
+  opacity: 0;
+  transform: translateY(-6px);
+}
 .lp-feat-v2-scene .lp-fp-overlay {
   display: none;
 }
@@ -1771,6 +1793,151 @@ select:disabled {
   .lp-feat-v2-tabs {
     grid-template-columns: 1fr;
     gap: 20px;
+  }
+}
+
+/* ── Protection (draft) ── */
+.lp-ctl {
+  padding: 140px var(--lp-gutter);
+}
+.lp-ctl-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+.lp-ctl-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(28px, 3.4vw, 44px);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  margin-bottom: 40px;
+  max-width: 560px;
+}
+.lp-ctl-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.lp-ctl-list li {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 17px;
+  font-weight: 300;
+  color: var(--lp-ink);
+}
+.lp-ctl-list svg {
+  flex: none;
+}
+.lp-ctl-actions {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.lp-ctl-actions .lp-btn-ghost {
+  font-size: 16px;
+  color: var(--lp-ink);
+}
+.lp-ctl-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lp-ctl-card {
+  width: 100%;
+  max-width: 520px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 12px 36px rgba(0, 0, 0, 0.06);
+}
+.lp-ctl-card-top {
+  display: grid;
+  grid-template-columns: 1fr 150px;
+  gap: 24px;
+  padding-bottom: 28px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #eeebe6;
+}
+.lp-ctl-card-id {
+  display: flex;
+  flex-direction: column;
+}
+.lp-ctl-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 24px;
+  color: var(--lp-ink);
+}
+.lp-ctl-handle {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--lp-muted);
+  margin-top: 4px;
+}
+.lp-ctl-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 36px;
+}
+.lp-ctl-pill {
+  background: #f4f2ee;
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-size: 15px;
+  color: var(--lp-ink);
+}
+.lp-ctl-kebab {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e6e2dc;
+  border-radius: 50%;
+  color: var(--lp-ink);
+}
+.lp-ctl-swatch {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  background: url('/images/blossom-valley-cropped.webp') 78% 30% / 340% no-repeat;
+}
+.lp-ctl-rows {
+  margin: 0;
+}
+.lp-ctl-rows > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 0;
+  font-size: 16px;
+}
+.lp-ctl-rows dt {
+  font-weight: 300;
+  color: var(--lp-muted);
+}
+.lp-ctl-rows dd {
+  margin: 0;
+  color: var(--lp-ink);
+}
+@media (max-width: 900px) {
+  .lp-ctl {
+    padding: 80px var(--lp-gutter);
+  }
+  .lp-ctl-inner {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+  .lp-ctl-card-top {
+    grid-template-columns: 1fr 100px;
   }
 }
 

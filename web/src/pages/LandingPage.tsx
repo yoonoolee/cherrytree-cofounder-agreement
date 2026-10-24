@@ -417,6 +417,25 @@ const PANELS: readonly ComponentType[] = [
   PanelExpert,
 ];
 
+const CTL_POINTS = [
+  'Every cofounder answers the same guided questions',
+  'Equity splits are calculated, not guessed',
+  'Vesting, roles, and decisions are all in writing',
+  'Attorney review is available before you sign',
+];
+
+// How long each step's animation takes to play through once, in PANELS order. The v2 section
+// advances to the next step after this (mirrors the timers inside each Panel* component).
+const PANEL_CYCLE_MS = [
+  800 + S1_EMAILS.reduce((n, e) => n + e.length * 68 + 750 + 180 + 2000, 0),
+  S2_QUESTIONS.reduce((n, q) => n + 80 + q.a.length * 65 + 700 + 420, 0) + 1600,
+  S3_CATEGORIES.reduce((n, c) => n + 700 + c.scores.length * 420 + 800, 0),
+  500 + S2R_SECTIONS.length * 650 + 2000,
+  6000,
+] as const;
+const V2_FADE_MS = 350;
+const V2_STEPS = 4;
+
 const FEATURES = [
   {
     num: '01',
@@ -527,6 +546,20 @@ function LandingPage() {
   const typedHero = useTypewriter('great company.', { start: heroInView });
   const [activeFeature, setActiveFeature] = useState(0);
   const [v2Feature, setV2Feature] = useState(0);
+  const [v2Fade, setV2Fade] = useState(false);
+  // Play each step's animation once, fade it out, then move on to the next step.
+  useEffect(() => {
+    const play = PANEL_CYCLE_MS[FEATURES[v2Feature]!.panel]!;
+    const fade = setTimeout(() => setV2Fade(true), play);
+    const next = setTimeout(() => {
+      setV2Feature((v2Feature + 1) % V2_STEPS);
+      setV2Fade(false);
+    }, play + V2_FADE_MS);
+    return () => {
+      clearTimeout(fade);
+      clearTimeout(next);
+    };
+  }, [v2Feature]);
   const [carouselIdx, setCarouselIdx] = useState(0);
   // Protect CTA: "and your" stays fixed in place; only "peace of mind." types out once,
   // when scrolled into view.
@@ -648,9 +681,7 @@ function LandingPage() {
       <section className="lp-features" id="features">
         <div className="lp-feat-scroll">
           <div className="lp-feat-header">
-            <h2 className="lp-rv lp-d1">
-              Built for early-stage cofounders.
-            </h2>
+            <h2 className="lp-rv lp-d1">Built for early-stage cofounders.</h2>
             <p className="lp-rv lp-d2">
               Get your equity, expectations, and everything else right from the start.
             </p>
@@ -683,11 +714,9 @@ function LandingPage() {
       <section className="lp-features" id="features-v2">
         <div className="lp-feat-scroll">
           <div className="lp-feat-header">
-            <h2 className="lp-rv lp-d1">
-              Built for early-stage cofounders.
-            </h2>
+            <h2 className="lp-rv lp-d1">Built for early-stage cofounders.</h2>
           </div>
-          <div className="lp-feat-v2-scene lp-rv lp-d2">
+          <div className="lp-feat-v2-scene lp-rv lp-d2" data-fading={v2Fade || undefined}>
             <div className="lp-feat-v2-grain" aria-hidden="true" />
             <V2Panel key={v2Feature} />
           </div>
@@ -699,12 +728,91 @@ function LandingPage() {
                 role="tab"
                 aria-selected={v2Feature === i}
                 className={`lp-feat-v2-tab${v2Feature === i ? ' active' : ''}`}
-                onClick={() => setV2Feature(i)}
+                onClick={() => {
+                  setV2Fade(false);
+                  setV2Feature(i);
+                }}
               >
                 <span className="lp-feat-v2-tab-title">{f.title}</span>
                 {v2Feature === i && <span className="lp-feat-v2-tab-desc">{f.short}</span>}
               </button>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Protection (draft) ── */}
+      <section className="lp-ctl" id="protection">
+        <div className="lp-ctl-inner">
+          <div className="lp-ctl-copy">
+            <h2 className="lp-ctl-title lp-rv lp-d1">
+              Clear terms, fair equity, and no surprises later.
+            </h2>
+            <ul className="lp-ctl-list">
+              {CTL_POINTS.map((point, i) => (
+                <li key={point} className={`lp-rv lp-d${Math.min(i + 1, 4)}`}>
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                    <path
+                      d="M3.5 9.5l3.5 3.5 7.5-8"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {point}
+                </li>
+              ))}
+            </ul>
+            <div className="lp-ctl-actions lp-rv lp-d4">
+              <button className="lp-btn-primary" onClick={goDash}>
+                Get started
+              </button>
+            </div>
+          </div>
+          <div className="lp-ctl-visual lp-rv lp-d2">
+            <div className="lp-ctl-card">
+              <div className="lp-ctl-card-top">
+                <div className="lp-ctl-card-id">
+                  <div className="lp-ctl-name">
+                    Acme Labs
+                    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                      <circle cx="9" cy="9" r="9" fill="#2e6b4a" />
+                      <path
+                        d="M5 9.3l2.6 2.6L13 6.4"
+                        stroke="#fff"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                      />
+                    </svg>
+                  </div>
+                  <div className="lp-ctl-handle">Cofounder Agreement</div>
+                  <div className="lp-ctl-card-actions">
+                    <span className="lp-ctl-pill">Review agreement</span>
+                    <span className="lp-ctl-kebab" aria-hidden="true">
+                      ⋮
+                    </span>
+                  </div>
+                </div>
+                <div className="lp-ctl-swatch" aria-hidden="true" />
+              </div>
+              <dl className="lp-ctl-rows">
+                <div>
+                  <dt>Equity split</dt>
+                  <dd>55 / 45</dd>
+                </div>
+                <div>
+                  <dt>Vesting</dt>
+                  <dd>4 years, 1-year cliff</dd>
+                </div>
+                <div>
+                  <dt>Cofounders</dt>
+                  <dd>2 of 2 approved</dd>
+                </div>
+              </dl>
+            </div>
           </div>
         </div>
       </section>
