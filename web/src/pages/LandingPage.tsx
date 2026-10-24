@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, type ComponentType } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { usePageMeta } from '../hooks/usePageMeta.ts';
-import { useTypewriter } from '../hooks/useTypewriter.ts';
 import MarketingNav from '../components/MarketingNav.tsx';
 import MarketingFooter from '../components/MarketingFooter.tsx';
 import MarketingGrain from '../components/MarketingGrain.tsx';
@@ -540,11 +539,9 @@ function LandingPage() {
       'Answer guided questions with your cofounders and get a complete Cofounder Agreement. No sketchy templates, no overpriced lawyers.',
   });
 
-  // Hero typewriter — types once, when scrolled into view
+  // Hero headline — the green highlight sweeps in once, when scrolled into view
   const heroHeadlineRef = useRef<HTMLHeadingElement>(null);
   const [heroInView, setHeroInView] = useState(false);
-  const typedHero = useTypewriter('great company.', { start: heroInView });
-  const [activeFeature, setActiveFeature] = useState(0);
   const [v2Feature, setV2Feature] = useState(0);
   const [v2Fade, setV2Fade] = useState(false);
   // Play each step's animation once, fade it out, then move on to the next step.
@@ -561,12 +558,9 @@ function LandingPage() {
     };
   }, [v2Feature]);
   const [carouselIdx, setCarouselIdx] = useState(0);
-  // Protect CTA: "and your" stays fixed in place; only "peace of mind." types out once,
-  // when scrolled into view.
+  // Protect CTA: the green highlight behind "peace of mind." sweeps in once, when scrolled into view.
   const protectHeadlineRef = useRef<HTMLHeadingElement>(null);
   const [protectInView, setProtectInView] = useState(false);
-  const typedProtect = useTypewriter('peace of mind.', { charDelay: 46, start: protectInView });
-  const featItemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const goDash = () => goToDashboard(navigate);
 
@@ -618,28 +612,6 @@ function LandingPage() {
     return () => obs.disconnect();
   }, []);
 
-  // Feature switching via scroll
-  useEffect(() => {
-    const handle = () => {
-      const mid = window.innerHeight / 2;
-      let best = 0,
-        bestDist = Infinity;
-      featItemRefs.current.forEach((el, i) => {
-        if (!el) return;
-        const r = el.getBoundingClientRect();
-        const dist = Math.abs(r.top + r.height / 2 - mid);
-        if (dist < bestDist) {
-          bestDist = dist;
-          best = i;
-        }
-      });
-      setActiveFeature(best);
-    };
-    window.addEventListener('scroll', handle, { passive: true });
-    return () => window.removeEventListener('scroll', handle);
-  }, []);
-
-  const ActivePanel = PANELS[FEATURES[activeFeature]!.panel]!;
   const V2Panel = PANELS[FEATURES[v2Feature]!.panel]!;
 
   return (
@@ -655,10 +627,7 @@ function LandingPage() {
           </span>
           <span className="lp-hl-line lp-d1">
             <span className="lp-hl-inner">
-              with {typedHero}
-              <span style={{ visibility: 'hidden' }}>
-                {'great company.'.slice(typedHero.length)}
-              </span>
+              <span className={`lp-hl-mark${heroInView ? ' in' : ''}`}>with great company.</span>
             </span>
           </span>
         </h1>
@@ -674,39 +643,6 @@ function LandingPage() {
 
         <div className="lp-hero-strip">
           <div className="lp-hero-strip-placeholder" />
-        </div>
-      </section>
-
-      {/* ── Features ── */}
-      <section className="lp-features" id="features">
-        <div className="lp-feat-scroll">
-          <div className="lp-feat-header">
-            <h2 className="lp-rv lp-d1">Built for early-stage cofounders.</h2>
-            <p className="lp-rv lp-d2">
-              Get your equity, expectations, and everything else right from the start.
-            </p>
-          </div>
-          <div className="lp-feat-body">
-            <div className="lp-feat-visual">
-              <ActivePanel key={activeFeature} />
-            </div>
-            <div className="lp-feat-list">
-              {FEATURES.map((f, i) => (
-                <div
-                  key={i}
-                  ref={(el) => {
-                    featItemRefs.current[i] = el;
-                  }}
-                  className={`lp-feat-item${activeFeature === i ? ' active' : ''}`}
-                >
-                  <div className="lp-feat-item-line" />
-                  <div className="lp-feat-item-num">{f.num}</div>
-                  <div className="lp-feat-item-title">{f.title}</div>
-                  <p className="lp-feat-item-desc">{f.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
@@ -897,10 +833,8 @@ function LandingPage() {
           </span>
           <span className="lp-hl-line">
             <span className="lp-hl-inner">
-              and your <span className="lp-protect-typed">{typedProtect}</span>
-              <span style={{ visibility: 'hidden' }}>
-                {'peace of mind.'.slice(typedProtect.length)}
-              </span>
+              and your{' '}
+              <span className={`lp-hl-mark${protectInView ? ' in' : ''}`}>peace of mind.</span>
             </span>
           </span>
         </h2>

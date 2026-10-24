@@ -51,19 +51,15 @@ const path = () => screen.getByTestId('path').textContent;
 const advance = (ms: number) => act(() => vi.advanceTimersByTime(ms));
 const heroTyped = () => document.querySelector('.lp-hero-headline em')?.textContent;
 const protectTyped = () => document.querySelector('.lp-protect-typed')?.textContent;
-const featureItems = () => Array.from(document.querySelectorAll<HTMLElement>('.lp-feat-item'));
 const observersFor = (threshold: number) =>
   FakeIntersectionObserver.instances.filter((o) => o.options?.threshold === threshold);
 const faqBody = (question: string) =>
   screen.getByRole('button', { name: question }).parentElement?.querySelector('.lp-faq-body');
 
-/** Scrolls so that the feature item at `index` sits nearest the middle of the viewport. */
-function scrollToFeature(index: number) {
-  featureItems().forEach((el, i) => {
-    el.getBoundingClientRect = () => ({ top: i === index ? 300 : 2000, height: 100 }) as DOMRect;
-  });
+/** Selects the v2 step tab at `index`, which swaps in that step's demo. */
+function selectStep(index: number) {
   act(() => {
-    window.dispatchEvent(new Event('scroll'));
+    fireEvent.click(screen.getAllByRole('tab')[index]!);
   });
 }
 
@@ -162,24 +158,34 @@ describe('LandingPage', () => {
   });
 
   describe('features', () => {
-    it('lists five steps and shows the invite demo first', () => {
+    const tabs = () => screen.getAllByRole('tab');
+
+    it('lists four steps and shows the invite demo first', () => {
       renderPage();
-      expect(
-        featureItems().map((el) => el.querySelector('.lp-feat-item-num')?.textContent),
-      ).toEqual(['01', '02', '03', '04', '05']);
-      expect(featureItems()[0]).toHaveClass('active');
+      expect(tabs().map((el) => el.textContent?.slice(0, 20))).toEqual([
+        expect.stringContaining('Invite your cofou'),
+        expect.stringContaining('Collab on the agre'),
+        expect.stringContaining('Equity Calculator'),
+        expect.stringContaining('Do a final review'),
+      ]);
+      expect(tabs()[0]).toHaveAttribute('aria-selected', 'true');
       expect(screen.getByText('Step 1')).toBeInTheDocument();
       expect(screen.getByText('you@email.com')).toBeInTheDocument();
     });
 
-    it('switches the demo to the step nearest the middle of the viewport on scroll', () => {
+    it('switches the demo when a step is selected', () => {
       renderPage();
-      scrollToFeature(2);
-      expect(featureItems()[2]).toHaveClass('active');
-      expect(featureItems()[0]).not.toHaveClass('active');
+      selectStep(2);
+      expect(tabs()[2]).toHaveAttribute('aria-selected', 'true');
+      expect(tabs()[0]).toHaveAttribute('aria-selected', 'false');
       expect(document.querySelector('.lp-s3-card')).toBeInTheDocument(); // equity demo
-      scrollToFeature(4);
-      expect(document.querySelector('.lp-s4-card')).toBeInTheDocument(); // expert chat
+    });
+
+    it('moves to the next step after the current demo has played through', () => {
+      renderPage();
+      advance(800 + 68 * 3);
+      advance(60 * 1000);
+      expect(tabs()[0]).toHaveAttribute('aria-selected', 'false');
     });
 
     it('invite demo: types an email, presses Add and lists the new teammate', () => {
@@ -197,7 +203,7 @@ describe('LandingPage', () => {
 
     it('collab demo: answers the first question and marks it answered', () => {
       renderPage();
-      scrollToFeature(1);
+      selectStep(1);
       const questions = () => Array.from(document.querySelectorAll('.lp-s2-q'));
       expect(questions()[0]).toHaveClass('active');
       advance(80 + 65 * 'Acme Labs'.length + 700);
@@ -208,7 +214,7 @@ describe('LandingPage', () => {
 
     it('equity demo: slides importance to 5 and scores 8 then 3', () => {
       renderPage();
-      scrollToFeature(2);
+      selectStep(2);
       expect(screen.getByText('Cash Invested')).toBeInTheDocument();
       advance(120);
       expect(document.querySelector<HTMLElement>('.lp-s3-fill')?.style.width).toBe('50%');
@@ -222,27 +228,13 @@ describe('LandingPage', () => {
 
     it('review demo: ticks the sections off one by one and fills the bar', () => {
       renderPage();
-      scrollToFeature(3);
+      selectStep(3);
       const rows = () => Array.from(document.querySelectorAll('.lp-s2r-row'));
       advance(500);
       expect(rows()[0]).toHaveClass('done');
       expect(document.querySelector<HTMLElement>('.lp-s2r-fill')?.style.width).toBe('20%');
       advance(650 * 4);
       expect(rows().every((row) => row.classList.contains('done'))).toBe(true);
-    });
-
-    it('expert demo: shows the question, a typing indicator, then the replies', () => {
-      renderPage();
-      scrollToFeature(4);
-      const messages = () => Array.from(document.querySelectorAll('.lp-s4-msg'));
-      expect(messages()).toHaveLength(1);
-      expect(messages()[0]).toHaveClass('user');
-      advance(1200);
-      expect(document.querySelector('.lp-s4-typing')).toBeInTheDocument();
-      advance(1300 + 280);
-      expect(document.querySelector('.lp-s4-typing')).toBeNull();
-      expect(messages()).toHaveLength(2);
-      expect(messages()[1]).toHaveTextContent('Happy to help!');
     });
   });
 

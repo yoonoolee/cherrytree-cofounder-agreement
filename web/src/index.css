@@ -1227,6 +1227,35 @@ select:disabled {
   font-style: normal;
   color: var(--lp-green-text);
 }
+/* Hand-painted green highlight that wipes in behind a headline phrase once it scrolls into view. */
+.lp-hl-mark {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+}
+.lp-hl-mark::before {
+  content: '';
+  position: absolute;
+  inset: 4% -0.2em -10% -0.2em;
+  z-index: -1;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 80' preserveAspectRatio='none'%3E %3Cdefs%3E %3Cfilter id='a' x='-10%25' y='-30%25' width='120%25' height='160%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.008 0.05' numOctaves='2' seed='7' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='12' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E %3Cfilter id='b' x='-10%25' y='-30%25' width='120%25' height='160%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.08' numOctaves='2' seed='19' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='8' xChannelSelector='G' yChannelSelector='R'/%3E%3C/filter%3E %3C/defs%3E %3Crect x='8' y='14' width='384' height='56' fill='%23cbd9ce' filter='url(%23a)'/%3E %3Crect x='16' y='24' width='368' height='38' fill='%23cbd9ce' filter='url(%23b)'/%3E %3C/svg%3E")
+    center / 100% 100% no-repeat;
+  clip-path: inset(0 100% 0 0);
+}
+/* One continuous hand-drawn stroke, shared by both highlighted phrases. */
+.lp-hl-mark.in::before {
+  clip-path: inset(0 0 0 0);
+  animation: lp-hl-draw-a 1.5s cubic-bezier(0.45, 0.1, 0.25, 1) 0.25s backwards;
+}
+@keyframes lp-hl-draw-a {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
 .lp-hl-line {
   display: block;
 }
@@ -1674,7 +1703,7 @@ select:disabled {
 }
 .lp-feat-header h2 {
   font-family: 'Instrument Serif', serif;
-  font-size: clamp(28px, 3.4vw, 44px);
+  font-size: clamp(26px, calc(3.4vw - 2px), 42px);
   font-weight: 400;
   letter-spacing: 0.02em;
   line-height: 1.1;
@@ -1939,69 +1968,6 @@ select:disabled {
   .lp-ctl-card-top {
     grid-template-columns: 1fr 100px;
   }
-}
-
-.lp-feat-body {
-  display: grid;
-  grid-template-columns: 1.35fr 1fr;
-  gap: 80px;
-  align-items: start;
-}
-.lp-feat-visual {
-  position: sticky;
-  top: calc(50vh - 220px);
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.12),
-    0 0 0 1px rgba(0, 0, 0, 0.06);
-}
-.lp-feat-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.lp-feat-item {
-  padding: 64px 0;
-  min-height: 47vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: var(--lp-bg);
-  opacity: 0.28;
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: default;
-}
-.lp-feat-item.active {
-  opacity: 1;
-}
-.lp-feat-item-line {
-  display: none;
-}
-.lp-feat-item-num {
-  font-family: 'Instrument Serif', serif;
-  font-size: 13px;
-  font-style: italic;
-  color: var(--lp-green-text);
-  margin-bottom: 8px;
-  letter-spacing: 0.02em;
-}
-.lp-feat-item-title {
-  font-family: 'Instrument Serif', serif;
-  font-size: 38px;
-  font-weight: 400;
-  color: var(--lp-ink);
-  letter-spacing: 0.02em;
-  line-height: 1.1;
-  margin-bottom: 14px;
-}
-.lp-feat-item-desc {
-  font-size: 15px;
-  font-weight: 300;
-  color: var(--lp-muted);
-  line-height: 1.72;
-  max-width: 380px;
-  margin: 0;
 }
 
 /* ── Feature panels ── */
@@ -3098,7 +3064,7 @@ select:disabled {
 }
 .lp-protect-cta h2 {
   font-family: 'Instrument Serif', serif;
-  font-size: clamp(44px, 6.4vw, 84px);
+  font-size: clamp(42px, calc(6.4vw - 2px), 82px);
   font-weight: 400;
   letter-spacing: 0px;
   line-height: 1;
@@ -3178,14 +3144,6 @@ select:disabled {
   }
   .lp-features {
     padding: 80px 24px;
-  }
-  .lp-feat-body {
-    grid-template-columns: 1fr;
-    gap: 40px;
-  }
-  .lp-feat-visual {
-    position: relative;
-    top: auto;
   }
   .lp-stats {
     padding: 80px 24px;
