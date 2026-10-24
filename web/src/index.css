@@ -1278,7 +1278,7 @@ select:disabled {
 }
 .lp-hero-actions .lp-btn-primary,
 .lp-protect-cta-actions .lp-btn-primary,
-.lp-ctl-actions .lp-btn-primary {
+.lp-ag-actions .lp-btn-primary {
   border-radius: 999px;
 }
 
@@ -1825,148 +1825,230 @@ select:disabled {
   }
 }
 
-/* ── Protection (draft) ── */
-.lp-ctl {
-  padding: 140px var(--lp-gutter);
-}
-.lp-ctl-inner {
+/* ── What's in your agreement (draft) ── */
+/* A white rounded card: tabs, headline and buttons on the left, a dark panel with an example on the right. */
+.lp-ag-shell {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: center;
+  gap: 56px;
+  padding: 40px;
+  background: #fff;
+  border-radius: 24px;
 }
-.lp-ctl-title {
-  font-family: 'Instrument Serif', serif;
-  font-size: clamp(28px, 3.4vw, 44px);
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  line-height: 1.1;
-  margin-bottom: 40px;
-  max-width: 560px;
-}
-.lp-ctl-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 44px;
+.lp-ag-left {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 40px;
+  min-width: 0;
 }
-.lp-ctl-list li {
+.lp-ag-tabs {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.lp-ag-tab {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12.5px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 14px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #f4f2ee;
+  color: var(--lp-ink);
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+.lp-ag-tab:hover {
+  background: #ebe8e2;
+}
+.lp-ag-tab.active {
+  background: #e3dfd8;
+}
+.lp-ag-copy {
+  margin-top: 24px;
+  animation: lp-v2-card-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lp-ag-copy h3 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(34px, 4.2vw, 60px);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.05;
+  color: var(--lp-ink);
+  margin: 0 0 24px;
+  max-width: 520px;
+}
+.lp-ag-copy p {
   font-size: 17px;
   font-weight: 300;
-  color: var(--lp-ink);
+  line-height: 1.6;
+  color: var(--lp-muted);
+  margin: 0;
+  max-width: 440px;
 }
-.lp-ctl-list svg {
-  flex: none;
-}
-.lp-ctl-actions {
+.lp-ag-actions {
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 20px;
+  margin-top: auto;
 }
-.lp-ctl-actions .lp-btn-ghost {
-  font-size: 16px;
-  color: var(--lp-ink);
-}
-.lp-ctl-visual {
+.lp-ag-panel {
+  position: relative;
+  aspect-ratio: 5 / 4;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.lp-ctl-card {
-  width: 100%;
-  max-width: 520px;
-  background: #fff;
+  overflow: hidden;
   border-radius: 16px;
-  padding: 28px;
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.05),
-    0 12px 36px rgba(0, 0, 0, 0.06);
+  background: var(--ag-tint, #c6d0c1);
+  transition: background-color 0.5s ease;
 }
-.lp-ctl-card-top {
-  display: grid;
-  grid-template-columns: 1fr 150px;
-  gap: 24px;
-  padding-bottom: 28px;
-  margin-bottom: 8px;
-  border-bottom: 1px solid #eeebe6;
+/* Grittier, higher-contrast grain than the painting above, since the panel color is flat. */
+.lp-ag-panel .lp-feat-v2-grain {
+  opacity: 0.7;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.2' intercept='-0.45'/%3E%3CfeFuncG type='linear' slope='2.2' intercept='-0.45'/%3E%3CfeFuncB type='linear' slope='2.2' intercept='-0.45'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)' opacity='0.85'/%3E%3C/svg%3E");
 }
-.lp-ctl-card-id {
-  display: flex;
-  flex-direction: column;
+.lp-ag-mini {
+  position: relative;
+  width: min(380px, 76%);
+  background: #fff;
+  border-radius: 12px;
+  padding: 22px 24px 24px;
+  animation: lp-v2-card-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.lp-ctl-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 24px;
-  color: var(--lp-ink);
+.lp-agv-head {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--lp-faint);
+  margin-bottom: 14px;
 }
-.lp-ctl-handle {
-  font-size: 15px;
-  font-weight: 300;
-  color: var(--lp-muted);
-  margin-top: 4px;
-}
-.lp-ctl-card-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: auto;
-  padding-top: 36px;
-}
-.lp-ctl-pill {
-  background: #f4f2ee;
-  border-radius: 999px;
-  padding: 12px 20px;
-  font-size: 15px;
-  color: var(--lp-ink);
-}
-.lp-ctl-kebab {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border: 1px solid #e6e2dc;
-  border-radius: 50%;
-  color: var(--lp-ink);
-}
-.lp-ctl-swatch {
-  aspect-ratio: 1;
-  border-radius: 10px;
-  background: url('/images/blossom-valley-cropped.webp') 78% 30% / 340% no-repeat;
-}
-.lp-ctl-rows {
-  margin: 0;
-}
-.lp-ctl-rows > div {
+.lp-agv-row {
   display: flex;
   justify-content: space-between;
-  padding: 16px 0;
-  font-size: 16px;
+  align-items: baseline;
+  padding: 11px 0;
+  border-top: 1px solid #eeebe6;
+  font-size: 15px;
 }
-.lp-ctl-rows dt {
+.lp-agv-row span {
   font-weight: 300;
   color: var(--lp-muted);
 }
-.lp-ctl-rows dd {
-  margin: 0;
+.lp-agv-row b {
+  font-weight: 400;
   color: var(--lp-ink);
 }
+.lp-agv-check {
+  color: var(--lp-green-text) !important;
+}
+.lp-agv-bar {
+  display: flex;
+  gap: 4px;
+  height: 64px;
+}
+.lp-agv-seg {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  min-width: 0;
+}
+.lp-agv-seg b {
+  font-size: 18px;
+  font-weight: 400;
+}
+.lp-agv-seg.dark {
+  background: var(--lp-green);
+  color: #fff;
+}
+.lp-agv-seg.light {
+  background: #dde6de;
+  color: var(--lp-ink);
+}
+.lp-agv-stairs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  align-items: end;
+}
+.lp-agv-stair {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--lp-muted);
+  text-align: center;
+}
+.lp-agv-stair-bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 6px;
+  border-radius: 6px;
+  background: #dde6de;
+  color: var(--lp-ink);
+  font-size: 13px;
+}
+.lp-agv-stair:last-child .lp-agv-stair-bar {
+  background: var(--lp-green);
+  color: #fff;
+}
+.lp-agv-stair-bar b {
+  font-weight: 400;
+}
+.lp-agv-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.lp-agv-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 8px;
+  background: #f4f2ee;
+}
+.lp-agv-stats b {
+  font-family: 'Instrument Serif', serif;
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--lp-ink);
+}
+.lp-agv-stats span {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--lp-muted);
+}
 @media (max-width: 900px) {
-  .lp-ctl {
-    padding: 80px var(--lp-gutter);
-  }
-  .lp-ctl-inner {
+  .lp-ag-shell {
     grid-template-columns: 1fr;
-    gap: 48px;
+    gap: 32px;
+    padding: 28px;
   }
-  .lp-ctl-card-top {
-    grid-template-columns: 1fr 100px;
+  .lp-ag-panel {
+    aspect-ratio: 4 / 3;
+  }
+}
+@media (max-width: 600px) {
+  .lp-ag-shell {
+    padding: 20px;
+    border-radius: 18px;
+  }
+  .lp-ag-panel {
+    aspect-ratio: auto;
+    padding: 40px 0;
+  }
+  .lp-ag-mini {
+    width: 86%;
   }
 }
 

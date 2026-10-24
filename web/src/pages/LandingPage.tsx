@@ -1,4 +1,11 @@
-import { useState, useEffect, useRef, type ComponentType } from 'react';
+import {
+  useState,
+  useEffect,
+  useRef,
+  type ComponentType,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { usePageMeta } from '../hooks/usePageMeta.ts';
@@ -238,9 +245,7 @@ function PanelEquity() {
                   className="lp-s3-fill"
                   style={{
                     width: `${sliderPct}%`,
-                    transition: sliderTransition
-                      ? 'width 0.7s cubic-bezier(0.16,1,0.3,1)'
-                      : 'none',
+                    transition: sliderTransition ? 'width 0.7s cubic-bezier(0.16,1,0.3,1)' : 'none',
                   }}
                 />
                 <div
@@ -416,12 +421,103 @@ const PANELS: readonly ComponentType[] = [
   PanelExpert,
 ];
 
-const CTL_POINTS = [
-  'Every cofounder answers the same guided questions',
-  'Equity splits are calculated, not guessed',
-  'Vesting, roles, and decisions are all in writing',
-  'Attorney review is available before you sign',
+const AGREEMENT_SECTIONS = [
+  {
+    tab: 'Equity',
+    title: 'Agree how ownership is split',
+    desc: 'Set each cofounder’s share up front, with a fair split that everyone understands and signs.',
+  },
+  {
+    tab: 'Vesting',
+    title: 'Earn equity over time',
+    desc: 'A vesting schedule keeps everyone invested, so equity is earned by building the company.',
+  },
+  {
+    tab: 'Decisions',
+    title: 'Decide who decides what',
+    desc: 'Spell out who signs off on what, when a vote is needed, and how ties get broken.',
+  },
+  {
+    tab: 'IP',
+    title: 'Keep what you build with the company',
+    desc: 'Everything created for the company belongs to it, in writing, from the very first day.',
+  },
+  {
+    tab: 'Compensation',
+    title: 'Be clear on how money flows',
+    desc: 'Agree on pay, expenses, and reimbursements now, before anyone is frustrated later.',
+  },
+] as const;
+
+// Panel color behind each section's example, in the same order as AGREEMENT_SECTIONS.
+// Muted tints drawn from the blossom painting: hill sage, sky, blossom, meadow, cloud.
+const AG_TINTS = ['#c6d0c1', '#ccd6df', '#e4d4d1', '#d0d3b6', '#e6e1d8'] as const;
+
+const agRow = (label: string, value: string) => (
+  <div className="lp-agv-row">
+    <span>{label}</span>
+    <b>{value}</b>
+  </div>
+);
+
+// One small example visual per agreement section, in the same order as AGREEMENT_SECTIONS.
+const AG_VISUALS: readonly ReactNode[] = [
+  <>
+    <div className="lp-agv-head">Ownership</div>
+    <div className="lp-agv-bar">
+      <div className="lp-agv-seg dark" style={{ flex: 55 }}>
+        <span>Sarah Chen</span>
+        <b>55%</b>
+      </div>
+      <div className="lp-agv-seg light" style={{ flex: 45 }}>
+        <span>Alex Rivera</span>
+        <b>45%</b>
+      </div>
+    </div>
+  </>,
+  <>
+    <div className="lp-agv-head">4-year vesting, 1-year cliff</div>
+    <div className="lp-agv-stairs">
+      {[25, 50, 75, 100].map((pct, i) => (
+        <div key={pct} className="lp-agv-stair">
+          <div className="lp-agv-stair-bar" style={{ height: `${pct * 0.85}px` }}>
+            <b>{pct}%</b>
+          </div>
+          <span>{i === 0 ? 'Yr 1 · cliff' : `Yr ${i + 1}`}</span>
+        </div>
+      ))}
+    </div>
+  </>,
+  <>
+    <div className="lp-agv-head">Who decides</div>
+    {agRow('Day-to-day', 'Area owner')}
+    {agRow('Major decisions', 'Both cofounders')}
+    {agRow('Ties', 'Mediation')}
+  </>,
+  <>
+    <div className="lp-agv-head">Assigned to the company</div>
+    {['Code', 'Designs', 'Trademarks'].map((item) => (
+      <div key={item} className="lp-agv-row">
+        <span>{item}</span>
+        <b className="lp-agv-check">✓ Acme Labs</b>
+      </div>
+    ))}
+  </>,
+  <>
+    <div className="lp-agv-head">Compensation</div>
+    <div className="lp-agv-stats">
+      <div>
+        <b>$0</b>
+        <span>salary until the first round</span>
+      </div>
+      <div>
+        <b>30 days</b>
+        <span>to reimburse expenses</span>
+      </div>
+    </div>
+  </>,
 ];
+const AGREEMENT_STEP_MS = 6000;
 
 // How long each step's animation takes to play through once, in PANELS order. The v2 section
 // advances to the next step after this (mirrors the timers inside each Panel* component).
@@ -557,6 +653,15 @@ function LandingPage() {
       clearTimeout(next);
     };
   }, [v2Feature]);
+  const [agStep, setAgStep] = useState(0);
+  // Move through the agreement sections on a timer; picking one restarts the timer.
+  useEffect(() => {
+    const id = setTimeout(
+      () => setAgStep((agStep + 1) % AGREEMENT_SECTIONS.length),
+      AGREEMENT_STEP_MS,
+    );
+    return () => clearTimeout(id);
+  }, [agStep]);
   const [carouselIdx, setCarouselIdx] = useState(0);
   // Protect CTA: the green highlight behind "peace of mind." sweeps in once, when scrolled into view.
   const protectHeadlineRef = useRef<HTMLHeadingElement>(null);
@@ -677,77 +782,42 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* ── Protection (draft) ── */}
-      <section className="lp-ctl" id="protection">
-        <div className="lp-ctl-inner">
-          <div className="lp-ctl-copy">
-            <h2 className="lp-ctl-title lp-rv lp-d1">
-              Clear terms, fair equity, and no surprises later.
-            </h2>
-            <ul className="lp-ctl-list">
-              {CTL_POINTS.map((point, i) => (
-                <li key={point} className={`lp-rv lp-d${Math.min(i + 1, 4)}`}>
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                    <path
-                      d="M3.5 9.5l3.5 3.5 7.5-8"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  {point}
-                </li>
-              ))}
-            </ul>
-            <div className="lp-ctl-actions lp-rv lp-d4">
-              <button className="lp-btn-primary" onClick={goDash}>
-                Get started
-              </button>
-            </div>
+      {/* ── What's in your agreement (draft) ── */}
+      <section className="lp-features" id="agreement">
+        <div className="lp-feat-scroll">
+          <div className="lp-feat-header">
+            <h2 className="lp-rv lp-d1">What&apos;s in your agreement.</h2>
           </div>
-          <div className="lp-ctl-visual lp-rv lp-d2">
-            <div className="lp-ctl-card">
-              <div className="lp-ctl-card-top">
-                <div className="lp-ctl-card-id">
-                  <div className="lp-ctl-name">
-                    Acme Labs
-                    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-                      <circle cx="9" cy="9" r="9" fill="#2e6b4a" />
-                      <path
-                        d="M5 9.3l2.6 2.6L13 6.4"
-                        stroke="#fff"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        fill="none"
-                      />
-                    </svg>
-                  </div>
-                  <div className="lp-ctl-handle">Cofounder Agreement</div>
-                  <div className="lp-ctl-card-actions">
-                    <span className="lp-ctl-pill">Review agreement</span>
-                    <span className="lp-ctl-kebab" aria-hidden="true">
-                      ⋮
-                    </span>
-                  </div>
-                </div>
-                <div className="lp-ctl-swatch" aria-hidden="true" />
+          <div className="lp-ag-shell lp-rv lp-d2">
+            <div className="lp-ag-left">
+              <div className="lp-ag-tabs">
+                {AGREEMENT_SECTIONS.map((item, i) => (
+                  <button
+                    key={item.tab}
+                    type="button"
+                    aria-pressed={agStep === i}
+                    className={`lp-ag-tab${agStep === i ? ' active' : ''}`}
+                    onClick={() => setAgStep(i)}
+                  >
+                    {item.tab}
+                  </button>
+                ))}
               </div>
-              <dl className="lp-ctl-rows">
-                <div>
-                  <dt>Equity split</dt>
-                  <dd>55 / 45</dd>
-                </div>
-                <div>
-                  <dt>Vesting</dt>
-                  <dd>4 years, 1-year cliff</dd>
-                </div>
-                <div>
-                  <dt>Cofounders</dt>
-                  <dd>2 of 2 approved</dd>
-                </div>
-              </dl>
+              <div className="lp-ag-copy" key={agStep}>
+                <h3>{AGREEMENT_SECTIONS[agStep]!.title}</h3>
+                <p>{AGREEMENT_SECTIONS[agStep]!.desc}</p>
+              </div>
+              <div className="lp-ag-actions">
+                <button className="lp-btn-primary" onClick={goDash}>
+                  Get started
+                </button>
+              </div>
+            </div>
+            <div className="lp-ag-panel" style={{ '--ag-tint': AG_TINTS[agStep] } as CSSProperties}>
+              <div className="lp-feat-v2-grain" aria-hidden="true" />
+              <div className="lp-ag-mini" key={agStep}>
+                {AG_VISUALS[agStep]}
+              </div>
             </div>
           </div>
         </div>
