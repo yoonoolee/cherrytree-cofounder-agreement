@@ -892,6 +892,11 @@ select:disabled {
   opacity: 0.038;
 }
 
+/* Anchor targets sit clear of the fixed nav when scrolled to (e.g. the nav's "How it works"). */
+.lp-features[id] {
+  scroll-margin-top: 90px;
+}
+
 /* Scroll reveal system — fades/slides in once as each element crosses into view */
 .lp-rv {
   opacity: 0;
@@ -1010,74 +1015,6 @@ select:disabled {
 .lp-nav-links li a:hover,
 .lp-nav-links li button:hover {
   color: var(--lp-ink);
-}
-.lp-chevron {
-  font-size: 9px;
-  opacity: 0.55;
-  transition: transform 0.2s;
-  display: inline-block;
-}
-.lp-has-dd:hover .lp-chevron {
-  transform: rotate(180deg);
-}
-.lp-dd {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-6px);
-  padding-top: 10px;
-  min-width: 220px;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition:
-    opacity 0.18s,
-    transform 0.18s,
-    visibility 0.18s;
-}
-.lp-has-dd:hover .lp-dd {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transform: translateX(-50%) translateY(0);
-}
-.lp-dd-inner {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(0, 0, 0, 0.06);
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.lp-dd-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 3px;
-  padding: 11px 16px;
-  text-decoration: none;
-  border-radius: 8px;
-  transition: background 0.12s;
-  background: none;
-  border: none;
-  cursor: pointer;
-  width: 100%;
-  font-family: 'Outfit', sans-serif;
-}
-.lp-dd-item:hover {
-  background: var(--lp-bg2);
-}
-.lp-dd-name {
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--lp-ink);
-}
-.lp-dd-sub {
-  font-size: 11.5px;
-  color: var(--lp-faint);
 }
 .lp-nav-right {
   display: flex;

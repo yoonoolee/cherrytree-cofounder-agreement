@@ -1,10 +1,24 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { goToDashboard } from '../utils/goToDashboard.ts';
 
+/** The landing-page section the nav's "How it works" link scrolls to. */
+export const HOW_IT_WORKS_ID = 'features-v2';
+
 function MarketingNav() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const goDash = () => goToDashboard(navigate);
+
+  // "How it works" is a section of the landing page; from any other page, go there first and
+  // let LandingPage scroll to the hash once it has mounted.
+  const goHowItWorks = () => {
+    if (pathname === '/') {
+      document.getElementById(HOW_IT_WORKS_ID)?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    navigate(`/#${HOW_IT_WORKS_ID}`);
+  };
 
   return (
     <nav className="lp-nav">
@@ -13,26 +27,10 @@ function MarketingNav() {
         <span className="lp-nav-logo-text">Cherrytree</span>
       </button>
       <ul className="lp-nav-links">
-        <li className="lp-has-dd">
-          <button type="button">
-            Products <span className="lp-chevron">▾</span>
+        <li>
+          <button type="button" onClick={goHowItWorks}>
+            How it works
           </button>
-          <div className="lp-dd">
-            <div className="lp-dd-inner">
-              <button className="lp-dd-item" onClick={() => navigate('/equity-calculator')}>
-                <span className="lp-dd-name">Equity Calculator</span>
-                <span className="lp-dd-sub">Fair splits, instantly</span>
-              </button>
-              <button className="lp-dd-item" onClick={goDash}>
-                <span className="lp-dd-name">Contract Creator</span>
-                <span className="lp-dd-sub">Guided agreement builder</span>
-              </button>
-              <button className="lp-dd-item" onClick={() => navigate('/attorney')}>
-                <span className="lp-dd-name">Attorney Review</span>
-                <span className="lp-dd-sub">Legal review on demand</span>
-              </button>
-            </div>
-          </div>
         </li>
         <li>
           <a href="/pricing">Pricing</a>

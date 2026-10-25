@@ -6,7 +6,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { usePageMeta } from '../hooks/usePageMeta.ts';
 import MarketingNav from '../components/MarketingNav.tsx';
@@ -667,7 +667,17 @@ function LandingPage() {
   const protectHeadlineRef = useRef<HTMLHeadingElement>(null);
   const [protectInView, setProtectInView] = useState(false);
 
+  const { hash } = useLocation();
+
   const goDash = () => goToDashboard(navigate);
+
+  // Arriving as /#section (the nav's "How it works") — ResetPagePosition has just scrolled to the
+  // top, so scroll to the target section after it.
+  useEffect(() => {
+    const id = hash.replace('#', '');
+    if (!id) return;
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  }, [hash]);
 
   // Trigger each typewriter once, the first time its headline scrolls into view.
   useEffect(() => {
@@ -755,7 +765,7 @@ function LandingPage() {
       <section className="lp-features" id="features-v2">
         <div className="lp-feat-scroll">
           <div className="lp-feat-header">
-            <h2 className="lp-rv lp-d1">Built for early-stage cofounders.</h2>
+            <h2 className="lp-rv lp-d1">How it works.</h2>
           </div>
           <div className="lp-feat-v2-scene lp-rv lp-d2" data-fading={v2Fade || undefined}>
             <div className="lp-feat-v2-grain" aria-hidden="true" />
@@ -786,7 +796,7 @@ function LandingPage() {
       <section className="lp-features" id="agreement">
         <div className="lp-feat-scroll">
           <div className="lp-feat-header">
-            <h2 className="lp-rv lp-d1">Everything your agreement covers.</h2>
+            <h2 className="lp-rv lp-d1">What you get.</h2>
           </div>
           <div className="lp-ag-shell lp-rv lp-d2">
             <div className="lp-ag-left">
@@ -828,9 +838,7 @@ function LandingPage() {
       <section className="lp-carousel" id="who">
         <div className="lp-carousel-header lp-rv">
           <div>
-            <h2 className="lp-carousel-title">
-              Built for every kind of <em>founding team.</em>
-            </h2>
+            <h2 className="lp-carousel-title">Who it&apos;s for.</h2>
           </div>
           <div className="lp-carousel-nav">
             <button
