@@ -5,6 +5,8 @@ on:
     branches:
       - master
       - dev
+  # Every deploy workflow runs this first and deploys only if it passes.
+  workflow_call:
 
 jobs:
   check:
@@ -23,7 +25,7 @@ jobs:
           cache: npm
           cache-dependency-path: |
             package-lock.json
-            functions/package-lock.json
+            apps/functions/package-lock.json
 
       # The Firestore emulator (npm run test:rules) is a Java process.
       - name: Set up Java
@@ -35,14 +37,13 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm --prefix functions ci
+          npm --prefix apps/functions ci
 
       # Vite inlines VITE_* keys at build time; placeholders keep the CI bundle representative.
-      - name: Create web/.env.production for the build
+      - name: Create apps/web/.env.production for the build
         run: |
-          cat > web/.env.production << EOF
+          cat > apps/web/.env.production << EOF
           VITE_APP_URL=https://my.cherrytree.app
-          VITE_GOOGLE_MAPS_API_KEY=test_key
           VITE_FIREBASE_API_KEY=test_key
           VITE_FIREBASE_AUTH_DOMAIN=test.firebaseapp.com
           VITE_FIREBASE_PROJECT_ID=test-project
@@ -54,18 +55,18 @@ jobs:
           VITE_CLERK_PUBLISHABLE_KEY=pk_test_test
           EOF
 
-      # lint + format check + typecheck + unit tests + production build (web/dist)
+      # lint + format check + typecheck + unit tests + production build (apps/web/dist)
       - name: Check
         run: npm run check
 
       - name: Unused files, exports and dependencies
         run: npm run knip
 
-      # functions/ has its own lockfile, so the root audit does not cover it.
+      # apps/functions/ has its own lockfile, so the root audit does not cover it.
       - name: Audit dependencies
         run: |
           npm audit --audit-level=high
-          npm --prefix functions audit --audit-level=high
+          npm --prefix apps/functions audit --audit-level=high
 
       - name: Cache Firebase emulators
         uses: actions/cache@v4

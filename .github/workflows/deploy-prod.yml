@@ -6,7 +6,11 @@ on:
       - master
 
 jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
   deploy:
+    needs: ci
     name: Build and Deploy to Production
     runs-on: ubuntu-latest
     environment:
@@ -24,19 +28,18 @@ jobs:
           cache: npm
           cache-dependency-path: |
             package-lock.json
-            functions/package-lock.json
+            apps/functions/package-lock.json
 
       - name: Install dependencies
         run: |
           npm ci
-          npm --prefix functions ci
+          npm --prefix apps/functions ci
 
-      - name: Create web/.env.production file
+      - name: Create apps/web/.env.production file
         run: |
-          cat > web/.env.production << EOF
+          cat > apps/web/.env.production << EOF
           # Production Environment
           VITE_APP_URL=${{ secrets.PROD_APP_URL }}
-          VITE_GOOGLE_MAPS_API_KEY=${{ secrets.PROD_GOOGLE_MAPS_API_KEY }}
           VITE_FIREBASE_API_KEY=${{ secrets.PROD_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.PROD_FIREBASE_AUTH_DOMAIN }}
           VITE_FIREBASE_PROJECT_ID=${{ secrets.PROD_FIREBASE_PROJECT_ID }}
@@ -50,9 +53,9 @@ jobs:
           VITE_SENTRY_DSN=${{ secrets.SENTRY_DSN }}
           EOF
 
-      # lint + format check + typecheck + tests + production build (web/dist); a red check never deploys
-      - name: Check and build
-        run: npm run check
+      # The ci job already ran every check; this builds apps/web/dist with this environment's keys.
+      - name: Build
+        run: npm run build
 
       - name: Deploy Hosting to Firebase Production
         uses: FirebaseExtended/action-hosting-deploy@v0

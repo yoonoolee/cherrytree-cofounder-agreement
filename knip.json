@@ -3,13 +3,13 @@
   "ignoreBinaries": ["firebase"],
   "workspaces": {
     ".": {},
-    "web": {
+    "apps/web": {
       "entry": ["index.html"],
       "vite": {
         "config": ["vite.config.ts", "vitest.config.ts"]
       }
     },
-    "shared": {}
+    "packages/shared": {}
   },
-  "ignore": ["functions/**"]
+  "ignore": ["apps/functions/**"]
 }

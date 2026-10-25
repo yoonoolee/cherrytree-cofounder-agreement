@@ -1,9 +1,9 @@
 node_modules/
-web/dist/
-functions/lib/
+apps/web/dist/
+apps/functions/lib/
 coverage/
 .firebase/
 package-lock.json
-functions/package-lock.json
-web/public/
+apps/functions/package-lock.json
+apps/web/public/
 *.md

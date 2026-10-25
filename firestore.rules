@@ -1,8 +1,8 @@
 rules_version = '2';
 
 // Client access is deliberately narrow: Cloud Functions (Admin SDK, which bypasses these
-// rules) own every document's lifecycle and every field that carries money, membership or
-// deadlines. Guarded by functions/test/rules/firestore.rules.test.ts (npm run test:rules).
+// rules) own every document's lifecycle and every field that carries money or membership.
+// Guarded by apps/functions/test/rules/firestore.rules.test.ts (npm run test:rules).
 service cloud.firestore {
   match /databases/{database}/documents {
     function isSignedIn() {
@@ -18,37 +18,28 @@ service cloud.firestore {
 
     // projects/{clerkOrgId}
     match /projects/{projectId} {
-      function isAdmin() {
-        return resource.data.admin == request.auth.uid;
+      // Any role; agent actions check the role server-side.
+      function isMember() {
+        return request.auth.uid in resource.data.members;
       }
 
-      // A collaborator whose membership is current; removed members keep their entry
-      // (history) but lose access.
-      function isActiveCollaborator() {
-        return resource.data.collaborators.get(request.auth.uid, {}).get('isActive', false) == true;
-      }
-
-      // Fields the app writes from the browser (auto-save, approvals, onboarding, lastOpened).
-      // Everything else — admin, collaborators, payments, editDeadline, pdfAgreements,
-      // currentPlan, name, ... — is written server-side only.
+      // Per-user preferences the app writes from the browser. Everything else — members,
+      // payments, currentPlan, name, ... — is written server-side only.
       function onlyClientFields() {
         return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'surveyData', 'lastUpdated', 'lastEditedBy',
-          'approvals', 'onboardingCompleted', 'lastOpened'
+          'lastOpened', 'onboardingCompleted'
         ]);
       }
 
       // Created by the Stripe webhook; never deleted from the client.
       allow create, delete: if false;
 
-      allow get: if isSignedIn() && (isAdmin() || isActiveCollaborator());
+      allow get: if isSignedIn() && isMember();
 
       // The app loads projects one by one from the user's Clerk memberships.
       allow list: if false;
 
-      allow update: if isSignedIn() &&
-                      (isAdmin() || isActiveCollaborator()) &&
-                      onlyClientFields();
+      allow update: if isSignedIn() && isMember() && onlyClientFields();
     }
 
     // Public pro-plan waitlist: anonymous signup with exactly the fields the form sends.
