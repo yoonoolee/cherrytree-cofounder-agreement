@@ -28,7 +28,7 @@ Web imports `packages/shared` as `@cherrytree/shared`; the `@/` alias points at 
 ## Commands (run from the repo root)
 
 ```bash
-nvm use                    # Node 24 (.nvmrc)
+nvm use                    # Node 24.21.0 (.nvmrc, same as CI so lockfiles match)
 npm ci && npm --prefix apps/functions ci
 
 npm run dev                # Vite on http://localhost:3000, mode "dev" → apps/web/.env.dev

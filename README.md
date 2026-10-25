@@ -52,7 +52,7 @@ A SaaS platform that helps startup cofounders create a cofounder agreement with 
 
 ### Prerequisites
 
-- Node.js 24 (`.nvmrc`; with nvm: `nvm install && nvm use`)
+- Node.js 24.21.0, pinned in `.nvmrc` so local and CI run the same Node and bundled npm (a different npm writes a different lockfile and `npm ci` fails in CI); with nvm: `nvm install && nvm use`
 - Firebase CLI: `npm install -g firebase-tools`
 - Java 21+ (only for `npm run test:rules`, which runs the Firestore emulator)
 - Access to the two Firebase projects:
