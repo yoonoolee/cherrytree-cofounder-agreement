@@ -7,7 +7,7 @@ export default defineConfig({
   // Mirrors `paths` in tsconfig.app.json; an absolute path so Vitest resolves it too.
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   // Port 3000 is baked into Clerk/Google Maps dev origins and the /localhost command.
-  server: { port: 3000, strictPort: true },
+  server: { host: '127.0.0.1', port: 3000, strictPort: true },
   preview: { port: 3000 },
   build: {
     outDir: 'dist',
