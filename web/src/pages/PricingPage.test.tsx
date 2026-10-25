@@ -11,6 +11,26 @@ vi.mock('../components/MarketingFooter', () => ({
 }));
 vi.mock('../components/MarketingGrain', () => ({ default: () => <svg data-testid="grain" /> }));
 
+/** jsdom has no IntersectionObserver; this one reveals what it observes on demand. */
+class FakeIntersectionObserver {
+  static instances: FakeIntersectionObserver[] = [];
+  observed: Element[] = [];
+  constructor(
+    private readonly callback: (entries: { isIntersecting: boolean; target: Element }[]) => void,
+    readonly options?: IntersectionObserverInit,
+  ) {
+    FakeIntersectionObserver.instances.push(this);
+  }
+  observe(target: Element) {
+    this.observed.push(target);
+  }
+  unobserve() {}
+  disconnect() {}
+  intersect(targets: Element[] = this.observed) {
+    this.callback(targets.map((target) => ({ isIntersecting: true, target })));
+  }
+}
+
 function Location() {
   const { pathname } = useLocation();
   return <p data-testid="path">{pathname}</p>;
@@ -31,9 +51,14 @@ const path = () => screen.getByTestId('path').textContent;
 const cards = () => Array.from(document.querySelectorAll<HTMLElement>('.lp-pricing-card'));
 const faqBody = (question: string) =>
   screen.getByRole('button', { name: question }).parentElement?.querySelector('.lp-faq-body');
-const typed = () => document.querySelector('.lp-protect-cta em')?.textContent;
+const protectMark = () => document.querySelector('.lp-protect-cta .lp-hl-mark');
+
+beforeEach(() => {
+  vi.stubGlobal('IntersectionObserver', FakeIntersectionObserver);
+});
 
 afterEach(() => {
+  FakeIntersectionObserver.instances = [];
   vi.useRealTimers();
   Reflect.deleteProperty(window, 'Tally');
 });
@@ -139,24 +164,15 @@ describe('PricingPage', () => {
     expect(faqBody(question)).not.toHaveClass('open');
   });
 
-  it('types the closing line out, holds, and starts over; unmount stops the timers', () => {
-    vi.useFakeTimers();
-    const { unmount } = renderPage();
-    const line = 'and your peace of mind.';
-    expect(typed()).toBe('');
+  it('sweeps the closing headline highlight in once it scrolls into view', () => {
+    renderPage();
+    expect(protectMark()).toHaveTextContent('peace of mind.');
+    expect(protectMark()).not.toHaveClass('in');
 
-    act(() => vi.advanceTimersByTime(600 + 46));
-    expect(typed()).toBe('a');
-    act(() => vi.advanceTimersByTime(46 * (line.length - 1)));
-    expect(typed()).toBe(line);
-
-    act(() => vi.advanceTimersByTime(46 + 2200));
-    expect(typed()).toBe(''); // held, then cleared for the next cycle
-    act(() => vi.advanceTimersByTime(46));
-    expect(typed()).toBe('a');
-
-    unmount();
-    expect(vi.getTimerCount()).toBe(0);
+    const observer = FakeIntersectionObserver.instances[0];
+    expect(observer).toBeDefined();
+    act(() => observer!.intersect());
+    expect(protectMark()).toHaveClass('in');
   });
 
   it('gives the Enterprise card the Bootstrapped height, also after a resize', () => {

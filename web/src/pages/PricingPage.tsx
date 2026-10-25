@@ -1,9 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { usePageMeta } from '../hooks/usePageMeta.ts';
 import { useEnterpriseCardHeight } from '../hooks/useEnterpriseCardHeight.ts';
-import { useTypewriter } from '../hooks/useTypewriter.ts';
 import MarketingNav from '../components/MarketingNav.tsx';
 import MarketingFooter from '../components/MarketingFooter.tsx';
 import MarketingGrain from '../components/MarketingGrain.tsx';
@@ -65,9 +64,9 @@ function Check({ on }: { on: boolean }) {
 
 function PricingPage() {
   const navigate = useNavigate();
-  // Protect CTA: types "and your peace of mind." on an infinite loop — type out,
-  // hold, clear, and after a slight pause type it out again.
-  const typedProtect = useTypewriter('and your peace of mind.', { charDelay: 46, holdDelay: 2200 });
+  // Protect CTA: the green highlight behind "peace of mind." sweeps in once, when scrolled into view.
+  const protectHeadlineRef = useRef<HTMLHeadingElement>(null);
+  const [protectInView, setProtectInView] = useState(false);
 
   usePageMeta({
     title: 'Pricing — Cherrytree',
@@ -95,6 +94,25 @@ function PricingPage() {
       const el = document.getElementById('faq-schema');
       if (el) document.head.removeChild(el);
     };
+  }, []);
+
+  // Trigger the highlight once, the first time the headline scrolls into view.
+  useEffect(() => {
+    const el = protectHeadlineRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            obs.unobserve(entry.target);
+            setProtectInView(true);
+          }
+        });
+      },
+      { threshold: 0.2 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
   }, []);
 
   const goDash = () => goToDashboard(navigate);
@@ -215,8 +233,7 @@ function PricingPage() {
         <div className="lp-faq-inner">
           <div className="lp-faq-card">
             <div className="lp-faq-visual">
-              <div className="lp-overline">FAQ</div>
-              <h2>Common questions.</h2>
+              <h2>Frequently asked questions.</h2>
             </div>
             <div className="lp-faq-panel">
               <FaqList faqs={FAQS} />
@@ -227,26 +244,21 @@ function PricingPage() {
 
       {/* Bottom CTA */}
       <section className="lp-protect-cta">
-        <h2>
-          Protect your piece of the pie
-          <br />
-          <em>
-            {typedProtect}
-            <span className="lp-cursor" />
-          </em>
+        <h2 ref={protectHeadlineRef}>
+          <span className="lp-hl-line">
+            <span className="lp-hl-inner">Protect your piece of the pie</span>
+          </span>
+          <span className="lp-hl-line">
+            <span className="lp-hl-inner">
+              and your{' '}
+              <span className={`lp-hl-mark${protectInView ? ' in' : ''}`}>peace of mind.</span>
+            </span>
+          </span>
         </h2>
         <div className="lp-protect-cta-actions">
           <button className="lp-btn-primary" onClick={goDash}>
             Get started
           </button>
-          <a
-            className="lp-btn-ghost"
-            href="https://cal.com/tim-he/15min"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Book a demo →
-          </a>
         </div>
       </section>
 

@@ -2836,7 +2836,7 @@ select:disabled {
 }
 .lp-pricing-tier {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 300;
   letter-spacing: 0.04em;
   color: var(--lp-ink);
   margin-bottom: 16px;
