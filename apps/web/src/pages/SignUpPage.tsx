@@ -1,0 +1,33 @@
+import { SignUp } from '@clerk/react';
+
+import { usePageMeta } from '../hooks/usePageMeta.ts';
+
+function SignUpPage() {
+  usePageMeta({
+    path: '/signup',
+    title: 'Sign Up | Cherrytree',
+    description: 'Create your Cherrytree account to start building your cofounder agreement.',
+    breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'Sign Up' }],
+  });
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full">
+        <SignUp
+          routing="path"
+          path="/signup"
+          signInUrl="/login"
+          fallbackRedirectUrl="/dashboard"
+          appearance={{
+            elements: {
+              rootBox: 'mx-auto',
+              card: 'shadow-lg',
+            },
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+export default SignUpPage;

@@ -9,8 +9,8 @@ node_modules/
 coverage/
 
 # build output
-web/dist
-functions/lib
+apps/web/dist
+apps/functions/lib
 *.tsbuildinfo
 
 # firebase
@@ -24,16 +24,16 @@ functions/lib
 .Rhistory
 
 # Firebase Functions environment: only the non-secret per-project parameter files are tracked
-!functions/.env.cherrytree-cofounder-agree-dev
-!functions/.env.cherrytree-cofounder-agreement
-functions/.env
-functions/.env.local
+!apps/functions/.env.cherrytree-cofounder-agree-dev
+!apps/functions/.env.cherrytree-cofounder-agreement
+apps/functions/.env
+apps/functions/.env.local
 
 # Firebase Hosting cache
 .firebase/hosting.*.cache
 
 # Claude Code
-.claude/settings.local.json
+.claude/
 
 npm-debug.log*
 yarn-debug.log*

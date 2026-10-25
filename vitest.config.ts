@@ -9,7 +9,7 @@ const rulesProject = process.env.FIRESTORE_EMULATOR_HOST
           name: 'rules',
           environment: 'node',
           globals: true,
-          include: ['functions/test/rules/**/*.test.ts'],
+          include: ['apps/functions/test/rules/**/*.test.ts'],
           fileParallelism: false,
         },
       },
@@ -19,6 +19,6 @@ const rulesProject = process.env.FIRESTORE_EMULATOR_HOST
 // Each workspace/package defines its own vitest config; the root just runs them all.
 export default defineConfig({
   test: {
-    projects: ['web', 'shared', 'functions', ...rulesProject],
+    projects: ['apps/web', 'packages/shared', 'apps/functions', ...rulesProject],
   },
 });

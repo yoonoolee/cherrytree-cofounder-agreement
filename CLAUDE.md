@@ -1,43 +1,44 @@
 # cherrytree-cofounder-agreement — Claude Context
 
-Cherrytree is a SaaS platform for startup cofounders to create legally sound cofounder agreements. This repo is the only deployed product: a React web app plus Firebase Cloud Functions. (A Python chat agent used to sit beside it; it was retired in September 2026 and its replacement is still being designed outside this repo.)
+Cherrytree is a SaaS platform where startup cofounders create a cofounder agreement with AI agents (Advisor, Drafting, Review, Editing). This repo is the whole product: the web app (marketing pages + dashboard), the Firebase Cloud Functions, the shared schemas, and the planned Python agent service. Cherrytree is not live; one engineer works on it.
+
+The agent product is designed but not built. Its design lives outside the repo, linked from `ARCHITECTURE.md` (Notion Working Doc + FigJam diagram). Read it before working on anything agent-related.
 
 ## Architecture
 
 ```
-User → React app (Firebase Hosting, web/dist)
+User → React app (Firebase Hosting, apps/web/dist)
          ├── Firestore — projects, users, proWaitlist (rules: firestore.rules)
-         └── Cloud Functions v2 (Node 22, us-west2, functions/src) — callables + webhooks
-               ├── Clerk (auth, organizations, invitations; webhook → users/)
-               ├── Stripe (checkout; webhook → projects/)
-               ├── Make.com (PDF generation → Google Drive URL)
-               └── Resend (contact form email)
+         ├── Cloud Functions v2 (Node 24, us-west2, apps/functions/src) — callables + webhooks
+         │     ├── Clerk (auth, one organization per project; webhook → users/)
+         │     ├── Stripe (checkout; webhook → projects/)
+         │     └── Resend (contact form email)
+         └── Agent service (planned: Python, FastAPI on Cloud Run, apps/agent)
 ```
-
-Everything is TypeScript. The repo is an npm workspace:
 
 | Package | Path | Role |
 |---------|------|------|
-| `web` | `web/` | Vite 8 + React 19 app. `src/lib/` (Firebase init, typed callables, env), `src/hooks/`, `src/contexts/UserContext.tsx`, `src/components/`, `src/pages/`, `src/config/` (survey question/section display config), `src/utils/` |
-| `@cherrytree/shared` | `shared/` | Types and pure logic used by both sides: Firestore document types (`domain/`), the callable request/response contracts (`callables.ts`), survey schema/fields/sections (`survey/`), error codes, timestamp helpers |
-| functions | `functions/` | **Not a workspace** — own `package.json` + lockfile (`npm --prefix functions ci`). `src/index.ts` re-exports one module per concern (`stripe.ts`, `clerkWebhook.ts`, `organizations.ts`, `pdf.ts`, `contact.ts`, `firebaseToken.ts`); `src/lib/` holds auth, App Check, validation, error helpers; `src/config.ts` holds secrets, params and trigger options. esbuild bundles `src/index.ts` (with `shared` inlined) into `lib/index.js` at deploy (`firebase.json` predeploy) |
+| `@cherrytree/web` | `apps/web/` | Vite 8 + React 19 + Tailwind CSS 4 (`@tailwindcss/vite`; theme and base styles in `src/index.css`, no Tailwind/PostCSS config files). `src/lib/` (Firebase init, validated collection refs, typed callables, env), `src/hooks/`, `src/contexts/UserContext.tsx`, `src/components/`, `src/pages/`, `src/utils/` |
+| functions | `apps/functions/` | **Not a workspace** — own `package.json` + lockfile (`npm --prefix apps/functions ci`). `src/index.ts` re-exports one module per concern (`stripe.ts`, `clerkWebhook.ts`, `contact.ts`, `firebaseToken.ts`); `src/lib/` holds auth, App Check, validation, error helpers; `src/config.ts` holds secrets, params and trigger options. `esbuild.config.ts` (run by Node's built-in type stripping) bundles `src/index.ts` (with `packages/shared` inlined, runtime deps external) into the CommonJS `lib/index.cjs` at deploy (`firebase.json` predeploy) |
+| agent | `apps/agent/` | Reserved for the Python agent service |
+| `@cherrytree/shared` | `packages/shared/` | Zod schemas and inferred types for the Firestore documents (`domain/`), the callable request/response contracts (`callables.ts`), error and timestamp helpers. Planned: generate the agent service's Pydantic models from these schemas via JSON Schema (not set up yet) |
 
-Web imports `shared` as `@cherrytree/shared`; the `@/` alias points at `web/src`.
+Web imports `packages/shared` as `@cherrytree/shared`; the `@/` alias points at `apps/web/src`.
 
 ## Commands (run from the repo root)
 
 ```bash
-nvm use                    # Node 22 (.nvmrc)
-npm ci && npm --prefix functions ci
+nvm use                    # Node 24.21.0 (.nvmrc, same as CI so lockfiles match)
+npm ci && npm --prefix apps/functions ci
 
-npm run dev                # Vite on http://localhost:3000, mode "dev" → web/.env.dev
+npm run dev                # Vite on http://localhost:3000, mode "dev" → apps/web/.env.dev
 npm run check              # lint + prettier check + typecheck + tests + production build — run before every commit
 npm run typecheck          # tsc per project (web app, web node, shared, functions)
-npm test                   # Vitest: web (jsdom), shared, functions (node)
+npm test                   # Vitest: apps/web (jsdom), packages/shared, apps/functions (node)
 npm run test:rules         # Firestore rules tests under the emulator (needs Java 21+)
 npm run knip               # unused files / exports / dependencies (functions excluded)
 npm run lint:fix / format  # ESLint --fix / Prettier --write
-npm --prefix functions run build   # esbuild bundle → functions/lib/index.js
+npm --prefix apps/functions run build   # esbuild bundle → apps/functions/lib/index.cjs
 
 npm run deploy:dev         # build:dev + firebase use dev + firebase deploy (functions, hosting, rules, indexes)
 npm run deploy:functions:dev / deploy:hosting:dev
@@ -45,7 +46,7 @@ firebase use               # check the current project — must be dev before an
 firebase functions:log     # runtime logs
 ```
 
-Single test file: `cd web && npx vitest run src/…test.tsx` or `cd functions && npx vitest run src/pdf.test.ts`.
+Single test file: `cd apps/web && npx vitest run src/…test.tsx` or `cd apps/functions && npx vitest run src/stripe.test.ts`.
 
 **Deploy functions and hosting together.** The web app sends limited-use App Check tokens and the functions consume them; a mismatched pair breaks every callable.
 
@@ -54,63 +55,59 @@ Single test file: `cd web && npx vitest run src/…test.tsx` or `cd functions &&
 | Env | Firebase project | URL | Deployed by |
 |-----|-----------------|-----|-------------|
 | Dev | `cherrytree-cofounder-agree-dev` | cherrytree-cofounder-agree-dev.web.app | `npm run deploy:dev` locally (the `deploy-dev` workflow is manual-only) |
-| Prod | `cherrytree-cofounder-agreement` | cherrytree.app / my.cherrytree.app | **GitHub Actions only** — push/merge to `master` runs `npm run check` then deploys with `--force` |
+| Prod | `cherrytree-cofounder-agreement` | cherrytree.app / my.cherrytree.app | **GitHub Actions only** — push/merge to `master` runs the full CI job (`ci.yml`) then deploys with `--force` |
 
-Never deploy to prod locally: it bypasses CI and git history. Prod is still on Stripe **test mode** until launch (see `TODO.md` → Go-live).
+Default to dev; confirm with `firebase use` before any deploy. Never deploy to prod locally: it bypasses CI and git history. Prod is still on Stripe **test mode** until launch (see `TODO.md` → Before Launch).
 
 ## Configuration
 
 | Where | What | Committed |
 |-------|------|-----------|
-| `web/.env.dev` / `web/.env.production` | `VITE_*` browser keys (Firebase config, Clerk publishable key, reCAPTCHA site key, Maps key, Sentry DSN). Template: `web/.env.example`; typed in `web/src/vite-env.d.ts`; read only through `web/src/lib/env.ts` | No (CI writes them from GitHub secrets) |
-| `functions/.env.<projectId>` | Non-secret per-project params: `APP_ORIGIN`, `STRIPE_STARTER_PRICE_ID`, `STRIPE_PRO_PRICE_ID` (`defineString` in `functions/src/config.ts`) | Yes |
-| Firebase Secret Manager | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET`, `MAKE_WEBHOOK_URL`, `RESEND_API_KEY` (`defineSecret`; listed per function) | Never |
+| `apps/web/.env.dev` / `apps/web/.env.production` | `VITE_*` browser keys (Firebase config, Clerk publishable key, reCAPTCHA site key, Sentry DSN). Template: `apps/web/.env.example`; typed in `apps/web/src/vite-env.d.ts`; read only through `apps/web/src/lib/env.ts` | No (CI writes them from GitHub secrets) |
+| `apps/functions/.env.<projectId>` | Non-secret per-project params: `APP_ORIGIN`, `STRIPE_STARTER_PRICE_ID`, `STRIPE_PRO_PRICE_ID` (`defineString` in `apps/functions/src/config.ts`) | Yes |
+| Firebase Secret Manager | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET`, `RESEND_API_KEY` (`defineSecret`; listed per function) | Never |
 
 `firebase functions:secrets:set NAME` then redeploy functions. Never put a secret in an env file.
 
 ## Auth, App Check and trust boundaries
 
-- **Sign-in:** Clerk. The web app exchanges its Clerk session token for a Firebase custom token via the `getFirebaseToken` callable and signs into Firebase Auth with it, so Firestore rules and every other callable identify the caller by `request.auth.uid` = Clerk user id. `functions/src/lib/auth.ts` verifies Clerk tokens with `@clerk/backend`.
-- **App Check** is enforced on every callable (`enforceAppCheck` + `consumeAppCheckToken` in `functions/src/config.ts`, guarded by `functions/test/endpoints.test.ts` against `endpoints.golden.json`). Built bundles use reCAPTCHA v3; `npm run dev` uses a debug token printed to the browser console on first run — register it once per browser under the **dev** project → App Check → Apps → Manage debug tokens, or every callable returns `unauthenticated` on localhost.
-- **Server-authoritative data.** Firestore rules let the browser update only `surveyData`, `lastUpdated`, `lastEditedBy`, `approvals`, `onboardingCompleted`, `lastOpened` on a project it belongs to, and read its own `users/` doc; everything else (project creation, membership, payments, `editDeadline`, PDFs, `stripeEvents`) is written by Cloud Functions with the Admin SDK. `submitSurvey` re-checks approvals server-side. Keep it that way: new client-writable fields go into `onlyClientFields()` in `firestore.rules` with a rules test.
+- **Sign-in:** Clerk. The web app exchanges its Clerk session token for a Firebase custom token via the `getFirebaseToken` callable and signs into Firebase Auth with it, so Firestore rules and every callable identify the caller by `request.auth.uid` = Clerk user id. `apps/functions/src/lib/auth.ts` verifies Clerk tokens with `@clerk/backend`.
+- **App Check** is enforced on every callable (`enforceAppCheck` + `consumeAppCheckToken` in `apps/functions/src/config.ts`, guarded by `apps/functions/test/endpoints.test.ts` against `endpoints.golden.json`). Built bundles use reCAPTCHA v3; `npm run dev` uses a debug token printed to the browser console on first run — register it once per browser under the **dev** project → App Check → Apps → Manage debug tokens, or every callable returns `unauthenticated` on localhost.
+- **Server-authoritative data.** Firestore rules let a project member read the project and update only `lastOpened` and `onboardingCompleted`; a user reads only their own `users/` doc. Everything else (project creation, members, payments, plan) is written by Cloud Functions with the Admin SDK, and agent data will be written by the agent service. Keep it that way: a new client-writable field goes into `onlyClientFields()` in `firestore.rules` with a rules test.
 - **Webhooks** (`stripeWebhook`, `clerkWebhook`) are `onRequest` with `cors: false` and verify signatures; Stripe events are deduplicated in `stripeEvents/{eventId}`.
 - Functions run as the least-privilege service account `cloud-functions@<project>.iam.gserviceaccount.com` (roles: `datastore.user`, `firebaseauth.admin`, `iam.serviceAccountTokenCreator`, `serviceusage.serviceUsageConsumer`, `firebaseappcheck.tokenVerifier`). Prod still needs `firebaseappcheck.tokenVerifier` granted before its next deploy (`TODO.md`).
 
 ## Firestore data model
 
-Types live in `shared/src/domain/`; the web reads/writes through the typed refs in `web/src/lib/firebase.ts`.
+Zod schemas in `packages/shared/src/domain/` are the source of truth; TypeScript types are inferred from them. Both the web (`apps/web/src/lib/firestore.ts`) and the functions (`apps/functions/src/lib/firebase.ts`) validate every document they read against its schema.
 
 ```
-projects/{clerkOrgId}         Project — name, admin (Clerk user id), collaborators{uid → role, isActive, history[]},
-                              approvals{uid → bool}, onboardingCompleted, surveyVersion, surveyData (Partial<SurveyData>),
-                              pdfAgreements[], latestPdfUrl, currentPlan, payments{checkoutSessionId → Payment},
-                              createdAt, editDeadline, lastUpdated, lastOpened, previewPdfUrl?
+projects/{clerkOrgId}         Project — name, members{uid → {role}}, onboardingCompleted{uid → bool},
+                              currentPlan, payments{checkoutSessionId → Payment}, createdAt, lastUpdated, lastOpened
 users/{clerkUserId}           UserDoc — userId, email, firstName, lastName, picture, createdAt, lastLoginAt, deleted,
                               stripeCustomerId?, deletedAt?   (written only by the Clerk webhook / checkout)
 proWaitlist/{autoId}          ProWaitlistSignup — email, timestamp, source   (anonymous create only)
 stripeEvents/{eventId}        webhook idempotency, server-only
 ```
 
-`editDeadline` is set at purchase from `EDIT_WINDOW_CONFIG` (6 months, `functions/src/config.ts`); collaborator changes are refused after it. Projects predating a field may lack it — reads stay defensive.
-
-## Survey
-
-Ten sections in `shared/src/survey/sections.ts` (formation, cofounders, equity-allocation, vesting, decision-making, ip, compensation, performance, non-competition, general-provisions); each has a `web/src/components/Section*.tsx`, question metadata in `web/src/config/questionConfig.ts`, display config in `sectionConfig.ts`, completion rules in `web/src/hooks/useValidation.ts`. **The survey UI is slated for replacement** — keep changes there minimal, do not add survey tests or refactors, and leave its known quirks alone (they are documented inline). Keep the data model, functions, rules and the marketing/dashboard pages solid.
+- **Members:** one map per project, keyed by Clerk user id, each with a `role`. v1: exactly one member, the purchaser, with role `admin` (talks to the agents, edits, finalizes), written by `stripeWebhook` at creation; there is no way to add members. Adding members or roles later is a new entry or a new `memberRoleSchema` value, not a schema change.
+- **Plans:** Starter and Pro both unlock the agent product.
+- The dashboard lists projects through the user's Clerk organization memberships (client `list` on `projects` is denied) and opens `/projects/:projectId`, a placeholder until the agent product UI is built.
 
 ## Conventions
 
-- `npm run check` must pass before every commit (CI runs it plus knip, `npm audit --audit-level=high` in both roots, and the rules tests on every PR).
+- `npm run check` must pass before every commit (CI runs it plus knip, `npm audit --audit-level=high` in both roots, and the rules tests on every PR and before every deploy).
 - One concern per commit; message prefix by area (`Web:`, `Functions:`, `Shared:`, `CI:`, `Docs:`). No AI attribution lines.
-- TypeScript strict; `.ts` extensions in relative imports (`allowImportingTsExtensions`); no new JS files. ESLint 10 flat config (`eslint.config.js`) with `typescript-eslint`, react-hooks (compiler rules), react-refresh; Prettier `singleQuote`, `printWidth: 100`. Formatting-only commits go in `.git-blame-ignore-revs`.
-- Tests sit beside the code as `*.test.ts(x)`; functions tests mock the Admin SDK (`functions/test/helpers/`), rules tests use `@firebase/rules-unit-testing`. Bugs found while touching code get a fix commit with a test guarding the corrected behavior.
-- Dedupe into `shared/` or a helper rather than patching per file.
-- Exact-pinned web dependencies (`web/package.json`); bump deliberately, one per commit.
+- TypeScript strict; `.ts` extensions in relative imports (`allowImportingTsExtensions`); no JS files (configs included). ESLint 10 flat config (`eslint.config.ts`, loaded through `jiti`) with `typescript-eslint`, react-hooks (compiler rules), react-refresh; Prettier `singleQuote`, `printWidth: 100`. Formatting-only commits go in `.git-blame-ignore-revs`.
+- Tests sit beside the code as `*.test.ts(x)`; functions tests mock the Admin SDK (`apps/functions/test/helpers/`), rules tests use `@firebase/rules-unit-testing`. Bugs found while touching code get a fix commit with a test guarding the corrected behavior.
+- Dedupe into `packages/shared` or a helper rather than patching per file.
+- Exact-pinned dependencies in `apps/web` and `packages/shared`; bump deliberately, one per commit. `zod` is pinned to the same version in `packages/shared` and `apps/functions` (the functions bundle loads it at runtime).
 
 ## Code Standards (Apply to Every Task)
 
-**No hardcoded local paths:** Never hardcode user-specific paths in any committed file — commands, configs, or docs. Always use relative paths or project-root-relative paths so everything works for any teammate on any machine.
+**No hardcoded local paths:** Never hardcode user-specific paths in any committed file — commands, configs, or docs. Always use relative paths or project-root-relative paths.
 
-**No duplicate work:** Before suggesting or creating anything (commands, files, functions, configs), check if it already exists. If something exists but the user can't find it, help them locate or access it — don't recreate it.
+**No duplicate work:** Before suggesting or creating anything (commands, files, functions, configs), check if it already exists. If something exists but can't be found, help locate it — don't recreate it.
 
 **Best practices:** Always flag if something deviates from best practices — naming conventions, code structure, anti-patterns, performance issues, or anything that would be considered poor engineering. Don't just complete the task silently; call it out and suggest the better approach.
 
@@ -118,17 +115,8 @@ Ten sections in `shared/src/survey/sections.ts` (formation, cofounders, equity-a
 
 **Security-first implementation:** Ask who controls the data, whether it can be tampered with, and whether the server should be the source of truth. The correct architecture here is server-authoritative — don't suggest client-side shortcuts that trade security for convenience.
 
-## Team Collaboration
-
-Two people actively pushing to this repo. When working with Claude:
-
-- **Always confirm the Firebase environment** before deploying — `firebase use` to check current target. Default to dev unless explicitly deploying to prod.
-- **Don't assume solo context** — changes may affect the other developer. Flag anything that would break shared state (Firestore schema changes, Cloud Function renames, config changes, `functions/.env.<projectId>` params).
-- **Coordinate on secrets** — both devs need matching `web/.env.dev` / `web/.env.production` files locally. These are gitignored; share keys out-of-band.
-- **`.claude/settings.json` is committed** — changes to Claude permissions/commands apply to both teammates. Don't add personal preferences here; use `settings.local.json` (gitignored) for those.
-- **`.claude/commands/` is committed** — shared slash commands available to both teammates.
-
 ## See Also
 
+- `ARCHITECTURE.md` — links to the agent design (Notion Working Doc, FigJam diagram)
 - `README.md` — setup, deployment, webhooks, external services
 - `TODO.md` — open items, go-live checklist

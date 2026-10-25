@@ -1,7 +1,7 @@
 {
   // Shared compiler options. Each package extends this and adds only its own
-  // libs/types/paths. Nothing here emits: Vite bundles `web`, esbuild bundles
-  // `functions`, and `shared` is consumed as source through both.
+  // libs/types/paths. Nothing here emits: Vite bundles `apps/web`, esbuild bundles
+  // `apps/functions`, and `packages/shared` is consumed as source through both.
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2023"],
@@ -19,8 +19,8 @@
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    // Off on purpose: Firestore documents and survey data are read with optional
-    // fields that may legitimately hold `undefined` (see docs/REFACTOR_PLAN.md).
+    // Off on purpose: Firestore documents are read with optional fields that may
+    // legitimately hold `undefined`.
     "exactOptionalPropertyTypes": false
   }
 }
