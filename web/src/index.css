@@ -961,7 +961,9 @@ select:disabled {
   align-items: center;
   width: 100%;
   padding: 14px var(--lp-gutter);
-  background: var(--lp-bg);
+  background: #fff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
   white-space: nowrap;
 }
 .lp-nav-logo {
