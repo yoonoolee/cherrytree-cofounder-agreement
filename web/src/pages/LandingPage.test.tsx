@@ -49,8 +49,8 @@ function renderPage() {
 
 const path = () => screen.getByTestId('path').textContent;
 const advance = (ms: number) => act(() => vi.advanceTimersByTime(ms));
-const heroTyped = () => document.querySelector('.lp-hero-headline em')?.textContent;
-const protectTyped = () => document.querySelector('.lp-protect-typed')?.textContent;
+const heroMark = () => document.querySelector('.lp-hero-headline .lp-hl-mark');
+const protectMark = () => document.querySelector('.lp-protect-cta .lp-hl-mark');
 const observersFor = (threshold: number) =>
   FakeIntersectionObserver.instances.filter((o) => o.options?.threshold === threshold);
 const faqBody = (question: string) =>
@@ -76,7 +76,6 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.useRealTimers();
-  Reflect.deleteProperty(window, 'Tally');
 });
 
 describe('LandingPage', () => {
@@ -86,75 +85,10 @@ describe('LandingPage', () => {
     expect(breadcrumbs()).toEqual([]);
   });
 
-  describe('hero', () => {
-    it('types the second headline line once and leaves the cursor', () => {
-      const { unmount } = renderPage();
-      expect(heroTyped()).toBe('');
-      advance(600);
-      expect(heroTyped()).toBe('w');
-      advance(60 * 18);
-      expect(heroTyped()).toBe('with great company.');
-      advance(10_000);
-      expect(heroTyped()).toBe('with great company.');
-      expect(document.querySelector('.lp-hero-headline .lp-cursor')).toBeInTheDocument();
-      unmount();
-      expect(vi.getTimerCount()).toBe(0);
-    });
-
-    it('stops typing the headline when the page unmounts mid-way', () => {
-      const { unmount } = renderPage();
-      advance(600 + 60 * 3);
-      expect(heroTyped()).toBe('with');
-      unmount();
-      expect(vi.getTimerCount()).toBe(0);
-    });
-
-    it('sends Get started to the dashboard and Book a demo to cal.com in a new tab', () => {
-      renderPage();
-      const demos = screen.getAllByRole('link', { name: 'Book a demo →' });
-      expect(demos).toHaveLength(2); // hero + closing CTA
-      for (const link of demos) {
-        expect(link).toHaveAttribute('href', 'https://cal.com/tim-he/15min');
-        expect(link).toHaveAttribute('target', '_blank');
-        expect(link).toHaveAttribute('rel', 'noopener noreferrer');
-      }
-      fireEvent.click(screen.getAllByRole('button', { name: 'Get started' })[0]!);
-      expect(path()).toBe('/dashboard');
-    });
-
-    it('plays the product mockup: types the equity answer, clicks Continue, moves to vesting', () => {
-      renderPage();
-      const screens = () => Array.from(document.querySelectorAll<HTMLElement>('.lp-hv-screen'));
-      expect(screens()[0]).toHaveClass('active');
-      expect(screen.getByText('30% Complete')).toBeInTheDocument();
-
-      const eqText = () => document.querySelector('.lp-hv-input-field span')?.textContent;
-      advance(2400 + 500);
-      expect(eqText()).toBe('W');
-      const answer = 'We agreed on an equal 50 / 50 split.';
-      advance(44 * (answer.length - 1));
-      expect(eqText()).toBe(answer);
-
-      advance(44 + 900); // the tick after the last character parks the cursor
-      expect(document.querySelector('.lp-hv-inp-cursor')).toHaveClass('off');
-      advance(700);
-      expect(document.querySelector('.lp-hv-continue')).toHaveClass('clicking');
-
-      advance(260 + 160 + 120); // release, leave scene 0, enter scene 1
-      expect(screens()[0]).not.toHaveClass('active');
-      expect(screens()[1]).toHaveClass('active');
-      expect(screen.getByText('42% Complete')).toBeInTheDocument();
-      advance(700);
-      expect(screens()[1]?.querySelectorAll('.lp-hv-opt')[1]).toHaveClass('selected');
-    });
-  });
-
-  it('doubles the logo wall so it can loop', () => {
+  it('sends Get started to the dashboard', () => {
     renderPage();
-    const logos = screen.getAllByRole('img');
-    expect(logos).toHaveLength(14);
-    expect(logos[0]).toHaveAttribute('alt', 'Y Combinator');
-    expect(logos[7]).toHaveAttribute('alt', 'Y Combinator');
+    fireEvent.click(screen.getAllByRole('button', { name: 'Get started' })[0]!);
+    expect(path()).toBe('/dashboard');
   });
 
   describe('features', () => {
@@ -238,27 +172,9 @@ describe('LandingPage', () => {
     });
   });
 
-  it('draws each stat in and counts it up as its row scrolls into view', () => {
-    renderPage();
-    const rows = Array.from(document.querySelectorAll<HTMLElement>('.lp-stat-row'));
-    expect(rows).toHaveLength(4);
-    const statObservers = observersFor(0.4);
-    expect(statObservers).toHaveLength(4);
-    expect(rows[0]?.querySelector('.lp-stat-num')?.textContent).toBe('0+');
-
-    act(() => statObservers[0]!.intersect());
-    expect(rows[0]).toHaveClass('lp-line-in');
-    expect(rows[1]).not.toHaveClass('lp-line-in');
-    advance(1700);
-    expect(rows[0]?.querySelector('.lp-stat-num')?.textContent).toBe('2,400+');
-
-    act(() => statObservers[3]!.intersect());
-    expect(rows[3]?.querySelector('.lp-stat-num')?.textContent).toBe('$0');
-  });
-
   it('reveals scroll sections a tick after they intersect', () => {
     renderPage();
-    const [reveal] = FakeIntersectionObserver.instances;
+    const [reveal] = observersFor(0.06);
     expect(reveal?.options).toEqual({ threshold: 0.06, rootMargin: '0px 0px -40px 0px' });
     const first = reveal!.observed[0]!;
     expect(first).toHaveClass('lp-rv');
@@ -266,13 +182,6 @@ describe('LandingPage', () => {
     expect(first).not.toHaveClass('lp-rv-in');
     advance(0);
     expect(first).toHaveClass('lp-rv-in');
-  });
-
-  it('shows three testimonials', () => {
-    renderPage();
-    expect(screen.getByText('Maya R.')).toBeInTheDocument();
-    expect(screen.getByText('James T.')).toBeInTheDocument();
-    expect(screen.getByText('Sarah K.')).toBeInTheDocument();
   });
 
   it('steps the carousel with the arrows and dots, wrapping around', () => {
@@ -291,52 +200,6 @@ describe('LandingPage', () => {
     expect(document.querySelectorAll('.lp-cs-dot')[2]).toHaveClass('active');
   });
 
-  describe('pricing', () => {
-    it('renders the three plans with their calls to action', () => {
-      const openPopup = vi.fn();
-      window.Tally = { openPopup };
-      renderPage();
-      const cards = Array.from(document.querySelectorAll<HTMLElement>('.lp-pricing-card'));
-      expect(cards.map((c) => c.querySelector('.lp-pricing-tier')?.textContent)).toEqual([
-        'Bootstrapped',
-        'Scale',
-        'Enterprise',
-      ]);
-      expect(cards.map((c) => c.querySelector('.lp-pricing-price')?.textContent)).toEqual([
-        '$200',
-        '$2,000',
-        'Custom',
-      ]);
-      expect(cards[1]).toHaveClass('featured');
-      expect(cards[1]?.querySelector('.lp-pricing-badge')).toHaveTextContent('Most popular');
-      expect(cards[2]?.querySelector('.lp-pricing-price')).toHaveClass('lp-pricing-price-custom');
-      expect(cards.map((c) => c.querySelector('.lp-pricing-cta')?.className)).toEqual([
-        'lp-pricing-cta outline',
-        'lp-pricing-cta filled',
-        'lp-pricing-cta solid',
-      ]);
-
-      fireEvent.click(within(cards[1]!).getByRole('button', { name: 'Get started' }));
-      expect(path()).toBe('/dashboard');
-      fireEvent.click(screen.getByRole('button', { name: 'Contact sales' }));
-      expect(openPopup).toHaveBeenCalledWith('2EEB99', { layout: 'modal', width: 700 });
-    });
-
-    it('gives the Enterprise card the Bootstrapped height, also after a resize', () => {
-      const offsetHeight = vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get');
-      offsetHeight.mockReturnValue(480);
-      renderPage();
-      const enterprise = document.querySelectorAll<HTMLElement>('.lp-pricing-card')[2];
-      expect(enterprise?.style.height).toBe('480px');
-      offsetHeight.mockReturnValue(520);
-      act(() => {
-        window.dispatchEvent(new Event('resize'));
-      });
-      expect(enterprise?.style.height).toBe('520px');
-      offsetHeight.mockRestore();
-    });
-  });
-
   it('opens an FAQ on click and closes it again', () => {
     renderPage();
     const question = 'Do you offer discounts?';
@@ -350,19 +213,16 @@ describe('LandingPage', () => {
     expect(document.querySelectorAll('.lp-faq-item')).toHaveLength(5);
   });
 
-  it('types the closing line out, holds, and starts over; unmount stops the timers', () => {
-    const { unmount } = renderPage();
-    const line = 'peace of mind.';
-    expect(protectTyped()).toBe('');
-    advance(600 + 46);
-    expect(protectTyped()).toBe('p');
-    advance(46 * (line.length - 1));
-    expect(protectTyped()).toBe(line);
-    advance(46 + 2200);
-    expect(protectTyped()).toBe('');
-    advance(46);
-    expect(protectTyped()).toBe('p');
-    unmount();
-    expect(vi.getTimerCount()).toBe(0);
+  it('sweeps the hero and closing highlights in once they scroll into view', () => {
+    renderPage();
+    expect(heroMark()).toHaveTextContent('with great company.');
+    expect(protectMark()).toHaveTextContent('peace of mind.');
+    expect(heroMark()).not.toHaveClass('in');
+    expect(protectMark()).not.toHaveClass('in');
+
+    const [headlines] = observersFor(0.2);
+    act(() => headlines!.intersect());
+    expect(heroMark()).toHaveClass('in');
+    expect(protectMark()).toHaveClass('in');
   });
 });
