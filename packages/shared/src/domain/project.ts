@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { storedDateSchema, timestampSchema } from '../time.ts';
+import { draftStatusSchema } from './draft.ts';
 
 /**
  * `projects/{clerkOrgId}` — the document id is the Clerk organization id.
@@ -41,6 +42,7 @@ export const projectSchema = z.object({
   currentPlan: planSchema,
   /** Keyed by Stripe checkout session id. */
   payments: z.record(z.string(), paymentSchema),
+  draftStatus: draftStatusSchema.nullable(),
   createdAt: timestampSchema,
   lastUpdated: timestampSchema,
   lastOpened: timestampSchema,

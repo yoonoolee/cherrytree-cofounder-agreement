@@ -20,6 +20,7 @@ const project = {
       purchasedAt: timestamp,
     },
   },
+  draftStatus: null,
   createdAt: timestamp,
   lastUpdated: timestamp,
   lastOpened: timestamp,
