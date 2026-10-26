@@ -1,6 +1,8 @@
 node_modules/
 apps/web/dist/
 apps/functions/lib/
+# Python service: Ruff formats it; its JSON Schema is generated
+apps/agent/
 coverage/
 .firebase/
 package-lock.json

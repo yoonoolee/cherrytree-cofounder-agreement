@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
-  "ignoreBinaries": ["firebase"],
+  "ignoreBinaries": ["firebase", "gcloud", "uv"],
   "workspaces": {
     ".": {},
     "apps/web": {

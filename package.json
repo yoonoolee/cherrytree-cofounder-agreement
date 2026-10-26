@@ -12,6 +12,7 @@
   "scripts": {
     "dev": "npm run dev -w @cherrytree/web",
     "start": "npm run dev -w @cherrytree/web",
+    "dev:agent": "uv run --directory apps/agent uvicorn cherrytree_agent.main:app --reload --port 8000 --env-file .env.cherrytree-cofounder-agree-dev",
     "build": "npm run build -w @cherrytree/web",
     "build:dev": "npm run build:dev -w @cherrytree/web",
     "lint": "eslint .",
@@ -22,11 +23,15 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:rules": "firebase emulators:exec --only firestore --project demo-cherrytree \"vitest run --project rules\"",
+    "test:agent": "firebase emulators:exec --only firestore --project demo-cherrytree \"uv run --directory apps/agent pytest\"",
     "knip": "knip",
-    "check": "npm run lint && npm run format:check && npm run typecheck && npm run test && npm run build",
+    "generate:agent-types": "node packages/shared/scripts/agentJsonSchema.ts > apps/agent/src/cherrytree_agent/contracts/schema.json && uv run --directory apps/agent datamodel-codegen",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm run test && npm run check:agent && npm run build",
+    "check:agent": "cd apps/agent && uv run ruff check . && uv run ruff format --check . && uv run pyright && uv run pytest -q",
     "deploy:dev": "npm run build:dev && firebase use dev && firebase deploy",
     "deploy:functions:dev": "firebase use dev && firebase deploy --only functions",
-    "deploy:hosting:dev": "npm run build:dev && firebase use dev && firebase deploy --only hosting"
+    "deploy:hosting:dev": "npm run build:dev && firebase use dev && firebase deploy --only hosting",
+    "deploy:agent:dev": "gcloud run deploy agent --source apps/agent --project cherrytree-cofounder-agree-dev --region us-west2 --service-account agent-service@cherrytree-cofounder-agree-dev.iam.gserviceaccount.com --allow-unauthenticated --timeout 3600 --set-env-vars GOOGLE_CLOUD_PROJECT=cherrytree-cofounder-agree-dev --set-secrets ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,LANGFUSE_PUBLIC_KEY=LANGFUSE_PUBLIC_KEY:latest,LANGFUSE_SECRET_KEY=LANGFUSE_SECRET_KEY:latest"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

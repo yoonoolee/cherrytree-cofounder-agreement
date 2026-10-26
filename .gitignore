@@ -8,6 +8,12 @@ node_modules/
 # testing
 coverage/
 
+# Python (apps/agent)
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
 # build output
 apps/web/dist
 apps/functions/lib
@@ -28,6 +34,9 @@ apps/functions/lib
 !apps/functions/.env.cherrytree-cofounder-agreement
 apps/functions/.env
 apps/functions/.env.local
+
+# Agent service: only the non-secret per-project settings files are tracked
+!apps/agent/.env.cherrytree-cofounder-agree-dev
 
 # Firebase Hosting cache
 .firebase/hosting.*.cache

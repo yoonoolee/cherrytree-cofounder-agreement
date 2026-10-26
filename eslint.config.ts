@@ -31,6 +31,8 @@ export default tseslint.config(
       '**/node_modules/',
       'apps/web/dist/',
       'apps/functions/lib/',
+      // Python (Ruff and Pyright lint it); its .venv holds third-party JS.
+      'apps/agent/',
       'coverage/',
       '.firebase/',
     ],
