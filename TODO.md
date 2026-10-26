@@ -59,12 +59,27 @@ Crawlers and link-preview bots that don't run JavaScript see `index.html`'s defa
 - Major upgrades deferred (follow each migration guide; one per commit):
   - Web: `@sentry/react` 10 → 11, `@testing-library/jest-dom` 6 → 7.
   - Functions: `stripe` 19 → 23 (changes the pinned API version: re-test checkout and the webhook on dev, check the Stripe dashboard webhook version), `@clerk/backend` 2 → 3, `resend` 4 → 6, `svix` 1 → 2.
-- Web bundle is one large chunk (Vite's >500 kB warning). Code-split the agent product routes when they land.
+- Web bundle: the agent product (`/projects/:projectId`) is its own lazy chunk, but the main chunk is still over Vite's 500 kB warning (Firebase, Clerk, Sentry and every eagerly imported page). Split it further if load time matters.
 
 ---
 
 ## Agent product
 
+### Content to write (sample data until then)
+
+Each file already has small, made-up sample data in its real schema, so everything runs and is tested end to end. Replace the samples with real content. Paths are under `apps/agent/src/cherrytree_agent/` unless noted.
+
+- [ ] **Initial questions:** `content/questions.json`. Sections (`id`, `name`), each with questions (`id`, `text`, `description`). Sample: 3 sections, 6 questions.
+- [ ] **Advisor system prompt:** `prompts/advisor.md`. Claude's draft from the Working Doc; review the tone and wording.
+- [ ] **RAG content and store:** `content/rag_seed.json`, one entry per chunk (`id`, `text`, `title`, `url`, `section`, `dateAdded`). Sample: 5 chunks, searched by keyword until the vector store is chosen (`tools/rag.py`); the chosen store loads the same chunks.
+- [ ] **Agreement template:** `content/agreement-template.md`. Sample: a short generic two-founder agreement (14 sections, bracketed fill-ins, unnumbered headings with cross-references by heading name, since numbering is display-only). Each draft records its version (`agreement-template.md@<hash>`).
+- [ ] **Drafting and Review system prompts:** `prompts/drafting.md`, `prompts/review.md`, Claude's drafts from the Working Doc; review the instructions and tone. `editing.md` comes with the Editing Agent.
+- [ ] **Disclaimer wording** (not a law firm / not legal advice / recommend attorney review) at session start, on every draft and at finalize. Sample: `DISCLAIMER` in `apps/web/src/constants/project.ts` (footer of every project screen). Other sample copy: `constants/advisor.ts` (end-of-interview text, error messages) and `constants/draft.ts` (draft status screen).
+- [ ] **Legal reviewer** for the template and disclaimers. Until then all legal text is unreviewed.
+- [ ] **State-specific rules** (non-compete by state, LLC vs C-corp language). Parking lot; where they load is not designed yet.
+
+- [ ] **Agent service deploy (Phase 7):** in prod, the `agent-service` service account and the Drafting job setup (`apps/agent/README.md` → Service account, Drafting job: queue, `cloud-tasks` account, grants, `ANTHROPIC_API_KEY` and Langfuse secrets from a prod Langfuse project) and `apps/agent/.env.cherrytree-cofounder-agreement`; a CI deploy of the service (dev deploys with `npm run deploy:agent:dev`); `VITE_AGENT_URL` (the Cloud Run URL) in the `deploy-dev` / `deploy-prod` workflows and GitHub secrets, and the URL in the hosting CSP `connect-src` in `firebase.json`.
+- [ ] **Draft job stuck after a crash on its last attempt:** if the Cloud Run instance dies (e.g. out of memory) during the last of the 3 attempts, nothing marks the job `failed`, so the status screen keeps spinning with no retry. Rare (needs three failed attempts); the Phase 7 alert on `draft_job_failed` logs covers the attempts before it. Fix if it shows up: record when the job last changed status and let a start after the dispatch deadline take over.
 - [ ] Dashboard card progress is fixed at 0% (`PROJECT_PROGRESS_PERCENT`, `apps/web/src/pages/DashboardPage.tsx`). Derive it from the agent conversation.
 - [ ] Pro upgrade entry point in the agent UI: a Starter → Pro upgrade with the Pro waitlist form (`ProWaitlistForm`, today only in `PaymentModal`).
 - [ ] Marketing copy still describes the survey and inviting cofounders as collaborators (`LandingPage`, `PricingPage`, `constants/pricing.ts`). Rewrite for the agent product.
