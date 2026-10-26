@@ -201,6 +201,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     onboardingCompleted: { [userId]: false },
     currentPlan: plan,
     payments: { [session.id]: payment },
+    draftStatus: null,
   };
 
   await projects.doc(organization.id).set({

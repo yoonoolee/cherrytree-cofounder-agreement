@@ -68,6 +68,19 @@ export const WEBHOOK_OPTIONS = {
   cors: false,
 } satisfies HttpsOptions;
 
+/** The agent service's runtime identity (apps/agent/README.md). */
+export const AGENT_SERVICE_ACCOUNT = `agent-service@${process.env.GCLOUD_PROJECT}.iam.gserviceaccount.com`;
+
+/**
+ * Every `onRequest` function only the agent service calls: Cloud Run IAM admits only its service
+ * account (with a Google ID token), so the handler sees no other caller. No CORS.
+ */
+export const AGENT_SERVICE_OPTIONS = {
+  ...FUNCTION_CONFIG,
+  invoker: AGENT_SERVICE_ACCOUNT,
+  cors: false,
+} satisfies HttpsOptions;
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------

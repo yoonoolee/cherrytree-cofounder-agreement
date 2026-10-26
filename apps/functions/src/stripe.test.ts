@@ -336,6 +336,7 @@ describe('stripeWebhook', () => {
           purchasedAt: new Date(1_700_000_000 * 1000),
         },
       },
+      draftStatus: null,
       createdAt: FieldValue.serverTimestamp(),
       lastUpdated: FieldValue.serverTimestamp(),
       lastOpened: FieldValue.serverTimestamp(),

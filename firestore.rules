@@ -1,12 +1,19 @@
 rules_version = '2';
 
-// Client access is deliberately narrow: Cloud Functions (Admin SDK, which bypasses these
-// rules) own every document's lifecycle and every field that carries money or membership.
+// Client access is deliberately narrow: Cloud Functions and the agent service (Admin SDK, which
+// bypasses these rules) own every document's lifecycle and every field that carries money,
+// membership or agent data.
 // Guarded by apps/functions/test/rules/firestore.rules.test.ts (npm run test:rules).
 service cloud.firestore {
   match /databases/{database}/documents {
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    // For documents under a project. Any role; agent actions check the role server-side.
+    function isMemberOf(projectId) {
+      return isSignedIn() &&
+        request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)).data.members;
     }
 
     // users/{clerkUserId}: readable by its owner, written only by the Clerk webhook and
@@ -40,6 +47,25 @@ service cloud.firestore {
       allow list: if false;
 
       allow update: if isSignedIn() && isMember() && onlyClientFields();
+
+      // Agent data: members read it; only the agent service (Admin SDK) writes it, including
+      // draft saves. `transcript/` (raw model content) has no rule, so it is server-only.
+      match /advisor/{docId} {
+        allow read: if isMemberOf(projectId);
+      }
+      match /turns/{turnId} {
+        allow read: if isMemberOf(projectId);
+      }
+      match /draft/{docId} {
+        allow read: if isMemberOf(projectId);
+      }
+      match /suggestions/{suggestionId} {
+        allow read: if isMemberOf(projectId);
+      }
+      // Soft-deleted threads stay hidden; a list query must filter them out to be allowed.
+      match /threads/{threadId} {
+        allow read: if isMemberOf(projectId) && resource.data.status != 'deleted';
+      }
     }
 
     // Public pro-plan waitlist: anonymous signup with exactly the fields the form sends.

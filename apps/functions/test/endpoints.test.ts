@@ -5,16 +5,16 @@
  *    service account, trigger type) must equal `endpoints.golden.json`. A commit that
  *    intentionally changes a contract (e.g. drops a secret a function no longer reads)
  *    updates the golden in the same commit.
- * 2. `invoker`, `enforceAppCheck` and `consumeAppCheckToken` are not part of the manifest in
- *    firebase-functions 6.x, so they are guarded at the source level instead: every `onCall`
- *    and `onRequest` in `src/` must spread the shared options from `config.ts`.
+ * 2. `enforceAppCheck` and `consumeAppCheckToken` are not part of the manifest, so they are
+ *    guarded at the source level instead: every `onCall` and `onRequest` in `src/` must spread
+ *    the shared options from `config.ts`.
  */
 import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
-import { CALLABLE_OPTIONS, WEBHOOK_OPTIONS } from '../src/config.ts';
+import { AGENT_SERVICE_OPTIONS, CALLABLE_OPTIONS, WEBHOOK_OPTIONS } from '../src/config.ts';
 
 const functionsDir = path.resolve(import.meta.dirname, '..');
 const srcDir = path.join(functionsDir, 'src');
@@ -82,6 +82,13 @@ describe('shared trigger options', () => {
     expect(WEBHOOK_OPTIONS).toMatchObject({ cors: false });
   });
 
+  it('AGENT_SERVICE_OPTIONS admit only the agent service account, without CORS', () => {
+    expect(AGENT_SERVICE_OPTIONS).toMatchObject({
+      invoker: expect.stringMatching(/^agent-service@.+\.iam\.gserviceaccount\.com$/),
+      cors: false,
+    });
+  });
+
   it('every onCall handler rejects a replayed App Check token', () => {
     // consumeAppCheckToken only flags a replay (request.app.alreadyConsumed); each handler must
     // reject it, either through requireAuth or rejectConsumedAppCheckToken directly.
@@ -109,7 +116,9 @@ describe('shared trigger options', () => {
         if (match[1] !== '...CALLABLE_OPTIONS') offenders.push(`${relative}: onCall`);
       }
       for (const match of source.matchAll(/\bonRequest\(\s*\{\s*([^\s,}]*)/g)) {
-        if (match[1] !== '...WEBHOOK_OPTIONS') offenders.push(`${relative}: onRequest`);
+        if (match[1] !== '...WEBHOOK_OPTIONS' && match[1] !== '...AGENT_SERVICE_OPTIONS') {
+          offenders.push(`${relative}: onRequest`);
+        }
       }
     }
     expect(offenders).toEqual([]);

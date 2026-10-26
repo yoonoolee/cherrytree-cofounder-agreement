@@ -37,6 +37,7 @@ const project = {
   onboardingCompleted: { [ADMIN]: false },
   currentPlan: 'starter',
   payments: { cs_1: { plan: 'starter' } },
+  draftStatus: null,
   createdAt: new Date(0),
   lastUpdated: new Date(0),
   lastOpened: new Date(0),
@@ -132,6 +133,7 @@ describe('projects: updating', () => {
     await assertFails(updateDoc(ref, { currentPlan: 'pro' }));
     await assertFails(updateDoc(ref, { lastUpdated: serverTimestamp() }));
     await assertFails(updateDoc(ref, { draft: 'x' }));
+    await assertFails(updateDoc(ref, { draftStatus: 'ready' }));
     // A permitted field does not smuggle a locked one through.
     await assertFails(updateDoc(ref, { lastOpened: serverTimestamp(), currentPlan: 'pro' }));
     // Writing a locked field's current value back is a no-op diff and therefore allowed.
@@ -142,6 +144,66 @@ describe('projects: updating', () => {
     const update = { lastOpened: serverTimestamp() };
     await assertFails(updateDoc(doc(asUser(STRANGER), 'projects', PROJECT), update));
     await assertFails(updateDoc(doc(anonymous(), 'projects', PROJECT), update));
+  });
+});
+
+describe('projects: agent data', () => {
+  const READABLE = [
+    ['advisor', 'state'],
+    ['turns', '00000'],
+    ['draft', 'current'],
+    ['suggestions', 'sug_1'],
+    ['threads', 'open_1'],
+  ] as const;
+
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore() as never as Firestore;
+      const under = (...segments: string[]) => doc(db, 'projects', PROJECT, ...segments);
+      for (const [collectionName, id] of READABLE) {
+        await setDoc(under(collectionName, id), { status: 'open' });
+      }
+      await setDoc(under('threads', 'resolved_1'), { status: 'resolved' });
+      await setDoc(under('threads', 'deleted_1'), { status: 'deleted' });
+      await setDoc(under('transcript', '00000'), { messages: [] });
+    });
+  });
+
+  const ref = (db: Firestore, ...segments: string[]) => doc(db, 'projects', PROJECT, ...segments);
+
+  it('members can read it', async () => {
+    for (const [collectionName, id] of READABLE) {
+      await assertSucceeds(getDoc(ref(asUser(ADMIN), collectionName, id)));
+    }
+    await assertSucceeds(getDocs(collection(asUser(ADMIN), 'projects', PROJECT, 'turns')));
+  });
+
+  it('strangers and anonymous users cannot', async () => {
+    for (const [collectionName, id] of READABLE) {
+      await assertFails(getDoc(ref(asUser(STRANGER), collectionName, id)));
+      await assertFails(getDoc(ref(anonymous(), collectionName, id)));
+    }
+  });
+
+  it('nobody can write it from the client, not even a member', async () => {
+    for (const [collectionName, id] of READABLE) {
+      await assertFails(setDoc(ref(asUser(ADMIN), collectionName, id), { status: 'open' }));
+      await assertFails(updateDoc(ref(asUser(ADMIN), collectionName, id), { status: 'resolved' }));
+      await assertFails(deleteDoc(ref(asUser(ADMIN), collectionName, id)));
+    }
+    await assertFails(addDoc(collection(asUser(ADMIN), 'projects', PROJECT, 'turns'), {}));
+  });
+
+  it('hides soft-deleted threads; listing them needs a status filter', async () => {
+    const threads = collection(asUser(ADMIN), 'projects', PROJECT, 'threads');
+    await assertFails(getDoc(ref(asUser(ADMIN), 'threads', 'deleted_1')));
+    await assertFails(getDocs(threads));
+    await assertSucceeds(getDocs(query(threads, where('status', 'in', ['open', 'resolved']))));
+  });
+
+  it('keeps the raw transcript server-only', async () => {
+    await assertFails(getDoc(ref(asUser(ADMIN), 'transcript', '00000')));
+    await assertFails(getDocs(collection(asUser(ADMIN), 'projects', PROJECT, 'transcript')));
   });
 });
 
@@ -165,10 +227,12 @@ describe('proWaitlist', () => {
   });
 });
 
-describe('stripeEvents and unknown collections', () => {
+describe('stripeEvents, rateLimits and unknown collections', () => {
   it('are server-side only', async () => {
     await assertFails(getDoc(doc(asUser(ADMIN), 'stripeEvents', 'evt_1')));
     await assertFails(setDoc(doc(asUser(ADMIN), 'stripeEvents', 'evt_2'), { type: 'x' }));
     await assertFails(setDoc(doc(asUser(ADMIN), 'somethingElse', 'x'), { a: 1 }));
+    await assertFails(getDoc(doc(asUser(ADMIN), 'rateLimits', ADMIN)));
+    await assertFails(setDoc(doc(asUser(ADMIN), 'rateLimits', ADMIN), { count: 0 }));
   });
 });
