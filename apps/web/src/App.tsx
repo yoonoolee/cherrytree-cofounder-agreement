@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router';
 
 import ProtectedRoute from './components/ProtectedRoute.tsx';
@@ -13,7 +14,9 @@ import PrivacyPage from './pages/PrivacyPage.tsx';
 import TermsPage from './pages/TermsPage.tsx';
 import LoginPage from './pages/LoginPage.tsx';
 import SignUpPage from './pages/SignUpPage.tsx';
-import ProjectPage from './pages/ProjectPage.tsx';
+
+// The agent product loads as its own chunk, so the marketing pages and dashboard don't ship it.
+const ProjectPage = lazy(() => import('./pages/ProjectPage.tsx'));
 
 function App() {
   return (
@@ -46,7 +49,9 @@ function App() {
           path="/projects/:projectId"
           element={
             <ProtectedRoute>
-              <ProjectPage />
+              <Suspense fallback={null}>
+                <ProjectPage />
+              </Suspense>
             </ProtectedRoute>
           }
         />

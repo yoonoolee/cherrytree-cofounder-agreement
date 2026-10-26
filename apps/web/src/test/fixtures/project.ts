@@ -21,6 +21,7 @@ export function makeProject(overrides: Partial<Project> = {}): Project {
     onboardingCompleted: { [ADMIN_ID]: false },
     currentPlan: 'starter',
     payments: {},
+    draftStatus: null,
     createdAt,
     lastUpdated: createdAt,
     lastOpened: createdAt,

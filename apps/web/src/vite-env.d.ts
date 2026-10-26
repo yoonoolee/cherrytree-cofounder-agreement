@@ -14,6 +14,7 @@ interface ImportMetaEnv {
   readonly VITE_ENFORCE_HTTPS: string;
   readonly VITE_CLERK_PUBLISHABLE_KEY: string;
   readonly VITE_APP_URL: string;
+  readonly VITE_AGENT_URL: string;
   readonly VITE_SENTRY_DSN: string;
   readonly VITE_USE_EMULATORS: string;
 }

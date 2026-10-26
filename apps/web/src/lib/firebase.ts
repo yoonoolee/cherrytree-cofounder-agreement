@@ -9,14 +9,21 @@ import {
   connectFirestoreEmulator,
   doc,
   getFirestore,
+  orderBy,
+  query,
   type DocumentReference,
+  type Query,
 } from 'firebase/firestore';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
-import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
+import { initializeAppCheck, ReCaptchaV3Provider, type AppCheck } from 'firebase/app-check';
 import {
+  advisorStateSchema,
+  advisorTurnSchema,
   projectSchema,
   proWaitlistSignupSchema,
   userDocSchema,
+  type AdvisorState,
+  type AdvisorTurn,
   type Project,
   type UserDoc,
 } from '@cherrytree/shared';
@@ -37,14 +44,19 @@ export const auth = getAuth(app);
 if (env.isDev) {
   self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
 }
-try {
-  initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(env.recaptchaSiteKey),
-    isTokenAutoRefreshEnabled: true,
-  });
-} catch (error) {
-  console.error('Error initializing App Check:', error);
+function startAppCheck(): AppCheck | null {
+  try {
+    return initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(env.recaptchaSiteKey),
+      isTokenAutoRefreshEnabled: true,
+    });
+  } catch (error) {
+    console.error('Error initializing App Check:', error);
+    return null;
+  }
 }
+/** `null` if App Check failed to start; requests to the agent service then cannot be made. */
+export const appCheck = startAppCheck();
 
 // Connect to emulators in development
 if (env.isDev && env.useEmulators) {
@@ -61,6 +73,19 @@ export const projectRef = (projectId: string): DocumentReference<Project> =>
   doc(projects, projectId);
 /** `users/{clerkUserId}` */
 export const userRef = (userId: string): DocumentReference<UserDoc> => doc(users, userId);
+/** `projects/{clerkOrgId}/advisor/state` — written only by the agent service. */
+export const advisorStateRef = (projectId: string): DocumentReference<AdvisorState> =>
+  doc(db, 'projects', projectId, 'advisor', 'state').withConverter(
+    schemaConverter(advisorStateSchema),
+  );
+/** `projects/{clerkOrgId}/turns`, oldest first — written only by the agent service. */
+export const advisorTurnsQuery = (projectId: string): Query<AdvisorTurn> =>
+  query(
+    collection(db, 'projects', projectId, 'turns').withConverter(
+      schemaConverter(advisorTurnSchema),
+    ),
+    orderBy('index'),
+  );
 /** `proWaitlist` — append-only from the client (`addDoc`). */
 export const proWaitlist = collection(db, 'proWaitlist').withConverter(
   schemaConverter(proWaitlistSignupSchema),

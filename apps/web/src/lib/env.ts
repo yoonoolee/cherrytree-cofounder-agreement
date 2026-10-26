@@ -34,4 +34,6 @@ export const env = {
   enforceHttps: flag(import.meta.env.VITE_ENFORCE_HTTPS),
   /** Origin of the app host (the marketing pages link into it). */
   appUrl: import.meta.env.VITE_APP_URL,
+  /** Origin of the agent service (Cloud Run; `http://localhost:8000` with `npm run dev:agent`). */
+  agentUrl: import.meta.env.VITE_AGENT_URL,
 } as const;

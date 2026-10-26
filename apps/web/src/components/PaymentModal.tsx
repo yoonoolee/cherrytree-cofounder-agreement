@@ -136,7 +136,7 @@ function PaymentModal({ onClose }: PaymentModalProps) {
               type="text"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              className={`w-full px-0 py-2 border-0 border-b-2 border-gray-300 focus:border-black focus:ring-0 bg-transparent text-gray-900 ${isWiggling ? 'animate-wiggle' : ''}`}
+              className={isWiggling ? 'animate-wiggle' : undefined}
               placeholder="Enter company name"
             />
           </div>
