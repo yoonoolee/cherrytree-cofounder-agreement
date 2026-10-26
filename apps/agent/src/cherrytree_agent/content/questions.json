@@ -1,0 +1,52 @@
+{
+  "sections": [
+    {
+      "id": "background",
+      "name": "Background",
+      "questions": [
+        {
+          "id": "background_meet",
+          "text": "How did you two meet?",
+          "description": "Where and when the founders met, how long they have known each other, and how they ended up starting a company together."
+        },
+        {
+          "id": "background_idea",
+          "text": "Whose idea was the company, and what work happened before you teamed up?",
+          "description": "Who came up with the idea, what each founder built or contributed before the other joined (code, research, customers, money), and whether any of it was done while employed elsewhere."
+        }
+      ]
+    },
+    {
+      "id": "roles",
+      "name": "Roles",
+      "questions": [
+        {
+          "id": "roles_titles",
+          "text": "What will each of you be responsible for?",
+          "description": "Each founder's title and areas of ownership, whether both work full time, and when anyone who is part time expects to go full time."
+        },
+        {
+          "id": "roles_decisions",
+          "text": "How will you make decisions when you disagree?",
+          "description": "Which decisions need both founders, who has the final say in each area, and how a deadlock is broken."
+        }
+      ]
+    },
+    {
+      "id": "equity",
+      "name": "Equity",
+      "questions": [
+        {
+          "id": "equity_split",
+          "text": "How do you plan to split ownership?",
+          "description": "The percentage each founder owns, the reasoning behind the split, and whether a pool is set aside for future hires."
+        },
+        {
+          "id": "equity_vesting",
+          "text": "How should each founder's shares vest?",
+          "description": "Vesting length and cliff, whether earlier work earns any vested shares up front, and what happens to unvested shares if a founder leaves."
+        }
+      ]
+    }
+  ]
+}

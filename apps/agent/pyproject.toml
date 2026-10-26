@@ -1,0 +1,77 @@
+[project]
+name = "cherrytree-agent"
+version = "0.1.0"
+description = "Cherrytree agent service: the Advisor, Drafting, Review and Editing agents"
+requires-python = ">=3.13"
+dependencies = [
+    "anthropic==2.3.0",
+    "fastapi==0.162.0",
+    "firebase-admin==7.7.0",
+    "google-auth==2.62.0",
+    "google-cloud-tasks==2.26.0",
+    "httpx==0.28.1",
+    "langfuse==5.0.4",
+    "pydantic==2.14.1",
+    "pydantic-settings==2.16.1",
+    "uvicorn[standard]==0.54.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.5,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "datamodel-code-generator==0.86.0",
+    "pyright==1.1.414",
+    "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
+    "ruff==0.17.2",
+]
+
+[tool.uv]
+# The same uv-managed CPython locally and in CI, never a system or Anaconda interpreter.
+python-preference = "only-managed"
+
+# Pydantic models generated from packages/shared's Zod schemas (npm run generate:agent-types).
+# Each model follows its schema: `additionalProperties: false` forbids extra fields, while Plate
+# nodes allow the marks Plate adds.
+[tool.datamodel-codegen]
+input = "src/cherrytree_agent/contracts/schema.json"
+input-file-type = "jsonschema"
+output = "src/cherrytree_agent/contracts/models.py"
+output-model-type = "pydantic_v2.BaseModel"
+target-python-version = "3.13"
+formatters = ["ruff-format"]
+snake-case-field = true
+allow-population-by-field-name = true
+use-annotated = true
+use-standard-collections = true
+use-union-operator = true
+field-constraints = true
+enum-field-as-literal = "all"
+use-field-description = true
+use-schema-description = true
+disable-timestamp = true
+use-double-quotes = true
+use-type-alias = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["src/cherrytree_agent/contracts/models.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM", "ASYNC", "RUF"]
+
+[tool.pyright]
+# Standard, not strict: firebase-admin and google-cloud-firestore ship without complete types.
+typeCheckingMode = "standard"
+include = ["src", "tests"]
+pythonVersion = "3.13"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+testpaths = ["tests"]

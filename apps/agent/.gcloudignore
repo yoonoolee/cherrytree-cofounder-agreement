@@ -1,0 +1,3 @@
+# What `gcloud run deploy --source` uploads: the same files the image build uses.
+.gcloudignore
+#!include:.dockerignore

@@ -1,0 +1,44 @@
+{
+  "chunks": [
+    {
+      "id": "vesting-standard-schedule",
+      "title": "Founder vesting schedules",
+      "text": "Most venture-backed startups vest founder shares over four years with a one-year cliff: nothing vests in the first year, a quarter vests at the one-year mark, and the rest vests monthly after that. Vesting protects the founders from each other. If one founder leaves early, the company can buy back their unvested shares, so the founders who stay are not working for someone who left.",
+      "url": null,
+      "section": "equity",
+      "dateAdded": "2026-10-25"
+    },
+    {
+      "id": "vesting-credit-for-prior-work",
+      "title": "Credit for work done before the company",
+      "text": "When one founder worked on the idea for months before the other joined, a common approach is to vest part of that founder's shares on day one, for example six or twelve months' worth, rather than changing the ownership split. It keeps the split about the future and the vesting about the past.",
+      "url": null,
+      "section": "equity",
+      "dateAdded": "2026-10-25"
+    },
+    {
+      "id": "equity-equal-split",
+      "title": "Equal and unequal ownership splits",
+      "text": "Many founding teams split ownership equally, which avoids an early argument and signals equal commitment. An unequal split is common when founders differ a lot in time committed, risk taken or role, such as one founder working full time while the other keeps a job. Whatever the split, writing down the reasoning helps when the founders revisit it later.",
+      "url": null,
+      "section": "equity",
+      "dateAdded": "2026-10-25"
+    },
+    {
+      "id": "decisions-deadlock",
+      "title": "Breaking a deadlock between two founders",
+      "text": "With two equal founders, a disagreement can stall the company. Founders often agree in advance who has the final say in each area (for example product versus fundraising), name a trusted advisor to mediate, or give one founder a tie-breaking vote on the board. The point is to settle the process before there is a dispute.",
+      "url": null,
+      "section": "roles",
+      "dateAdded": "2026-10-25"
+    },
+    {
+      "id": "ip-assignment-prior-work",
+      "title": "Assigning earlier work to the company",
+      "text": "Code, designs and other work a founder created before the company existed belong to that founder until they are assigned to the company. Investors expect the company to own its core work, so founders usually sign an assignment when the company is formed. Work done while employed elsewhere can be claimed by that employer, which is worth raising with a lawyer.",
+      "url": null,
+      "section": "background",
+      "dateAdded": "2026-10-25"
+    }
+  ]
+}

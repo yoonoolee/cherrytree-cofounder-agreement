@@ -1,0 +1,1059 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "Project": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "members": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/Member"
+          }
+        },
+        "onboardingCompleted": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        },
+        "currentPlan": {
+          "type": "string",
+          "enum": [
+            "starter",
+            "pro"
+          ]
+        },
+        "payments": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/Payment"
+          }
+        },
+        "draftStatus": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DraftStatus"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastOpened": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "name",
+        "members",
+        "onboardingCompleted",
+        "currentPlan",
+        "payments",
+        "draftStatus",
+        "createdAt",
+        "lastUpdated",
+        "lastOpened"
+      ],
+      "additionalProperties": false
+    },
+    "Member": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "admin"
+          ]
+        }
+      },
+      "required": [
+        "role"
+      ],
+      "additionalProperties": false
+    },
+    "RateLimit": {
+      "type": "object",
+      "properties": {
+        "windowStart": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "windowStart",
+        "count"
+      ],
+      "additionalProperties": false
+    },
+    "Payment": {
+      "type": "object",
+      "properties": {
+        "plan": {
+          "type": "string",
+          "enum": [
+            "starter",
+            "pro"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "const": "initial"
+        },
+        "stripeCustomerId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stripePaymentIntentId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "amountPaidCents": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "receiptUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "purchasedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {}
+          ],
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "plan",
+        "type",
+        "stripeCustomerId",
+        "stripePaymentIntentId",
+        "amountPaidCents",
+        "currency",
+        "receiptUrl",
+        "purchasedAt"
+      ],
+      "additionalProperties": false
+    },
+    "WebSource": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "url"
+      ],
+      "additionalProperties": false
+    },
+    "QuestionStatus": {
+      "type": "string",
+      "enum": [
+        "todo",
+        "current",
+        "done",
+        "skipped"
+      ]
+    },
+    "Question": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/QuestionStatus"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "initial",
+            "added_by_agent"
+          ]
+        },
+        "advisorNotes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "description",
+        "status",
+        "source",
+        "advisorNotes"
+      ],
+      "additionalProperties": false
+    },
+    "QuestionSection": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Question"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "questions"
+      ],
+      "additionalProperties": false
+    },
+    "InitialQuestions": {
+      "type": "object",
+      "properties": {
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/InitialQuestionSection"
+          }
+        }
+      },
+      "required": [
+        "sections"
+      ],
+      "additionalProperties": false
+    },
+    "InitialQuestionSection": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/InitialQuestion"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "questions"
+      ],
+      "additionalProperties": false
+    },
+    "InitialQuestion": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "AdvisorState": {
+      "type": "object",
+      "properties": {
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/QuestionSection"
+          }
+        },
+        "sectionSummaries": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "turnCount": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "sections",
+        "sectionSummaries",
+        "turnCount",
+        "updatedAt"
+      ],
+      "additionalProperties": false
+    },
+    "AdvisorQuestion": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "followup",
+            "next_question",
+            "next_section"
+          ]
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "AdvisorResponse": {
+      "type": "object",
+      "properties": {
+        "highlights": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "answer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/WebSource"
+          }
+        },
+        "question": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AdvisorQuestion"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "highlights",
+        "answer",
+        "sources",
+        "question"
+      ],
+      "additionalProperties": false
+    },
+    "AdvisorTurn": {
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "uid": {
+          "type": "string"
+        },
+        "reply": {
+          "type": "string"
+        },
+        "response": {
+          "$ref": "#/$defs/AdvisorResponse"
+        },
+        "traceId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "index",
+        "uid",
+        "reply",
+        "response",
+        "traceId",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "TranscriptEntry": {
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "messages": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "index",
+        "messages",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "PlateText": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "additionalProperties": {}
+    },
+    "PlateElement": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PlateElement"
+              },
+              {
+                "$ref": "#/$defs/PlateText"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "type",
+        "children"
+      ],
+      "additionalProperties": {}
+    },
+    "DraftBlock": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PlateElement"
+              },
+              {
+                "$ref": "#/$defs/PlateText"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "children"
+      ],
+      "additionalProperties": {}
+    },
+    "DraftStatus": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "drafting",
+        "reviewing",
+        "ready",
+        "failed"
+      ]
+    },
+    "Draft": {
+      "type": "object",
+      "properties": {
+        "templateVersion": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "blockVersions": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DraftBlock"
+          }
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "templateVersion",
+        "version",
+        "blockVersions",
+        "content",
+        "updatedAt"
+      ],
+      "additionalProperties": false
+    },
+    "ThreadMessage": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "string",
+          "enum": [
+            "user",
+            "agent"
+          ]
+        },
+        "uid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text": {
+          "type": "string"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/WebSource"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "author",
+        "uid",
+        "text",
+        "sources",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "Thread": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "resolved",
+            "deleted"
+          ]
+        },
+        "createdBy": {
+          "type": "string",
+          "enum": [
+            "user",
+            "agent"
+          ]
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ThreadMessage"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "status",
+        "createdBy",
+        "messages",
+        "createdAt",
+        "updatedAt"
+      ],
+      "additionalProperties": false
+    },
+    "Edit": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "replace",
+            "insert_after",
+            "delete"
+          ]
+        },
+        "para": {
+          "type": "string"
+        },
+        "old": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "new": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "accepted",
+            "rejected",
+            "withdrawn",
+            "stale"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "para",
+        "old",
+        "new",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "Suggestion": {
+      "type": "object",
+      "properties": {
+        "threadId": {
+          "type": "string"
+        },
+        "edits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Edit"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "threadId",
+        "edits",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "DraftFix": {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "replace",
+            "insert_after",
+            "delete"
+          ]
+        },
+        "para": {
+          "type": "string"
+        },
+        "old": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "new": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "op",
+        "para",
+        "old",
+        "new"
+      ],
+      "additionalProperties": false
+    },
+    "DraftThreadAnchor": {
+      "type": "object",
+      "properties": {
+        "threadId": {
+          "type": "string"
+        },
+        "para": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "threadId",
+        "para"
+      ],
+      "additionalProperties": false
+    },
+    "DraftDocumentRequest": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/DraftFromMarkdownRequest"
+        },
+        {
+          "$ref": "#/$defs/DraftApplyReviewRequest"
+        }
+      ]
+    },
+    "DraftFromMarkdownRequest": {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "from_markdown"
+        },
+        "markdown": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "op",
+        "markdown"
+      ],
+      "additionalProperties": false
+    },
+    "DraftApplyReviewRequest": {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "apply_review"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DraftBlock"
+          }
+        },
+        "fixes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DraftFix"
+          }
+        },
+        "threads": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DraftThreadAnchor"
+          }
+        }
+      },
+      "required": [
+        "op",
+        "content",
+        "fixes",
+        "threads"
+      ],
+      "additionalProperties": false
+    },
+    "DraftDocumentResponse": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DraftBlock"
+          }
+        }
+      },
+      "required": [
+        "content"
+      ],
+      "additionalProperties": false
+    },
+    "AdvisorSessionResponse": {
+      "type": "object",
+      "properties": {
+        "turnCount": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "turnCount"
+      ],
+      "additionalProperties": false
+    },
+    "AdvisorTurnRequest": {
+      "type": "object",
+      "properties": {
+        "reply": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20000
+        },
+        "expectedTurnIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "reply",
+        "expectedTurnIndex"
+      ],
+      "additionalProperties": false
+    },
+    "AdvisorStreamEvent": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/AdvisorHighlightsEvent"
+        },
+        {
+          "$ref": "#/$defs/AdvisorAnswerDeltaEvent"
+        },
+        {
+          "$ref": "#/$defs/AdvisorSourcesEvent"
+        },
+        {
+          "$ref": "#/$defs/AdvisorDoneEvent"
+        },
+        {
+          "$ref": "#/$defs/AdvisorErrorEvent"
+        }
+      ]
+    },
+    "StartDraftResponse": {
+      "type": "object",
+      "properties": {
+        "draftStatus": {
+          "$ref": "#/$defs/DraftStatus"
+        }
+      },
+      "required": [
+        "draftStatus"
+      ],
+      "additionalProperties": false
+    },
+    "AdvisorHighlightsEvent": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "highlights"
+        },
+        "highlights": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "highlights"
+      ],
+      "additionalProperties": false
+    },
+    "AdvisorAnswerDeltaEvent": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "answer_delta"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "AdvisorSourcesEvent": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "sources"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/WebSource"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "sources"
+      ],
+      "additionalProperties": false
+    },
+    "AdvisorDoneEvent": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "done"
+        },
+        "index": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "response": {
+          "$ref": "#/$defs/AdvisorResponse"
+        }
+      },
+      "required": [
+        "type",
+        "index",
+        "response"
+      ],
+      "additionalProperties": false
+    },
+    "AdvisorErrorEvent": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "error"
+        },
+        "code": {
+          "type": "string",
+          "enum": [
+            "temporary",
+            "refusal",
+            "stale"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "code"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
