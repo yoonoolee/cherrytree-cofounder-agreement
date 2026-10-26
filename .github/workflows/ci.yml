@@ -34,16 +34,25 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      # The agent service (apps/agent) is Python, managed by uv.
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/agent/uv.lock
+
       - name: Install dependencies
         run: |
           npm ci
           npm --prefix apps/functions ci
+          uv sync --locked --directory apps/agent
 
       # Vite inlines VITE_* keys at build time; placeholders keep the CI bundle representative.
       - name: Create apps/web/.env.production for the build
         run: |
           cat > apps/web/.env.production << EOF
           VITE_APP_URL=https://my.cherrytree.app
+          VITE_AGENT_URL=https://agent.example.run.app
           VITE_FIREBASE_API_KEY=test_key
           VITE_FIREBASE_AUTH_DOMAIN=test.firebaseapp.com
           VITE_FIREBASE_PROJECT_ID=test-project
@@ -55,12 +64,18 @@ jobs:
           VITE_CLERK_PUBLISHABLE_KEY=pk_test_test
           EOF
 
-      # lint + format check + typecheck + unit tests + production build (apps/web/dist)
+      # lint + format check + typecheck + unit tests (web, shared, functions, agent) + production build
       - name: Check
         run: npm run check
 
       - name: Unused files, exports and dependencies
         run: npm run knip
+
+      # The agent service's Pydantic models must match packages/shared's Zod schemas.
+      - name: Agent service types are up to date
+        run: |
+          npm run generate:agent-types
+          git diff --exit-code apps/agent/src/cherrytree_agent/contracts
 
       # apps/functions/ has its own lockfile, so the root audit does not cover it.
       - name: Audit dependencies
@@ -78,3 +93,6 @@ jobs:
         run: |
           npm install -g firebase-tools@15
           npm run test:rules
+
+      - name: Agent service tests (Firestore emulator)
+        run: npm run test:agent
