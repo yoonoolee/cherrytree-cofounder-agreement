@@ -16,7 +16,9 @@ class FakeIntersectionObserver {
   static instances: FakeIntersectionObserver[] = [];
   observed: Element[] = [];
   constructor(
-    private readonly callback: (entries: { isIntersecting: boolean; target: Element }[]) => void,
+    private readonly callback: (
+      entries: { isIntersecting: boolean; intersectionRatio: number; target: Element }[],
+    ) => void,
     readonly options?: IntersectionObserverInit,
   ) {
     FakeIntersectionObserver.instances.push(this);
@@ -27,7 +29,15 @@ class FakeIntersectionObserver {
   unobserve() {}
   disconnect() {}
   intersect(targets: Element[] = this.observed) {
-    this.callback(targets.map((target) => ({ isIntersecting: true, target })));
+    this.callback(
+      targets.map((target) => ({ isIntersecting: true, intersectionRatio: 1, target })),
+    );
+  }
+  /** Reports the targets as fully out of view. */
+  leave(targets: Element[] = this.observed) {
+    this.callback(
+      targets.map((target) => ({ isIntersecting: false, intersectionRatio: 0, target })),
+    );
   }
 }
 
@@ -53,14 +63,31 @@ const heroMark = () => document.querySelector('.lp-hero-headline .lp-hl-mark');
 const protectMark = () => document.querySelector('.lp-protect-cta .lp-hl-mark');
 const observersFor = (threshold: number) =>
   FakeIntersectionObserver.instances.filter((o) => o.options?.threshold === threshold);
-const faqBody = (question: string) =>
-  screen.getByRole('button', { name: question }).parentElement?.querySelector('.lp-faq-body');
 
-/** Selects the v2 step tab at `index`, which swaps in that step's demo. */
-function selectStep(index: number) {
+// How it works pins its scene while the page scrolls through a tall track; jsdom has no layout,
+// so give the track a position and size: it starts at y=1000 and pins for 3200px (4000 − 800).
+const TRACK_TOP = 1000;
+const PIN_LENGTH = 3200;
+function layOutTrack() {
+  const track = document.querySelector<HTMLElement>('.lp-feat-v2-track')!;
+  const sticky = document.querySelector<HTMLElement>('.lp-feat-v2-sticky')!;
+  Object.defineProperty(track, 'offsetHeight', { configurable: true, value: PIN_LENGTH + 800 });
+  Object.defineProperty(sticky, 'offsetHeight', { configurable: true, value: 800 });
+  track.getBoundingClientRect = () => ({ top: TRACK_TOP - window.scrollY }) as DOMRect;
+}
+/** Scroll position halfway through step `index`'s share of the pinned stretch. */
+const stepScrollY = (index: number) => TRACK_TOP + ((index + 0.5) / 4) * PIN_LENGTH;
+function scrollPage(y: number) {
   act(() => {
-    fireEvent.click(screen.getAllByRole('tab')[index]!);
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: y });
+    window.dispatchEvent(new Event('scroll'));
+    vi.advanceTimersByTime(16); // the scroll handler waits a frame
   });
+}
+/** Scrolls the page to step `index`, which swaps in that step's demo. */
+function scrollToStep(index: number) {
+  layOutTrack();
+  scrollPage(stepScrollY(index));
 }
 
 beforeEach(() => {
@@ -71,6 +98,7 @@ beforeEach(() => {
   );
   FakeIntersectionObserver.instances = [];
   Object.defineProperty(window, 'innerHeight', { configurable: true, value: 800 });
+  Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
 });
 
 afterEach(() => {
@@ -107,19 +135,25 @@ describe('LandingPage', () => {
       expect(screen.getByText('you@email.com')).toBeInTheDocument();
     });
 
-    it('switches the demo when a step is selected', () => {
+    it('picks the step from how far the page has scrolled through the pinned stretch', () => {
       renderPage();
-      selectStep(2);
+      scrollToStep(2);
       expect(tabs()[2]).toHaveAttribute('aria-selected', 'true');
       expect(tabs()[0]).toHaveAttribute('aria-selected', 'false');
       expect(document.querySelector('.lp-s3-card')).toBeInTheDocument(); // equity demo
+      scrollPage(TRACK_TOP + PIN_LENGTH * 2); // past the end stays on the last step
+      expect(tabs()[3]).toHaveAttribute('aria-selected', 'true');
+      scrollPage(0); // above the track stays on the first
+      expect(tabs()[0]).toHaveAttribute('aria-selected', 'true');
     });
 
-    it('moves to the next step after the current demo has played through', () => {
+    it('scrolls to a step when its title is clicked', () => {
+      const scrollTo = vi.fn();
+      vi.stubGlobal('scrollTo', scrollTo);
       renderPage();
-      advance(800 + 68 * 3);
-      advance(60 * 1000);
-      expect(tabs()[0]).toHaveAttribute('aria-selected', 'false');
+      layOutTrack();
+      fireEvent.click(tabs()[1]!);
+      expect(scrollTo).toHaveBeenCalledWith({ top: stepScrollY(1), behavior: 'smooth' });
     });
 
     it('invite demo: types an email, presses Add and lists the new teammate', () => {
@@ -137,7 +171,7 @@ describe('LandingPage', () => {
 
     it('collab demo: answers the first question and marks it answered', () => {
       renderPage();
-      selectStep(1);
+      scrollToStep(1);
       const questions = () => Array.from(document.querySelectorAll('.lp-s2-q'));
       expect(questions()[0]).toHaveClass('active');
       advance(80 + 65 * 'Acme Labs'.length + 700);
@@ -148,7 +182,7 @@ describe('LandingPage', () => {
 
     it('equity demo: slides importance to 5 and scores 8 then 3', () => {
       renderPage();
-      selectStep(2);
+      scrollToStep(2);
       expect(screen.getByText('Cash Invested')).toBeInTheDocument();
       advance(120);
       expect(document.querySelector<HTMLElement>('.lp-s3-fill')?.style.width).toBe('50%');
@@ -162,7 +196,7 @@ describe('LandingPage', () => {
 
     it('review demo: ticks the sections off one by one and fills the bar', () => {
       renderPage();
-      selectStep(3);
+      scrollToStep(3);
       const rows = () => Array.from(document.querySelectorAll('.lp-s2r-row'));
       advance(500);
       expect(rows()[0]).toHaveClass('done');
@@ -184,33 +218,26 @@ describe('LandingPage', () => {
     expect(first).toHaveClass('lp-rv-in');
   });
 
-  it('steps the carousel with the arrows and dots, wrapping around', () => {
+  it('strikes through templates and lawyers, then lands on Cherrytree', () => {
     renderPage();
-    const slides = () => Array.from(document.querySelectorAll('.lp-cs-slide'));
-    const track = () => document.querySelector<HTMLElement>('.lp-carousel-track')!;
-    expect(slides()[0]).toHaveClass('active');
-    fireEvent.click(screen.getByRole('button', { name: '→' }));
-    expect(slides()[1]).toHaveClass('active');
-    expect(track().style.transform).toBe('translateX(calc(-1 * 380px))');
-    fireEvent.click(screen.getByRole('button', { name: '←' }));
-    fireEvent.click(screen.getByRole('button', { name: '←' }));
-    expect(slides()[4]).toHaveClass('active');
-    fireEvent.click(document.querySelectorAll('.lp-cs-dot')[2]!);
-    expect(slides()[2]).toHaveClass('active');
-    expect(document.querySelectorAll('.lp-cs-dot')[2]).toHaveClass('active');
-  });
-
-  it('opens an FAQ on click and closes it again', () => {
-    renderPage();
-    const question = 'Do you offer discounts?';
-    expect(screen.queryByRole('button', { name: question })).toBeNull(); // pricing page's FAQ
-    const q = 'Can I update the agreement later if things change?';
-    expect(faqBody(q)).not.toHaveClass('open');
-    fireEvent.click(screen.getByRole('button', { name: q }));
-    expect(faqBody(q)).toHaveClass('open');
-    fireEvent.click(screen.getByRole('button', { name: q }));
-    expect(faqBody(q)).not.toHaveClass('open');
-    expect(document.querySelectorAll('.lp-faq-item')).toHaveLength(5);
+    const section = document.querySelector<HTMLElement>('#compare')!;
+    expect(Array.from(section.querySelectorAll('.lp-strike')).map((el) => el.textContent)).toEqual([
+      'A template from the internet.',
+      'Thousands in legal fees.',
+    ]);
+    expect(section.querySelector('.lp-strike-win .lp-hl-mark')).toHaveTextContent('for $20.');
+    // Strikes every time the lines come into view, resetting once they have left it.
+    const lines = section.querySelector('.lp-strike-lines')!;
+    const strike = FakeIntersectionObserver.instances.find((o) => o.observed.includes(lines))!;
+    expect(lines).not.toHaveClass('in');
+    act(() => strike.intersect());
+    expect(lines).toHaveClass('in');
+    act(() => strike.leave());
+    expect(lines).not.toHaveClass('in');
+    act(() => strike.intersect());
+    expect(lines).toHaveClass('in');
+    fireEvent.click(within(section).getByRole('button', { name: 'Get started' }));
+    expect(path()).toBe('/dashboard');
   });
 
   it('sweeps the hero and closing highlights in once they scroll into view', () => {

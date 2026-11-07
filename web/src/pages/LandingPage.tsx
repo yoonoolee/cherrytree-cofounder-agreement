@@ -12,8 +12,8 @@ import { usePageMeta } from '../hooks/usePageMeta.ts';
 import MarketingNav from '../components/MarketingNav.tsx';
 import MarketingFooter from '../components/MarketingFooter.tsx';
 import MarketingGrain from '../components/MarketingGrain.tsx';
-import FaqList, { type Faq } from '../components/FaqList.tsx';
 import { goToDashboard } from '../utils/goToDashboard.ts';
+import { MARKETING_PLANS } from '../constants/pricing.ts';
 
 type Timer = ReturnType<typeof setTimeout>;
 
@@ -450,8 +450,9 @@ const AGREEMENT_SECTIONS = [
 ] as const;
 
 // Panel color behind each section's example, in the same order as AGREEMENT_SECTIONS.
-// Muted tints drawn from the blossom painting: hill sage, sky, blossom, meadow, cloud.
-const AG_TINTS = ['#c6d0c1', '#ccd6df', '#e4d4d1', '#d0d3b6', '#e6e1d8'] as const;
+// Muted tints drawn from the blossom painting: hill sage, blossom, sky, cloud, meadow — ordered so
+// warm and cool tones alternate across the bento grid rather than splitting by row.
+const AG_TINTS = ['#c6d0c1', '#e4d4d1', '#ccd6df', '#e6e1d8', '#d0d3b6'] as const;
 
 const agRow = (label: string, value: string) => (
   <div className="lp-agv-row">
@@ -517,18 +518,7 @@ const AG_VISUALS: readonly ReactNode[] = [
     </div>
   </>,
 ];
-const AGREEMENT_STEP_MS = 6000;
 
-// How long each step's animation takes to play through once, in PANELS order. The v2 section
-// advances to the next step after this (mirrors the timers inside each Panel* component).
-const PANEL_CYCLE_MS = [
-  800 + S1_EMAILS.reduce((n, e) => n + e.length * 68 + 750 + 180 + 2000, 0),
-  S2_QUESTIONS.reduce((n, q) => n + 80 + q.a.length * 65 + 700 + 420, 0) + 1600,
-  S3_CATEGORIES.reduce((n, c) => n + 700 + c.scores.length * 420 + 800, 0),
-  500 + S2R_SECTIONS.length * 650 + 2000,
-  6000,
-] as const;
-const V2_FADE_MS = 350;
 const V2_STEPS = 4;
 
 const FEATURES = [
@@ -569,61 +559,23 @@ const FEATURES = [
   },
 ];
 
-const CAROUSEL_SLIDES = [
-  {
-    img: '/images/universities.png',
-    tag: 'Universities',
-    title: 'Help student teams start right.',
-    desc: 'Give entrepreneurship programs a structured tool for the conversations students skip.',
-  },
-  {
-    img: '/images/individuals.png',
-    tag: 'Individuals',
-    title: "Know what you're getting into.",
-    desc: 'Think through every dimension of the partnership before you commit to a cofounder.',
-  },
-  {
-    img: '/images/accelerators.png',
-    tag: 'Accelerators',
-    title: 'Give your cohort a foundation.',
-    desc: 'Surface cofounder misalignment in your portfolio before Demo Day pressure takes over.',
-  },
-  {
-    img: '/images/first-time-founders.png',
-    tag: 'First-time founders',
-    title: "You don't know what you don't know.",
-    desc: 'Walk through every section with the context you need — no legal background required.',
-  },
-  {
-    img: '/images/serial-founders.png',
-    tag: 'Serial founders',
-    title: "You've been burned before.",
-    desc: 'A fast, structured way to get alignment on paper — without going back to lawyers for the basics.',
-  },
-];
+// How we compare: templates and lawyers struck through, then Cherrytree's price highlighted.
+const BOOTSTRAPPED_PRICE = MARKETING_PLANS.find((p) => p.tier === 'Bootstrapped')!.price;
 
-const FAQS: readonly Faq[] = [
-  {
-    q: "What's a cofounder agreement, and why do I need one?",
-    a: "It's basically a prenup for your startup. It spells out equity, roles, and expectations so you don't end up in a messy breakup later. Think of it as cheap insurance against expensive fights.",
-  },
-  {
-    q: "When's the right time to create a cofounder agreement?",
-    a: 'As early as possible. Day 1 is ideal, but day 100 is still better than never. The earlier you do it, the easier (and less awkward) it is.',
-  },
-  {
-    q: 'Can I update the agreement later if things change?',
-    a: 'Absolutely. Startups evolve, and so can your agreement. You can revisit and revise as roles, equity, or goals shift.',
-  },
-  {
-    q: 'How is Cherrytree different from free templates online?',
-    a: "Templates are generic and don't ask the hard questions. Cherrytree guides you step by step, highlights differences in answers, and gives you a founder-friendly, investor-ready document.",
-  },
-  {
-    q: 'Do both cofounders need to be present at the same time?',
-    a: 'Nope. You can each fill it out separately, then compare and finalize together.',
-  },
-];
+/** A phrase struck through word by word (so the line follows wrapping and sits over the text). */
+function Strike({ text }: { text: string }) {
+  const words = text.split(' ');
+  return (
+    <span className="lp-strike">
+      {words.map((word, i) => (
+        <span key={i} style={{ '--w': i, '--n': words.length } as CSSProperties}>
+          {word}
+          {i < words.length - 1 && ' '}
+        </span>
+      ))}
+    </span>
+  );
+}
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
@@ -639,30 +591,52 @@ function LandingPage() {
   const heroHeadlineRef = useRef<HTMLHeadingElement>(null);
   const [heroInView, setHeroInView] = useState(false);
   const [v2Feature, setV2Feature] = useState(0);
-  const [v2Fade, setV2Fade] = useState(false);
-  // Play each step's animation once, fade it out, then move on to the next step.
+  // How it works: the scene and titles stay pinned while the page scrolls through a tall track;
+  // how far through the pinned stretch you are picks the step.
+  const v2TrackRef = useRef<HTMLDivElement>(null);
+  const v2StickyRef = useRef<HTMLDivElement>(null);
+  // Where the pinned stretch starts (page scroll position) and how long it lasts.
+  const v2PinRange = () => {
+    const track = v2TrackRef.current;
+    const sticky = v2StickyRef.current;
+    if (!track || !sticky) return null;
+    const stickyTop = parseFloat(getComputedStyle(sticky).top) || 0;
+    const start = track.getBoundingClientRect().top + window.scrollY - stickyTop;
+    return { start, length: track.offsetHeight - sticky.offsetHeight };
+  };
   useEffect(() => {
-    const play = PANEL_CYCLE_MS[FEATURES[v2Feature]!.panel]!;
-    const fade = setTimeout(() => setV2Fade(true), play);
-    const next = setTimeout(() => {
-      setV2Feature((v2Feature + 1) % V2_STEPS);
-      setV2Fade(false);
-    }, play + V2_FADE_MS);
-    return () => {
-      clearTimeout(fade);
-      clearTimeout(next);
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const range = v2PinRange();
+      if (!range) return;
+      const progress =
+        range.length > 0
+          ? Math.min(1, Math.max(0, (window.scrollY - range.start) / range.length))
+          : 0;
+      setV2Feature(Math.min(V2_STEPS - 1, Math.floor(progress * V2_STEPS)));
     };
-  }, [v2Feature]);
-  const [agStep, setAgStep] = useState(0);
-  // Move through the agreement sections on a timer; picking one restarts the timer.
-  useEffect(() => {
-    const id = setTimeout(
-      () => setAgStep((agStep + 1) % AGREEMENT_SECTIONS.length),
-      AGREEMENT_STEP_MS,
-    );
-    return () => clearTimeout(id);
-  }, [agStep]);
-  const [carouselIdx, setCarouselIdx] = useState(0);
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+  // Clicking a step title scrolls to where that step shows.
+  const scrollToV2Step = (i: number) => {
+    const range = v2PinRange();
+    if (!range) return;
+    window.scrollTo({
+      top: range.start + ((i + 0.5) / V2_STEPS) * range.length,
+      behavior: 'smooth',
+    });
+  };
   // Protect CTA: the green highlight behind "peace of mind." sweeps in once, when scrolled into view.
   const protectHeadlineRef = useRef<HTMLHeadingElement>(null);
   const [protectInView, setProtectInView] = useState(false);
@@ -698,6 +672,24 @@ function LandingPage() {
       { threshold: 0.2 },
     );
     targets.forEach(([el]) => el && obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+
+  // How we compare: strike through (and highlight) every time the lines scroll into view, and
+  // reset once they've left it entirely, so the strike plays again next time.
+  const strikeRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = strikeRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry) return;
+        if (entry.intersectionRatio >= 0.35) el.classList.add('in');
+        else if (!entry.isIntersecting) el.classList.remove('in');
+      },
+      { threshold: [0, 0.35] },
+    );
+    obs.observe(el);
     return () => obs.disconnect();
   }, []);
 
@@ -763,142 +755,76 @@ function LandingPage() {
 
       {/* ── Features v2 (draft — for comparison with the section above) ── */}
       <section className="lp-features" id="features-v2">
-        <div className="lp-feat-scroll">
-          <div className="lp-feat-header">
-            <h2 className="lp-rv lp-d1">How it works.</h2>
-          </div>
-          <div className="lp-feat-v2-scene lp-rv lp-d2" data-fading={v2Fade || undefined}>
-            <div className="lp-feat-v2-grain" aria-hidden="true" />
-            <V2Panel key={v2Feature} />
-          </div>
-          <div className="lp-feat-v2-tabs" role="tablist">
-            {FEATURES.slice(0, 4).map((f, i) => (
-              <button
-                key={f.num}
-                type="button"
-                role="tab"
-                aria-selected={v2Feature === i}
-                className={`lp-feat-v2-tab${v2Feature === i ? ' active' : ''}`}
-                onClick={() => {
-                  setV2Fade(false);
-                  setV2Feature(i);
-                }}
-              >
-                <span className="lp-feat-v2-tab-title">{f.title}</span>
-                {v2Feature === i && <span className="lp-feat-v2-tab-desc">{f.short}</span>}
-              </button>
-            ))}
+        <div className="lp-feat-header">
+          <h2 className="lp-rv lp-d1">How it works.</h2>
+        </div>
+        <div className="lp-feat-scroll lp-feat-v2-track" ref={v2TrackRef}>
+          <div className="lp-feat-v2-sticky" ref={v2StickyRef}>
+            <div className="lp-feat-v2-scene lp-rv lp-d2">
+              <div className="lp-feat-v2-grain" aria-hidden="true" />
+              <V2Panel key={v2Feature} />
+            </div>
+            <div className="lp-feat-v2-tabs" role="tablist">
+              {FEATURES.slice(0, 4).map((f, i) => (
+                <button
+                  key={f.num}
+                  type="button"
+                  role="tab"
+                  aria-selected={v2Feature === i}
+                  className={`lp-feat-v2-tab${v2Feature === i ? ' active' : ''}`}
+                  onClick={() => scrollToV2Step(i)}
+                >
+                  <span className="lp-feat-v2-tab-title">{f.title}</span>
+                  {v2Feature === i && <span className="lp-feat-v2-tab-desc">{f.short}</span>}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── What's in your agreement (draft) ── */}
+      {/* ── What's in your agreement ── */}
       <section className="lp-features" id="agreement">
         <div className="lp-feat-scroll">
           <div className="lp-feat-header">
             <h2 className="lp-rv lp-d1">What you get.</h2>
           </div>
-          <div className="lp-ag-shell lp-rv lp-d2">
-            <div className="lp-ag-left">
-              <div className="lp-ag-tabs">
-                {AGREEMENT_SECTIONS.map((item, i) => (
-                  <button
-                    key={item.tab}
-                    type="button"
-                    aria-pressed={agStep === i}
-                    className={`lp-ag-tab${agStep === i ? ' active' : ''}`}
-                    onClick={() => setAgStep(i)}
-                  >
-                    {item.tab}
-                  </button>
-                ))}
-              </div>
-              <div className="lp-ag-copy" key={agStep}>
-                <h3>{AGREEMENT_SECTIONS[agStep]!.title}</h3>
-                <p>{AGREEMENT_SECTIONS[agStep]!.desc}</p>
-              </div>
-              <div className="lp-ag-actions">
-                <button className="lp-btn-primary" onClick={goDash}>
-                  Get started
-                </button>
-              </div>
-            </div>
-            <div className="lp-ag-panel" style={{ '--ag-tint': AG_TINTS[agStep] } as CSSProperties}>
-              <div className="lp-feat-v2-grain" aria-hidden="true" />
-              <div className="lp-ag-mini" key={agStep}>
-                {AG_VISUALS[agStep]}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Testimonials ── */}
-      {/* ── Carousel ── */}
-      <section className="lp-carousel" id="who">
-        <div className="lp-carousel-header lp-rv">
-          <div>
-            <h2 className="lp-carousel-title">Who it&apos;s for.</h2>
-          </div>
-          <div className="lp-carousel-nav">
-            <button
-              className="lp-carousel-btn"
-              onClick={() =>
-                setCarouselIdx((i) => (i - 1 + CAROUSEL_SLIDES.length) % CAROUSEL_SLIDES.length)
-              }
-            >
-              ←
-            </button>
-            <button
-              className="lp-carousel-btn"
-              onClick={() => setCarouselIdx((i) => (i + 1) % CAROUSEL_SLIDES.length)}
-            >
-              →
-            </button>
-          </div>
-        </div>
-        <div className="lp-carousel-track-wrap">
-          <div
-            className="lp-carousel-track"
-            style={{ transform: `translateX(calc(-${carouselIdx} * 380px))` }}
-          >
-            {CAROUSEL_SLIDES.map((s, i) => (
-              <div
-                key={i}
-                className={`lp-cs-slide${i === carouselIdx ? ' active' : ''}`}
-                style={{ backgroundImage: `url('${s.img}')` }}
-              >
-                <div className="lp-cs-overlay" />
-                <div className="lp-cs-label">
-                  <div className="lp-cs-tag">{s.tag}</div>
-                  <div className="lp-cs-title">{s.title}</div>
-                  <div className="lp-cs-desc">{s.desc}</div>
+          <div className="lp-bento lp-rv lp-d2">
+            {AGREEMENT_SECTIONS.map((item, i) => (
+              <article key={item.tab} className={`lp-bento-tile lp-bento-${i}`}>
+                <div className="lp-bento-vis" style={{ '--ag-tint': AG_TINTS[i] } as CSSProperties}>
+                  <div className="lp-feat-v2-grain" aria-hidden="true" />
+                  <div className="lp-bento-mini">{AG_VISUALS[i]}</div>
                 </div>
-              </div>
+                <div className="lp-bento-copy">
+                  <h3>{item.title}</h3>
+                  <p>{item.desc}</p>
+                </div>
+              </article>
             ))}
           </div>
         </div>
-        <div className="lp-carousel-dots">
-          {CAROUSEL_SLIDES.map((_, i) => (
-            <button
-              key={i}
-              className={`lp-cs-dot${i === carouselIdx ? ' active' : ''}`}
-              onClick={() => setCarouselIdx(i)}
-            />
-          ))}
-        </div>
       </section>
 
-      {/* ── FAQ ── */}
-      <section className="lp-faq" id="faq">
-        <div className="lp-faq-inner">
-          <div className="lp-faq-card">
-            <div className="lp-faq-visual">
-              <h2>Frequently asked questions.</h2>
-            </div>
-            <div className="lp-faq-panel">
-              <FaqList faqs={FAQS} />
-            </div>
+      {/* ── How we compare ── */}
+      <section className="lp-features" id="compare">
+        <div className="lp-feat-scroll">
+          <div className="lp-strike-lines lp-rv" ref={strikeRef}>
+            <p>
+              <Strike text="A template from the internet." />
+            </p>
+            <p>
+              <Strike text="Thousands in legal fees." />
+            </p>
+            <p className="lp-strike-win">
+              An agreement you build together,{' '}
+              <span className="lp-hl-mark lp-hl-auto">for {BOOTSTRAPPED_PRICE}.</span>
+            </p>
+          </div>
+          <div className="lp-strike-actions">
+            <button className="lp-btn-primary" onClick={goDash}>
+              Get started
+            </button>
           </div>
         </div>
       </section>
