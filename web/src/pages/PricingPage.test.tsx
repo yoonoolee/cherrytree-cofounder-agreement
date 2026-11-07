@@ -94,7 +94,7 @@ describe('PricingPage', () => {
     const [bootstrapped, scale, enterprise] = cards();
     expect(cards()).toHaveLength(3);
     expect(bootstrapped).toHaveTextContent('Bootstrapped');
-    expect(bootstrapped?.querySelector('.lp-pricing-price')).toHaveTextContent('$200');
+    expect(bootstrapped?.querySelector('.lp-pricing-price')).toHaveTextContent('$20');
     expect(bootstrapped?.querySelector('.lp-pricing-price > span')).toHaveTextContent('$');
     expect(bootstrapped).not.toHaveClass('featured');
     expect(bootstrapped?.querySelectorAll('.lp-pricing-feat')).toHaveLength(5);

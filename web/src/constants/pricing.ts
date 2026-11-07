@@ -4,7 +4,7 @@ import type { Plan } from '@cherrytree/shared';
 export interface PricingPlan {
   name: string;
   key: Plan | 'enterprise';
-  /** Display price, e.g. `'$200'` or `'Custom'`. */
+  /** Display price, e.g. `'$20'` or `'Custom'`. */
   price: string;
   /** Numeric price in dollars; `null` for a quote-based tier. */
   priceValue: number | null;
@@ -18,8 +18,8 @@ export const PRICING_PLANS: readonly PricingPlan[] = [
   {
     name: 'Starter',
     key: 'starter',
-    price: '$200',
-    priceValue: 200,
+    price: '$20',
+    priceValue: 20,
     description: 'For individuals to get started',
     features: [
       'Expert-designed guided survey',
@@ -71,7 +71,7 @@ export interface MarketingPlan {
 export const MARKETING_PLANS: readonly MarketingPlan[] = [
   {
     tier: 'Bootstrapped',
-    price: '$200',
+    price: '$20',
     period: 'One-time payment',
     desc: 'Ideal for early-stage or bootstrapped teams that need to move fast and start building now.',
     features: [

@@ -71,7 +71,7 @@ function PricingPage() {
   usePageMeta({
     title: 'Pricing — Cherrytree',
     description:
-      'Affordable cofounder agreement pricing. Bootstrapped at $200, Scale at $2,000, Enterprise custom.',
+      'Affordable cofounder agreement pricing. Bootstrapped at $20, Scale at $2,000, Enterprise custom.',
     breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'Pricing' }],
   });
 
