@@ -750,7 +750,7 @@ function LandingPage() {
           <h2 ref={protectHeadlineRef}>
             <span className="lp-hl-line">
               <span className="lp-hl-inner">Protect your piece of the pie</span>
-            </span>
+            </span>{' '}
             <span className="lp-hl-line">
               <span className="lp-hl-inner">
                 and your{' '}

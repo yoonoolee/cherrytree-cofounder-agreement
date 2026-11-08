@@ -2625,7 +2625,7 @@ select:disabled {
 
 /* ── Protect CTA ── */
 .lp-protect-cta {
-  padding: 110px var(--lp-gutter) 180px;
+  padding: 110px var(--lp-gutter) 240px;
   text-align: center;
 }
 .lp-protect-cta h2 {
@@ -2788,7 +2788,15 @@ body:has(.lp-has-curtain) {
     gap: 28px;
   }
   .lp-protect-cta {
-    padding: 56px 24px;
+    padding: 56px 24px 96px;
+  }
+  /* The two headline lines are too long for a phone; let them flow as one balanced paragraph. */
+  .lp-protect-cta h2 {
+    text-wrap: balance;
+  }
+  .lp-protect-cta h2 .lp-hl-line,
+  .lp-protect-cta h2 .lp-hl-inner {
+    display: inline;
   }
   .lp-footer {
     padding: 48px 24px;
