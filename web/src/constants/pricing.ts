@@ -73,7 +73,7 @@ export const MARKETING_PLANS: readonly MarketingPlan[] = [
     tier: 'Bootstrapped',
     price: '$20',
     period: 'One-time payment',
-    desc: 'Ideal for early-stage or bootstrapped teams that need to move fast and start building now.',
+    desc: 'For early-stage teams that want to move fast and start building.',
     features: [
       'Answer in your own words',
       'Smart follow-up questions',
@@ -89,7 +89,7 @@ export const MARKETING_PLANS: readonly MarketingPlan[] = [
     price: '$2,000',
     period: 'One-time payment',
     badge: 'Most popular',
-    desc: 'Built for funded teams that need deeper control, greater detail, and stronger foundations.',
+    desc: 'For funded teams that want more detail and expert backing.',
     features: [
       'Everything in Bootstrapped',
       'Final attorney review',

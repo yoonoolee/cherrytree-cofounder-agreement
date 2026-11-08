@@ -120,7 +120,7 @@ describe('LandingPage', () => {
       'Bootstrapped',
       'Scale',
     ]);
-    expect(plans[0]!.querySelector('.lp-plan-price')).toHaveTextContent('$20one-time');
+    expect(plans[0]!.querySelector('.lp-plan-price')).toHaveTextContent('$20');
     expect(plans[1]).toHaveClass('featured');
     expect(plans[1]!.querySelector('.lp-plan-includes')).toHaveTextContent(
       'Everything in Bootstrapped, plus:',
@@ -129,6 +129,21 @@ describe('LandingPage', () => {
       'href',
       '/pricing',
     );
+  });
+
+  it('lights the statement word by word as it scrolls up the screen', () => {
+    renderPage();
+    const text = document.querySelector<HTMLElement>('.lp-lit-text')!;
+    // jsdom has no layout: the statement starts 1000px down the page.
+    text.getBoundingClientRect = () => ({ top: 1000 - window.scrollY }) as DOMRect;
+    const lit = () => text.querySelectorAll('span.on').length;
+    const words = text.querySelectorAll('span').length;
+    scrollPage(0); // below the fold
+    expect(lit()).toBe(0);
+    scrollPage(1000 - 800 * 0.55); // halfway through the lighting stretch
+    expect(lit()).toBe(Math.round(words / 2));
+    scrollPage(1000); // well past it
+    expect(lit()).toBe(words);
   });
 
   it('sends Get started to the dashboard', () => {

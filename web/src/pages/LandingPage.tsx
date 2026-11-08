@@ -357,9 +357,11 @@ const AG_COVERAGE = [
 ];
 
 // Panel color behind each section's example, in the same order as AGREEMENT_SECTIONS.
-// Muted tints drawn from the blossom painting: hill sage, blossom, sky, cloud, meadow — ordered so
+// Muted tints drawn from the blossom painting: hill sage, blossom, cloud, sky, meadow — ordered so
 // warm and cool tones alternate across the bento grid rather than splitting by row.
-const AG_TINTS = ['#c6d0c1', '#e4d4d1', '#ccd6df', '#e6e1d8', '#d0d3b6'] as const;
+const AG_TINTS = ['#c6d0c1', '#e4d4d1', '#e6e1d8', '#ccd6df', '#d0d3b6'] as const;
+// Frame colors for the two landing plan cards: hill sage and blossom.
+const PLAN_TINTS = [AG_TINTS[0], AG_TINTS[1]] as const;
 
 const agRow = (label: string, value: string) => (
   <div className="lp-agv-row">
@@ -465,6 +467,61 @@ const LANDING_PLANS = MARKETING_PLANS.filter((p) => !p.enterprise).map((p) => {
     list: inherits ? p.features.slice(1) : p.features,
   };
 });
+
+// Section titles whose words light up one by one as they scroll up the screen.
+const LIT_HOW_IT_WORKS =
+  "You don't need to speak legalese to protect what you're building. You just need to tell " +
+  "your story and we'll handle the rest.";
+const LIT_PRICING =
+  "A template can't ask the right questions and a lawyer can't answer them for the price of " +
+  'lunch. Cherrytree does both.';
+const LIT_WHAT_YOU_GET =
+  'In 1976, Steve Jobs and Steve Wozniak signed a partnership agreement in a garage. Apple came after.';
+
+function ScrollLitStatement({ text }: { text: string }) {
+  const words = text.split(' ');
+  const ref = useRef<HTMLHeadingElement>(null);
+  // With reduced motion the whole statement is lit from the start and never animates.
+  const [reducedMotion] = useState(
+    () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false,
+  );
+  const [progress, setProgress] = useState(reducedMotion ? 1 : 0);
+  const lit = Math.round(progress * words.length);
+  useEffect(() => {
+    if (reducedMotion) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const el = ref.current;
+      if (!el) return;
+      const vh = window.innerHeight;
+      // Starts lighting as the text's top passes 80% down the screen; done by 30%.
+      const progress = (vh * 0.8 - el.getBoundingClientRect().top) / (vh * 0.5);
+      setProgress(Math.min(1, Math.max(0, progress)));
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, [reducedMotion]);
+
+  return (
+    <h2 className="lp-lit-text" ref={ref}>
+      {words.map((word, i) => (
+        <span key={i} className={i < lit ? 'on' : undefined}>
+          {word}{' '}
+        </span>
+      ))}
+    </h2>
+  );
+}
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
@@ -626,8 +683,8 @@ function LandingPage() {
 
       {/* ── Features v2 (draft — for comparison with the section above) ── */}
       <section className="lp-features" id="features-v2">
-        <div className="lp-feat-header">
-          <h2 className="lp-rv lp-d1">How it works.</h2>
+        <div className="lp-feat-header lp-lit-header">
+          <ScrollLitStatement text={LIT_HOW_IT_WORKS} />
         </div>
         <div className="lp-feat-scroll lp-feat-v2-track" ref={v2TrackRef}>
           <div className="lp-feat-v2-sticky" ref={v2StickyRef}>
@@ -657,10 +714,10 @@ function LandingPage() {
       {/* ── What's in your agreement ── */}
       <section className="lp-features" id="agreement">
         <div className="lp-feat-scroll">
-          <div className="lp-feat-header">
-            <h2 className="lp-rv lp-d1">What you get.</h2>
+          <div className="lp-feat-header lp-lit-header">
+            <ScrollLitStatement text={LIT_WHAT_YOU_GET} />
           </div>
-          <div className="lp-bento lp-rv lp-d2">
+          <div className="lp-bento lp-rv">
             {AGREEMENT_SECTIONS.map((item, i) => (
               <article
                 key={item.tab}
@@ -683,47 +740,122 @@ function LandingPage() {
       {/* ── Pricing: the two self-serve plans ── */}
       <section className="lp-features" id="pricing">
         <div className="lp-feat-scroll">
-          <div className="lp-feat-header">
-            <h2 className="lp-rv lp-d1">Simple, one-time pricing.</h2>
+          <div className="lp-feat-header lp-lit-header">
+            <ScrollLitStatement text={LIT_PRICING} />
           </div>
           <div className="lp-plans lp-rv lp-d2">
-            {LANDING_PLANS.map((plan) => (
-              <article key={plan.tier} className={`lp-plan${plan.featured ? ' featured' : ''}`}>
-                <div className="lp-plan-top">
-                  <div>
-                    <h3 className="lp-plan-tier">
-                      {plan.tier}
-                      {plan.badge && <span className="lp-plan-badge">{plan.badge}</span>}
-                    </h3>
-                    <p className="lp-plan-desc">{plan.desc}</p>
+            {LANDING_PLANS.map((plan, i) => (
+              <div
+                key={plan.tier}
+                className="lp-plan-frame"
+                style={{ '--ag-tint': PLAN_TINTS[i] } as CSSProperties}
+              >
+                <div className="lp-feat-v2-grain" aria-hidden="true" />
+                <article className={`lp-plan${plan.featured ? ' featured' : ''}`}>
+                  <div className="lp-plan-top">
+                    <div>
+                      <h3 className="lp-plan-tier">{plan.tier}</h3>
+                      <p className="lp-plan-desc">{plan.desc}</p>
+                    </div>
+                    <div className="lp-plan-price">
+                      <span className="lp-plan-currency">$</span>
+                      {plan.price.slice(1)}
+                    </div>
                   </div>
-                  <div className="lp-plan-price">
-                    <span className="lp-plan-currency">$</span>
-                    {plan.price.slice(1)}
-                    <span className="lp-plan-period">one-time</span>
+                  <p className="lp-plan-includes">{plan.includes}</p>
+                  <ul className="lp-plan-features">
+                    {plan.list.map((f) => (
+                      <li key={f}>
+                        <span className="lp-plan-check" aria-hidden="true">
+                          ✓
+                        </span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    className={`lp-btn-primary lp-plan-cta${plan.featured ? '' : ' secondary'}`}
+                    onClick={goDash}
+                  >
+                    {plan.cta}
+                  </button>
+                </article>
+              </div>
+            ))}
+          </div>
+          <a className="lp-btn-ghost lp-plans-more" href="/pricing">
+            Compare all plans →
+          </a>
+        </div>
+      </section>
+
+      {/* ── Pricing, alternative layout (draft — for comparison with the section above) ── */}
+      <section className="lp-features" id="pricing-alt">
+        <div className="lp-feat-scroll">
+          <div className="lp-plans2">
+            {LANDING_PLANS.map((plan, i) => (
+              <article key={plan.tier} className={`lp-plan2${i === 0 ? ' solid' : ''}`}>
+                <div className="lp-plan2-body">
+                  <div className="lp-plan2-price-col">
+                    <span className="lp-plan2-pill">{plan.tier}</span>
+                    <div className="lp-plan2-price">{plan.price}</div>
+                    <p className="lp-plan2-period">{plan.period}</p>
                   </div>
+                  <ul className="lp-plan2-features">
+                    {plan.list.map((f) => (
+                      <li key={f}>
+                        <svg className="lp-plan2-check" viewBox="0 0 20 20" aria-hidden="true">
+                          <circle cx="10" cy="10" r="8.5" />
+                          <path d="M6.5 10.2l2.4 2.3 4.6-4.8" />
+                        </svg>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="lp-plan-label">Features</div>
-                <p className="lp-plan-includes">{plan.includes}</p>
-                <ul className="lp-plan-features">
+                <button className="lp-plan2-cta" onClick={goDash}>
+                  {plan.cta}
+                </button>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Pricing, third layout (draft — for comparison with the two above) ── */}
+      <section className="lp-features" id="pricing-alt-2">
+        <div className="lp-feat-scroll">
+          <div className="lp-plans3">
+            {LANDING_PLANS.map((plan) => (
+              <article key={plan.tier} className="lp-plan3">
+                <h3 className="lp-plan3-tier">{plan.tier}</h3>
+                <p className="lp-plan3-desc">{plan.desc}</p>
+                <div className="lp-plan3-price-row">
+                  <span className="lp-plan3-price">{plan.price}</span>
+                  <span className="lp-plan3-period">{plan.period}</span>
+                </div>
+                <button
+                  className={`lp-btn-primary lp-plan-cta${plan.featured ? '' : ' secondary'}`}
+                  onClick={goDash}
+                >
+                  {plan.cta}
+                </button>
+                <p className="lp-plan3-note">One agreement, all your cofounders</p>
+                <div className="lp-plan3-rule" />
+                <p className="lp-plan3-includes">{plan.includes}</p>
+                <ul className="lp-plan3-features">
                   {plan.list.map((f) => (
                     <li key={f}>
-                      <span className="lp-plan-check" aria-hidden="true">
+                      <span className="lp-plan3-check" aria-hidden="true">
                         ✓
                       </span>
                       {f}
                     </li>
                   ))}
                 </ul>
-                <button className="lp-btn-primary lp-plan-cta" onClick={goDash}>
-                  {plan.cta}
-                </button>
               </article>
             ))}
           </div>
-          <a className="lp-btn-ghost lp-plans-more" href="/pricing">
-            Compare all plans →
-          </a>
         </div>
       </section>
 
