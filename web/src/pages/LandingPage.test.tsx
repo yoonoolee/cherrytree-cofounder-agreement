@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 import { breadcrumbs } from '../test/pageMeta.ts';
@@ -113,6 +113,24 @@ describe('LandingPage', () => {
     expect(breadcrumbs()).toEqual([]);
   });
 
+  it('shows the two self-serve plans with a link to all plans', () => {
+    renderPage();
+    const plans = Array.from(document.querySelectorAll('.lp-plan'));
+    expect(plans.map((p) => p.querySelector('.lp-plan-tier')?.firstChild?.textContent)).toEqual([
+      'Bootstrapped',
+      'Scale',
+    ]);
+    expect(plans[0]!.querySelector('.lp-plan-price')).toHaveTextContent('$20one-time');
+    expect(plans[1]).toHaveClass('featured');
+    expect(plans[1]!.querySelector('.lp-plan-includes')).toHaveTextContent(
+      'Everything in Bootstrapped, plus:',
+    );
+    expect(screen.getByRole('link', { name: 'Compare all plans →' })).toHaveAttribute(
+      'href',
+      '/pricing',
+    );
+  });
+
   it('sends Get started to the dashboard', () => {
     renderPage();
     fireEvent.click(screen.getAllByRole('button', { name: 'Get started' })[0]!);
@@ -122,17 +140,17 @@ describe('LandingPage', () => {
   describe('features', () => {
     const tabs = () => screen.getAllByRole('tab');
 
-    it('lists four steps and shows the invite demo first', () => {
+    it('lists four steps and shows the brain dump demo first', () => {
       renderPage();
       expect(tabs().map((el) => el.textContent?.slice(0, 20))).toEqual([
-        expect.stringContaining('Invite your cofou'),
-        expect.stringContaining('Collab on the agre'),
-        expect.stringContaining('Equity Calculator'),
-        expect.stringContaining('Do a final review'),
+        expect.stringContaining('Just brain dump'),
+        expect.stringContaining('Smart follow-ups'),
+        expect.stringContaining('We draft it'),
+        expect.stringContaining('Review and sign'),
       ]);
       expect(tabs()[0]).toHaveAttribute('aria-selected', 'true');
       expect(screen.getByText('Step 1')).toBeInTheDocument();
-      expect(screen.getByText('you@email.com')).toBeInTheDocument();
+      expect(screen.getByText('Tell us about your company')).toBeInTheDocument();
     });
 
     it('picks the step from how far the page has scrolled through the pinned stretch', () => {
@@ -140,7 +158,7 @@ describe('LandingPage', () => {
       scrollToStep(2);
       expect(tabs()[2]).toHaveAttribute('aria-selected', 'true');
       expect(tabs()[0]).toHaveAttribute('aria-selected', 'false');
-      expect(document.querySelector('.lp-s3-card')).toBeInTheDocument(); // equity demo
+      expect(document.querySelector('.lp-dr-paper')).toBeInTheDocument(); // drafting demo
       scrollPage(TRACK_TOP + PIN_LENGTH * 2); // past the end stays on the last step
       expect(tabs()[3]).toHaveAttribute('aria-selected', 'true');
       scrollPage(0); // above the track stays on the first
@@ -156,53 +174,65 @@ describe('LandingPage', () => {
       expect(scrollTo).toHaveBeenCalledWith({ top: stepScrollY(1), behavior: 'smooth' });
     });
 
-    it('invite demo: types an email, presses Add and lists the new teammate', () => {
+    it("brain dump demo: types the founder's notes and lists what Cherrytree picks up", () => {
       renderPage();
-      const typed = () => document.querySelector('.lp-s1-input span')?.textContent;
-      advance(800 + 68 * 3);
-      expect(typed()).toBe('sara');
-      advance(68 * ('sarah@vc.io'.length - 3) + 750);
-      expect(document.querySelector('.lp-s1-btn')).toHaveClass('pressed');
-      advance(180);
-      expect(document.querySelector('.lp-s1-btn')).not.toHaveClass('pressed');
-      expect(document.querySelector('.lp-s1-new .lp-s1-email')?.textContent).toBe('sarah@vc.io');
-      expect(typed()).toBe('');
+      const picks = () =>
+        Array.from(document.querySelectorAll('.lp-s1-pick b')).map((el) => el.textContent);
+      expect(picks()).toEqual([]);
+      advance(
+        600 + 28 * "Bill and I started Acme last spring. I'm CEO, Bill runs product as CTO".length,
+      );
+      expect(picks()).toEqual(['CEO · CTO']);
+      expect(document.querySelector('.lp-s1-hit')?.textContent).toBe(
+        "I'm CEO, Bill runs product as CTO",
+      );
+      advance(28 * 200);
+      expect(picks()).toEqual(['CEO · CTO', '60 / 40', '$20k', 'Full-time', 'Both sign off']);
     });
 
-    it('collab demo: answers the first question and marks it answered', () => {
+    it('follow-up demo: Cherrytree asks, the founder answers', () => {
       renderPage();
       scrollToStep(1);
-      const questions = () => Array.from(document.querySelectorAll('.lp-s2-q'));
-      expect(questions()[0]).toHaveClass('active');
-      advance(80 + 65 * 'Acme Labs'.length + 700);
-      expect(questions()[0]).toHaveClass('answered');
-      advance(420);
-      expect(questions()[1]).toHaveClass('active');
+      const msgs = () => Array.from(document.querySelectorAll('.lp-fu-msg'));
+      advance(400);
+      expect(document.querySelector('.lp-fu-typing')).toBeInTheDocument();
+      advance(1100);
+      expect(msgs()).toHaveLength(1);
+      expect(msgs()[0]).not.toHaveClass('user');
+      advance(1600);
+      expect(msgs()).toHaveLength(2);
+      expect(msgs()[1]).toHaveClass('user');
     });
 
-    it('equity demo: slides importance to 5 and scores 8 then 3', () => {
+    it('draft demo: types the agreement out until the draft is ready', () => {
       renderPage();
       scrollToStep(2);
-      expect(screen.getByText('Cash Invested')).toBeInTheDocument();
-      advance(120);
-      expect(document.querySelector<HTMLElement>('.lp-s3-fill')?.style.width).toBe('50%');
-      expect(document.querySelector('.lp-s3-val')?.textContent).toBe('5');
-      advance(700);
-      const rows = () => Array.from(document.querySelectorAll('.lp-s3-cf'));
-      expect(within(rows()[0] as HTMLElement).getByText('8')).toHaveClass('selected');
-      advance(420);
-      expect(within(rows()[1] as HTMLElement).getByText('3')).toHaveClass('selected');
+      const paper = () => document.querySelector('.lp-dr-paper')!;
+      advance(400 + 14 * 20);
+      expect(paper().querySelector('.lp-dr-p')?.textContent).toBe('This Agreement is ma');
+      expect(paper().querySelector('.lp-dr-status')?.textContent).toBe('Drafting…');
+      advance(14 * 450); // finished typing, before it loops
+      expect(Array.from(paper().querySelectorAll('.lp-dr-h')).map((h) => h.textContent)).toEqual([
+        '1. Equity',
+        '2. Vesting',
+        '3. Decisions',
+      ]);
+      expect(paper().querySelector('.lp-dr-status')?.textContent).toBe('Draft ready');
     });
 
-    it('review demo: ticks the sections off one by one and fills the bar', () => {
+    it('sign demo: edits the clause, then both cofounders sign', () => {
       renderPage();
       scrollToStep(3);
-      const rows = () => Array.from(document.querySelectorAll('.lp-s2r-row'));
-      advance(500);
-      expect(rows()[0]).toHaveClass('done');
-      expect(document.querySelector<HTMLElement>('.lp-s2r-fill')?.style.width).toBe('20%');
-      advance(650 * 4);
-      expect(rows().every((row) => row.classList.contains('done'))).toBe(true);
+      const sigs = () => Array.from(document.querySelectorAll('.lp-sg-sig'));
+      advance(700);
+      expect(document.querySelector('.lp-sg-ins')?.textContent).toBe('unanimous written consent');
+      advance(1200);
+      expect(sigs()[0]).toHaveClass('signed');
+      expect(sigs()[1]).not.toHaveClass('signed');
+      advance(1000);
+      expect(sigs()[1]).toHaveClass('signed');
+      advance(800);
+      expect(document.querySelector('.lp-sg-done')).toHaveClass('on');
     });
   });
 
@@ -216,28 +246,6 @@ describe('LandingPage', () => {
     expect(first).not.toHaveClass('lp-rv-in');
     advance(0);
     expect(first).toHaveClass('lp-rv-in');
-  });
-
-  it('strikes through templates and lawyers, then lands on Cherrytree', () => {
-    renderPage();
-    const section = document.querySelector<HTMLElement>('#compare')!;
-    expect(Array.from(section.querySelectorAll('.lp-strike')).map((el) => el.textContent)).toEqual([
-      'A template from the internet.',
-      'Thousands in legal fees.',
-    ]);
-    expect(section.querySelector('.lp-strike-win .lp-hl-mark')).toHaveTextContent('for $20.');
-    // Strikes every time the lines come into view, resetting once they have left it.
-    const lines = section.querySelector('.lp-strike-lines')!;
-    const strike = FakeIntersectionObserver.instances.find((o) => o.observed.includes(lines))!;
-    expect(lines).not.toHaveClass('in');
-    act(() => strike.intersect());
-    expect(lines).toHaveClass('in');
-    act(() => strike.leave());
-    expect(lines).not.toHaveClass('in');
-    act(() => strike.intersect());
-    expect(lines).toHaveClass('in');
-    fireEvent.click(within(section).getByRole('button', { name: 'Get started' }));
-    expect(path()).toBe('/dashboard');
   });
 
   it('sweeps the hero and closing highlights in once they scroll into view', () => {

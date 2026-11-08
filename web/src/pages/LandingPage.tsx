@@ -19,41 +19,48 @@ type Timer = ReturnType<typeof setTimeout>;
 
 // ── Panel sub-components ───────────────────────────────────────────────────────
 
-const S1_EMAILS = ['sarah@vc.io', 'priya@buildit.co', 'james@founder.io'];
+const S1_DUMP =
+  "Bill and I started Acme last spring. I'm CEO, Bill runs product as CTO. " +
+  "We're thinking 60/40 since I put in the first $20k. Both full-time, and anything over $10k needs both of us.";
+// Phrases Cherrytree "picks up" as they're typed: highlighted in the text, listed below.
+const S1_PICKS = [
+  { phrase: "I'm CEO, Bill runs product as CTO", label: 'Roles', value: 'CEO · CTO' },
+  { phrase: '60/40', label: 'Equity', value: '60 / 40' },
+  { phrase: '$20k', label: 'Cash invested', value: '$20k' },
+  { phrase: 'full-time', label: 'Commitment', value: 'Full-time' },
+  { phrase: 'anything over $10k needs both of us', label: 'Big decisions', value: 'Both sign off' },
+].map((p) => {
+  const start = S1_DUMP.indexOf(p.phrase);
+  return { ...p, start, end: start + p.phrase.length };
+});
+// The text split into plain runs and picked phrases, in order.
+const S1_SEGMENTS = S1_PICKS.reduce<{ text: string; start: number; pick: boolean }[]>(
+  (segs, p, i) => {
+    const from = i === 0 ? 0 : S1_PICKS[i - 1]!.end;
+    segs.push({ text: S1_DUMP.slice(from, p.start), start: from, pick: false });
+    segs.push({ text: p.phrase, start: p.start, pick: true });
+    if (i === S1_PICKS.length - 1) {
+      segs.push({ text: S1_DUMP.slice(p.end), start: p.end, pick: false });
+    }
+    return segs;
+  },
+  [],
+);
+const S1_CHAR_MS = 28;
 
-function PanelInvite() {
-  const [typed, setTyped] = useState('');
-  const [showNew, setShowNew] = useState(false);
-  const [pressed, setPressed] = useState(false);
-  const [emailIdx, setEmailIdx] = useState(0);
+function PanelBrainDump() {
+  const [typed, setTyped] = useState(0);
   useEffect(() => {
     const timers: Timer[] = [];
     const t = (fn: () => void, ms: number) => {
       timers.push(setTimeout(fn, ms));
     };
-    let idx = 0;
-    const type = () => {
-      const email = S1_EMAILS[idx % S1_EMAILS.length]!;
-      setTyped('');
-      setShowNew(false);
-      email.split('').forEach((_, i) => t(() => setTyped(email.slice(0, i + 1)), i * 68));
-      t(submit, email.length * 68 + 750);
+    const run = () => {
+      setTyped(0);
+      for (let i = 1; i <= S1_DUMP.length; i++) t(() => setTyped(i), i * S1_CHAR_MS);
+      t(run, S1_DUMP.length * S1_CHAR_MS + 2800);
     };
-    const submit = () => {
-      setPressed(true);
-      t(() => {
-        setPressed(false);
-        setEmailIdx(idx);
-        setShowNew(true);
-        setTyped('');
-        t(() => {
-          setShowNew(false);
-          idx++;
-          type();
-        }, 2000);
-      }, 180);
-    };
-    t(type, 800);
+    t(run, 600);
     return () => timers.forEach(clearTimeout);
   }, []);
 
@@ -63,265 +70,27 @@ function PanelInvite() {
       <div className="lp-fp-white">
         <div className="lp-fp-content">
           <div className="lp-fp-tag">Step 1</div>
-          <div className="lp-fp-title">Invite your cofounders</div>
+          <div className="lp-fp-title">Tell us about your company</div>
           <div className="lp-s1-card">
-            <div className="lp-s1-label">Team</div>
-            <div className="lp-s1-row">
-              <span className="lp-dot green" />
-              <span className="lp-s1-email">you@email.com</span>
-              <span className="lp-badge owner">Owner</span>
+            <div className="lp-s1-dump">
+              {S1_SEGMENTS.map((seg) => {
+                const shown = seg.text.slice(0, Math.max(0, typed - seg.start));
+                if (!shown) return null;
+                const hit = seg.pick && typed >= seg.start + seg.text.length;
+                return (
+                  <span key={seg.start} className={hit ? 'lp-s1-hit' : undefined}>
+                    {shown}
+                  </span>
+                );
+              })}
+              <span className="lp-icursor lp-dark" />
             </div>
-            <div className="lp-s1-row">
-              <span className="lp-dot light" />
-              <span className="lp-s1-email">alex@startup.co</span>
-              <span className="lp-badge added">Added</span>
-            </div>
-            {showNew && (
-              <div className="lp-s1-row lp-s1-new">
-                <span className="lp-dot light" />
-                <span className="lp-s1-email">{S1_EMAILS[emailIdx % S1_EMAILS.length]}</span>
-                <span className="lp-badge added">Added</span>
-              </div>
-            )}
-            <div className="lp-s1-input-row">
-              <div className="lp-s1-input">
-                <span>{typed}</span>
-                {!showNew && <span className="lp-icursor lp-dark" />}
-              </div>
-              <button className={`lp-s1-btn${pressed ? ' pressed' : ''}`}>+ Add</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const S2_QUESTIONS = [
-  { q: "What's your company's name?", a: 'Acme Labs' },
-  { q: "What's the legal structure?", a: 'C-Corp' },
-  { q: 'What state will you register in?', a: 'Delaware' },
-  { q: 'Describe your company in one line.', a: 'AI tools for founders.' },
-];
-
-function PanelCollab() {
-  const [answered, setAnswered] = useState<number[]>([]);
-  const [activeQ, setActiveQ] = useState(0);
-  const [typed, setTyped] = useState('');
-  useEffect(() => {
-    const timers: Timer[] = [];
-    const t = (fn: () => void, ms: number) => {
-      timers.push(setTimeout(fn, ms));
-    };
-    const runQuestion = (idx: number) => {
-      if (idx >= S2_QUESTIONS.length) {
-        t(() => {
-          setAnswered([]);
-          setActiveQ(0);
-          setTyped('');
-          t(() => runQuestion(0), 300);
-        }, 1600);
-        return;
-      }
-      setActiveQ(idx);
-      setTyped('');
-      const target = S2_QUESTIONS[idx]!.a;
-      t(() => {
-        target.split('').forEach((_, ci) => t(() => setTyped(target.slice(0, ci + 1)), ci * 65));
-        t(
-          () => {
-            setAnswered((p) => [...p, idx]);
-            t(() => runQuestion(idx + 1), 420);
-          },
-          target.length * 65 + 700,
-        );
-      }, 80);
-    };
-    runQuestion(0);
-    return () => timers.forEach(clearTimeout);
-  }, []);
-
-  return (
-    <div className="lp-fp" style={{ backgroundImage: "url('/images/wall.png?v=2')" }}>
-      <div className="lp-fp-overlay" />
-      <div className="lp-fp-white">
-        <div className="lp-fp-content">
-          <div className="lp-fp-tag">Step 2</div>
-          <div className="lp-fp-title">Collab on the agreement</div>
-          <div className="lp-s2-card">
-            <div className="lp-s1-label">Formation &amp; Purpose</div>
-            {S2_QUESTIONS.map((q, i) => (
-              <div
-                key={i}
-                className={`lp-s2-q${answered.includes(i) ? ' answered' : ''}${activeQ === i ? ' active' : ''}`}
-              >
-                <div className="lp-s2-q-row">
-                  <span className="lp-s2-q-text">{q.q}</span>
-                  <span className="lp-s2-q-answer">{q.a}</span>
-                  <span className="lp-s2-check">✓</span>
-                </div>
-                <div className="lp-s2-body">
-                  <div className="lp-s2-body-inner">
-                    <div className="lp-s2-input">
-                      <span>{activeQ === i ? typed : ''}</span>
-                      <span className="lp-icursor lp-dark" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const S3_CATEGORIES = [
-  { name: 'Cash Invested', count: '1 / 18', imp: 5, scores: [8, 3] },
-  { name: 'Time Commitment', count: '2 / 18', imp: 8, scores: [9, 7] },
-  { name: 'Idea Origination', count: '3 / 18', imp: 6, scores: [7, 10] },
-];
-const S3_NAMES = ['Alex Chen', 'Jordan Lee'];
-
-function PanelEquity() {
-  const [idx, setIdx] = useState(0);
-  const [sliderPct, setSliderPct] = useState(0);
-  const [sliderTransition, setSliderTransition] = useState(false);
-  const [sliderVal, setSliderVal] = useState<number | null>(null);
-  const [selected, setSelected] = useState<(number | null)[]>([null, null]);
-  useEffect(() => {
-    const timers: Timer[] = [];
-    const t = (fn: () => void, ms: number) => {
-      timers.push(setTimeout(fn, ms));
-    };
-    const run = (i: number) => {
-      setIdx(i);
-      setSliderPct(0);
-      setSliderTransition(false);
-      setSliderVal(null);
-      setSelected([null, null]);
-      const step = S3_CATEGORIES[i]!;
-      t(() => {
-        setSliderTransition(true);
-        setSliderPct(step.imp * 10);
-        setSliderVal(step.imp);
-      }, 120);
-      step.scores.forEach((score, ci) => {
-        t(
-          () =>
-            setSelected((prev) => {
-              const n = [...prev];
-              n[ci] = score;
-              return n;
-            }),
-          700 + ci * 420,
-        );
-      });
-      const totalDelay = 700 + step.scores.length * 420 + 800;
-      t(() => run((i + 1) % S3_CATEGORIES.length), totalDelay);
-    };
-    run(0);
-    return () => timers.forEach(clearTimeout);
-  }, []);
-
-  const cat = S3_CATEGORIES[idx]!;
-  return (
-    <div className="lp-fp" style={{ backgroundImage: "url('/images/leaf.png?v=2')" }}>
-      <div className="lp-fp-overlay" />
-      <div className="lp-fp-white">
-        <div className="lp-fp-content">
-          <div className="lp-fp-tag">Step 3</div>
-          <div className="lp-fp-title">Equity Calculator</div>
-          <div className="lp-s3-card">
-            <div className="lp-s3-top">
-              <span className="lp-s3-category">{cat.name}</span>
-              <span className="lp-s3-counter">{cat.count}</span>
-            </div>
-            <div className="lp-s1-label">How important is this?</div>
-            <div className="lp-s3-slider-row">
-              <div className="lp-s3-track">
-                <div
-                  className="lp-s3-fill"
-                  style={{
-                    width: `${sliderPct}%`,
-                    transition: sliderTransition ? 'width 0.7s cubic-bezier(0.16,1,0.3,1)' : 'none',
-                  }}
-                />
-                <div
-                  className="lp-s3-thumb"
-                  style={{
-                    left: `${sliderPct}%`,
-                    transition: sliderTransition ? 'left 0.7s cubic-bezier(0.16,1,0.3,1)' : 'none',
-                  }}
-                />
-              </div>
-              <span className="lp-s3-val">{sliderVal ?? '—'}</span>
-            </div>
-            <div className="lp-s1-label" style={{ marginTop: 10 }}>
-              Score each cofounder
-            </div>
-            {S3_NAMES.map((name, i) => (
-              <div key={i} className="lp-s3-cf">
-                <div className="lp-s3-cf-name">{name}</div>
-                <div className="lp-s3-dots">
-                  {Array.from({ length: 10 }, (_, d) => (
-                    <div key={d} className={`lp-s3-dot${selected[i] === d + 1 ? ' selected' : ''}`}>
-                      {d + 1}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const S2R_SECTIONS = [
-  'Formation & Purpose',
-  'Cofounder Info',
-  'Equity Allocation',
-  'Vesting Schedule',
-  'Decision-Making',
-];
-
-function PanelReview() {
-  const [done, setDone] = useState<number[]>([]);
-  useEffect(() => {
-    const timers: Timer[] = [];
-    const t = (fn: () => void, ms: number) => {
-      timers.push(setTimeout(fn, ms));
-    };
-    const run = () => {
-      setDone([]);
-      S2R_SECTIONS.forEach((_, i) => t(() => setDone((p) => [...p, i]), 500 + i * 650));
-      t(run, 500 + S2R_SECTIONS.length * 650 + 2000);
-    };
-    run();
-    return () => timers.forEach(clearTimeout);
-  }, []);
-
-  const pct = (done.length / S2R_SECTIONS.length) * 100;
-  return (
-    <div className="lp-fp" style={{ backgroundImage: "url('/images/paper.png?v=2')" }}>
-      <div className="lp-fp-overlay" />
-      <div className="lp-fp-white">
-        <div className="lp-fp-content">
-          <div className="lp-fp-tag">Step 4</div>
-          <div className="lp-fp-title">Do a final review</div>
-          <div className="lp-s2r-card">
-            <div className="lp-s1-label">Cofounder Agreement</div>
-            <div className="lp-s2r-track">
-              <div className="lp-s2r-fill" style={{ width: `${pct}%` }} />
-            </div>
-            <div className="lp-s2r-list">
-              {S2R_SECTIONS.map((s, i) => (
-                <div key={i} className={`lp-s2r-row${done.includes(i) ? ' done' : ''}`}>
-                  <span className="lp-s2r-check">{done.includes(i) ? '✓' : ''}</span>
-                  <span>{s}</span>
+            <div className="lp-s1-label">Cherrytree picked up</div>
+            <div className="lp-s1-picks">
+              {S1_PICKS.filter((p) => typed >= p.end).map((p) => (
+                <div key={p.label} className="lp-s1-pick">
+                  <span>{p.label}</span>
+                  <b>{p.value}</b>
                 </div>
               ))}
             </div>
@@ -332,77 +101,77 @@ function PanelReview() {
   );
 }
 
-const S4_MSGS = [
-  { text: 'Hey Tim, what do you recommend for our vesting schedule.', sent: true },
-  { text: 'Happy to help!', sent: false },
-  { text: "I'd recommend 4-year vest with a 1-year cliff for both founders.", sent: false },
+const S2_MSGS = [
+  {
+    text: 'You mentioned putting in the first $20k. Was that for equity, or a loan to the company?',
+    bot: true,
+  },
+  { text: "For equity. It's part of why I'm at 60%.", bot: false },
+  {
+    text: 'Got it. If someone leaves in the first year, what happens to their unvested shares?',
+    bot: true,
+  },
+  { text: 'They go back to the company.', bot: false },
 ];
 
-function PanelExpert() {
-  const [shown, setShown] = useState<number[]>([]);
-  const [typingIdx, setTypingIdx] = useState<number | null>(null);
+function PanelFollowUps() {
+  const [shown, setShown] = useState(0);
+  const [typing, setTyping] = useState(false);
   useEffect(() => {
     const timers: Timer[] = [];
     const t = (fn: () => void, ms: number) => {
       timers.push(setTimeout(fn, ms));
     };
-    const showMsg = (idx: number) => {
-      if (idx >= S4_MSGS.length) {
+    const show = (i: number) => {
+      if (i >= S2_MSGS.length) {
         t(() => {
-          setShown([]);
-          setTypingIdx(null);
-          showMsg(0);
-        }, 2000);
+          setShown(0);
+          show(0);
+        }, 2200);
         return;
       }
-      const msg = S4_MSGS[idx]!;
-      if (msg.sent) {
-        setShown((p) => [...p, idx]);
-        t(() => showMsg(idx + 1), 1200);
-      } else {
-        setTypingIdx(idx);
+      if (S2_MSGS[i]!.bot) {
+        setTyping(true);
         t(() => {
-          setTypingIdx(null);
-          t(() => {
-            setShown((p) => [...p, idx]);
-            t(() => showMsg(idx + 1), 1900);
-          }, 280);
-        }, 1300);
+          setTyping(false);
+          setShown(i + 1);
+          t(() => show(i + 1), 1600);
+        }, 1100);
+      } else {
+        setShown(i + 1);
+        t(() => show(i + 1), 1200);
       }
     };
-    showMsg(0);
+    t(() => show(0), 400);
     return () => timers.forEach(clearTimeout);
   }, []);
 
   return (
-    <div className="lp-fp" style={{ backgroundImage: "url('/images/chalk.png?v=2')" }}>
+    <div className="lp-fp" style={{ backgroundImage: "url('/images/wall.png?v=2')" }}>
       <div className="lp-fp-overlay" />
       <div className="lp-fp-white">
         <div className="lp-fp-content">
-          <div className="lp-fp-tag">Step 5</div>
-          <div className="lp-fp-title">Expert Guidance</div>
-          <div className="lp-s4-card">
-            <div className="lp-s4-expert-row">
-              <div className="lp-s4-avatar">T</div>
+          <div className="lp-fp-tag">Step 2</div>
+          <div className="lp-fp-title">A few follow-ups</div>
+          <div className="lp-fu-card">
+            <div className="lp-fu-head">
+              <div className="lp-fu-avatar">C</div>
               <div>
-                <div className="lp-s4-name">Tim</div>
-                <div className="lp-s4-role">Cofounder Coach</div>
+                <div className="lp-fu-name">Cherrytree</div>
+                <div className="lp-fu-role">Following up on your answers</div>
               </div>
             </div>
-            <div className="lp-s4-msgs">
-              {S4_MSGS.map(
-                (m, i) =>
-                  shown.includes(i) && (
-                    <div key={i} className={`lp-s4-msg${m.sent ? ' user' : ''}`}>
-                      {m.text}
-                    </div>
-                  ),
-              )}
-              {typingIdx !== null && (
-                <div className="lp-s4-typing">
-                  <div className="lp-s4-dot-anim" />
-                  <div className="lp-s4-dot-anim" />
-                  <div className="lp-s4-dot-anim" />
+            <div className="lp-fu-msgs">
+              {S2_MSGS.slice(0, shown).map((m, i) => (
+                <div key={i} className={`lp-fu-msg${m.bot ? '' : ' user'}`}>
+                  {m.text}
+                </div>
+              ))}
+              {typing && (
+                <div className="lp-fu-typing">
+                  <div className="lp-fu-dot" />
+                  <div className="lp-fu-dot" />
+                  <div className="lp-fu-dot" />
                 </div>
               )}
             </div>
@@ -413,41 +182,179 @@ function PanelExpert() {
   );
 }
 
-const PANELS: readonly ComponentType[] = [
-  PanelInvite,
-  PanelCollab,
-  PanelEquity,
-  PanelReview,
-  PanelExpert,
-];
+// The agreement types itself out, heading by heading.
+const S3_BLOCKS = [
+  {
+    kind: 'p',
+    text: 'This Agreement is made between Steve Bobs and Bill Dates (the "Cofounders") of Acme Labs, Inc. (the "Company").',
+  },
+  { kind: 'h', text: '1. Equity' },
+  {
+    kind: 'p',
+    text: "The Company's shares are allocated 60% to Steve Bobs and 40% to Bill Dates.",
+  },
+  { kind: 'h', text: '2. Vesting' },
+  {
+    kind: 'p',
+    text: 'Shares vest monthly over four years. Unvested shares return to the Company if a Cofounder leaves.',
+  },
+  { kind: 'h', text: '3. Decisions' },
+  { kind: 'p', text: 'Any expense over $10,000 requires the approval of both Cofounders.' },
+].reduce<{ kind: string; text: string; start: number }[]>((blocks, b) => {
+  const prev = blocks[blocks.length - 1];
+  blocks.push({ ...b, start: prev ? prev.start + prev.text.length : 0 });
+  return blocks;
+}, []);
+const S3_TOTAL = S3_BLOCKS.reduce((n, b) => n + b.text.length, 0);
+const S3_CHAR_MS = 14;
+
+function PanelDraft() {
+  const [typed, setTyped] = useState(0);
+  useEffect(() => {
+    const timers: Timer[] = [];
+    const t = (fn: () => void, ms: number) => {
+      timers.push(setTimeout(fn, ms));
+    };
+    const run = () => {
+      setTyped(0);
+      for (let i = 1; i <= S3_TOTAL; i++) t(() => setTyped(i), 400 + i * S3_CHAR_MS);
+      t(run, 400 + S3_TOTAL * S3_CHAR_MS + 2600);
+    };
+    run();
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  const ready = typed === S3_TOTAL;
+  const visible = S3_BLOCKS.filter((b) => typed > b.start);
+  return (
+    <div className="lp-fp" style={{ backgroundImage: "url('/images/leaf.png?v=2')" }}>
+      <div className="lp-fp-overlay" />
+      <div className="lp-fp-white">
+        <div className="lp-fp-content">
+          <div className="lp-fp-tag">Step 3</div>
+          <div className="lp-fp-title">Your agreement, drafted</div>
+          <div className="lp-dr-paper">
+            <span className={`lp-dr-status${ready ? ' ready' : ''}`}>
+              {ready ? 'Draft ready' : 'Drafting…'}
+            </span>
+            <div className="lp-dr-doc-title">Cofounder Agreement</div>
+            <div className="lp-dr-doc-sub">Acme Labs, Inc.</div>
+            {visible.map((b, i) => {
+              const Tag = b.kind === 'h' ? 'h4' : 'p';
+              return (
+                <Tag key={b.start} className={b.kind === 'h' ? 'lp-dr-h' : 'lp-dr-p'}>
+                  {b.text.slice(0, typed - b.start)}
+                  {i === visible.length - 1 && !ready && <span className="lp-icursor lp-dark" />}
+                </Tag>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const S4_SIGNERS = ['Steve Bobs', 'Bill Dates'];
+
+function PanelSign() {
+  // 0 draft, 1 edited, 2 first signature, 3 second signature, 4 fully signed
+  const [phase, setPhase] = useState(0);
+  useEffect(() => {
+    const timers: Timer[] = [];
+    const t = (fn: () => void, ms: number) => {
+      timers.push(setTimeout(fn, ms));
+    };
+    const run = () => {
+      setPhase(0);
+      [700, 1900, 2900, 3700].forEach((ms, i) => t(() => setPhase(i + 1), ms));
+      t(run, 6200);
+    };
+    run();
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  return (
+    <div className="lp-fp" style={{ backgroundImage: "url('/images/paper.png?v=2')" }}>
+      <div className="lp-fp-overlay" />
+      <div className="lp-fp-white">
+        <div className="lp-fp-content">
+          <div className="lp-fp-tag">Step 4</div>
+          <div className="lp-fp-title">Review and sign</div>
+          <div className="lp-sg-card">
+            <div className="lp-s1-label">4. Decision-Making</div>
+            <p className="lp-sg-clause">
+              Spending over $10,000, raising money or selling the company requires{' '}
+              {phase >= 1 ? (
+                <>
+                  <span className="lp-sg-del">both cofounders</span>{' '}
+                  <span className="lp-sg-ins">unanimous written consent</span>
+                </>
+              ) : (
+                'both cofounders'
+              )}
+              .
+            </p>
+            <div className="lp-s1-label">Signatures</div>
+            <div className="lp-sg-sigs">
+              {S4_SIGNERS.map((name, i) => (
+                <div key={name} className={`lp-sg-sig${phase >= i + 2 ? ' signed' : ''}`}>
+                  <div className="lp-sg-ink">{phase >= i + 2 ? name : ''}</div>
+                  <div className="lp-sg-name">{name}</div>
+                </div>
+              ))}
+            </div>
+            <div className={`lp-sg-done${phase >= 4 ? ' on' : ''}`}>✓ Signed by all cofounders</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const PANELS: readonly ComponentType[] = [PanelBrainDump, PanelFollowUps, PanelDraft, PanelSign];
 
 const AGREEMENT_SECTIONS = [
   {
-    tab: 'Equity',
-    title: 'Agree on ownership splits',
-    desc: 'Set each cofounder’s share up front, with a fair split that everyone understands and signs.',
+    tab: 'coverage',
+    title: 'Covers everything that matters.',
+    desc: 'One complete agreement across 10 sections, from equity and roles to IP and non-competes.',
+    wide: true,
   },
   {
-    tab: 'Vesting',
-    title: 'Earn equity over time',
-    desc: 'A vesting schedule keeps everyone invested, so equity is earned by building the company.',
+    tab: 'conversations',
+    title: 'No awkward convos later.',
+    desc: 'The hard topics get settled now, while everyone still gets along.',
   },
   {
-    tab: 'Decisions',
-    title: 'Decide who decides',
-    desc: 'Spell out who signs off on what, when a vote is needed, and how ties get broken.',
+    tab: 'clarity',
+    title: 'Clear from day one.',
+    desc: 'Who owns what, who does what, who decides what, all in writing.',
   },
   {
-    tab: 'IP',
-    title: 'Own what you build',
-    desc: 'Everything created for the company belongs to it, in writing, from the very first day.',
+    tab: 'protection',
+    title: 'Ready for anything.',
+    desc: 'If someone leaves, steps back or stops pulling their weight, you already know what happens.',
   },
   {
-    tab: 'Compensation',
-    title: 'Set pay and expenses',
-    desc: 'Agree on pay, expenses, and reimbursements now, before anyone is frustrated later.',
+    tab: 'ease',
+    title: 'Done in one sitting.',
+    desc: 'Answer in your own words, review the draft and sign. No weeks of back-and-forth with a lawyer.',
   },
 ] as const;
+
+const AG_COVERAGE = [
+  'Formation & purpose',
+  'Cofounders & roles',
+  'Equity allocation',
+  'Vesting',
+  'Decision-making',
+  'Intellectual property',
+  'Compensation & expenses',
+  'Performance expectations',
+  'Non-compete & non-solicit',
+  'General provisions',
+];
 
 // Panel color behind each section's example, in the same order as AGREEMENT_SECTIONS.
 // Muted tints drawn from the blossom painting: hill sage, blossom, sky, cloud, meadow — ordered so
@@ -464,57 +371,53 @@ const agRow = (label: string, value: string) => (
 // One small example visual per agreement section, in the same order as AGREEMENT_SECTIONS.
 const AG_VISUALS: readonly ReactNode[] = [
   <>
-    <div className="lp-agv-head">Ownership</div>
-    <div className="lp-agv-bar">
-      <div className="lp-agv-seg dark" style={{ flex: 55 }}>
-        <span>Sarah Chen</span>
-        <b>55%</b>
-      </div>
-      <div className="lp-agv-seg light" style={{ flex: 45 }}>
-        <span>Alex Rivera</span>
-        <b>45%</b>
-      </div>
-    </div>
-  </>,
-  <>
-    <div className="lp-agv-head">4-year vesting, 1-year cliff</div>
-    <div className="lp-agv-stairs">
-      {[25, 50, 75, 100].map((pct, i) => (
-        <div key={pct} className="lp-agv-stair">
-          <div className="lp-agv-stair-bar" style={{ height: `${pct * 0.85}px` }}>
-            <b>{pct}%</b>
-          </div>
-          <span>{i === 0 ? 'Yr 1 · cliff' : `Yr ${i + 1}`}</span>
-        </div>
+    <div className="lp-agv-head">Cofounder Agreement · 10 sections</div>
+    <div className="lp-agv-list">
+      {AG_COVERAGE.map((item) => (
+        <span key={item}>
+          <b className="lp-agv-check">✓</b> {item}
+        </span>
       ))}
     </div>
   </>,
   <>
-    <div className="lp-agv-head">Who decides</div>
-    {agRow('Day-to-day', 'Area owner')}
-    {agRow('Major decisions', 'Both cofounders')}
-    {agRow('Ties', 'Mediation')}
-  </>,
-  <>
-    <div className="lp-agv-head">Assigned to the company</div>
-    {['Code', 'Designs', 'Trademarks'].map((item) => (
-      <div key={item} className="lp-agv-row">
-        <span>{item}</span>
-        <b className="lp-agv-check">✓ Acme Labs</b>
+    <div className="lp-agv-head">The hard topics</div>
+    {['Who gets what', 'What if someone leaves', 'Who has the final say'].map((topic) => (
+      <div key={topic} className="lp-agv-row">
+        <span>{topic}</span>
+        <b className="lp-agv-check">✓ Agreed</b>
       </div>
     ))}
   </>,
   <>
-    <div className="lp-agv-head">Compensation</div>
-    <div className="lp-agv-stats">
-      <div>
-        <b>$0</b>
-        <span>salary until the first round</span>
+    <div className="lp-agv-head">Ownership</div>
+    <div className="lp-agv-bar">
+      <div className="lp-agv-seg dark" style={{ flex: 60 }}>
+        <span>Steve Bobs</span>
+        <b>60%</b>
       </div>
-      <div>
-        <b>30 days</b>
-        <span>to reimburse expenses</span>
+      <div className="lp-agv-seg light" style={{ flex: 40 }}>
+        <span>Bill Dates</span>
+        <b>40%</b>
       </div>
+    </div>
+    <div className="lp-agv-gap" />
+    {agRow('Roles', 'CEO · CTO')}
+    {agRow('Major decisions', 'Both cofounders')}
+  </>,
+  <>
+    <div className="lp-agv-head">If a cofounder leaves</div>
+    {agRow('At month 8', 'Keeps 0%')}
+    {agRow('At year 2', 'Keeps 50%')}
+    {agRow('At year 4', 'Keeps 100%')}
+  </>,
+  <>
+    <div className="lp-agv-head">Time to a signed agreement</div>
+    {agRow('Templates', 'Guesswork')}
+    {agRow('Lawyers', 'Weeks')}
+    <div className="lp-agv-row">
+      <span>Cherrytree</span>
+      <b className="lp-agv-check">One sitting</b>
     </div>
   </>,
 ];
@@ -525,57 +428,43 @@ const FEATURES = [
   {
     num: '01',
     panel: 0,
-    title: 'Invite your cofounders',
-    desc: 'Add your cofounders as collaborators. They must be added to be included in the Cofounder Agreement.',
-    short: 'Add your cofounders so they are part of the agreement.',
+    title: 'Just brain dump',
+    desc: "No rigid form. Talk through your company in your own words, from who's involved to how you think about equity, and Cherrytree pulls out what matters.",
+    short: 'Answer in your own words. We pull out what matters.',
   },
   {
     num: '02',
     panel: 1,
-    title: 'Collab on the agreement',
-    desc: 'You and your cofounders answer a set of guided questions together. Nobody has to play "project manager" or relay answers.',
-    short: 'Answer guided questions together. No project manager needed.',
+    title: 'Smart follow-ups',
+    desc: "Questions adapt to what you've said. Cherrytree asks follow-ups only where something is missing or unclear, so nothing important slips through.",
+    short: 'Follow-up questions based on your answers, so nothing gets missed.',
   },
   {
     num: '03',
     panel: 2,
-    title: 'Equity Calculator',
-    desc: 'Use our proprietary equity calculator to determine ownership. Instant, precise splits so everyone knows their stake.',
-    short: 'Instant, precise splits so everyone knows their stake.',
+    title: 'We draft it',
+    desc: 'Cherrytree turns your answers into a complete Cofounder Agreement covering equity, vesting, roles, IP and decision-making.',
+    short: 'A complete agreement, drafted from your answers.',
   },
   {
     num: '04',
     panel: 3,
-    title: 'Do a final review',
-    desc: 'We take your responses and turn them into a Cofounder Agreement, ready for your final review and signature.',
-    short: 'We turn your answers into an agreement, ready to review and sign.',
-  },
-  {
-    num: '05',
-    panel: 4,
-    title: 'Expert Guidance',
-    desc: "We are a team of cofounder coaches, founders, and attorneys ready to help. You're in good hands every step of the way.",
-    short: 'Cofounder coaches and attorneys, ready to help every step of the way.',
+    title: 'Review and sign',
+    desc: "Read through your draft, edit anything you want, and sign when everyone's on the same page.",
+    short: 'Review, edit if needed, and sign.',
   },
 ];
 
-// How we compare: templates and lawyers struck through, then Cherrytree's price highlighted.
-const BOOTSTRAPPED_PRICE = MARKETING_PLANS.find((p) => p.tier === 'Bootstrapped')!.price;
-
-/** A phrase struck through word by word (so the line follows wrapping and sits over the text). */
-function Strike({ text }: { text: string }) {
-  const words = text.split(' ');
-  return (
-    <span className="lp-strike">
-      {words.map((word, i) => (
-        <span key={i} style={{ '--w': i, '--n': words.length } as CSSProperties}>
-          {word}
-          {i < words.length - 1 && ' '}
-        </span>
-      ))}
-    </span>
-  );
-}
+// The self-serve plans shown on the landing page (Enterprise lives on the pricing page). A plan
+// that starts "Everything in …" gets that as its intro line instead of a checklist item.
+const LANDING_PLANS = MARKETING_PLANS.filter((p) => !p.enterprise).map((p) => {
+  const inherits = p.features[0]?.startsWith('Everything in');
+  return {
+    ...p,
+    includes: inherits ? `${p.features[0]}, plus:` : 'Everything you need for one agreement:',
+    list: inherits ? p.features.slice(1) : p.features,
+  };
+});
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
@@ -675,24 +564,6 @@ function LandingPage() {
     return () => obs.disconnect();
   }, []);
 
-  // How we compare: strike through (and highlight) every time the lines scroll into view, and
-  // reset once they've left it entirely, so the strike plays again next time.
-  const strikeRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = strikeRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry) return;
-        if (entry.intersectionRatio >= 0.35) el.classList.add('in');
-        else if (!entry.isIntersecting) el.classList.remove('in');
-      },
-      { threshold: [0, 0.35] },
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
   // Scroll reveal — fades/slides in each .lp-rv/.lp-rv-l/.lp-rv-r element once as it enters view.
   // Elements already in the viewport at observe() time can have their IntersectionObserver
   // callback fire before the browser has committed a style pass with the base (opacity:0)
@@ -765,7 +636,7 @@ function LandingPage() {
               <V2Panel key={v2Feature} />
             </div>
             <div className="lp-feat-v2-tabs" role="tablist">
-              {FEATURES.slice(0, 4).map((f, i) => (
+              {FEATURES.map((f, i) => (
                 <button
                   key={f.num}
                   type="button"
@@ -791,7 +662,10 @@ function LandingPage() {
           </div>
           <div className="lp-bento lp-rv lp-d2">
             {AGREEMENT_SECTIONS.map((item, i) => (
-              <article key={item.tab} className={`lp-bento-tile lp-bento-${i}`}>
+              <article
+                key={item.tab}
+                className={`lp-bento-tile${'wide' in item ? ' lp-bento-wide' : ''}`}
+              >
                 <div className="lp-bento-vis" style={{ '--ag-tint': AG_TINTS[i] } as CSSProperties}>
                   <div className="lp-feat-v2-grain" aria-hidden="true" />
                   <div className="lp-bento-mini">{AG_VISUALS[i]}</div>
@@ -806,26 +680,50 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* ── How we compare ── */}
-      <section className="lp-features" id="compare">
+      {/* ── Pricing: the two self-serve plans ── */}
+      <section className="lp-features" id="pricing">
         <div className="lp-feat-scroll">
-          <div className="lp-strike-lines lp-rv" ref={strikeRef}>
-            <p>
-              <Strike text="A template from the internet." />
-            </p>
-            <p>
-              <Strike text="Thousands in legal fees." />
-            </p>
-            <p className="lp-strike-win">
-              An agreement you build together,{' '}
-              <span className="lp-hl-mark lp-hl-auto">for {BOOTSTRAPPED_PRICE}.</span>
-            </p>
+          <div className="lp-feat-header">
+            <h2 className="lp-rv lp-d1">Simple, one-time pricing.</h2>
           </div>
-          <div className="lp-strike-actions">
-            <button className="lp-btn-primary" onClick={goDash}>
-              Get started
-            </button>
+          <div className="lp-plans lp-rv lp-d2">
+            {LANDING_PLANS.map((plan) => (
+              <article key={plan.tier} className={`lp-plan${plan.featured ? ' featured' : ''}`}>
+                <div className="lp-plan-top">
+                  <div>
+                    <h3 className="lp-plan-tier">
+                      {plan.tier}
+                      {plan.badge && <span className="lp-plan-badge">{plan.badge}</span>}
+                    </h3>
+                    <p className="lp-plan-desc">{plan.desc}</p>
+                  </div>
+                  <div className="lp-plan-price">
+                    <span className="lp-plan-currency">$</span>
+                    {plan.price.slice(1)}
+                    <span className="lp-plan-period">one-time</span>
+                  </div>
+                </div>
+                <div className="lp-plan-label">Features</div>
+                <p className="lp-plan-includes">{plan.includes}</p>
+                <ul className="lp-plan-features">
+                  {plan.list.map((f) => (
+                    <li key={f}>
+                      <span className="lp-plan-check" aria-hidden="true">
+                        ✓
+                      </span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <button className="lp-btn-primary lp-plan-cta" onClick={goDash}>
+                  {plan.cta}
+                </button>
+              </article>
+            ))}
           </div>
+          <a className="lp-btn-ghost lp-plans-more" href="/pricing">
+            Compare all plans →
+          </a>
         </div>
       </section>
 
