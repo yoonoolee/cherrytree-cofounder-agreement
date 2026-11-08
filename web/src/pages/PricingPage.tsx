@@ -117,86 +117,89 @@ function PricingPage() {
   const goDash = () => goToDashboard(navigate);
 
   return (
-    <div className="lp" style={{ minHeight: '100vh' }}>
+    <div className="lp lp-has-curtain" style={{ minHeight: '100vh' }}>
       <MarketingGrain />
       <MarketingNav />
 
-      {/* Hero */}
-      <section className="lp-pricing-pg-hero">
-        <h1 className="lp-pricing-pg-h1">Pricing</h1>
-        <p className="lp-pricing-pg-sub">
-          Choose the plan that's right for your team. No subscriptions, no surprises.
-        </p>
-      </section>
+      {/* Raised page layer with a rounded bottom that scrolls up to reveal the footer. */}
+      <div className="lp-curtain">
+        {/* Hero */}
+        <section className="lp-pricing-pg-hero">
+          <h1 className="lp-pricing-pg-h1">Pricing</h1>
+          <p className="lp-pricing-pg-sub">
+            Choose the plan that's right for your team. No subscriptions, no surprises.
+          </p>
+        </section>
 
-      {/* Cards */}
-      <section className="lp-pricing-pg-cards-wrap">
-        <PlanCards plans={MARKETING_PLANS} onStart={goDash} />
-      </section>
+        {/* Cards */}
+        <section className="lp-pricing-pg-cards-wrap">
+          <PlanCards plans={MARKETING_PLANS} onStart={goDash} />
+        </section>
 
-      {/* Compare table */}
-      <section className="lp-pricing-pg-compare">
-        <table className="lp-pricing-pg-table">
-          <thead>
-            <tr>
-              <th className="lp-ppt-feature-col">Compare plans</th>
-              <th>Bootstrapped</th>
-              <th>Scale</th>
-              <th>Enterprise</th>
-            </tr>
-          </thead>
-          <tbody>
-            {COMPARE_ROWS.map((row, ri) => (
-              <tr key={ri} className="lp-ppt-row">
-                <td className="lp-ppt-label">{row.label}</td>
-                <td>
-                  <Check on={row.b} />
-                </td>
-                <td>
-                  <Check on={row.s} />
-                </td>
-                <td>
-                  <Check on={row.e} />
-                </td>
+        {/* Compare table */}
+        <section className="lp-pricing-pg-compare">
+          <table className="lp-pricing-pg-table">
+            <thead>
+              <tr>
+                <th className="lp-ppt-feature-col">Compare plans</th>
+                <th>Bootstrapped</th>
+                <th>Scale</th>
+                <th>Enterprise</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+            </thead>
+            <tbody>
+              {COMPARE_ROWS.map((row, ri) => (
+                <tr key={ri} className="lp-ppt-row">
+                  <td className="lp-ppt-label">{row.label}</td>
+                  <td>
+                    <Check on={row.b} />
+                  </td>
+                  <td>
+                    <Check on={row.s} />
+                  </td>
+                  <td>
+                    <Check on={row.e} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
 
-      {/* FAQ */}
-      <section className="lp-faq">
-        <div className="lp-faq-inner">
-          <div className="lp-faq-card">
-            <div className="lp-faq-visual">
-              <h2>Frequently asked questions.</h2>
-            </div>
-            <div className="lp-faq-panel">
-              <FaqList faqs={FAQS} />
+        {/* FAQ */}
+        <section className="lp-faq">
+          <div className="lp-faq-inner">
+            <div className="lp-faq-card">
+              <div className="lp-faq-visual">
+                <h2>Frequently asked questions.</h2>
+              </div>
+              <div className="lp-faq-panel">
+                <FaqList faqs={FAQS} />
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Bottom CTA */}
-      <section className="lp-protect-cta">
-        <h2 ref={protectHeadlineRef}>
-          <span className="lp-hl-line">
-            <span className="lp-hl-inner">Protect your piece of the pie</span>
-          </span>
-          <span className="lp-hl-line">
-            <span className="lp-hl-inner">
-              and your{' '}
-              <span className={`lp-hl-mark${protectInView ? ' in' : ''}`}>peace of mind.</span>
+        {/* Bottom CTA */}
+        <section className="lp-protect-cta">
+          <h2 ref={protectHeadlineRef}>
+            <span className="lp-hl-line">
+              <span className="lp-hl-inner">Protect your piece of the pie</span>
             </span>
-          </span>
-        </h2>
-        <div className="lp-protect-cta-actions">
-          <button className="lp-btn-primary" onClick={goDash}>
-            Get started
-          </button>
-        </div>
-      </section>
+            <span className="lp-hl-line">
+              <span className="lp-hl-inner">
+                and your{' '}
+                <span className={`lp-hl-mark${protectInView ? ' in' : ''}`}>peace of mind.</span>
+              </span>
+            </span>
+          </h2>
+          <div className="lp-protect-cta-actions">
+            <button className="lp-btn-primary" onClick={goDash}>
+              Get started
+            </button>
+          </div>
+        </section>
+      </div>
 
       <MarketingFooter />
     </div>

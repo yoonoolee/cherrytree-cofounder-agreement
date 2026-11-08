@@ -60,28 +60,31 @@ function AboutPage() {
   });
 
   return (
-    <div className="lp lp-about-page">
+    <div className="lp lp-has-curtain lp-about-page">
       <MarketingGrain />
       <MarketingNav />
 
-      <section className="lp-about-hero">
-        <h1>
-          Big ideas grow
-          <br />
-          <em>with the right company.</em>
-        </h1>
-      </section>
+      {/* Raised page layer with a rounded bottom that scrolls up to reveal the footer. */}
+      <div className="lp-curtain">
+        <section className="lp-about-hero">
+          <h1>
+            Big ideas grow
+            <br />
+            <em>with the right company.</em>
+          </h1>
+        </section>
 
-      <div className="lp-about-sections">
-        {SECTIONS.map((s, i) => (
-          <div key={i} className="lp-about-section">
-            <div className="lp-about-section-left">
-              <div className="lp-about-section-overline">{s.overline}</div>
-              <div className="lp-about-section-title">{s.title}</div>
+        <div className="lp-about-sections">
+          {SECTIONS.map((s, i) => (
+            <div key={i} className="lp-about-section">
+              <div className="lp-about-section-left">
+                <div className="lp-about-section-overline">{s.overline}</div>
+                <div className="lp-about-section-title">{s.title}</div>
+              </div>
+              <div className="lp-about-section-right">{s.body}</div>
             </div>
-            <div className="lp-about-section-right">{s.body}</div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       <MarketingFooter />

@@ -73,31 +73,34 @@ function AttorneyPage() {
   });
 
   return (
-    <div className="lp" style={{ minHeight: '100vh' }}>
+    <div className="lp lp-has-curtain" style={{ minHeight: '100vh' }}>
       <MarketingGrain />
       <MarketingNav />
 
-      {/* Hero */}
-      <section className="lp-page-hero">
-        <div className="lp-overline">Attorney Review</div>
-        <h1 className="lp-page-h1">Attorney.</h1>
-        <p className="lp-page-sub">Coming soon — this is only for Pro members.</p>
-      </section>
+      {/* Raised page layer with a rounded bottom that scrolls up to reveal the footer. */}
+      <div className="lp-curtain">
+        {/* Hero */}
+        <section className="lp-page-hero">
+          <div className="lp-overline">Attorney Review</div>
+          <h1 className="lp-page-h1">Attorney.</h1>
+          <p className="lp-page-sub">Coming soon — this is only for Pro members.</p>
+        </section>
 
-      {/* Attorney grid */}
-      <section className="lp-page-section">
-        <div className="lp-attorney-grid">
-          {ATTORNEYS.map((a) => (
-            <div key={a.id} className="lp-attorney-card">
-              <div className="lp-attorney-photo" />
-              <div className="lp-attorney-name">{a.name}</div>
-              <div className="lp-attorney-title">{a.title}</div>
-              <div className="lp-attorney-location">{a.location}</div>
-              <p className="lp-attorney-desc">{a.description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+        {/* Attorney grid */}
+        <section className="lp-page-section">
+          <div className="lp-attorney-grid">
+            {ATTORNEYS.map((a) => (
+              <div key={a.id} className="lp-attorney-card">
+                <div className="lp-attorney-photo" />
+                <div className="lp-attorney-name">{a.name}</div>
+                <div className="lp-attorney-title">{a.title}</div>
+                <div className="lp-attorney-location">{a.location}</div>
+                <p className="lp-attorney-desc">{a.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
 
       <MarketingFooter />
     </div>

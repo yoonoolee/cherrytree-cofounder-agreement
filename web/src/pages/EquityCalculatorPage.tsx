@@ -276,54 +276,189 @@ function EquityCalculatorPage() {
   }, [showCalculator]);
 
   return (
-    <div className="lp" style={{ minHeight: '100vh' }}>
+    <div className="lp lp-has-curtain" style={{ minHeight: '100vh' }}>
       <MarketingGrain />
       <MarketingNav />
 
-      <section className="lp-eq-section">
-        <div className="lp-eq-wrap">
-          <div className="lp-eq-card">
-            <div className="lp-eq-hero">
-              <h1
-                className="lp-page-h1"
-                style={{ fontSize: 'clamp(32px,5vw,48px)', marginBottom: 10 }}
-              >
-                Equity Calculator.
-              </h1>
-              <p className="lp-page-sub">
-                Determine a fair split based on each cofounder's contributions.
-              </p>
-            </div>
+      {/* Raised page layer with a rounded bottom that scrolls up to reveal the footer. */}
+      <div className="lp-curtain">
+        <section className="lp-eq-section">
+          <div className="lp-eq-wrap">
+            <div className="lp-eq-card">
+              <div className="lp-eq-hero">
+                <h1
+                  className="lp-page-h1"
+                  style={{ fontSize: 'clamp(32px,5vw,48px)', marginBottom: 10 }}
+                >
+                  Equity Calculator.
+                </h1>
+                <p className="lp-page-sub">
+                  Determine a fair split based on each cofounder's contributions.
+                </p>
+              </div>
 
-            {!showCalculator ? (
-              <form
-                className="lp-eq-form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleStartCalculator();
-                }}
-              >
-                {/* Cofounder names */}
-                <div className="lp-eq-field-group">
-                  <label className="lp-eq-label">Cofounder Names</label>
-                  <div className="lp-eq-name-list">
-                    {Array.from({ length: numCofounders }, (_, i) => (
-                      <div key={i} className="lp-eq-name-row">
-                        <input
-                          type="text"
-                          value={cofounderNames[i] || ''}
-                          onChange={(e) => handleNameChange(i, e.target.value)}
-                          placeholder={i === 0 ? 'Cofounder 1 (you)' : `Cofounder ${i + 1}`}
-                          className={`lp-eq-input ${wiggleIndex === i ? 'animate-wiggle' : ''}`}
-                        />
-                        {i >= 2 && (
+              {!showCalculator ? (
+                <form
+                  className="lp-eq-form"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleStartCalculator();
+                  }}
+                >
+                  {/* Cofounder names */}
+                  <div className="lp-eq-field-group">
+                    <label className="lp-eq-label">Cofounder Names</label>
+                    <div className="lp-eq-name-list">
+                      {Array.from({ length: numCofounders }, (_, i) => (
+                        <div key={i} className="lp-eq-name-row">
+                          <input
+                            type="text"
+                            value={cofounderNames[i] || ''}
+                            onChange={(e) => handleNameChange(i, e.target.value)}
+                            placeholder={i === 0 ? 'Cofounder 1 (you)' : `Cofounder ${i + 1}`}
+                            className={`lp-eq-input ${wiggleIndex === i ? 'animate-wiggle' : ''}`}
+                          />
+                          {i >= 2 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setNumCofounders((prev) => prev - 1);
+                                setCofounderNames((prev) => prev.filter((_, idx) => idx !== i));
+                              }}
+                              className="lp-eq-remove-btn"
+                            >
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Add cofounder button */}
+                    {numCofounders < 5 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNumCofounders((prev) => prev + 1);
+                          setCofounderNames((prev) => [...prev, '']);
+                        }}
+                        className="lp-btn-ghost lp-eq-add-btn"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                        Add cofounder
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Start button */}
+                  <button
+                    type="submit"
+                    className="button-shimmer lp-btn-primary"
+                    style={{ width: '100%', textAlign: 'center' }}
+                  >
+                    Start Calculator
+                  </button>
+                </form>
+              ) : (
+                <div>
+                  {/* Back button */}
+                  <button
+                    onClick={() => setShowCalculator(false)}
+                    className="lp-btn-ghost lp-eq-back-btn"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                    Back to setup
+                  </button>
+
+                  {/* Instructions */}
+                  <div className="lp-eq-instructions">
+                    <p>
+                      <strong>How to use:</strong> Rate the importance of each category (0-100),
+                      then score each cofounder (0-100) on how much they contribute to that
+                      category. The calculator will determine equity based on weighted
+                      contributions.
+                    </p>
+                  </div>
+
+                  {/* Spreadsheet */}
+                  <div className="spreadsheet-wrapper" style={{ overflow: 'visible' }}>
+                    <div
+                      ref={spreadsheetRef}
+                      className="single-click-edit spreadsheet-scroll-container"
+                      style={{
+                        overflowX: 'auto',
+                        overflowY: 'visible',
+                        position: 'relative',
+                      }}
+                    >
+                      <Spreadsheet data={data} onChange={handleChange} />
+                    </div>
+                  </div>
+
+                  {/* Equity Progress Bar */}
+                  <div className="lp-eq-bar-wrap">
+                    <EquityProgressBar
+                      equity={currentEquity}
+                      labels={Array.from({ length: numCofounders }, (_, i) =>
+                        getCofounderDisplayName(i),
+                      )}
+                    />
+                  </div>
+
+                  {/* Share button */}
+                  <div style={{ textAlign: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowSharePopup(true)}
+                      className="button-shimmer lp-btn-primary"
+                    >
+                      Share with cofounder
+                    </button>
+                  </div>
+
+                  {/* Share popup */}
+                  {showSharePopup && (
+                    <div className="lp-eq-modal-backdrop">
+                      <div className="lp-eq-modal">
+                        <div className="lp-eq-modal-head">
+                          <h3>Share with cofounder</h3>
                           <button
-                            type="button"
                             onClick={() => {
-                              setNumCofounders((prev) => prev - 1);
-                              setCofounderNames((prev) => prev.filter((_, idx) => idx !== i));
+                              setShowSharePopup(false);
+                              setLinkCopied(false);
                             }}
-                            className="lp-eq-remove-btn"
+                            className="lp-eq-modal-close"
                           >
                             <svg
                               className="w-5 h-5"
@@ -339,187 +474,56 @@ function EquityCalculatorPage() {
                               />
                             </svg>
                           </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Add cofounder button */}
-                  {numCofounders < 5 && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setNumCofounders((prev) => prev + 1);
-                        setCofounderNames((prev) => [...prev, '']);
-                      }}
-                      className="lp-btn-ghost lp-eq-add-btn"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4v16m8-8H4"
-                        />
-                      </svg>
-                      Add cofounder
-                    </button>
-                  )}
-                </div>
-
-                {/* Start button */}
-                <button
-                  type="submit"
-                  className="button-shimmer lp-btn-primary"
-                  style={{ width: '100%', textAlign: 'center' }}
-                >
-                  Start Calculator
-                </button>
-              </form>
-            ) : (
-              <div>
-                {/* Back button */}
-                <button
-                  onClick={() => setShowCalculator(false)}
-                  className="lp-btn-ghost lp-eq-back-btn"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                  Back to setup
-                </button>
-
-                {/* Instructions */}
-                <div className="lp-eq-instructions">
-                  <p>
-                    <strong>How to use:</strong> Rate the importance of each category (0-100), then
-                    score each cofounder (0-100) on how much they contribute to that category. The
-                    calculator will determine equity based on weighted contributions.
-                  </p>
-                </div>
-
-                {/* Spreadsheet */}
-                <div className="spreadsheet-wrapper" style={{ overflow: 'visible' }}>
-                  <div
-                    ref={spreadsheetRef}
-                    className="single-click-edit spreadsheet-scroll-container"
-                    style={{
-                      overflowX: 'auto',
-                      overflowY: 'visible',
-                      position: 'relative',
-                    }}
-                  >
-                    <Spreadsheet data={data} onChange={handleChange} />
-                  </div>
-                </div>
-
-                {/* Equity Progress Bar */}
-                <div className="lp-eq-bar-wrap">
-                  <EquityProgressBar
-                    equity={currentEquity}
-                    labels={Array.from({ length: numCofounders }, (_, i) =>
-                      getCofounderDisplayName(i),
-                    )}
-                  />
-                </div>
-
-                {/* Share button */}
-                <div style={{ textAlign: 'center' }}>
-                  <button
-                    type="button"
-                    onClick={() => setShowSharePopup(true)}
-                    className="button-shimmer lp-btn-primary"
-                  >
-                    Share with cofounder
-                  </button>
-                </div>
-
-                {/* Share popup */}
-                {showSharePopup && (
-                  <div className="lp-eq-modal-backdrop">
-                    <div className="lp-eq-modal">
-                      <div className="lp-eq-modal-head">
-                        <h3>Share with cofounder</h3>
-                        <button
-                          onClick={() => {
-                            setShowSharePopup(false);
-                            setLinkCopied(false);
-                          }}
-                          className="lp-eq-modal-close"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                        </div>
+                        <p className="lp-eq-modal-desc">
+                          Share this link with your cofounder and see if your answers match. Only 2%
+                          get the exact same results.
+                        </p>
+                        <div className="lp-eq-modal-row">
+                          <input
+                            type="text"
+                            readOnly
+                            value={window.location.href}
+                            className="lp-eq-modal-input"
+                          />
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(window.location.href).then(
+                                () => setLinkCopied(true),
+                                (error: unknown) => console.error('Error copying link:', error),
+                              );
+                            }}
+                            className="lp-btn-primary"
+                            style={{ padding: '10px 18px', fontSize: 13 }}
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                      <p className="lp-eq-modal-desc">
-                        Share this link with your cofounder and see if your answers match. Only 2%
-                        get the exact same results.
-                      </p>
-                      <div className="lp-eq-modal-row">
-                        <input
-                          type="text"
-                          readOnly
-                          value={window.location.href}
-                          className="lp-eq-modal-input"
-                        />
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(window.location.href).then(
-                              () => setLinkCopied(true),
-                              (error: unknown) => console.error('Error copying link:', error),
-                            );
-                          }}
-                          className="lp-btn-primary"
-                          style={{ padding: '10px 18px', fontSize: 13 }}
-                        >
-                          {linkCopied ? (
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                          ) : (
-                            'Copy'
-                          )}
-                        </button>
+                            {linkCopied ? (
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            ) : (
+                              'Copy'
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <MarketingFooter />
     </div>

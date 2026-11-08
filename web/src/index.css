@@ -2659,8 +2659,12 @@ select:disabled {
    the bottom of the screen behind it and shows as the content scrolls away. The wrapper takes the
    footer's color so the rounded corners show it too. */
 .lp.lp-has-curtain {
-  --curtain-radius: clamp(40px, 7vw, 96px);
+  --curtain-radius: clamp(28px, 4.5vw, 64px);
   background: var(--lp-bg3);
+  /* On short pages the curtain stretches so the footer still sits at the bottom of the screen. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 /* No rubber-band overscroll past the footer on pages with the reveal, and if a browser bounces
    anyway it shows the footer color, not white. */
@@ -2695,6 +2699,7 @@ body:has(.lp-has-curtain) {
   overscroll-behavior-y: none;
 }
 .lp-curtain {
+  flex: 1 0 auto;
   position: relative;
   z-index: 1;
   background: var(--lp-bg);
