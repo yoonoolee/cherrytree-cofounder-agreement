@@ -445,14 +445,14 @@ const FEATURES = [
     panel: 2,
     title: 'We draft it',
     desc: 'Cherrytree turns your answers into a complete Cofounder Agreement covering equity, vesting, roles, IP and decision-making.',
-    short: 'A complete agreement, drafted from your answers.',
+    short: 'We turn your answers into a complete agreement. Every section covered.',
   },
   {
     num: '04',
     panel: 3,
     title: 'Review and sign',
     desc: "Read through your draft, edit anything you want, and sign when everyone's on the same page.",
-    short: 'Review, edit if needed, and sign.',
+    short: 'Change anything with a click and sign in minutes. No back-and-forth.',
   },
 ];
 

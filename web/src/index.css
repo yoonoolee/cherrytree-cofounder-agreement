@@ -1856,7 +1856,7 @@ select:disabled {
 }
 /* ── What you get (bento) ── */
 /* The grid itself doesn't fade in: once it scrolls into view (.lp-rv-in), its tiles pop in one
-   after another with a little bounce. */
+   after another. */
 .lp-bento.lp-rv {
   opacity: 1;
   transform: none;
@@ -1866,7 +1866,7 @@ select:disabled {
   opacity: 0;
 }
 .lp-bento.lp-rv-in .lp-bento-tile {
-  animation: lpBentoPop 0.5s ease-out both;
+  animation: lpBentoPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .lp-bento.lp-rv-in .lp-bento-tile:nth-child(2) {
   animation-delay: 0.09s;
@@ -1884,13 +1884,6 @@ select:disabled {
   0% {
     opacity: 0;
     transform: scale(0.82);
-  }
-  45% {
-    opacity: 1;
-    transform: scale(1.04);
-  }
-  72% {
-    transform: scale(0.985);
   }
   100% {
     opacity: 1;
