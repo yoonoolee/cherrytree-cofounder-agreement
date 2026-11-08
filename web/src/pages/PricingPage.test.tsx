@@ -77,11 +77,10 @@ describe('PricingPage', () => {
     expect(faq.mainEntity.map((q) => q.name)).toEqual([
       'Which plan is right for me?',
       'Is the price per agreement or per person?',
-      'Do you offer discounts?',
       'Can we upgrade anytime?',
       'Do we pay again to edit later?',
     ]);
-    expect(faq.mainEntity[2]?.acceptedAnswer.text).toMatch(/tim@cherrytree\.app/);
+    expect(faq.mainEntity[2]?.acceptedAnswer.text).toMatch(/upgrade to Scale/);
 
     unmount();
     expect(document.getElementById('faq-schema')).toBeNull();
@@ -152,7 +151,7 @@ describe('PricingPage', () => {
 
   it('opens an FAQ on click and closes it again', () => {
     renderPage();
-    const question = 'Do you offer discounts?';
+    const question = 'Can we upgrade anytime?';
     expect(faqBody(question)).not.toHaveClass('open');
 
     fireEvent.click(screen.getByRole('button', { name: question }));

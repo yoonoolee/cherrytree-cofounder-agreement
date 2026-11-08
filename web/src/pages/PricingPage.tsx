@@ -39,10 +39,6 @@ const FAQS: readonly Faq[] = [
     a: 'The price covers one agreement. You can add as many cofounders as you want, even on the Bootstrapped plan. Only one person pays and answers the questions; your cofounders review the draft before signing. A new company later needs a separate purchase.',
   },
   {
-    q: 'Do you offer discounts?',
-    a: "If you're currently a student, reach out to tim@cherrytree.app with your .edu email and we'll get you a discount.",
-  },
-  {
     q: 'Can we upgrade anytime?',
     a: 'Yes. If you start with Bootstrapped but realize you want an attorney review, you can upgrade to Scale at any time.',
   },
