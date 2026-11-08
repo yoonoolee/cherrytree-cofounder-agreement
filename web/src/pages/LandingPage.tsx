@@ -583,12 +583,13 @@ function LandingPage() {
   const goDash = () => goToDashboard(navigate);
 
   // Arriving as /#section (the nav's "How it works") — ResetPagePosition has just scrolled to the
-  // top, so scroll to the target section after it.
+  // top, so scroll to the target section after it. Then drop the hash so a refresh opens at the top.
   useEffect(() => {
     const id = hash.replace('#', '');
     if (!id) return;
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  }, [hash]);
+    navigate({ hash: '' }, { replace: true });
+  }, [hash, navigate]);
 
   // Trigger each typewriter once, the first time its headline scrolls into view.
   useEffect(() => {
