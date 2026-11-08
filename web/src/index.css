@@ -2424,7 +2424,7 @@ select:disabled {
 .lp-pw {
   display: grid;
   /* The white card hugs the two plans, with a modest margin on either side. */
-  grid-template-columns: repeat(2, minmax(0, 420px));
+  grid-template-columns: repeat(var(--pw-cols, 2), minmax(0, 420px));
   justify-content: center;
   /* One spacing for the gap between the plans and the card's top and side edges. */
   --pw-space: 24px;
@@ -2524,147 +2524,6 @@ select:disabled {
     grid-template-columns: 1fr;
     width: auto;
   }
-}
-
-/* ── Pricing ── */
-.lp-pricing {
-  padding: 140px var(--lp-gutter);
-}
-.lp-pricing-header {
-  margin-bottom: 60px;
-}
-.lp-pricing-header h2 {
-  font-family: 'Instrument Serif', serif;
-  font-size: clamp(30px, 4vw, 52px);
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  line-height: 1.1;
-  margin-bottom: 14px;
-}
-.lp-pricing-header p {
-  font-size: 19px;
-  font-weight: 300;
-  color: #47433f;
-  line-height: 1.7;
-}
-.lp-pricing-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-  align-items: start;
-}
-.lp-pricing-card {
-  background: #fff;
-  border-radius: var(--lp-radius);
-  padding: 38px 34px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
-.lp-pricing-badge {
-  display: none;
-}
-.lp-pricing-tier {
-  font-size: 16px;
-  font-weight: 300;
-  letter-spacing: 0.02em;
-  color: var(--lp-ink);
-  margin-bottom: 16px;
-}
-.lp-pricing-price {
-  font-family: 'Instrument Serif', serif;
-  font-size: 58px;
-  font-weight: 400;
-  letter-spacing: 0;
-  color: var(--lp-ink);
-  line-height: 1;
-  margin-bottom: 4px;
-}
-.lp-pricing-price.lp-pricing-price-custom {
-  font-size: 40px;
-}
-.lp-pricing-price span {
-  font-size: 22px;
-  letter-spacing: 0;
-}
-.lp-pricing-period {
-  font-size: 12px;
-  letter-spacing: 0.02em;
-  color: var(--lp-faint);
-  margin-bottom: 28px;
-}
-.lp-pricing-divider {
-  height: 1px;
-  background: var(--lp-bg3);
-  margin-bottom: 28px;
-}
-.lp-pricing-desc {
-  font-size: 16px;
-  font-weight: 300;
-  color: var(--lp-muted);
-  line-height: 1.55;
-  margin-bottom: 28px;
-}
-.lp-pricing-features {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 36px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 11px;
-  flex: 1;
-}
-.lp-pricing-feat {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 15px;
-  font-weight: 300;
-  color: var(--lp-ink);
-  line-height: 1.5;
-}
-.lp-pf-check {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  margin-top: 3px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.lp-pf-check svg {
-  width: 8px;
-  height: 8px;
-}
-.lp-pricing-cta {
-  display: block;
-  width: 100%;
-  padding: 14px;
-  border-radius: 7px;
-  font-size: 16px;
-  font-weight: 100;
-  letter-spacing: 0.04em;
-  text-align: center;
-  cursor: pointer;
-  border: none;
-  outline: none;
-  font-family: var(--lp-sans);
-  transition: all 0.15s;
-  text-decoration: none;
-  background: var(--lp-ink);
-  color: #fff;
-}
-.lp-pricing-cta:hover {
-  background: #000;
-}
-.lp-pricing-cta.outline,
-.lp-pricing-cta.solid {
-  background: #e2dfd7;
-  color: var(--lp-ink);
-}
-.lp-pricing-cta.outline:hover,
-.lp-pricing-cta.solid:hover {
-  background: #d4d0c5;
 }
 
 /* ── FAQ ── */
@@ -2922,12 +2781,6 @@ body:has(.lp-has-curtain) {
   .lp-stats-inner {
     grid-template-columns: 1fr;
     gap: 48px;
-  }
-  .lp-pricing {
-    padding: 80px 24px;
-  }
-  .lp-pricing-grid {
-    grid-template-columns: 1fr;
   }
   .lp-faq {
     padding: 80px 24px;
@@ -3592,10 +3445,6 @@ textarea.lp-form-input {
 }
 .lp-pricing-pg-cards-wrap {
   padding: 20px var(--lp-gutter) 140px;
-}
-.lp-pricing-pg-cards-wrap .lp-pricing-grid {
-  max-width: 1360px;
-  margin: 0 auto;
 }
 
 /* Compare table */

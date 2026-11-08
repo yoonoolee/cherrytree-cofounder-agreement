@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { usePageMeta } from '../hooks/usePageMeta.ts';
-import { useEnterpriseCardHeight } from '../hooks/useEnterpriseCardHeight.ts';
 import MarketingNav from '../components/MarketingNav.tsx';
 import MarketingFooter from '../components/MarketingFooter.tsx';
 import MarketingGrain from '../components/MarketingGrain.tsx';
+import PlanCards from '../components/PlanCards.tsx';
 import FaqList, { type Faq } from '../components/FaqList.tsx';
 import { goToDashboard } from '../utils/goToDashboard.ts';
 import { MARKETING_PLANS } from '../constants/pricing.ts';
@@ -116,8 +116,6 @@ function PricingPage() {
 
   const goDash = () => goToDashboard(navigate);
 
-  const pricingCardRefs = useEnterpriseCardHeight();
-
   return (
     <div className="lp" style={{ minHeight: '100vh' }}>
       <MarketingGrain />
@@ -133,61 +131,7 @@ function PricingPage() {
 
       {/* Cards */}
       <section className="lp-pricing-pg-cards-wrap">
-        <div className="lp-pricing-grid">
-          {MARKETING_PLANS.map((p, i) => (
-            <div
-              key={i}
-              ref={(el) => {
-                pricingCardRefs.current[i] = el;
-              }}
-              className={`lp-pricing-card${p.featured ? ' featured' : ''}`}
-            >
-              {p.badge && <div className="lp-pricing-badge">{p.badge}</div>}
-              <div className="lp-pricing-tier">{p.tier}</div>
-              <div className="lp-pricing-price">
-                {p.price.startsWith('$') ? (
-                  <>
-                    <span>$</span>
-                    {p.price.slice(1)}
-                  </>
-                ) : (
-                  p.price
-                )}
-              </div>
-              <div className="lp-pricing-period">{p.period}</div>
-              <div className="lp-pricing-divider" />
-              <p className="lp-pricing-desc">{p.desc}</p>
-              <ul className="lp-pricing-features">
-                {p.features.map((f, j) => (
-                  <li key={j} className="lp-pricing-feat">
-                    <span className="lp-pf-check">
-                      <svg viewBox="0 0 8 8" fill="none">
-                        <path
-                          d="M1.5 4l2 2 3-3"
-                          stroke={p.featured ? '#6a9e8a' : '#4B7263'}
-                          strokeWidth="1.2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <button
-                className={`lp-pricing-cta ${p.ctaStyle}`}
-                onClick={() =>
-                  p.enterprise
-                    ? window.Tally?.openPopup('2EEB99', { layout: 'modal', width: 700 })
-                    : goDash()
-                }
-              >
-                {p.cta}
-              </button>
-            </div>
-          ))}
-        </div>
+        <PlanCards plans={MARKETING_PLANS} onStart={goDash} />
       </section>
 
       {/* Compare table */}

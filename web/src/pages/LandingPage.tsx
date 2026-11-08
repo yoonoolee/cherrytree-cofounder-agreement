@@ -14,6 +14,7 @@ import MarketingFooter from '../components/MarketingFooter.tsx';
 import MarketingGrain from '../components/MarketingGrain.tsx';
 import { goToDashboard } from '../utils/goToDashboard.ts';
 import { MARKETING_PLANS } from '../constants/pricing.ts';
+import PlanCards from '../components/PlanCards.tsx';
 
 type Timer = ReturnType<typeof setTimeout>;
 
@@ -455,16 +456,8 @@ const FEATURES = [
   },
 ];
 
-// The self-serve plans shown on the landing page (Enterprise lives on the pricing page). A plan
-// that starts "Everything in …" gets that as its intro line instead of a checklist item.
-const LANDING_PLANS = MARKETING_PLANS.filter((p) => !p.enterprise).map((p) => {
-  const inherits = p.features[0]?.startsWith('Everything in');
-  return {
-    ...p,
-    includes: inherits ? `${p.features[0]}, plus:` : 'Everything you need for one agreement:',
-    list: inherits ? p.features.slice(1) : p.features,
-  };
-});
+// The self-serve plans shown on the landing page (Enterprise lives on the pricing page).
+const LANDING_PLANS = MARKETING_PLANS.filter((p) => !p.enterprise);
 
 // Section titles whose words light up one by one as they scroll up the screen.
 const LIT_HOW_IT_WORKS =
@@ -747,37 +740,7 @@ function LandingPage() {
             <div className="lp-feat-header lp-lit-header">
               <ScrollLitStatement text={LIT_PRICING} />
             </div>
-            <div className="lp-pw">
-              {LANDING_PLANS.map((plan) => (
-                <article key={plan.tier} className="lp-pw-card">
-                  <div className="lp-pw-panel">
-                    <h3 className="lp-pw-tier">{plan.tier}</h3>
-                    <div className="lp-pw-price">
-                      {plan.price}
-                      <span>one-time</span>
-                    </div>
-                  </div>
-                  <button className="lp-btn-primary lp-plan-cta" onClick={goDash}>
-                    {plan.cta}
-                  </button>
-                  <ul className="lp-pw-features">
-                    {plan.featured && (
-                      <li className="lp-pw-includes">
-                        {plan.includes.replace(/:$/, '')} <span aria-hidden="true">↴</span>
-                      </li>
-                    )}
-                    {plan.list.map((f) => (
-                      <li key={f}>
-                        <span className="lp-pw-tick" aria-hidden="true">
-                          ✓
-                        </span>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                </article>
-              ))}
-            </div>
+            <PlanCards plans={LANDING_PLANS} onStart={goDash} />
           </div>
         </section>
 

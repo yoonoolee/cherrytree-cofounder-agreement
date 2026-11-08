@@ -55,14 +55,12 @@ export const PRICING_PLANS: readonly PricingPlan[] = [
  */
 export interface MarketingPlan {
   tier: string;
-  /** `$…` or `Custom`; PricingPage renders the sign in its own span. */
+  /** `$…`, or `Let's talk` for the quote-based Enterprise tier. */
   price: string;
   period: string;
   desc: string;
   features: readonly string[];
   cta: string;
-  ctaStyle: 'outline' | 'filled' | 'solid';
-  badge?: string;
   featured?: boolean;
   /** Contact sales opens the Tally form instead of the dashboard. */
   enterprise?: boolean;
@@ -82,13 +80,11 @@ export const MARKETING_PLANS: readonly MarketingPlan[] = [
       'Covers all your cofounders',
     ],
     cta: 'Get started',
-    ctaStyle: 'outline',
   },
   {
     tier: 'Scale',
     price: '$2,000',
     period: 'One-time payment',
-    badge: 'Most popular',
     desc: 'For funded teams that want more detail and expert backing.',
     features: [
       'Everything in Bootstrapped',
@@ -98,12 +94,11 @@ export const MARKETING_PLANS: readonly MarketingPlan[] = [
       'Priority support',
     ],
     cta: 'Get started',
-    ctaStyle: 'filled',
     featured: true,
   },
   {
     tier: 'Enterprise',
-    price: 'Custom',
+    price: "Let's talk",
     period: 'Contact for volume pricing',
     desc: "Running a fund or accelerator and want to deploy in bulk? We'll set you up.",
     features: [
@@ -113,7 +108,6 @@ export const MARKETING_PLANS: readonly MarketingPlan[] = [
       'Dedicated account support',
     ],
     cta: 'Contact sales',
-    ctaStyle: 'solid',
     enterprise: true,
   },
 ];

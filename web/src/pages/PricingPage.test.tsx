@@ -48,7 +48,7 @@ function renderPage() {
 }
 
 const path = () => screen.getByTestId('path').textContent;
-const cards = () => Array.from(document.querySelectorAll<HTMLElement>('.lp-pricing-card'));
+const cards = () => Array.from(document.querySelectorAll<HTMLElement>('.lp-pw-card'));
 const faqBody = (question: string) =>
   screen.getByRole('button', { name: question }).parentElement?.querySelector('.lp-faq-body');
 const protectMark = () => document.querySelector('.lp-protect-cta .lp-hl-mark');
@@ -93,22 +93,19 @@ describe('PricingPage', () => {
 
     const [bootstrapped, scale, enterprise] = cards();
     expect(cards()).toHaveLength(3);
-    expect(bootstrapped).toHaveTextContent('Bootstrapped');
-    expect(bootstrapped?.querySelector('.lp-pricing-price')).toHaveTextContent('$20');
-    expect(bootstrapped?.querySelector('.lp-pricing-price > span')).toHaveTextContent('$');
-    expect(bootstrapped).not.toHaveClass('featured');
-    expect(bootstrapped?.querySelectorAll('.lp-pricing-feat')).toHaveLength(5);
+    expect(bootstrapped?.querySelector('.lp-pw-tier')).toHaveTextContent('Bootstrapped');
+    expect(bootstrapped?.querySelector('.lp-pw-price')).toHaveTextContent('$20one-time');
+    expect(bootstrapped?.querySelectorAll('.lp-pw-features li')).toHaveLength(5);
 
-    expect(scale).toHaveClass('featured');
-    expect(scale?.querySelector('.lp-pricing-badge')).toHaveTextContent('Most popular');
-    expect(scale?.querySelector('.lp-pricing-price')).toHaveTextContent('$2,000');
+    expect(scale?.querySelector('.lp-pw-price')).toHaveTextContent('$2,000one-time');
+    expect(scale?.querySelector('.lp-pw-includes')).toHaveTextContent(
+      'Everything in Bootstrapped, plus',
+    );
 
-    expect(enterprise?.querySelector('.lp-pricing-price')).toHaveTextContent('Custom');
-    expect(enterprise?.querySelector('.lp-pricing-price > span')).toBeNull();
-    expect(enterprise?.querySelector('.lp-pricing-cta')).toHaveTextContent('Contact sales');
-    expect(enterprise?.querySelector('.lp-pricing-cta')).toHaveClass('solid');
-    expect(scale?.querySelector('.lp-pricing-cta')).toHaveClass('filled');
-    expect(bootstrapped?.querySelector('.lp-pricing-cta')).toHaveClass('outline');
+    expect(enterprise?.querySelector('.lp-pw-tier')).toHaveTextContent('Enterprise');
+    expect(enterprise?.querySelector('.lp-pw-price')).toHaveTextContent("Let's talk");
+    expect(enterprise?.querySelector('.lp-pw-price > span')).toBeNull();
+    expect(enterprise?.querySelector('button')).toHaveTextContent('Contact sales');
 
     expect(screen.getByTestId('grain')).toBeInTheDocument();
     expect(screen.getByTestId('nav')).toBeInTheDocument();
@@ -173,20 +170,5 @@ describe('PricingPage', () => {
     expect(observer).toBeDefined();
     act(() => observer!.intersect());
     expect(protectMark()).toHaveClass('in');
-  });
-
-  it('gives the Enterprise card the Bootstrapped height, also after a resize', () => {
-    const offsetHeight = vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get');
-    offsetHeight.mockReturnValue(480);
-    renderPage();
-    const [, , enterprise] = cards();
-    expect(enterprise?.style.height).toBe('480px');
-
-    offsetHeight.mockReturnValue(520);
-    act(() => {
-      window.dispatchEvent(new Event('resize'));
-    });
-    expect(enterprise?.style.height).toBe('520px');
-    offsetHeight.mockRestore();
   });
 });
