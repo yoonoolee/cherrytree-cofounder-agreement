@@ -1060,6 +1060,38 @@ select:disabled {
 .lp-nav-cta:hover {
   background: #000000;
 }
+/* Phone-only: the menu toggle and the menu's own Sign in link. */
+.lp-nav-toggle,
+.lp-nav-links .lp-nav-menu-only {
+  display: none;
+}
+.lp-nav-toggle {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: 44px;
+  height: 44px;
+  margin-right: -10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.lp-nav-toggle span {
+  display: block;
+  width: 20px;
+  height: 1.5px;
+  background: var(--lp-ink);
+  border-radius: 1px;
+  transition: transform 0.2s ease;
+}
+.lp-nav.open .lp-nav-toggle span:first-child {
+  transform: translateY(3.75px) rotate(45deg);
+}
+.lp-nav.open .lp-nav-toggle span:last-child {
+  transform: translateY(-3.75px) rotate(-45deg);
+}
 
 /* ── Shared buttons ── */
 .lp-btn-primary {
@@ -2751,10 +2783,43 @@ body:has(.lp-has-curtain) {
 /* ── Mobile ── */
 @media (max-width: 768px) {
   .lp-nav {
-    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 20px;
+  }
+  .lp-nav-signin {
+    display: none;
+  }
+  .lp-nav-toggle {
+    display: flex;
   }
   .lp-nav-links {
     display: none;
+  }
+  .lp-nav.open .lp-nav-links {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    padding: 8px 20px 16px;
+    background: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.12);
+  }
+  .lp-nav.open .lp-nav-links .lp-nav-menu-only {
+    display: block;
+  }
+  .lp-nav.open .lp-nav-links li a,
+  .lp-nav.open .lp-nav-links li button {
+    width: 100%;
+    min-height: 48px;
+    padding: 0;
+    font-size: 17px;
+    color: var(--lp-ink);
   }
   .lp-hero {
     padding: 130px 24px 80px;
@@ -2807,8 +2872,16 @@ body:has(.lp-has-curtain) {
     gap: 24px;
   }
   .lp-footer-links {
-    gap: 20px;
+    gap: 0 24px;
     flex-wrap: wrap;
+  }
+  /* Thumb-sized tap targets, without changing how the links look. */
+  .lp-footer-links a,
+  .lp-footer-links button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 14px;
   }
   .lp-pricing-pg-compare {
     padding: 80px 24px;

@@ -35,6 +35,22 @@ describe('MarketingNav', () => {
     expect(screen.getByTestId('path')).toHaveTextContent('/');
   });
 
+  it('opens and closes the phone menu, and closes it after "How it works"', () => {
+    const { container } = renderNav('/pricing');
+    const nav = container.querySelector('nav')!;
+    expect(nav).not.toHaveClass('open');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }));
+    expect(nav).toHaveClass('open');
+    expect(screen.getByRole('button', { name: 'Close menu' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'How it works' }));
+    expect(nav).not.toHaveClass('open');
+  });
+
   describe('How it works', () => {
     it('scrolls to the section when already on the landing page', () => {
       const section = document.createElement('section');
