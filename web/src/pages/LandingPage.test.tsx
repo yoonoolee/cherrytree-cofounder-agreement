@@ -113,21 +113,16 @@ describe('LandingPage', () => {
     expect(breadcrumbs()).toEqual([]);
   });
 
-  it('shows the two self-serve plans with a link to all plans', () => {
+  it('shows the two self-serve plans', () => {
     renderPage();
-    const plans = Array.from(document.querySelectorAll('.lp-plan'));
-    expect(plans.map((p) => p.querySelector('.lp-plan-tier')?.firstChild?.textContent)).toEqual([
+    const plans = Array.from(document.querySelectorAll('#pricing .lp-pw-card'));
+    expect(plans.map((p) => p.querySelector('.lp-pw-tier')?.textContent)).toEqual([
       'Bootstrapped',
       'Scale',
     ]);
-    expect(plans[0]!.querySelector('.lp-plan-price')).toHaveTextContent('$20');
-    expect(plans[1]).toHaveClass('featured');
-    expect(plans[1]!.querySelector('.lp-plan-includes')).toHaveTextContent(
-      'Everything in Bootstrapped, plus:',
-    );
-    expect(screen.getByRole('link', { name: 'Compare all plans →' })).toHaveAttribute(
-      'href',
-      '/pricing',
+    expect(plans[0]!.querySelector('.lp-pw-price')).toHaveTextContent('$20one-time');
+    expect(plans[1]!.querySelector('.lp-pw-includes')).toHaveTextContent(
+      'Everything in Bootstrapped, plus',
     );
   });
 
