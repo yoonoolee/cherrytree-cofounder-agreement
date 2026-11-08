@@ -144,13 +144,13 @@ describe('PricingPage', () => {
   it('marks the compare table per plan', () => {
     renderPage();
     const rows = screen.getAllByRole('row').slice(1); // skip the header
-    expect(rows).toHaveLength(13);
+    expect(rows).toHaveLength(8);
     const marks = (column: number) =>
       rows.filter((row) => row.querySelectorAll('td')[column]?.textContent === '✓').length;
-    expect(marks(1)).toBe(6); // Bootstrapped
-    expect(marks(2)).toBe(9); // Scale
-    expect(marks(3)).toBe(13); // Enterprise
-    expect(rows[6]?.querySelectorAll('td')[1]).toHaveTextContent('—');
+    expect(marks(1)).toBe(2); // Bootstrapped
+    expect(marks(2)).toBe(5); // Scale
+    expect(marks(3)).toBe(8); // Enterprise
+    expect(rows[2]?.querySelectorAll('td')[1]).toHaveTextContent('Not included');
   });
 
   it('opens an FAQ on click and closes it again', () => {

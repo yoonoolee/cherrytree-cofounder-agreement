@@ -2964,20 +2964,20 @@ select:disabled {
 .lp-faq-list {
   display: flex;
   flex-direction: column;
+  gap: 12px;
   width: 100%;
 }
+/* Each question sits in its own white box. */
 .lp-faq-item {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-}
-.lp-faq-item:first-child {
-  border-top: none;
+  background: #fff;
+  border-radius: var(--lp-radius);
 }
 .lp-faq-btn {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 16px 4px;
+  padding: 22px 24px;
   background: none;
   border: none;
   cursor: pointer;
@@ -2985,9 +2985,9 @@ select:disabled {
   gap: 24px;
 }
 .lp-faq-q {
-  font-size: 19px;
-  font-weight: 300;
-  color: #47433f;
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--lp-ink);
   text-align: left;
   line-height: 1.5;
 }
@@ -3006,8 +3006,8 @@ select:disabled {
   left: 50%;
   width: 9px;
   height: 9px;
-  border-right: 1.4px solid var(--lp-faint);
-  border-bottom: 1.4px solid var(--lp-faint);
+  border-right: 1.4px solid var(--lp-ink);
+  border-bottom: 1.4px solid var(--lp-ink);
   transform: translate(-50%, -70%) rotate(45deg);
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -3030,7 +3030,7 @@ select:disabled {
   font-weight: 300;
   color: var(--lp-muted);
   line-height: 1.55;
-  padding: 0 4px 16px;
+  padding: 0 24px 22px;
   max-width: 560px;
   margin: 0;
 }
@@ -3162,8 +3162,14 @@ select:disabled {
     padding: 80px 24px;
   }
   .lp-ppt-row td {
-    padding: 12px 0;
+    padding: 16px 0;
     font-size: 14px;
+  }
+  .lp-pricing-pg-table th {
+    font-size: 14px;
+  }
+  .lp-pricing-pg-table th.lp-ppt-feature-col {
+    width: 40%;
   }
 }
 
@@ -3803,58 +3809,54 @@ textarea.lp-form-input {
 .lp-pricing-pg-compare {
   padding: 140px var(--lp-gutter) 140px;
 }
-.lp-pricing-pg-compare-title {
-  font-family: 'Instrument Serif', serif;
-  font-size: clamp(26px, calc(3.4vw - 2px), 42px);
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  line-height: 1.1;
-  margin-bottom: 14px;
-}
-.lp-pricing-pg-compare-sub {
-  font-size: 19px;
-  font-weight: 300;
-  color: #47433f;
-  line-height: 1.5;
-  max-width: 620px;
-  margin-bottom: 32px;
-}
 .lp-pricing-pg-table {
   width: 100%;
   border-collapse: collapse;
-  background: transparent;
+  table-layout: fixed;
 }
+/* Header: the section title on the left, the plan names over their columns. */
 .lp-pricing-pg-table th {
-  padding: 12px 0;
-  font-size: 12px;
+  padding: 0 0 28px;
+  font-size: 19px;
   font-weight: 400;
-  letter-spacing: 0.02em;
-  color: var(--lp-faint);
-  text-align: center;
-  border-bottom: 1px solid var(--lp-bg3);
+  color: var(--lp-ink);
+  text-align: left;
+  vertical-align: bottom;
 }
 .lp-pricing-pg-table th.lp-ppt-feature-col {
-  text-align: left;
+  width: 46%;
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(26px, calc(3.4vw - 2px), 42px); /* same as the section titles */
+  line-height: 1.1;
+  letter-spacing: 0.02em;
 }
 .lp-ppt-row td {
-  padding: 14px 0;
-  font-size: 15px;
+  padding: 24px 0;
+  font-size: 16px;
   font-weight: 300;
   color: var(--lp-ink);
-  text-align: center;
-  border-bottom: 1px solid #eeebe6;
-}
-.lp-ppt-row:last-child td {
-  border-bottom: none;
+  text-align: left;
+  border-top: 1px solid #eeebe6;
 }
 .lp-ppt-row td.lp-ppt-label {
-  text-align: left;
-  color: var(--lp-muted);
+  font-weight: 400;
 }
 .lp-ppt-check {
-  color: var(--lp-green-text);
-  font-size: 15px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--lp-ink);
 }
-.lp-ppt-dash {
-  color: var(--lp-faint);
+.lp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

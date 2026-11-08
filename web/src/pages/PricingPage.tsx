@@ -19,19 +19,14 @@ interface CompareRow {
 }
 
 const COMPARE_ROWS: readonly CompareRow[] = [
-  { label: 'Equity & vesting schedules', b: true, s: true, e: true },
-  { label: 'Roles & responsibilities', b: true, s: true, e: true },
-  { label: 'Intellectual property', b: true, s: true, e: true },
-  { label: 'Decision-making & voting', b: true, s: true, e: true },
-  { label: 'Non-compete & exit clauses', b: true, s: true, e: true },
+  { label: 'Complete 10-section agreement', b: true, s: true, e: true },
   { label: 'Email support', b: true, s: true, e: true },
   { label: 'Priority support', b: false, s: true, e: true },
   { label: 'Attorney review', b: false, s: true, e: true },
   { label: 'Cofounder coaching', b: false, s: true, e: true },
-  { label: 'Dedicated account manager', b: false, s: false, e: true },
-  { label: 'Bulk licensing', b: false, s: false, e: true },
-  { label: 'Branded experience', b: false, s: false, e: true },
   { label: 'Cohort dashboard', b: false, s: false, e: true },
+  { label: 'Branded experience', b: false, s: false, e: true },
+  { label: 'Dedicated account manager', b: false, s: false, e: true },
 ];
 
 const FAQS: readonly Faq[] = [
@@ -58,8 +53,12 @@ const FAQS: readonly Faq[] = [
 ];
 
 function Check({ on }: { on: boolean }) {
-  if (!on) return <span className="lp-ppt-dash">—</span>;
-  return <span className="lp-ppt-check">✓</span>;
+  if (!on) return <span className="lp-sr-only">Not included</span>;
+  return (
+    <span className="lp-ppt-check" aria-label="Included">
+      ✓
+    </span>
+  );
 }
 
 function PricingPage() {
@@ -193,15 +192,10 @@ function PricingPage() {
 
       {/* Compare table */}
       <section className="lp-pricing-pg-compare">
-        <h2 className="lp-pricing-pg-compare-title">Compare plans</h2>
-        <p className="lp-pricing-pg-compare-sub">
-          Each plan covers one cofounder agreement. Tell us about your company in your own words,
-          answer a few follow-ups, and get a complete agreement ready to review and sign.
-        </p>
         <table className="lp-pricing-pg-table">
           <thead>
             <tr>
-              <th className="lp-ppt-feature-col"></th>
+              <th className="lp-ppt-feature-col">Compare plans</th>
               <th>Bootstrapped</th>
               <th>Scale</th>
               <th>Enterprise</th>
