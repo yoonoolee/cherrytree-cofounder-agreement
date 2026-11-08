@@ -2514,21 +2514,20 @@ select:disabled {
   align-items: start;
 }
 .lp-pricing-card {
-  background: #fefefe;
+  background: #fff;
   border-radius: var(--lp-radius);
   padding: 38px 34px;
   position: relative;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
 }
 .lp-pricing-badge {
   display: none;
 }
 .lp-pricing-tier {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 300;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: var(--lp-ink);
   margin-bottom: 16px;
 }
@@ -2536,14 +2535,13 @@ select:disabled {
   font-family: 'Instrument Serif', serif;
   font-size: 58px;
   font-weight: 400;
-  letter-spacing: -0.5px;
+  letter-spacing: 0;
   color: var(--lp-ink);
   line-height: 1;
   margin-bottom: 4px;
 }
 .lp-pricing-price.lp-pricing-price-custom {
   font-size: 40px;
-  letter-spacing: -1px;
 }
 .lp-pricing-price span {
   font-size: 22px;
@@ -2551,6 +2549,7 @@ select:disabled {
 }
 .lp-pricing-period {
   font-size: 12px;
+  letter-spacing: 0.02em;
   color: var(--lp-faint);
   margin-bottom: 28px;
 }
@@ -2560,10 +2559,10 @@ select:disabled {
   margin-bottom: 28px;
 }
 .lp-pricing-desc {
-  font-size: 13.5px;
+  font-size: 16px;
   font-weight: 300;
   color: var(--lp-muted);
-  line-height: 1.6;
+  line-height: 1.55;
   margin-bottom: 28px;
 }
 .lp-pricing-features {
@@ -2579,7 +2578,7 @@ select:disabled {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 300;
   color: var(--lp-ink);
   line-height: 1.5;
@@ -2588,7 +2587,7 @@ select:disabled {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2600,8 +2599,8 @@ select:disabled {
 .lp-pricing-cta {
   display: block;
   width: 100%;
-  padding: 13px;
-  border-radius: 8px;
+  padding: 14px;
+  border-radius: 7px;
   font-size: 16px;
   font-weight: 100;
   letter-spacing: 0.04em;
@@ -2629,9 +2628,9 @@ select:disabled {
 }
 
 /* ── FAQ ── */
-/* 340px clear above and below (the sections around it end/start with 140px and 110px). */
+/* Same rhythm as the landing sections: 140px top and bottom. */
 .lp-faq {
-  padding: 200px var(--lp-gutter) 230px;
+  padding: 140px var(--lp-gutter);
 }
 .lp-faq-inner {
   margin: 0 8px;
@@ -2648,7 +2647,7 @@ select:disabled {
 }
 .lp-faq-visual h2 {
   font-family: 'Instrument Serif', serif;
-  font-size: clamp(28px, 3vw, 40px);
+  font-size: clamp(26px, calc(3.4vw - 2px), 42px);
   font-weight: 400;
   letter-spacing: 0.02em;
   line-height: 1.15;
@@ -2723,10 +2722,10 @@ select:disabled {
   overflow: hidden;
 }
 .lp-faq-a {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 300;
   color: var(--lp-muted);
-  line-height: 1.6;
+  line-height: 1.55;
   padding: 0 4px 16px;
   max-width: 560px;
   margin: 0;
@@ -2834,7 +2833,7 @@ select:disabled {
     grid-template-columns: 1fr;
   }
   .lp-faq {
-    padding: 80px 24px 244px;
+    padding: 80px 24px;
   }
   .lp-faq-card {
     grid-template-columns: 1fr;
@@ -2856,11 +2855,11 @@ select:disabled {
     flex-wrap: wrap;
   }
   .lp-pricing-pg-compare {
-    padding: 0 24px 48px;
+    padding: 80px 24px;
   }
   .lp-ppt-row td {
     padding: 12px 0;
-    font-size: 13px;
+    font-size: 14px;
   }
 }
 
@@ -3468,7 +3467,7 @@ textarea.lp-form-input {
 
 /* ── Pricing Page specific ── */
 .lp-pricing-pg-hero {
-  padding: 180px var(--lp-gutter) 80px;
+  padding: 170px var(--lp-gutter) 80px;
   text-align: center;
   background-color: var(--lp-bg);
 }
@@ -3495,37 +3494,26 @@ textarea.lp-form-input {
   max-width: 1360px;
   margin: 0 auto;
 }
-.lp-pricing-pg-cards-wrap .lp-pricing-price {
-  letter-spacing: -2px;
-}
-.lp-pricing-pg-cards-wrap .lp-pricing-price.lp-pricing-price-custom {
-  letter-spacing: -2px;
-}
 
 /* Compare table */
 .lp-pricing-pg-compare {
-  padding: 0 var(--lp-gutter) 140px;
-}
-.lp-pricing-pg-compare-inner {
-  max-width: 860px;
-  margin: 0 auto;
+  padding: 140px var(--lp-gutter) 140px;
 }
 .lp-pricing-pg-compare-title {
   font-family: 'Instrument Serif', serif;
-  font-size: clamp(26px, 3.5vw, 42px);
+  font-size: clamp(26px, calc(3.4vw - 2px), 42px);
   font-weight: 400;
-  letter-spacing: -0.8px;
+  letter-spacing: 0.02em;
   line-height: 1.1;
-  text-align: left;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 .lp-pricing-pg-compare-sub {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 300;
   color: #47433f;
-  line-height: 1.7;
-  text-align: left;
-  margin-bottom: 48px;
+  line-height: 1.5;
+  max-width: 620px;
+  margin-bottom: 32px;
 }
 .lp-pricing-pg-table {
   width: 100%;
@@ -3535,21 +3523,22 @@ textarea.lp-form-input {
 .lp-pricing-pg-table th {
   padding: 12px 0;
   font-size: 12px;
-  font-weight: 500;
-  color: var(--lp-muted);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--lp-faint);
   text-align: center;
-  border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid var(--lp-bg3);
 }
 .lp-pricing-pg-table th.lp-ppt-feature-col {
   text-align: left;
 }
 .lp-ppt-row td {
   padding: 14px 0;
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 300;
   color: var(--lp-ink);
   text-align: center;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid #eeebe6;
 }
 .lp-ppt-row:last-child td {
   border-bottom: none;
@@ -3557,7 +3546,6 @@ textarea.lp-form-input {
 .lp-ppt-row td.lp-ppt-label {
   text-align: left;
   color: var(--lp-muted);
-  font-size: 13px;
 }
 .lp-ppt-check {
   color: var(--lp-green-text);

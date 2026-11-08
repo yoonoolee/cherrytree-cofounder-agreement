@@ -37,11 +37,11 @@ const COMPARE_ROWS: readonly CompareRow[] = [
 const FAQS: readonly Faq[] = [
   {
     q: 'Which plan is right for me?',
-    a: "If your cofoundership is fairly simple, get the Bootstrapped plan. You fill out a survey and receive a ready-to-use cofounder agreement. If your cofoundership is more complex, or if you want extra peace of mind, get Scale — you'll get an attorney review and a cofounder coach.",
+    a: "If your cofoundership is fairly simple, get the Bootstrapped plan. You tell us about your company in your own words and receive a ready-to-use cofounder agreement. If your cofoundership is more complex, or if you want extra peace of mind, get Scale — you'll get an attorney review and a cofounder coach.",
   },
   {
     q: 'Is the price per agreement or per person?',
-    a: 'The price covers one agreement. You can add as many cofounders as you want, even on the Bootstrapped plan. Only one person pays; they invite everyone else. A new company later needs a separate purchase.',
+    a: 'The price covers one agreement. You can add as many cofounders as you want, even on the Bootstrapped plan. Only one person pays and answers the questions; your cofounders review the draft before signing. A new company later needs a separate purchase.',
   },
   {
     q: 'Do you offer discounts?',
@@ -193,39 +193,37 @@ function PricingPage() {
 
       {/* Compare table */}
       <section className="lp-pricing-pg-compare">
-        <div className="lp-pricing-pg-compare-inner">
-          <h2 className="lp-pricing-pg-compare-title">Compare plans</h2>
-          <p className="lp-pricing-pg-compare-sub">
-            Each plan covers one cofounder agreement. Fill out the survey and equity calculator to
-            get a ready-to-use agreement.
-          </p>
-          <table className="lp-pricing-pg-table">
-            <thead>
-              <tr>
-                <th className="lp-ppt-feature-col"></th>
-                <th>Bootstrapped</th>
-                <th>Scale</th>
-                <th>Enterprise</th>
+        <h2 className="lp-pricing-pg-compare-title">Compare plans</h2>
+        <p className="lp-pricing-pg-compare-sub">
+          Each plan covers one cofounder agreement. Tell us about your company in your own words,
+          answer a few follow-ups, and get a complete agreement ready to review and sign.
+        </p>
+        <table className="lp-pricing-pg-table">
+          <thead>
+            <tr>
+              <th className="lp-ppt-feature-col"></th>
+              <th>Bootstrapped</th>
+              <th>Scale</th>
+              <th>Enterprise</th>
+            </tr>
+          </thead>
+          <tbody>
+            {COMPARE_ROWS.map((row, ri) => (
+              <tr key={ri} className="lp-ppt-row">
+                <td className="lp-ppt-label">{row.label}</td>
+                <td>
+                  <Check on={row.b} />
+                </td>
+                <td>
+                  <Check on={row.s} />
+                </td>
+                <td>
+                  <Check on={row.e} />
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {COMPARE_ROWS.map((row, ri) => (
-                <tr key={ri} className="lp-ppt-row">
-                  <td className="lp-ppt-label">{row.label}</td>
-                  <td>
-                    <Check on={row.b} />
-                  </td>
-                  <td>
-                    <Check on={row.s} />
-                  </td>
-                  <td>
-                    <Check on={row.e} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </section>
 
       {/* FAQ */}
