@@ -159,7 +159,7 @@ describe('LandingPage', () => {
         expect.stringContaining('Review and sign'),
       ]);
       expect(tabs()[0]).toHaveAttribute('aria-selected', 'true');
-      expect(screen.getByText('Tell us about your company')).toBeInTheDocument();
+      expect(document.querySelector('.lp-s1-dump')).toBeInTheDocument(); // brain dump demo
     });
 
     it('picks the step from how far the page has scrolled through the pinned stretch', () => {

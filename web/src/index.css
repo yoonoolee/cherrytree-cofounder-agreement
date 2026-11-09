@@ -2309,11 +2309,9 @@ select:disabled {
   display: flex;
   flex-direction: column;
 }
-.lp-fp-title {
-  font-family: 'Instrument Serif Wide', serif;
-  font-size: 24px;
-  color: var(--lp-ink);
-  margin-bottom: 22px;
+
+.lp-fp-center {
+  justify-content: center;
 }
 
 /* step 1 */
@@ -2581,6 +2579,8 @@ select:disabled {
   gap: 16px;
 }
 .lp-sg-ink {
+  display: inline-block;
+  vertical-align: bottom;
   height: 30px;
   font-family: 'Instrument Serif Wide', serif;
   font-style: italic;
@@ -2591,6 +2591,7 @@ select:disabled {
   overflow: hidden;
 }
 .lp-sg-sig {
+  text-align: center;
   border-bottom: 1px solid rgba(0, 0, 0, 0.18);
 }
 .lp-sg-sig.signed .lp-sg-ink {

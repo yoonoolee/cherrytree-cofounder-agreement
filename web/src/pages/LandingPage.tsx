@@ -69,8 +69,7 @@ function PanelBrainDump() {
     <div className="lp-fp" style={{ backgroundImage: "url('/images/ambient.png?v=2')" }}>
       <div className="lp-fp-overlay" />
       <div className="lp-fp-white">
-        <div className="lp-fp-content">
-          <div className="lp-fp-title">Tell us about your company</div>
+        <div className="lp-fp-content lp-fp-center">
           <div className="lp-s1-card">
             <div className="lp-s1-dump">
               {S1_SEGMENTS.map((seg) => {
@@ -151,7 +150,6 @@ function PanelFollowUps() {
       <div className="lp-fp-overlay" />
       <div className="lp-fp-white">
         <div className="lp-fp-content">
-          <div className="lp-fp-title">A few follow-ups</div>
           <div className="lp-fu-card">
             <div className="lp-fu-head">
               <div className="lp-fu-avatar">C</div>
@@ -238,7 +236,6 @@ function PanelDraft() {
       <div className="lp-fp-overlay" />
       <div className="lp-fp-white">
         <div className="lp-fp-content">
-          <div className="lp-fp-title">Your agreement, drafted</div>
           <div className="lp-dr-paper">
             <span className={`lp-dr-status${ready ? ' ready' : ''}`}>
               {ready ? 'Draft ready' : typed === 0 ? 'Reading your answers…' : 'Drafting…'}
@@ -294,7 +291,6 @@ function PanelSign() {
       <div className="lp-fp-overlay" />
       <div className="lp-fp-white">
         <div className="lp-fp-content">
-          <div className="lp-fp-title">Review and sign</div>
           <div className="lp-sg-card">
             <div className="lp-sg-doc" aria-hidden="true">
               {S4_DOC.map((lines, g) => (
