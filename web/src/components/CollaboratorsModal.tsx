@@ -46,7 +46,7 @@ function CollaboratorsModal({ project, onClose }: CollaboratorsModalProps) {
         >
           <h3
             style={{
-              fontFamily: 'Instrument Serif, serif',
+              fontFamily: "'Instrument Serif Wide', serif",
               fontSize: '22px',
               fontWeight: 400,
               color: '#1a1a1a',

@@ -11,7 +11,7 @@ import { useCollaborators } from '../hooks/useCollaborators.ts';
 const NAME_MAX_FONT_SIZE = 42;
 const NAME_MIN_FONT_SIZE = 20;
 const NAME_AVAILABLE_WIDTH = 210 - 32 * 2;
-const NAME_FONT_FAMILY = "'Instrument Serif', serif";
+const NAME_FONT_FAMILY = "'Instrument Serif Wide', serif";
 
 /** One off-screen canvas, created on first use, for measuring the project name. */
 let measureCanvas: HTMLCanvasElement | null = null;

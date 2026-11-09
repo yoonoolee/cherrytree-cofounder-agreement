@@ -239,7 +239,7 @@ function DashboardPage() {
         <h1
           ref={welcomeRef}
           style={{
-            fontFamily: 'Instrument Serif, serif',
+            fontFamily: "'Instrument Serif Wide', serif",
             fontSize: '44px',
             fontWeight: 200,
             letterSpacing: '-0.5px',
@@ -316,7 +316,7 @@ function DashboardPage() {
                   </div>
                   <div
                     style={{
-                      fontFamily: 'Instrument Serif, serif',
+                      fontFamily: "'Instrument Serif Wide', serif",
                       fontSize: '32px',
                       fontWeight: 400,
                       letterSpacing: '-0.3px',
@@ -462,7 +462,7 @@ function DashboardPage() {
                   >
                     <div
                       style={{
-                        fontFamily: 'Instrument Serif, serif',
+                        fontFamily: "'Instrument Serif Wide', serif",
                         fontSize: '40px',
                         fontWeight: 400,
                         color: '#4B7263',
@@ -595,7 +595,7 @@ function DashboardPage() {
           <div style={{ textAlign: 'left' }}>
             <div
               style={{
-                fontFamily: 'Instrument Serif, serif',
+                fontFamily: "'Instrument Serif Wide', serif",
                 fontSize: '26px',
                 fontWeight: 200,
                 color: '#1a1a1a',

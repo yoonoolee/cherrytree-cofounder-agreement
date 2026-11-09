@@ -47,7 +47,7 @@ function SectionEquityVesting({
     <div>
       <h2
         style={{
-          fontFamily: 'Instrument Serif, serif',
+          fontFamily: "'Instrument Serif Wide', serif",
           fontSize: '42px',
           fontWeight: 400,
           letterSpacing: '-0.5px',

@@ -1,4 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@200;300;400;500;600&family=Geist:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&family=Geist:wght@300;400;500;600&display=swap');
+
+/* Instrument Serif widened 10% (outlines and advances, not letter-spacing). Self-hosted modified
+   copy under the OFL; see public/fonts/instrument-serif-wide-OFL.txt. */
+@font-face {
+  font-family: 'Instrument Serif Wide';
+  src: url('/fonts/instrument-serif-wide-regular.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Instrument Serif Wide';
+  src: url('/fonts/instrument-serif-wide-italic.woff2') format('woff2');
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
@@ -19,7 +36,7 @@
 
 /* ── Survey fonts ── */
 .font-instrument {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
 }
 .font-outfit {
   font-family: 'Outfit', sans-serif;
@@ -78,7 +95,7 @@
 }
 
 .card-question {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: 17px;
   font-weight: 400;
   color: #999;
@@ -255,7 +272,7 @@
   margin-bottom: 12px;
 }
 .cf-card-title {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: 20px;
   font-weight: 400;
   color: #1a1a1a;
@@ -984,7 +1001,7 @@ select:disabled {
   object-fit: contain;
 }
 .lp-nav-logo-text {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: 22px;
   color: var(--lp-ink);
 }
@@ -1191,7 +1208,7 @@ select:disabled {
 }
 
 .lp-hero-headline {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: clamp(44px, 6.4vw, 84px);
   font-weight: 400;
   letter-spacing: 0px;
@@ -1373,7 +1390,7 @@ select:disabled {
   flex-shrink: 0;
 }
 .lp-hv-logo-name {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: 14px;
   color: var(--lp-ink);
   letter-spacing: 0.04em;
@@ -1465,7 +1482,7 @@ select:disabled {
   margin-bottom: 10px;
 }
 .lp-hv-q-title {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: 22px;
   color: var(--lp-ink);
   margin-bottom: 6px;
@@ -1673,7 +1690,7 @@ select:disabled {
   margin-bottom: 32px;
 }
 .lp-feat-header h2 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: clamp(26px, calc(3.4vw - 2px), 42px);
   font-weight: 400;
   letter-spacing: 0.02em;
@@ -1973,7 +1990,7 @@ select:disabled {
   padding: 0 14px;
 }
 .lp-bento-copy h3 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: clamp(24px, 2.2vw, 30px);
   font-weight: 400;
   letter-spacing: 0.01em;
@@ -2049,7 +2066,7 @@ select:disabled {
   margin-bottom: 6px;
 }
 .lp-fp-title {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: 24px;
   color: var(--lp-ink);
   margin-bottom: 22px;
@@ -2220,7 +2237,7 @@ select:disabled {
   border-radius: 4px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
   padding: 22px 24px;
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Instrument Serif Wide', Georgia, serif;
   color: var(--lp-ink);
   -webkit-mask-image: linear-gradient(to bottom, #000 85%, transparent);
   mask-image: linear-gradient(to bottom, #000 85%, transparent);
@@ -2293,7 +2310,7 @@ select:disabled {
 }
 .lp-sg-ink {
   height: 30px;
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-style: italic;
   font-size: 22px;
   line-height: 30px;
@@ -2349,7 +2366,7 @@ select:disabled {
   align-items: center;
 }
 .lp-stats-left h2 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: clamp(28px, 3.5vw, 46px);
   font-weight: 400;
   letter-spacing: 0.02em;
@@ -2402,7 +2419,7 @@ select:disabled {
   gap: 20px;
 }
 .lp-stat-num {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: clamp(56px, 6vw, 80px);
   font-weight: 400;
   letter-spacing: 0.02em;
@@ -2425,7 +2442,7 @@ select:disabled {
 .lp-feat-header .lp-lit-text {
   max-width: 1000px;
   margin: 0;
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: clamp(36px, 5vw, 68px);
   font-weight: 400;
   line-height: 1.05;
@@ -2504,7 +2521,7 @@ select:disabled {
   z-index: 1; /* grain above the mesh (beats the shared grain rule further down) */
 }
 .lp-pw-tier {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: 28px;
   font-weight: 400;
   line-height: 1.1;
@@ -2512,7 +2529,7 @@ select:disabled {
   margin: 0;
 }
 .lp-pw-price {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: 56px;
   line-height: 1;
   color: var(--lp-ink);
@@ -2570,7 +2587,7 @@ select:disabled {
   padding: 0;
 }
 .lp-faq-visual h2 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: clamp(26px, calc(3.4vw - 2px), 42px);
   font-weight: 400;
   letter-spacing: 0.02em;
@@ -2661,7 +2678,7 @@ select:disabled {
   text-align: center;
 }
 .lp-protect-cta h2 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: clamp(42px, calc(6.4vw - 2px), 82px);
   font-weight: 400;
   letter-spacing: 0px;
@@ -2905,7 +2922,7 @@ body:has(.lp-has-curtain) {
   background-color: var(--lp-bg);
 }
 .lp-page-h1 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: clamp(40px, 5.5vw, 72px);
   font-weight: 400;
   letter-spacing: -2px;
@@ -2941,7 +2958,7 @@ body:has(.lp-has-curtain) {
   padding: 14px var(--lp-gutter);
 }
 .lp-legal-h2 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: 28px;
   font-weight: 400;
   letter-spacing: 0.02em;
@@ -3132,7 +3149,7 @@ input.lp-eq-input[type='text']:focus {
   margin-bottom: 14px;
 }
 .lp-eq-modal-head h3 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: 20px;
   font-weight: 400;
   color: var(--lp-ink);
@@ -3200,7 +3217,7 @@ input.lp-eq-modal-input[type='text'] {
   }
 }
 .lp-about-hero h1 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: clamp(44px, 6.5vw, 88px);
   font-weight: 400;
   letter-spacing: -2.5px;
@@ -3258,7 +3275,7 @@ input.lp-eq-modal-input[type='text'] {
   margin-bottom: 14px;
 }
 .lp-about-section-title {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: clamp(32px, 3.5vw, 46px);
   font-weight: 400;
   letter-spacing: -1px;
@@ -3413,7 +3430,7 @@ textarea.lp-form-input {
   padding: 24px 0;
 }
 .lp-form-success-title {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: 26px;
   font-weight: 400;
   color: var(--lp-ink);
@@ -3507,7 +3524,7 @@ textarea.lp-form-input {
   background-color: var(--lp-bg);
 }
 .lp-pricing-pg-h1 {
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: clamp(44px, 6.4vw, 84px);
   font-weight: 400;
   letter-spacing: 0px;
@@ -3546,7 +3563,7 @@ textarea.lp-form-input {
 }
 .lp-pricing-pg-table th.lp-ppt-feature-col {
   width: 46%;
-  font-family: 'Instrument Serif', serif;
+  font-family: 'Instrument Serif Wide', serif;
   font-size: clamp(26px, calc(3.4vw - 2px), 42px); /* same as the section titles */
   line-height: 1.1;
   letter-spacing: 0.02em;
