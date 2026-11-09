@@ -23,7 +23,7 @@ type Timer = ReturnType<typeof setTimeout>;
 const S1_DUMP =
   "Bill and I started Acme last spring. I'm CEO, Bill runs product as CTO. " +
   "We're thinking 60/40 since I put in the first $20k. Both full-time, and anything over $10k needs both of us.";
-// Phrases Cherrytree "picks up" as they're typed: highlighted in the text, listed below.
+// Phrases Cherrytree "picks up" as they're typed: highlighted in the text, filled in below.
 const S1_PICKS = [
   { phrase: "I'm CEO, Bill runs product as CTO", label: 'Roles', value: 'CEO · CTO' },
   { phrase: '60/40', label: 'Equity', value: '60 / 40' },
@@ -70,7 +70,6 @@ function PanelBrainDump() {
       <div className="lp-fp-overlay" />
       <div className="lp-fp-white">
         <div className="lp-fp-content">
-          <div className="lp-fp-tag">Step 1</div>
           <div className="lp-fp-title">Tell us about your company</div>
           <div className="lp-s1-card">
             <div className="lp-s1-dump">
@@ -88,10 +87,10 @@ function PanelBrainDump() {
             </div>
             <div className="lp-s1-label">Cherrytree picked up</div>
             <div className="lp-s1-picks">
-              {S1_PICKS.filter((p) => typed >= p.end).map((p) => (
+              {S1_PICKS.map((p) => (
                 <div key={p.label} className="lp-s1-pick">
                   <span>{p.label}</span>
-                  <b>{p.value}</b>
+                  {typed >= p.end && <b>{p.value}</b>}
                 </div>
               ))}
             </div>
@@ -152,7 +151,6 @@ function PanelFollowUps() {
       <div className="lp-fp-overlay" />
       <div className="lp-fp-white">
         <div className="lp-fp-content">
-          <div className="lp-fp-tag">Step 2</div>
           <div className="lp-fp-title">A few follow-ups</div>
           <div className="lp-fu-card">
             <div className="lp-fu-head">
@@ -183,11 +181,17 @@ function PanelFollowUps() {
   );
 }
 
-// The agreement types itself out, heading by heading.
+// The agreement reads the answers, then types itself out: preamble, background, then two sections.
 const S3_BLOCKS = [
+  { kind: 'meta', text: 'Effective November 8, 2026' },
   {
     kind: 'p',
     text: 'This Agreement is made between Steve Bobs and Bill Dates (the "Cofounders") of Acme Labs, Inc. (the "Company").',
+  },
+  { kind: 'h', text: 'Background' },
+  {
+    kind: 'p',
+    text: 'Acme Labs, Inc. is a Delaware corporation that helps startup founders create cofounder agreements. The Cofounders want to record how ownership and decisions are shared between them.',
   },
   { kind: 'h', text: '1. Equity' },
   {
@@ -199,8 +203,6 @@ const S3_BLOCKS = [
     kind: 'p',
     text: 'Shares vest monthly over four years. Unvested shares return to the Company if a Cofounder leaves.',
   },
-  { kind: 'h', text: '3. Decisions' },
-  { kind: 'p', text: 'Any expense over $10,000 requires the approval of both Cofounders.' },
 ].reduce<{ kind: string; text: string; start: number }[]>((blocks, b) => {
   const prev = blocks[blocks.length - 1];
   blocks.push({ ...b, start: prev ? prev.start + prev.text.length : 0 });
@@ -208,9 +210,12 @@ const S3_BLOCKS = [
 }, []);
 const S3_TOTAL = S3_BLOCKS.reduce((n, b) => n + b.text.length, 0);
 const S3_CHAR_MS = 14;
+const S3_READ_MS = 1400; // "Reading your answers…" before the first character
+const S3_CLASS: Record<string, string> = { h: 'lp-dr-h', p: 'lp-dr-p', meta: 'lp-dr-meta' };
 
 function PanelDraft() {
   const [typed, setTyped] = useState(0);
+  const [cycle, setCycle] = useState(0);
   useEffect(() => {
     const timers: Timer[] = [];
     const t = (fn: () => void, ms: number) => {
@@ -218,8 +223,9 @@ function PanelDraft() {
     };
     const run = () => {
       setTyped(0);
-      for (let i = 1; i <= S3_TOTAL; i++) t(() => setTyped(i), 400 + i * S3_CHAR_MS);
-      t(run, 400 + S3_TOTAL * S3_CHAR_MS + 2600);
+      setCycle((c) => c + 1);
+      for (let i = 1; i <= S3_TOTAL; i++) t(() => setTyped(i), S3_READ_MS + i * S3_CHAR_MS);
+      t(run, S3_READ_MS + S3_TOTAL * S3_CHAR_MS + 2600);
     };
     run();
     return () => timers.forEach(clearTimeout);
@@ -232,18 +238,19 @@ function PanelDraft() {
       <div className="lp-fp-overlay" />
       <div className="lp-fp-white">
         <div className="lp-fp-content">
-          <div className="lp-fp-tag">Step 3</div>
           <div className="lp-fp-title">Your agreement, drafted</div>
           <div className="lp-dr-paper">
             <span className={`lp-dr-status${ready ? ' ready' : ''}`}>
-              {ready ? 'Draft ready' : 'Drafting…'}
+              {ready ? 'Draft ready' : typed === 0 ? 'Reading your answers…' : 'Drafting…'}
             </span>
-            <div className="lp-dr-doc-title">Cofounder Agreement</div>
-            <div className="lp-dr-doc-sub">Acme Labs, Inc.</div>
+            <div key={cycle} className="lp-dr-head">
+              <div className="lp-dr-doc-title">Cofounder Agreement</div>
+              <div className="lp-dr-doc-sub">Acme Labs, Inc.</div>
+            </div>
             {visible.map((b, i) => {
               const Tag = b.kind === 'h' ? 'h4' : 'p';
               return (
-                <Tag key={b.start} className={b.kind === 'h' ? 'lp-dr-h' : 'lp-dr-p'}>
+                <Tag key={b.start} className={S3_CLASS[b.kind]}>
                   {b.text.slice(0, typed - b.start)}
                   {i === visible.length - 1 && !ready && <span className="lp-icursor lp-dark" />}
                 </Tag>
@@ -257,9 +264,16 @@ function PanelDraft() {
 }
 
 const S4_SIGNERS = ['Steve Bobs', 'Bill Dates'];
+// Abstract agreement: each group is a heading bar followed by text lines (widths in %).
+const S4_DOC = [
+  [92, 100, 84, 60],
+  [100, 96, 72],
+  [88, 100, 54],
+];
+const S4_EDITED = '1-1'; // group-line that gets edited before signing
 
 function PanelSign() {
-  // 0 draft, 1 edited, 2 first signature, 3 second signature, 4 fully signed
+  // 0 draft, 1 edited, 2 first signature, 3 second signature
   const [phase, setPhase] = useState(0);
   useEffect(() => {
     const timers: Timer[] = [];
@@ -268,7 +282,7 @@ function PanelSign() {
     };
     const run = () => {
       setPhase(0);
-      [700, 1900, 2900, 3700].forEach((ms, i) => t(() => setPhase(i + 1), ms));
+      [700, 1900, 2900].forEach((ms, i) => t(() => setPhase(i + 1), ms));
       t(run, 6200);
     };
     run();
@@ -280,32 +294,29 @@ function PanelSign() {
       <div className="lp-fp-overlay" />
       <div className="lp-fp-white">
         <div className="lp-fp-content">
-          <div className="lp-fp-tag">Step 4</div>
           <div className="lp-fp-title">Review and sign</div>
           <div className="lp-sg-card">
-            <div className="lp-s1-label">4. Decision-Making</div>
-            <p className="lp-sg-clause">
-              Spending over $10,000, raising money or selling the company requires{' '}
-              {phase >= 1 ? (
-                <>
-                  <span className="lp-sg-del">both cofounders</span>{' '}
-                  <span className="lp-sg-ins">unanimous written consent</span>
-                </>
-              ) : (
-                'both cofounders'
-              )}
-              .
-            </p>
-            <div className="lp-s1-label">Signatures</div>
+            <div className="lp-sg-doc" aria-hidden="true">
+              {S4_DOC.map((lines, g) => (
+                <div key={g} className="lp-sg-group">
+                  <div className="lp-sg-line h" />
+                  {lines.map((w, l) => (
+                    <div
+                      key={l}
+                      className={`lp-sg-line${phase >= 1 && `${g}-${l}` === S4_EDITED ? ' edited' : ''}`}
+                      style={{ width: `${w}%` }}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
             <div className="lp-sg-sigs">
               {S4_SIGNERS.map((name, i) => (
                 <div key={name} className={`lp-sg-sig${phase >= i + 2 ? ' signed' : ''}`}>
                   <div className="lp-sg-ink">{phase >= i + 2 ? name : ''}</div>
-                  <div className="lp-sg-name">{name}</div>
                 </div>
               ))}
             </div>
-            <div className={`lp-sg-done${phase >= 4 ? ' on' : ''}`}>✓ Signed by all cofounders</div>
           </div>
         </div>
       </div>
@@ -369,29 +380,47 @@ const agRow = (label: string, value: string) => (
   </div>
 );
 
+// Share kept per half-year over four years: nothing during year 1, 25% at the cliff, then up to 100%.
+const AG_VEST = [0, 0, 25, 40, 55, 70, 85, 100];
+
+// Calendar for "done in one sitting": signed on the day you start vs. weeks of lawyer back-and-forth.
+const AG_CAL_DAYS = 28; // four Monday-start weeks
+const AG_CAL_START = 3; // signed with Cherrytree the same day
+const AG_CAL_LAWYER_END = 24; // where the lawyer route would land
+const agCalClass = (day: number) => {
+  const range = day >= AG_CAL_START && day <= AG_CAL_LAWYER_END;
+  return [
+    'lp-agv-cal-day',
+    range && 'range',
+    range && (day === AG_CAL_START || day % 7 === 1) && 'start',
+    range && (day === AG_CAL_LAWYER_END || day % 7 === 0) && 'end',
+    day === AG_CAL_START && 'signed',
+    day === AG_CAL_LAWYER_END && 'lawyer',
+  ]
+    .filter(Boolean)
+    .join(' ');
+};
+
 // One small example visual per agreement section, in the same order as AGREEMENT_SECTIONS.
 const AG_VISUALS: readonly ReactNode[] = [
   <>
-    <div className="lp-agv-head">Cofounder Agreement · 10 sections</div>
     <div className="lp-agv-list">
-      {AG_COVERAGE.map((item) => (
-        <span key={item}>
+      {AG_COVERAGE.map((item, i) => (
+        <span key={item} style={{ '--i': i } as CSSProperties}>
           <b className="lp-agv-check">✓</b> {item}
         </span>
       ))}
     </div>
   </>,
-  <>
-    <div className="lp-agv-head">The hard topics</div>
-    {['Who gets what', 'What if someone leaves', 'Who has the final say'].map((topic) => (
-      <div key={topic} className="lp-agv-row">
+  <div className="lp-agv-stack" role="img" aria-label="The hard topics, settled">
+    {['Who has the final say?', 'Who gets what?', 'What if someone leaves?'].map((topic, i) => (
+      <div key={topic} className={`lp-agv-card c${i}`}>
         <span>{topic}</span>
-        <b className="lp-agv-check">✓ Agreed</b>
+        {i === 2 && <b className="lp-agv-stamp">Settled</b>}
       </div>
     ))}
-  </>,
+  </div>,
   <>
-    <div className="lp-agv-head">Ownership</div>
     <div className="lp-agv-bar">
       <div className="lp-agv-seg dark" style={{ flex: 60 }}>
         <span>Steve Bobs</span>
@@ -406,21 +435,48 @@ const AG_VISUALS: readonly ReactNode[] = [
     {agRow('Roles', 'CEO · CTO')}
     {agRow('Major decisions', 'Both cofounders')}
   </>,
-  <>
-    <div className="lp-agv-head">If a cofounder leaves</div>
-    {agRow('At month 8', 'Keeps 0%')}
-    {agRow('At year 2', 'Keeps 50%')}
-    {agRow('At year 4', 'Keeps 100%')}
-  </>,
-  <>
-    <div className="lp-agv-head">Time to a signed agreement</div>
-    {agRow('Templates', 'Guesswork')}
-    {agRow('Lawyers', 'Weeks')}
-    <div className="lp-agv-row">
-      <span>Cherrytree</span>
-      <b className="lp-agv-check">One sitting</b>
+  <div className="lp-agv-vest">
+    <div className="lp-agv-cols">
+      {AG_VEST.map((pct, i) => (
+        <div
+          key={i}
+          className={`lp-agv-col${pct === 0 ? ' none' : ''}${i === 2 ? ' cliff' : ''}`}
+          style={{ height: `${Math.max(pct, 4)}%`, '--i': i } as CSSProperties}
+        />
+      ))}
     </div>
-  </>,
+    <div className="lp-agv-axis">
+      {['Year 1', 'Year 2', 'Year 3', 'Year 4'].map((y) => (
+        <span key={y}>{y}</span>
+      ))}
+    </div>
+  </div>,
+  <div className="lp-agv-cal">
+    <div className="lp-agv-cal-grid">
+      {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
+        <span key={i} className="lp-agv-cal-dow">
+          {d}
+        </span>
+      ))}
+      {Array.from({ length: AG_CAL_DAYS }, (_, i) => i + 1).map((day) => (
+        <div
+          key={day}
+          className={agCalClass(day)}
+          style={{ '--i': day - AG_CAL_START } as CSSProperties}
+        >
+          <span>{day}</span>
+        </div>
+      ))}
+    </div>
+    <div className="lp-agv-cal-key">
+      <span>
+        <i className="dot" /> Cherrytree: same day
+      </span>
+      <span>
+        <i className="band" /> Lawyers: weeks
+      </span>
+    </div>
+  </div>,
 ];
 
 const V2_STEPS = 4;
@@ -712,11 +768,11 @@ function LandingPage() {
             <div className="lp-feat-header lp-lit-header">
               <ScrollLitStatement text={LIT_WHAT_YOU_GET} />
             </div>
-            <div className="lp-bento lp-rv">
+            <div className="lp-bento">
               {AGREEMENT_SECTIONS.map((item, i) => (
                 <article
                   key={item.tab}
-                  className={`lp-bento-tile${'wide' in item ? ' lp-bento-wide' : ''}`}
+                  className={`lp-bento-tile lp-rv${'wide' in item ? ' lp-bento-wide' : ''}`}
                 >
                   <div
                     className="lp-bento-vis"

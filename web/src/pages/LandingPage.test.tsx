@@ -159,7 +159,6 @@ describe('LandingPage', () => {
         expect.stringContaining('Review and sign'),
       ]);
       expect(tabs()[0]).toHaveAttribute('aria-selected', 'true');
-      expect(screen.getByText('Step 1')).toBeInTheDocument();
       expect(screen.getByText('Tell us about your company')).toBeInTheDocument();
     });
 
@@ -218,31 +217,31 @@ describe('LandingPage', () => {
       renderPage();
       scrollToStep(2);
       const paper = () => document.querySelector('.lp-dr-paper')!;
-      advance(400 + 14 * 20);
-      expect(paper().querySelector('.lp-dr-p')?.textContent).toBe('This Agreement is ma');
+      expect(paper().querySelector('.lp-dr-status')?.textContent).toBe('Reading your answers…');
+      expect(paper().querySelector('.lp-dr-meta')).toBeNull();
+      advance(1400 + 14 * 9);
+      expect(paper().querySelector('.lp-dr-meta')?.textContent).toBe('Effective');
       expect(paper().querySelector('.lp-dr-status')?.textContent).toBe('Drafting…');
-      advance(14 * 450); // finished typing, before it loops
+      advance(14 * 600); // finished typing, before it loops
       expect(Array.from(paper().querySelectorAll('.lp-dr-h')).map((h) => h.textContent)).toEqual([
+        'Background',
         '1. Equity',
         '2. Vesting',
-        '3. Decisions',
       ]);
       expect(paper().querySelector('.lp-dr-status')?.textContent).toBe('Draft ready');
     });
 
-    it('sign demo: edits the clause, then both cofounders sign', () => {
+    it('sign demo: edits a line, then both cofounders sign', () => {
       renderPage();
       scrollToStep(3);
       const sigs = () => Array.from(document.querySelectorAll('.lp-sg-sig'));
       advance(700);
-      expect(document.querySelector('.lp-sg-ins')?.textContent).toBe('unanimous written consent');
+      expect(document.querySelectorAll('.lp-sg-line.edited')).toHaveLength(1);
       advance(1200);
       expect(sigs()[0]).toHaveClass('signed');
       expect(sigs()[1]).not.toHaveClass('signed');
       advance(1000);
       expect(sigs()[1]).toHaveClass('signed');
-      advance(800);
-      expect(document.querySelector('.lp-sg-done')).toHaveClass('on');
     });
   });
 
