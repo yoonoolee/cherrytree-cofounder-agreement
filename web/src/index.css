@@ -2440,10 +2440,12 @@ select:disabled {
   margin-bottom: clamp(48px, 7vw, 96px);
 }
 .lp-feat-header .lp-lit-text {
-  max-width: 1000px;
+  max-width: 880px;
   margin: 0;
   font-family: 'Instrument Serif Wide', serif;
-  font-size: clamp(36px, 5vw, 68px);
+  /* Capped so each statement fits on 3 lines in the 880px box on desktop. */
+  font-size: clamp(34px, 4.5vw, 58px);
+  text-wrap: pretty;
   font-weight: 400;
   line-height: 1.05;
   letter-spacing: 0.01em;
