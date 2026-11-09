@@ -9,8 +9,8 @@ interface UpgradeModalProps {
 }
 
 function UpgradeModal({ onClose, currentPlan = 'starter' }: UpgradeModalProps) {
-  // Only show Starter and Pro (not Enterprise) in upgrade modal
-  const upgradePlans = PRICING_PLANS.filter((plan) => plan.name !== 'Enterprise');
+  // Only show Essential and Plus (not Enterprise) in upgrade modal
+  const upgradePlans = PRICING_PLANS.filter((plan) => plan.key !== 'enterprise');
 
   return (
     <div
@@ -40,9 +40,8 @@ function UpgradeModal({ onClose, currentPlan = 'starter' }: UpgradeModalProps) {
         {/* Pricing Plans Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           {upgradePlans.map((plan) => {
-            const isCurrentPlan =
-              currentPlan && currentPlan.toLowerCase() === plan.name.toLowerCase();
-            const isProPlan = plan.name === 'Pro';
+            const isCurrentPlan = currentPlan && currentPlan.toLowerCase() === plan.key;
+            const isProPlan = plan.key === 'pro';
 
             return (
               <div
@@ -51,7 +50,7 @@ function UpgradeModal({ onClose, currentPlan = 'starter' }: UpgradeModalProps) {
                   plan.featured ? 'ring-2 ring-gray-700' : 'border border-gray-400'
                 }`}
               >
-                {/* Coming Soon Badge for Pro */}
+                {/* Coming Soon Badge for Plus */}
                 {isProPlan && (
                   <div
                     className="absolute -top-2 -right-2 text-white text-xs font-semibold px-3 py-1 rounded-full z-10"
@@ -74,7 +73,7 @@ function UpgradeModal({ onClose, currentPlan = 'starter' }: UpgradeModalProps) {
                 <div className="text-4xl font-bold mb-2">{plan.price}</div>
                 <p className="text-gray-600 mb-6">{plan.description}</p>
 
-                {/* Email Waitlist Form for Pro Plan (under description) */}
+                {/* Email Waitlist Form for Plus Plan (under description) */}
                 {isProPlan && (
                   <div className="mb-6">
                     <ProWaitlistForm source="upgrade_modal" />

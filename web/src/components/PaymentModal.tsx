@@ -16,7 +16,7 @@ const PROJECT_NAME_MAX_LENGTH = 100;
 /** A plan that can be bought (as opposed to the contact-us Enterprise tier). */
 type PurchasablePlan = PricingPlan & { key: Plan };
 
-// Filter to only Starter and Pro for payment modal
+// Filter to only Essential and Plus for payment modal
 const PLANS = PRICING_PLANS.filter(
   (plan): plan is PurchasablePlan => plan.key === 'starter' || plan.key === 'pro',
 );
@@ -193,7 +193,7 @@ function PaymentModal({ onClose }: PaymentModalProps) {
 
                 return (
                   <div key={key} className="relative">
-                    {/* Coming Soon Badge for Pro */}
+                    {/* Coming Soon Badge for Plus */}
                     {isProPlan && (
                       <div
                         className="absolute -top-2 -right-2 text-white text-xs font-semibold px-3 py-1 rounded-full z-10"

@@ -12,7 +12,7 @@ import { MARKETING_PLANS } from '../constants/pricing.ts';
 
 interface CompareRow {
   label: string;
-  /** Bootstrapped / Scale / Enterprise */
+  /** Essential / Plus / Enterprise */
   b: boolean;
   s: boolean;
   e: boolean;
@@ -32,15 +32,15 @@ const COMPARE_ROWS: readonly CompareRow[] = [
 const FAQS: readonly Faq[] = [
   {
     q: 'Which plan is right for me?',
-    a: "If your cofoundership is fairly simple, get the Bootstrapped plan. You tell us about your company in your own words and receive a ready-to-use cofounder agreement. If your cofoundership is more complex, or if you want extra peace of mind, get Scale — you'll get an attorney review and a cofounder coach.",
+    a: "If your cofoundership is fairly simple, get the Essential plan. You tell us about your company in your own words and receive a ready-to-use cofounder agreement. If your cofoundership is more complex, or if you want extra peace of mind, get Plus — you'll get an attorney review and a cofounder coach.",
   },
   {
     q: 'Is the price per agreement or per person?',
-    a: 'The price covers one agreement. You can add as many cofounders as you want, even on the Bootstrapped plan. Only one person pays and answers the questions; your cofounders review the draft before signing. A new company later needs a separate purchase.',
+    a: 'The price covers one agreement. You can add as many cofounders as you want, even on the Essential plan. Only one person pays and answers the questions; your cofounders review the draft before signing. A new company later needs a separate purchase.',
   },
   {
     q: 'Can we upgrade anytime?',
-    a: 'Yes. If you start with Bootstrapped but realize you want an attorney review, you can upgrade to Scale at any time.',
+    a: 'Yes. If you start with Essential but realize you want an attorney review, you can upgrade to Plus at any time.',
   },
   {
     q: 'Do we pay again to edit later?',
@@ -66,7 +66,7 @@ function PricingPage() {
   usePageMeta({
     title: 'Pricing — Cherrytree',
     description:
-      'Affordable cofounder agreement pricing. Bootstrapped at $20, Scale at $2,000, Enterprise custom.',
+      'Affordable cofounder agreement pricing. Essential at $20, Plus at $2,000, Enterprise custom.',
     breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'Pricing' }],
   });
 
@@ -138,8 +138,8 @@ function PricingPage() {
             <thead>
               <tr>
                 <th className="lp-ppt-feature-col">Compare plans</th>
-                <th>Bootstrapped</th>
-                <th>Scale</th>
+                <th>Essential</th>
+                <th>Plus</th>
                 <th>Enterprise</th>
               </tr>
             </thead>

@@ -7,10 +7,10 @@ vi.mock('./ProWaitlistForm', () => ({
 }));
 
 describe('UpgradeModal', () => {
-  it('shows Starter and Pro only, with Pro marked coming soon and carrying the waitlist form', () => {
+  it('shows Essential and Plus only, with Plus marked coming soon and carrying the waitlist form', () => {
     render(<UpgradeModal onClose={() => {}} />);
-    expect(screen.getByRole('heading', { name: 'Starter' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Pro' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Essential' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Plus' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Enterprise' })).toBeNull();
     expect(screen.getByText('Coming Soon')).toBeInTheDocument();
     expect(screen.getByText('waitlist:upgrade_modal')).toBeInTheDocument();
@@ -18,9 +18,9 @@ describe('UpgradeModal', () => {
 
   it('badges the current plan (default starter, matched case-insensitively)', () => {
     const { rerender } = render(<UpgradeModal onClose={() => {}} />);
-    expect(screen.getByText('Current plan').closest('.relative')).toHaveTextContent('Starter');
+    expect(screen.getByText('Current plan').closest('.relative')).toHaveTextContent('Essential');
     rerender(<UpgradeModal onClose={() => {}} currentPlan="pro" />);
-    expect(screen.getByText('Current plan').closest('.relative')).toHaveTextContent('Pro');
+    expect(screen.getByText('Current plan').closest('.relative')).toHaveTextContent('Plus');
   });
 
   it('closes from the × button and the backdrop, not from inside the dialog', () => {

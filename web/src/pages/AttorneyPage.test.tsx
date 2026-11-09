@@ -20,7 +20,7 @@ describe('AttorneyPage', () => {
   it('renders the coming-soon hero and the seven placeholder cards', () => {
     const { container } = render(<AttorneyPage />);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Attorney.');
-    expect(screen.getByText('Coming soon — this is only for Pro members.')).toBeInTheDocument();
+    expect(screen.getByText('Coming soon — this is only for Plus members.')).toBeInTheDocument();
 
     const cards = container.querySelectorAll('.lp-attorney-card');
     expect(cards).toHaveLength(7);

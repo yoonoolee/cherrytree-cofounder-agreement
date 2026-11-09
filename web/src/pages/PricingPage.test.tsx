@@ -80,7 +80,7 @@ describe('PricingPage', () => {
       'Can we upgrade anytime?',
       'Do we pay again to edit later?',
     ]);
-    expect(faq.mainEntity[2]?.acceptedAnswer.text).toMatch(/upgrade to Scale/);
+    expect(faq.mainEntity[2]?.acceptedAnswer.text).toMatch(/upgrade to Plus/);
 
     unmount();
     expect(document.getElementById('faq-schema')).toBeNull();
@@ -92,13 +92,13 @@ describe('PricingPage', () => {
 
     const [bootstrapped, scale, enterprise] = cards();
     expect(cards()).toHaveLength(3);
-    expect(bootstrapped?.querySelector('.lp-pw-tier')).toHaveTextContent('Bootstrapped');
+    expect(bootstrapped?.querySelector('.lp-pw-tier')).toHaveTextContent('Essential');
     expect(bootstrapped?.querySelector('.lp-pw-price')).toHaveTextContent('$20one-time');
     expect(bootstrapped?.querySelectorAll('.lp-pw-features li')).toHaveLength(5);
 
     expect(scale?.querySelector('.lp-pw-price')).toHaveTextContent('$2,000one-time');
     expect(scale?.querySelector('.lp-pw-includes')).toHaveTextContent(
-      'Everything in Bootstrapped, plus',
+      'Everything in Essential, plus',
     );
 
     expect(enterprise?.querySelector('.lp-pw-tier')).toHaveTextContent('Enterprise');
@@ -143,8 +143,8 @@ describe('PricingPage', () => {
     expect(rows).toHaveLength(8);
     const marks = (column: number) =>
       rows.filter((row) => row.querySelectorAll('td')[column]?.textContent === '✓').length;
-    expect(marks(1)).toBe(2); // Bootstrapped
-    expect(marks(2)).toBe(5); // Scale
+    expect(marks(1)).toBe(2); // Essential
+    expect(marks(2)).toBe(5); // Plus
     expect(marks(3)).toBe(8); // Enterprise
     expect(rows[2]?.querySelectorAll('td')[1]).toHaveTextContent('Not included');
   });

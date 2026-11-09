@@ -11,7 +11,7 @@ interface Attorney {
   description: string;
 }
 
-/** Placeholder cards until the Pro attorney network launches. */
+/** Placeholder cards until the Plus attorney network launches. */
 const ATTORNEYS: readonly Attorney[] = [
   {
     id: 1,
@@ -83,7 +83,7 @@ function AttorneyPage() {
         <section className="lp-page-hero">
           <div className="lp-overline">Attorney Review</div>
           <h1 className="lp-page-h1">Attorney.</h1>
-          <p className="lp-page-sub">Coming soon — this is only for Pro members.</p>
+          <p className="lp-page-sub">Coming soon — this is only for Plus members.</p>
         </section>
 
         {/* Attorney grid */}

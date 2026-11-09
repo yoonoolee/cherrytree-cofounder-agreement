@@ -52,7 +52,7 @@ function ProWaitlistForm({ source = 'unknown' }: ProWaitlistFormProps) {
   if (waitlistSuccess) {
     return (
       <div className="text-center py-3">
-        <p className="text-sm text-gray-900">✓ Thanks! We'll email you when Pro is available</p>
+        <p className="text-sm text-gray-900">✓ Thanks! We'll email you when Plus is available</p>
       </div>
     );
   }

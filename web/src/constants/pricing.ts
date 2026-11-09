@@ -16,7 +16,7 @@ export interface PricingPlan {
 
 export const PRICING_PLANS: readonly PricingPlan[] = [
   {
-    name: 'Starter',
+    name: 'Essential',
     key: 'starter',
     price: '$20',
     priceValue: 20,
@@ -31,11 +31,11 @@ export const PRICING_PLANS: readonly PricingPlan[] = [
     featured: true,
   },
   {
-    name: 'Pro',
+    name: 'Plus',
     key: 'pro',
     price: '$2000',
     priceValue: 2000,
-    description: 'Everything in Starter, plus',
+    description: 'Everything in Essential, plus',
     features: ['Attorney review', 'Cofounder coaching', 'Priority support'],
   },
   {
@@ -49,9 +49,8 @@ export const PRICING_PLANS: readonly PricingPlan[] = [
 ];
 
 /**
- * A plan card on the marketing pages (LandingPage, PricingPage). Note the copy differs from
- * `PRICING_PLANS` above (the in-app purchase/upgrade tiers): Bootstrapped/Scale vs
- * Starter/Pro, and the feature lists.
+ * A plan card on the marketing pages (LandingPage, PricingPage). Same tier names as
+ * `PRICING_PLANS` above (the in-app purchase/upgrade tiers); the copy and feature lists differ.
  */
 export interface MarketingPlan {
   tier: string;
@@ -68,7 +67,7 @@ export interface MarketingPlan {
 
 export const MARKETING_PLANS: readonly MarketingPlan[] = [
   {
-    tier: 'Bootstrapped',
+    tier: 'Essential',
     price: '$20',
     period: 'One-time payment',
     desc: 'For early-stage teams that want to move fast and start building.',
@@ -82,12 +81,12 @@ export const MARKETING_PLANS: readonly MarketingPlan[] = [
     cta: 'Get started',
   },
   {
-    tier: 'Scale',
+    tier: 'Plus',
     price: '$2,000',
     period: 'One-time payment',
     desc: 'For funded teams that want more detail and expert backing.',
     features: [
-      'Everything in Bootstrapped',
+      'Everything in Essential',
       'Final attorney review',
       'Personalized onboarding',
       'Cofounder coaching',
@@ -102,7 +101,7 @@ export const MARKETING_PLANS: readonly MarketingPlan[] = [
     period: 'Contact for volume pricing',
     desc: "Running a fund or accelerator and want to deploy in bulk? We'll set you up.",
     features: [
-      'Everything in Scale, for your cohort',
+      'Everything in Plus, for your cohort',
       'Cohort dashboard and progress tracking',
       'Branded experience for your program',
       'Dedicated account support',

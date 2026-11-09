@@ -117,12 +117,12 @@ describe('LandingPage', () => {
     renderPage();
     const plans = Array.from(document.querySelectorAll('#pricing .lp-pw-card'));
     expect(plans.map((p) => p.querySelector('.lp-pw-tier')?.textContent)).toEqual([
-      'Bootstrapped',
-      'Scale',
+      'Essential',
+      'Plus',
     ]);
     expect(plans[0]!.querySelector('.lp-pw-price')).toHaveTextContent('$20one-time');
     expect(plans[1]!.querySelector('.lp-pw-includes')).toHaveTextContent(
-      'Everything in Bootstrapped, plus',
+      'Everything in Essential, plus',
     );
   });
 

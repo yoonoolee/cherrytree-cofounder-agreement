@@ -37,7 +37,7 @@ describe('ProWaitlistForm', () => {
       target: { value: '  Ada@Example.com ' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Join' }));
-    await screen.findByText("✓ Thanks! We'll email you when Pro is available");
+    await screen.findByText("✓ Thanks! We'll email you when Plus is available");
     expect(mocks.addDoc).toHaveBeenCalledTimes(1);
     expect(mocks.addDoc.mock.calls[0]![0]).toEqual({ path: 'proWaitlist' });
     expect(mocks.addDoc.mock.calls[0]![1]).toEqual({
