@@ -18,31 +18,39 @@ class Tool[I: BaseModel]:
     description: str
     input_model: type[I]
     run: Callable[[ToolContext, I], Awaitable[str]]
+    eager_input_streaming: bool = False
+    """Stream the input as it is written (the Advisor shows highlights from it live). The API
+    then skips its own input validation, so the loop's model validation is what checks it."""
 
     def definition(self) -> dict[str, Any]:
         # `strict` guarantees schema-valid input; the model is validated again before running.
-        return {
+        definition: dict[str, Any] = {
             "name": self.name,
             "description": self.description,
             "input_schema": transform_schema(self.input_model),
             "strict": True,
         }
+        if self.eager_input_streaming:
+            definition["eager_input_streaming"] = True
+        return definition
 
 
 TOOLS: dict[str, Tool[Any]] = {
     tool.name: tool
     for tool in [
         Tool(
-            "update_questions",
-            questions.UPDATE_QUESTIONS_DESCRIPTION,
-            questions.UpdateQuestionsInput,
-            questions.update_questions,
+            "add_green_highlights",
+            questions.ADD_GREEN_HIGHLIGHTS_DESCRIPTION,
+            questions.AddGreenHighlightsInput,
+            questions.add_green_highlights,
+            eager_input_streaming=True,
         ),
         Tool(
-            "write_section_summary",
-            questions.WRITE_SECTION_SUMMARY_DESCRIPTION,
-            questions.WriteSectionSummaryInput,
-            questions.write_section_summary,
+            "update_question_list",
+            questions.UPDATE_QUESTION_LIST_DESCRIPTION,
+            questions.UpdateQuestionListInput,
+            questions.update_question_list,
+            eager_input_streaming=True,
         ),
         Tool(
             "read_project",

@@ -1,4 +1,6 @@
-"""Advisor tools for the question list and the section summaries."""
+"""Advisor tools: the green highlights and the question list. Both are refused in a btw."""
+
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -7,7 +9,6 @@ from cherrytree_agent.advisor.working_state import (
     QuestionListError,
     render_question_list,
 )
-from cherrytree_agent.contracts.models import QuestionStatus
 from cherrytree_agent.tools.context import ToolContext, ToolError
 
 
@@ -17,86 +18,107 @@ def _advisor_state(context: ToolContext) -> AdvisorWorkingState:
     return context.advisor
 
 
-class QuestionUpdate(BaseModel):
+class AddGreenHighlightsInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    question_id: str
-    status: QuestionStatus
-    advisor_notes: str | None = Field(
-        description="Your notes on the question, such as why it was skipped. null keeps the "
-        "current notes."
+    quotes: list[str] = Field(
+        description="Parts of the user's latest reply that carry facts, each quoted exactly as "
+        "written, character for character, and long enough to appear only once."
     )
 
 
-class QuestionAddition(BaseModel):
+ADD_GREEN_HIGHLIGHTS_DESCRIPTION = """\
+Highlight the facts in the user's latest reply: names, dates, numbers, roles, decisions, \
+concerns. The user sees each highlight as you write it. A quote that is not in the reply, or \
+appears more than once, is not added; the result says which, so you can quote it again."""
+
+
+async def add_green_highlights(context: ToolContext, request: AddGreenHighlightsInput) -> str:
+    state = _advisor_state(context)
+    before = len(state.green_highlights)
+    rejected: list[str] = []
+    for quote in request.quotes:
+        try:
+            state.add_green_highlight(quote)
+        except QuestionListError as error:
+            rejected.append(str(error))
+    added = len(state.green_highlights) - before
+    if added == 0 and rejected:
+        raise ToolError("Nothing was added. " + " ".join(rejected))
+    return " ".join([f"Added {added}.", *(f"Not added: {reason}" for reason in rejected)])
+
+
+class QuestionListUpdate(BaseModel):
+    """One change. Every field is present; those that don't apply to the `op` are null."""
+
     model_config = ConfigDict(extra="forbid")
 
-    section_id: str
-    after_question_id: str | None = Field(
-        description="Insert after this question in the section; null appends to the section."
+    op: Literal["add", "status"]
+    id: str = Field(
+        description="add: a new unique id (lowercase letters, digits, underscores). status: the "
+        "id of the main question or follow-up to change."
     )
-    text: str = Field(description="The main question, as the user will see it.")
-    description: str = Field(description="What a complete answer covers.")
+    under: str | None = Field(
+        description="add: a section id for a new main question, or the id of the main question "
+        "on screen for a follow-up."
+    )
+    highlight: str | None = Field(
+        description="add, follow-up: the part of a reply on this screen it asks about, quoted "
+        "exactly and long enough to appear only once. Several follow-ups can quote the same part."
+    )
+    text: str | None = Field(description="add: the question, as the user will see it.")
+    description: str | None = Field(
+        description="add, main question: what a complete answer covers."
+    )
+    status: Literal["todo", "done", "skipped"] | None = Field(
+        description="status: the new status. The question you ask next is made current by your "
+        "message, not here."
+    )
+    note: str | None = Field(
+        description="status, main question: your note on it, such as why it was skipped. null "
+        "keeps the current note."
+    )
 
 
-class UpdateQuestionsInput(BaseModel):
+class UpdateQuestionListInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    additions: list[QuestionAddition]
-    updates: list[QuestionUpdate]
+    updates: list[QuestionListUpdate]
 
 
-UPDATE_QUESTIONS_DESCRIPTION = """\
-Change the question list: add main questions, mark questions current, done or skipped, and keep \
-notes on them. Additions are applied first and their new ids are returned, so a later call can \
-mark one current. Exactly one question is current at a time: when you move on, mark the \
-finished question done (or skipped) and the next one current in the same call. Follow-up \
-questions are not added here; they stay on the current question's screen. Returns the updated \
-list. If any change is invalid, nothing is applied."""
+UPDATE_QUESTION_LIST_DESCRIPTION = """\
+Change the question list: add main questions and follow-ups, and mark them done, skipped or \
+todo, with notes on main questions. Changes apply in order, so a later one can refer to an id an \
+earlier one added. A follow-up's highlight shows to the user as you write it. Returns the updated \
+list. If any change is invalid, none are applied and the result says why."""
 
 
-async def update_questions(context: ToolContext, changes: UpdateQuestionsInput) -> str:
+def _apply(state: AdvisorWorkingState, update: QuestionListUpdate) -> None:
+    if update.op == "status":
+        if update.status is None:
+            raise QuestionListError("A status change needs a status.")
+        state.set_status(update.id, update.status, update.note)
+        return
+    if update.under is None or not update.text:
+        raise QuestionListError("An addition needs under and text.")
+    if update.highlight is not None:
+        state.add_followup(update.id, update.under, update.text, update.highlight)
+    elif update.description:
+        state.add_question(update.id, update.under, update.text, update.description)
+    else:
+        raise QuestionListError(
+            "An addition needs a highlight (a follow-up) or a description (a main question)."
+        )
+
+
+async def update_question_list(context: ToolContext, request: UpdateQuestionListInput) -> str:
     state = _advisor_state(context)
     before = state.snapshot()
-    try:
-        added = [
-            state.add_question(a.section_id, a.after_question_id, a.text, a.description)
-            for a in changes.additions
-        ]
-        for update in changes.updates:
-            state.update_question(update.question_id, update.status, update.advisor_notes)
-        state.check()
-    except QuestionListError as error:
-        state.restore(before)
-        raise ToolError(str(error)) from error
-
-    added_note = f"Added question ids: {', '.join(added)}\n\n" if added else ""
-    return f"{added_note}{render_question_list(state)}"
-
-
-class WriteSectionSummaryInput(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    section_id: str
-    summary: str = Field(description="The section summary, in markdown.")
-
-
-WRITE_SECTION_SUMMARY_DESCRIPTION = """\
-Write the summary of a finished section, before starting the next one, or rewrite an earlier \
-section's summary when a later answer corrects it. The Drafting, Review and Editing agents work \
-from these summaries, so:
-- List every fact the user shared in the section, as markdown bullets. Keep every fact, even \
-ones that seem minor; relevance is decided when drafting.
-- Keep exact values as given: percentages, dates, amounts, vesting schedules, names.
-- Name the cofounder each fact is about, where it is about one of them.
-- Record only what the user said. Never fill gaps with assumptions; note what is still open.
-Replaces any earlier summary of the section."""
-
-
-async def write_section_summary(context: ToolContext, summary: WriteSectionSummaryInput) -> str:
-    state = _advisor_state(context)
-    try:
-        state.set_section_summary(summary.section_id, summary.summary)
-    except QuestionListError as error:
-        raise ToolError(str(error)) from error
-    return f"Saved the summary of section {summary.section_id}."
+    for number, update in enumerate(request.updates, start=1):
+        try:
+            _apply(state, update)
+        except QuestionListError as error:
+            state.restore(before)
+            message = f"Change {number} ({update.id}): {error} Nothing was applied."
+            raise ToolError(message) from error
+    return render_question_list(state.sections)

@@ -118,10 +118,10 @@ npm run dev
 ```
 
 - Serves http://localhost:3000 (the port is baked into the Clerk dev origins)
-- Uses `apps/web/.env.dev`
+- Uses `apps/web/.env.dev`, with the agent service at http://localhost:8000
 - Hot reload on file changes
 
-A project page (`/projects/:projectId`) runs the Advisor against the agent service. Run it beside the web app with `npm run dev:agent` (setup in [apps/agent/README.md](apps/agent/README.md)); `VITE_AGENT_URL=http://localhost:8000` in `apps/web/.env.dev` points the browser at it.
+A project page (`/projects/:projectId`) runs the Advisor against the agent service. Run it beside the web app with `npm run dev:agent` (setup in [apps/agent/README.md](apps/agent/README.md)); `npm run dev` points the browser at it. Hosted dev builds use the dev Cloud Run service (`VITE_AGENT_URL` in `apps/web/.env.dev`), so redeploy it (`npm run deploy:agent:dev`) along with agent changes.
 
 The Drafting + Review job always runs on the dev Cloud Run service: Cloud Tasks has no local emulator and cannot reach localhost. "Write my draft" on a local page queues the job on the dev queue, and the page follows `draftStatus` in Firestore (setup in [apps/agent/README.md → Drafting job](apps/agent/README.md#drafting-job)).
 

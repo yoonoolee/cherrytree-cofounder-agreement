@@ -54,6 +54,38 @@ class WebSource(BaseModel):
 type QuestionStatus = Literal["todo", "current", "done", "skipped"]
 
 
+class Highlight(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    text: str
+    start: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    end: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+
+
+class TurnHighlight(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    text: str
+    start: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    end: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    turn: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+
+
+class Followup(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    id: str
+    text: str
+    status: QuestionStatus
+    highlight: TurnHighlight
+
+
 class Question(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -65,6 +97,7 @@ class Question(BaseModel):
     status: QuestionStatus
     source: Literal["initial", "added_by_agent"]
     advisor_notes: Annotated[str | None, Field(alias="advisorNotes")]
+    followups: list[Followup]
 
 
 class QuestionSection(BaseModel):
@@ -93,42 +126,72 @@ class AdvisorState(BaseModel):
         populate_by_name=True,
     )
     sections: list[QuestionSection]
-    section_summaries: Annotated[dict[str, str], Field(alias="sectionSummaries")]
     turn_count: Annotated[int, Field(alias="turnCount", ge=-9007199254740991, le=9007199254740991)]
     updated_at: Annotated[AwareDatetime, Field(alias="updatedAt")]
 
 
-class AdvisorQuestion(BaseModel):
+class AdvisorMessage(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
         populate_by_name=True,
     )
-    type: Literal["followup", "next_question", "next_section"]
-    text: str
-
-
-class AdvisorResponse(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-        populate_by_name=True,
-    )
-    highlights: list[str]
+    type: Literal["followup", "next_question", "next_section", "interview_complete"]
+    question_id: Annotated[str | None, Field(alias="questionId")]
     answer: str | None
     sources: list[WebSource]
-    question: AdvisorQuestion | None
 
 
-class AdvisorTurn(BaseModel):
+class BtwMessage(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    type: Literal["answer"]
+    text: str
+    sources: list[WebSource]
+
+
+class AdvisorOutput(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    message: AdvisorMessage | BtwMessage
+
+
+class AdvisorReplyTurn(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
         populate_by_name=True,
     )
     index: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     uid: str
-    reply: str
-    response: AdvisorResponse
+    screen: str
     trace_id: Annotated[str | None, Field(alias="traceId")]
     created_at: Annotated[AwareDatetime, Field(alias="createdAt")]
+    kind: Literal["turn"]
+    reply: str
+    green_highlights: Annotated[list[Highlight], Field(alias="greenHighlights")]
+    message: AdvisorMessage
+
+
+class AdvisorBtwTurn(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    index: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    uid: str
+    screen: str
+    trace_id: Annotated[str | None, Field(alias="traceId")]
+    created_at: Annotated[AwareDatetime, Field(alias="createdAt")]
+    kind: Literal["btw"]
+    quote: str
+    question: str
+    message: BtwMessage
+
+
+type AdvisorTurn = AdvisorReplyTurn | AdvisorBtwTurn
 
 
 class TranscriptEntry(BaseModel):
@@ -313,6 +376,16 @@ class AdvisorTurnRequest(BaseModel):
     expected_turn_index: Annotated[int, Field(alias="expectedTurnIndex", ge=0, le=9007199254740991)]
 
 
+class AdvisorBtwRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    quote: Annotated[str, Field(max_length=20000, min_length=1)]
+    question: Annotated[str, Field(max_length=20000, min_length=1)]
+    expected_turn_index: Annotated[int, Field(alias="expectedTurnIndex", ge=0, le=9007199254740991)]
+
+
 class StartDraftResponse(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -321,13 +394,32 @@ class StartDraftResponse(BaseModel):
     draft_status: Annotated[DraftStatus, Field(alias="draftStatus")]
 
 
-class AdvisorHighlightsEvent(BaseModel):
+class AdvisorGreenHighlightEvent(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
         populate_by_name=True,
     )
-    type: Literal["highlights"]
-    highlights: list[str]
+    type: Literal["green_highlight"]
+    highlight: Highlight
+
+
+class AdvisorRedHighlightEvent(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    type: Literal["red_highlight"]
+    followup_id: Annotated[str, Field(alias="followupId")]
+    highlight: TurnHighlight
+
+
+class AdvisorWithdrawRedHighlightsEvent(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    type: Literal["withdraw_red_highlights"]
+    followup_ids: Annotated[list[str], Field(alias="followupIds")]
 
 
 class AdvisorAnswerDeltaEvent(BaseModel):
@@ -339,15 +431,6 @@ class AdvisorAnswerDeltaEvent(BaseModel):
     text: str
 
 
-class AdvisorSourcesEvent(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-        populate_by_name=True,
-    )
-    type: Literal["sources"]
-    sources: list[WebSource]
-
-
 class AdvisorDoneEvent(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -355,7 +438,17 @@ class AdvisorDoneEvent(BaseModel):
     )
     type: Literal["done"]
     index: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
-    response: AdvisorResponse
+    message: AdvisorMessage
+
+
+class AdvisorBtwDoneEvent(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    type: Literal["btw_done"]
+    index: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    message: BtwMessage
 
 
 class AdvisorErrorEvent(BaseModel):
@@ -397,10 +490,12 @@ type DraftDocumentRequest = DraftFromMarkdownRequest | DraftApplyReviewRequest
 
 
 type AdvisorStreamEvent = (
-    AdvisorHighlightsEvent
+    AdvisorGreenHighlightEvent
+    | AdvisorRedHighlightEvent
+    | AdvisorWithdrawRedHighlightsEvent
     | AdvisorAnswerDeltaEvent
-    | AdvisorSourcesEvent
     | AdvisorDoneEvent
+    | AdvisorBtwDoneEvent
     | AdvisorErrorEvent
 )
 

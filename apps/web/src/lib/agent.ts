@@ -12,6 +12,7 @@ import {
   advisorSessionResponseSchema,
   advisorStreamEventSchema,
   startDraftResponseSchema,
+  type AdvisorBtwRequest,
   type AdvisorSessionResponse,
   type AdvisorStreamEvent,
   type AdvisorTurnErrorCode,
@@ -43,8 +44,11 @@ export class AgentError extends Error {
   }
 }
 
-/** Events the caller handles; `done` ends the stream and `error` is thrown as an `AgentError`. */
-export type AdvisorTurnEvent = Exclude<AdvisorStreamEvent, { type: 'error' }>;
+/**
+ * Events the caller handles; `done` (a turn) or `btw_done` (a btw) ends the stream, and `error` is
+ * thrown as an `AgentError`.
+ */
+export type AdvisorRunEvent = Exclude<AdvisorStreamEvent, { type: 'error' }>;
 
 async function authHeaders(): Promise<Record<string, string>> {
   await auth.authStateReady();
@@ -105,15 +109,15 @@ export async function startAdvisorSession(projectId: string): Promise<AdvisorSes
 }
 
 /**
- * Runs one Advisor turn, yielding its events in order up to `done`. Aborting `signal` closes the
- * stream, which cancels the turn on the server: nothing is saved.
+ * Runs one Advisor turn or btw, yielding its events in order up to its done event. Aborting
+ * `signal` closes the stream, which cancels the run on the server: nothing is saved.
  */
-export async function* streamAdvisorTurn(
-  projectId: string,
-  request: AdvisorTurnRequest,
+async function* streamAdvisorRun(
+  path: string,
+  request: unknown,
   signal?: AbortSignal,
-): AsyncGenerator<AdvisorTurnEvent> {
-  const response = await post(`${advisorPath(projectId)}/turns`, request, signal);
+): AsyncGenerator<AdvisorRunEvent> {
+  const response = await post(path, request, signal);
   if (!response.body) throw new AgentError('temporary');
 
   const reader = response.body
@@ -129,19 +133,33 @@ export async function* streamAdvisorTurn(
         if (signal?.aborted) throw error;
         throw new AgentError('temporary');
       }
-      // The service always ends with `done` or `error`; a stream that just stops was cut off.
+      // The service always ends with a done event or `error`; a stream that just stops was cut off.
       if (chunk.done) throw new AgentError('temporary');
 
       const event = advisorStreamEventSchema.parse(JSON.parse(chunk.value.data));
       if (event.type === 'error') throw new AgentError(event.code);
       yield event;
-      if (event.type === 'done') return;
+      if (event.type === 'done' || event.type === 'btw_done') return;
     }
   } finally {
     // Cancelling propagates through the pipes to the body, so an early exit closes the connection.
     await reader.cancel().catch(() => {});
   }
 }
+
+/** A reply to the question on screen. */
+export const streamAdvisorTurn = (
+  projectId: string,
+  request: AdvisorTurnRequest,
+  signal?: AbortSignal,
+) => streamAdvisorRun(`${advisorPath(projectId)}/turns`, request, signal);
+
+/** A one-off question about selected text. */
+export const streamAdvisorBtw = (
+  projectId: string,
+  request: AdvisorBtwRequest,
+  signal?: AbortSignal,
+) => streamAdvisorRun(`${advisorPath(projectId)}/btw`, request, signal);
 
 /**
  * Starts Drafting + Review, which closes the Advisor. The job runs in the background; follow

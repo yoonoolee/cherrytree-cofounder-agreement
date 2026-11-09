@@ -32,6 +32,7 @@ def initial_state() -> AdvisorState:
                     status="todo",
                     source="initial",
                     advisor_notes=None,
+                    followups=[],
                 )
                 for question in section.questions
             ],
@@ -39,9 +40,7 @@ def initial_state() -> AdvisorState:
         for section in INITIAL_QUESTIONS.sections
     ]
     sections[0].questions[0].status = "current"
-    return AdvisorState(
-        sections=sections, section_summaries={}, turn_count=0, updated_at=datetime.now(UTC)
-    )
+    return AdvisorState(sections=sections, turn_count=0, updated_at=datetime.now(UTC))
 
 
 async def start_session(db: AsyncClient, project_id: str) -> int:

@@ -112,7 +112,6 @@ async def run_agent(
             tools=tools,
             output_schema=config.output_schema,
             handler=handler,
-            trace_input=added[-1],
         )
         content = replayable_content(message)
         added.append({"role": "assistant", "content": content})
@@ -130,6 +129,9 @@ async def run_agent(
         if not tool_uses:
             return AgentRun(message=message, content=content, messages=added)
         # Every result goes back in one message, so the model keeps calling tools in parallel.
-        added.append(
-            {"role": "user", "content": [await _run_tool(context, block) for block in tool_uses]}
-        )
+        results: list[dict[str, Any]] = []
+        for block in tool_uses:
+            result = await _run_tool(context, block)
+            await handler.on_tool_result(block["id"], bool(result.get("is_error")))
+            results.append(result)
+        added.append({"role": "user", "content": results})

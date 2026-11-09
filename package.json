@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "dev": "npm run dev -w @cherrytree/web",
-    "start": "npm run dev -w @cherrytree/web",
+    "start": "npm run dev",
     "dev:agent": "uv run --directory apps/agent uvicorn cherrytree_agent.main:app --reload --port 8000 --env-file .env.cherrytree-cofounder-agree-dev",
     "build": "npm run build -w @cherrytree/web",
     "build:dev": "npm run build:dev -w @cherrytree/web",

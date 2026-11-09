@@ -1,37 +1,50 @@
-export interface TextSegment {
-  text: string;
-  highlighted: boolean;
+/**
+ * - `kept`: a fact the Advisor noted (green).
+ * - `needs`: the part a follow-up still open asks about (red, numbered).
+ * - `resolved`: a red highlight whose follow-ups are all done or skipped (green, keeps its number).
+ */
+type MarkKind = 'kept' | 'needs' | 'resolved';
+
+/** A highlight on one reply, by character positions the server found. */
+export interface Mark {
+  start: number;
+  end: number;
+  kind: MarkKind;
+  number?: number;
 }
 
-/**
- * Splits `text` into plain and highlighted segments. The Advisor quotes the user's phrases
- * exactly, so every exact occurrence of a phrase is highlighted; a phrase that does not occur
- * (a misquote) is skipped. Overlapping or touching matches merge into one segment.
- */
-export function highlightSegments(text: string, phrases: readonly string[]): TextSegment[] {
-  const ranges: [number, number][] = [];
-  for (const phrase of phrases) {
-    if (!phrase) continue;
-    for (let start = text.indexOf(phrase); start !== -1; start = text.indexOf(phrase, start + 1)) {
-      ranges.push([start, start + phrase.length]);
-    }
-  }
-  ranges.sort((a, b) => a[0] - b[0]);
+export interface TextSegment {
+  text: string;
+  mark: Mark | null;
+  /** The first segment of a numbered mark, where its number shows. */
+  tagged: boolean;
+}
 
-  const merged: [number, number][] = [];
-  for (const [start, end] of ranges) {
-    const last = merged.at(-1);
-    if (last && start <= last[1]) last[1] = Math.max(last[1], end);
-    else merged.push([start, end]);
+const PRIORITY: Record<MarkKind, number> = { kept: 1, resolved: 2, needs: 3 };
+
+/**
+ * Splits `text` into plain and marked segments. Where marks overlap, a red one wins over a
+ * resolved one, which wins over a green one. Marks outside the text are clipped.
+ */
+export function markSegments(text: string, marks: readonly Mark[]): TextSegment[] {
+  const owner: (Mark | null)[] = Array.from({ length: text.length }, () => null);
+  for (const mark of marks) {
+    for (let i = Math.max(0, mark.start); i < Math.min(text.length, mark.end); i++) {
+      const current = owner[i];
+      if (!current || PRIORITY[mark.kind] > PRIORITY[current.kind]) owner[i] = mark;
+    }
   }
 
   const segments: TextSegment[] = [];
-  let position = 0;
-  for (const [start, end] of merged) {
-    if (start > position) segments.push({ text: text.slice(position, start), highlighted: false });
-    segments.push({ text: text.slice(start, end), highlighted: true });
-    position = end;
+  const tagged = new Set<Mark>();
+  let start = 0;
+  for (let i = 1; i <= text.length; i++) {
+    if (i < text.length && owner[i] === owner[start]) continue;
+    const mark = owner[start] ?? null;
+    const first = mark?.number !== undefined && !tagged.has(mark);
+    if (first) tagged.add(mark);
+    segments.push({ text: text.slice(start, i), mark, tagged: first });
+    start = i;
   }
-  if (position < text.length) segments.push({ text: text.slice(position), highlighted: false });
   return segments;
 }

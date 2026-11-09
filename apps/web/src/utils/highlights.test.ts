@@ -1,41 +1,46 @@
-import { highlightSegments } from './highlights.ts';
+import { markSegments, type Mark } from './highlights.ts';
 
-const highlighted = (text: string, phrases: string[]) =>
-  highlightSegments(text, phrases)
-    .filter((segment) => segment.highlighted)
-    .map((segment) => segment.text);
+const text = 'We met at a climbing gym in Oakland in 2023.';
+const at = (quote: string, kind: Mark['kind'], number?: number): Mark => {
+  const start = text.indexOf(quote);
+  return { start, end: start + quote.length, kind, ...(number ? { number } : {}) };
+};
+const shown = (marks: Mark[]) =>
+  markSegments(text, marks).map((s) => [s.text, s.mark?.kind ?? null, s.tagged]);
 
-describe('highlightSegments', () => {
-  it('splits the text around exact matches and keeps every character', () => {
-    const text = 'We split equity 60/40 and vest over four years.';
-    const segments = highlightSegments(text, ['60/40', 'four years']);
-    expect(segments).toEqual([
-      { text: 'We split equity ', highlighted: false },
-      { text: '60/40', highlighted: true },
-      { text: ' and vest over ', highlighted: false },
-      { text: 'four years', highlighted: true },
-      { text: '.', highlighted: false },
-    ]);
-    expect(segments.map((s) => s.text).join('')).toBe(text);
+describe('markSegments', () => {
+  it('returns the text unmarked without marks', () => {
+    expect(shown([])).toEqual([[text, null, false]]);
   });
 
-  it('skips phrases that are not in the text and empty phrases', () => {
-    expect(highlighted('Maya writes the code.', ['Maya writes code', '', 'Maya'])).toEqual([
-      'Maya',
+  it('marks by position, numbering a red mark once at its start', () => {
+    expect(shown([at('climbing gym', 'kept'), at('in 2023', 'needs', 1)])).toEqual([
+      ['We met at a ', null, false],
+      ['climbing gym', 'kept', false],
+      [' in Oakland ', null, false],
+      ['in 2023', 'needs', true],
+      ['.', null, false],
     ]);
   });
 
-  it('highlights every occurrence', () => {
-    expect(highlighted('50% now, 50% later', ['50%'])).toEqual(['50%', '50%']);
-  });
-
-  it('merges overlapping and touching matches', () => {
-    expect(highlighted('full time from June', ['full time', 'time from', ' June'])).toEqual([
-      'full time from June',
+  it('lets red win over resolved over green where they overlap', () => {
+    expect(
+      shown([
+        at('gym in Oakland', 'kept'),
+        at('in Oakland in', 'resolved', 2),
+        at('Oakland', 'needs', 1),
+      ]),
+    ).toEqual([
+      ['We met at a climbing ', null, false],
+      ['gym ', 'kept', false],
+      ['in ', 'resolved', true],
+      ['Oakland', 'needs', true],
+      [' in', 'resolved', false],
+      [' 2023.', null, false],
     ]);
   });
 
-  it('returns the whole text unhighlighted without phrases', () => {
-    expect(highlightSegments('Hello', [])).toEqual([{ text: 'Hello', highlighted: false }]);
+  it('clips marks outside the text', () => {
+    expect(shown([{ start: 40, end: 99, kind: 'kept' }]).at(-1)).toEqual(['023.', 'kept', false]);
   });
 });

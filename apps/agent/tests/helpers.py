@@ -62,27 +62,56 @@ def tool_use(tool_id: str, name: str, tool_input: dict[str, Any]) -> dict[str, A
 
 
 def advisor_json(
+    question_id: str | None = None,
     *,
-    highlights: list[str] | None = None,
+    type: str = "followup",
     answer: str | None = None,
-    question: dict[str, str] | None = None,
 ) -> str:
+    """A turn's output."""
     return json.dumps(
-        {
-            "highlights": highlights or [],
-            "answer": answer,
-            "sources": [],
-            "question": question,
-        }
+        {"message": {"type": type, "questionId": question_id, "answer": answer, "sources": []}}
     )
+
+
+def btw_json(answer: str) -> str:
+    return json.dumps({"message": {"type": "answer", "text": answer, "sources": []}})
+
+
+def followup_update(
+    followup_id: str, under: str, highlight: str, text: str = "Tell me more?"
+) -> dict[str, Any]:
+    return {
+        "op": "add",
+        "id": followup_id,
+        "under": under,
+        "highlight": highlight,
+        "text": text,
+        "description": None,
+        "status": None,
+        "note": None,
+    }
+
+
+def status_update(item_id: str, status: str, note: str | None = None) -> dict[str, Any]:
+    return {
+        "op": "status",
+        "id": item_id,
+        "under": None,
+        "highlight": None,
+        "text": None,
+        "description": None,
+        "status": status,
+        "note": note,
+    }
 
 
 type Step = BetaMessage | Callable[[], Any]
 
 
 class FakeModel:
-    """Plays scripted responses in order, streaming their text in small chunks. A callable step
-    runs (awaited if async) before the next response, e.g. to change Firestore mid-run."""
+    """Plays scripted responses in order, streaming their text and tool inputs in small chunks. A
+    callable step runs (awaited if async) before the next response, e.g. to change Firestore
+    mid-run."""
 
     def __init__(self, *steps: Step) -> None:
         self.steps = list(steps)
@@ -102,6 +131,10 @@ class FakeModel:
             if block.type == "text":
                 for start in range(0, len(block.text), 7):
                     await handler.on_text(block.text[start : start + 7])
+            elif block.type == "tool_use":
+                tool_input = json.dumps(block.input)
+                for end in range(7, len(tool_input) + 7, 7):
+                    await handler.on_tool_input(block.id, block.name, tool_input[:end])
         return step
 
 
@@ -114,9 +147,17 @@ class RecordingHandler:
     def __init__(self) -> None:
         self.text = ""
         self.starts = 0
+        self.tool_inputs: dict[str, str] = {}
+        self.tool_results: dict[str, bool] = {}
 
     async def on_message_start(self) -> None:
         self.starts += 1
 
     async def on_text(self, text: str) -> None:
         self.text += text
+
+    async def on_tool_input(self, tool_use_id: str, name: str, partial_json: str) -> None:
+        self.tool_inputs[tool_use_id] = partial_json
+
+    async def on_tool_result(self, tool_use_id: str, is_error: bool) -> None:
+        self.tool_results[tool_use_id] = is_error

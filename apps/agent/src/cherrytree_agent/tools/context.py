@@ -14,7 +14,7 @@ class ToolContext:
     db: AsyncClient
     project_id: str
     advisor: AdvisorWorkingState | None = None
-    """The Advisor's question list and summaries as this turn changes them."""
+    """The Advisor's question list and highlights as this turn or btw changes them."""
     draft: WorkingDraft | None = None
     """The draft a run reviews or edits, with the edits and threads it proposes."""
 

@@ -1,6 +1,7 @@
 /**
  * Stripe: checkout session creation (callable) and the payment webhook that creates a project
  * — a Clerk organization plus the `projects/{clerkOrgId}` document — once a checkout completes.
+ * Where `SKIP_PAYMENT` is on (testing only), the callable creates the project itself instead.
  */
 import type express from 'express';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -8,18 +9,19 @@ import { logger } from 'firebase-functions';
 import { HttpsError, onCall, onRequest, type CallableRequest } from 'firebase-functions/v2/https';
 import Stripe from 'stripe';
 import {
+  normalizeProjectName,
   planSchema,
   toErrorMessage,
   type CallableRequest as CallableData,
   type CallableResponse,
   type Payment,
   type Plan,
-  type Project,
 } from '@cherrytree/shared';
 
 import {
   CALLABLE_OPTIONS,
   CLERK_SECRET_KEY,
+  SKIP_PAYMENT,
   STRIPE_PRO_PRICE_ID,
   STRIPE_SECRET_KEY,
   STRIPE_STARTER_PRICE_ID,
@@ -27,10 +29,10 @@ import {
   WEBHOOK_OPTIONS,
 } from './config.ts';
 import { resolveAppOrigin } from './lib/appOrigin.ts';
-import { getClerk, getClerkPrimaryEmail, requireAuth } from './lib/auth.ts';
+import { getClerkPrimaryEmail, requireAuth } from './lib/auth.ts';
 import { toHttpsError } from './lib/errors.ts';
-import { projects, stripeEvents, users } from './lib/firebase.ts';
-import { normalizeProjectName } from './lib/validation.ts';
+import { stripeEvents, users } from './lib/firebase.ts';
+import { createProject } from './lib/projects.ts';
 
 /** The version the stripe package defaulted to before it was pinned; bump deliberately. */
 const STRIPE_API_VERSION = '2025-10-29.clover';
@@ -88,6 +90,12 @@ export const createCheckoutSession = onCall(
     }
 
     try {
+      const origin = resolveAppOrigin(request.rawRequest.headers.origin);
+      if (SKIP_PAYMENT.value()) {
+        const projectId = await createProject({ userId, name, plan, payments: {} });
+        return { url: `${origin}/projects/${projectId}` };
+      }
+
       const email = await getClerkPrimaryEmail(userId);
       const stripe = getStripe();
 
@@ -103,7 +111,6 @@ export const createCheckoutSession = onCall(
         await userRef.set({ stripeCustomerId }, { merge: true });
       }
 
-      const origin = resolveAppOrigin(request.rawRequest.headers.origin);
       const session = await stripe.checkout.sessions.create({
         customer: stripeCustomerId,
         payment_method_types: ['card'],
@@ -116,7 +123,7 @@ export const createCheckoutSession = onCall(
         client_reference_id: userId,
       });
 
-      return { sessionId: session.id, url: session.url };
+      return { url: session.url };
     } catch (error) {
       throw toHttpsError(
         error,
@@ -178,12 +185,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     idOf(session.payment_intent),
   );
 
-  // The Clerk organization id is the project document id.
-  const organization = await getClerk().organizations.createOrganization({
-    name,
-    createdBy: userId,
-  });
-
   const payment: Payment = {
     plan,
     type: 'initial',
@@ -195,21 +196,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     purchasedAt: purchasedAt ?? new Date(),
   };
 
-  const project: Omit<Project, 'createdAt' | 'lastUpdated' | 'lastOpened'> = {
-    name,
-    members: { [userId]: { role: 'admin' } },
-    onboardingCompleted: { [userId]: false },
-    currentPlan: plan,
-    payments: { [session.id]: payment },
-    draftStatus: null,
-  };
-
-  await projects.doc(organization.id).set({
-    ...project,
-    createdAt: FieldValue.serverTimestamp(),
-    lastUpdated: FieldValue.serverTimestamp(),
-    lastOpened: FieldValue.serverTimestamp(),
-  });
+  await createProject({ userId, name, plan, payments: { [session.id]: payment } });
 }
 
 /**

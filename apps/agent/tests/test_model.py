@@ -28,24 +28,29 @@ def test_every_call_uses_the_designed_settings() -> None:
     assert set(params["betas"]) == {"compact-2026-01-12", "server-side-fallback-2026-07-01"}
     assert params["system"][0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
     assert params["cache_control"] == {"type": "ephemeral"}
-    assert params["context_management"]["edits"][0]["trigger"]["value"] == 900_000
+    assert params["context_management"]["edits"][0]["trigger"]["value"] == 350_000
     assert "temperature" not in params
 
 
-def test_the_advisor_output_keeps_the_streaming_order() -> None:
+def test_the_advisor_message_keeps_the_streaming_order() -> None:
     schema = ADVISOR.output_schema
     assert schema is not None
-    assert schema["required"] == ["highlights", "answer", "sources", "question"]
-    assert schema["additionalProperties"] is False
+    assert schema["required"] == ["message"]
+    turn_message = schema["$defs"]["AdvisorMessage"]
+    assert turn_message["required"] == ["type", "questionId", "answer", "sources"]
+    assert turn_message["additionalProperties"] is False
 
 
 def test_our_tools_are_strict_and_server_tools_are_declared_by_type() -> None:
     tools = {tool["name"]: tool for tool in definitions(ADVISOR.tools)}
     assert tools["web_search"]["type"] == "web_search_20260318"
     assert tools["web_fetch"]["type"] == "web_fetch_20260209"
-    for name in ("update_questions", "write_section_summary", "read_project", "search_rag"):
+    for name in ("add_green_highlights", "update_question_list", "read_project", "search_rag"):
         assert tools[name]["strict"] is True
         assert tools[name]["input_schema"]["additionalProperties"] is False
+    # The highlight tools stream their input, so highlights show as they are written.
+    eager = {name for name, tool in tools.items() if tool.get("eager_input_streaming")}
+    assert eager == {"add_green_highlights", "update_question_list"}
 
 
 def test_cost_counts_every_attempt_cache_write_ttl_and_search() -> None:
@@ -118,17 +123,24 @@ class _FakeStream:
         return self.final
 
 
-async def test_call_model_streams_text_to_the_handler(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_call_model_streams_text_and_tool_input_to_the_handler(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     final = message(text('{"a": 1}'))
+
+    def delta(index: int, **fields: str) -> SimpleNamespace:
+        return SimpleNamespace(
+            type="content_block_delta", index=index, delta=SimpleNamespace(**fields)
+        )
+
+    tool = SimpleNamespace(type="tool_use", id="t1", name="add_green_highlights")
     events = [
         SimpleNamespace(type="message_start"),
-        SimpleNamespace(
-            type="content_block_delta", delta=SimpleNamespace(type="text_delta", text='{"a"')
-        ),
-        SimpleNamespace(type="content_block_delta", delta=SimpleNamespace(type="input_json_delta")),
-        SimpleNamespace(
-            type="content_block_delta", delta=SimpleNamespace(type="text_delta", text=": 1}")
-        ),
+        delta(0, type="text_delta", text='{"a"'),
+        SimpleNamespace(type="content_block_start", index=1, content_block=tool),
+        delta(1, type="input_json_delta", partial_json='{"quotes": ['),
+        delta(1, type="input_json_delta", partial_json='"x"]}'),
+        delta(0, type="text_delta", text=": 1}"),
     ]
     stream = _FakeStream(events, final)
 
@@ -147,4 +159,5 @@ async def test_call_model_streams_text_to_the_handler(monkeypatch: pytest.Monkey
     assert result is final
     assert handler.starts == 1
     assert handler.text == '{"a": 1}'
+    assert handler.tool_inputs == {"t1": '{"quotes": ["x"]}'}
     assert stream.params["model"] == "claude-sonnet-5-5"

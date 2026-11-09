@@ -17,13 +17,16 @@ from langfuse import Langfuse, get_client, is_langfuse_span
 
 from cherrytree_agent.advisor.session import start_session
 from cherrytree_agent.advisor.turn import (
-    PreparedTurn,
+    BtwInput,
+    PreparedRun,
     StaleTurnError,
-    advisor_turn_events,
-    prepare_turn,
+    TurnInput,
+    advisor_run_events,
+    prepare_run,
 )
 from cherrytree_agent.auth import Caller, require_project_admin
 from cherrytree_agent.contracts.models import (
+    AdvisorBtwRequest,
     AdvisorSessionResponse,
     AdvisorStreamEvent,
     AdvisorTurnRequest,
@@ -65,14 +68,12 @@ def get_draft_document() -> DraftDocument:
     return DraftDocument()
 
 
-async def prepared_turn(
-    request: AdvisorTurnRequest,
-    caller: Annotated[Caller, Depends(require_project_admin)],
-    db: Annotated[AsyncClient, Depends(get_db)],
-) -> PreparedTurn:
+async def _prepare(
+    db: AsyncClient, caller: Caller, run_input: TurnInput | BtwInput, index: int
+) -> PreparedRun:
     """Checked before the stream opens, so a stale or rate-limited send is a plain 409 or 429."""
     try:
-        turn = await prepare_turn(db, caller, request.reply, request.expected_turn_index)
+        run = await prepare_run(db, caller, run_input, index)
         await count_agent_run(db, caller.uid)
     except StaleTurnError as error:
         raise HTTPException(status.HTTP_409_CONFLICT, "A newer turn was saved") from error
@@ -82,7 +83,25 @@ async def prepared_turn(
             "Too many messages this hour",
             headers={"Retry-After": str(error.retry_after_seconds)},
         ) from error
-    return turn
+    return run
+
+
+async def prepared_turn(
+    request: AdvisorTurnRequest,
+    caller: Annotated[Caller, Depends(require_project_admin)],
+    db: Annotated[AsyncClient, Depends(get_db)],
+) -> PreparedRun:
+    return await _prepare(db, caller, TurnInput(request.reply), request.expected_turn_index)
+
+
+async def prepared_btw(
+    request: AdvisorBtwRequest,
+    caller: Annotated[Caller, Depends(require_project_admin)],
+    db: Annotated[AsyncClient, Depends(get_db)],
+) -> PreparedRun:
+    return await _prepare(
+        db, caller, BtwInput(request.quote, request.question), request.expected_turn_index
+    )
 
 
 def create_app() -> FastAPI:
@@ -103,11 +122,20 @@ def create_app() -> FastAPI:
 
     @app.post("/v1/projects/{project_id}/advisor/turns", response_class=EventSourceResponse)
     async def advisor_turn(
-        turn: Annotated[PreparedTurn, Depends(prepared_turn)],
+        run: Annotated[PreparedRun, Depends(prepared_turn)],
         db: Annotated[AsyncClient, Depends(get_db)],
         call: Annotated[CallModel, Depends(get_call_model)],
     ) -> AsyncIterator[AdvisorStreamEvent]:
-        async for event in advisor_turn_events(db, turn, call):
+        async for event in advisor_run_events(db, run, call):
+            yield event
+
+    @app.post("/v1/projects/{project_id}/advisor/btw", response_class=EventSourceResponse)
+    async def advisor_btw(
+        run: Annotated[PreparedRun, Depends(prepared_btw)],
+        db: Annotated[AsyncClient, Depends(get_db)],
+        call: Annotated[CallModel, Depends(get_call_model)],
+    ) -> AsyncIterator[AdvisorStreamEvent]:
+        async for event in advisor_run_events(db, run, call):
             yield event
 
     @app.post("/v1/projects/{project_id}/draft")

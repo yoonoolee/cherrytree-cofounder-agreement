@@ -1,8 +1,8 @@
 """`call_model`: the only code that calls the model API, so a provider change touches one module.
 
 Every call streams, uses adaptive thinking at the agent's fixed effort, caches the system prompt
-for an hour and the rest automatically for five minutes, carries server-side compaction as a
-safety net, and falls back to Anthropic's recommended model when a safety classifier declines.
+for an hour and the rest automatically for five minutes, carries server-side compaction, and
+falls back to Anthropic's recommended model when a safety classifier declines.
 Usage and cost go to Langfuse.
 """
 
@@ -27,6 +27,14 @@ class StreamHandler(Protocol):
 
     async def on_text(self, text: str) -> None: ...
 
+    async def on_tool_input(self, tool_use_id: str, name: str, partial_json: str) -> None:
+        """A tool call's input so far (the whole JSON written up to now, not a delta)."""
+        ...
+
+    async def on_tool_result(self, tool_use_id: str, is_error: bool) -> None:
+        """One of our tools ran; an error result means none of its input was applied."""
+        ...
+
 
 class NoStream:
     """A `StreamHandler` for background runs, where nobody watches the text arrive."""
@@ -35,6 +43,12 @@ class NoStream:
         pass
 
     async def on_text(self, text: str) -> None:
+        pass
+
+    async def on_tool_input(self, tool_use_id: str, name: str, partial_json: str) -> None:
+        pass
+
+    async def on_tool_result(self, tool_use_id: str, is_error: bool) -> None:
         pass
 
 
@@ -129,19 +143,28 @@ async def call_model(
     tools: list[dict[str, Any]],
     output_schema: dict[str, Any] | None,
     handler: StreamHandler,
-    trace_input: object = None,
 ) -> BetaMessage:
-    """One streamed model call. `trace_input` is what Langfuse records as the call's input (the
-    messages new to this call); the full history is in Firestore."""
+    """One streamed model call. Langfuse records its whole conversation (system prompt and every
+    message) as the input, and the tools by name."""
     params = request_params(
         settings, system=system, messages=messages, tools=tools, output_schema=output_schema
     )
+    tool_inputs: dict[int, tuple[str, str, str]] = {}
+    """Our tool calls being written, by block index: id, name and the input JSON so far."""
     async with _client().beta.messages.stream(**params) as stream:
         async for event in stream:
             if event.type == "message_start":
                 await handler.on_message_start()
-            elif event.type == "content_block_delta" and event.delta.type == "text_delta":
-                await handler.on_text(event.delta.text)
+            elif event.type == "content_block_start" and event.content_block.type == "tool_use":
+                tool_inputs[event.index] = (event.content_block.id, event.content_block.name, "")
+            elif event.type == "content_block_delta":
+                if event.delta.type == "text_delta":
+                    await handler.on_text(event.delta.text)
+                elif event.delta.type == "input_json_delta" and event.index in tool_inputs:
+                    tool_id, name, so_far = tool_inputs[event.index]
+                    so_far += event.delta.partial_json
+                    tool_inputs[event.index] = (tool_id, name, so_far)
+                    await handler.on_tool_input(tool_id, name, so_far)
         message = await stream.get_final_message()
         request_id = stream.request_id
 
@@ -149,10 +172,14 @@ async def call_model(
     get_client().update_current_generation(
         model=message.model,
         model_parameters={"effort": settings.effort, "max_tokens": settings.max_tokens},
-        input=trace_input,
+        input=[{"role": "system", "content": system}, *messages],
         output=message.to_dict()["content"],
         usage_details=usage,
         cost_details=cost,
-        metadata={"stop_reason": message.stop_reason, "request_id": request_id},
+        metadata={
+            "stop_reason": message.stop_reason,
+            "request_id": request_id,
+            "tools": [tool["name"] for tool in tools],
+        },
     )
     return message

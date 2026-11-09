@@ -7,9 +7,13 @@
  */
 import { z } from 'zod';
 
-import { advisorResponseSchema } from './domain/advisor.ts';
+import {
+  advisorMessageSchema,
+  btwMessageSchema,
+  highlightSchema,
+  turnHighlightSchema,
+} from './domain/advisor.ts';
 import { draftStatusSchema } from './domain/draft.ts';
-import { webSourceSchema } from './domain/webSource.ts';
 
 export const ADVISOR_REPLY_MAX_LENGTH = 20_000;
 
@@ -21,15 +25,23 @@ export type AdvisorSessionResponse = z.infer<typeof advisorSessionResponseSchema
 
 /**
  * `POST /v1/projects/{projectId}/advisor/turns` — answered with a stream of `AdvisorStreamEvent`.
- * Before the stream opens: 409 if another turn was saved since, 429 (with `Retry-After`, in
+ * Before the stream opens: 409 if another turn or btw was saved since, 429 (with `Retry-After`, in
  * seconds) if the user started too many agent runs this hour.
  */
 export const advisorTurnRequestSchema = z.object({
   reply: z.string().min(1).max(ADVISOR_REPLY_MAX_LENGTH),
-  /** The turn count the browser last saw. The turn saves only if no other turn was saved since. */
+  /** The turn count the browser last saw. The turn saves only if nothing else was saved since. */
   expectedTurnIndex: z.number().int().min(0),
 });
 export type AdvisorTurnRequest = z.infer<typeof advisorTurnRequestSchema>;
+
+/** `POST /v1/projects/{projectId}/advisor/btw` — like a turn, for a question about `quote`. */
+export const advisorBtwRequestSchema = z.object({
+  quote: z.string().min(1).max(ADVISOR_REPLY_MAX_LENGTH),
+  question: z.string().min(1).max(ADVISOR_REPLY_MAX_LENGTH),
+  expectedTurnIndex: z.number().int().min(0),
+});
+export type AdvisorBtwRequest = z.infer<typeof advisorBtwRequestSchema>;
 
 /**
  * - `temporary`: the model call failed after retries; the reply can be sent again.
@@ -40,15 +52,25 @@ export const advisorTurnErrorCodeSchema = z.enum(['temporary', 'refusal', 'stale
 export type AdvisorTurnErrorCode = z.infer<typeof advisorTurnErrorCodeSchema>;
 
 /**
- * Server-sent events of one turn, in order: `highlights`, `answer_delta`s, `sources`, then `done`
- * once the turn is saved, or `error`. `done` carries the saved response, which is authoritative:
- * the UI shows the question from it (all at once) and replaces the streamed answer with its own.
+ * Server-sent events of a turn or btw, ending with `done` (a turn) or `btw_done` (a btw) once it is
+ * saved, or with `error`, which drops everything streamed before it.
+ * - `green_highlight`: a fact noted in this turn's reply, as the model writes it.
+ * - `red_highlight`: a follow-up's highlight, as the model writes it. `withdraw_red_highlights`
+ *   takes back those of a question list change that was rejected.
+ * - `answer_delta`: the message's `answer` (a btw: its `text`) as it is written.
+ * `done` and `btw_done` carry the saved message, which is authoritative.
  */
 export const advisorStreamEventSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('highlights'), highlights: z.array(z.string()) }),
+  z.object({ type: z.literal('green_highlight'), highlight: highlightSchema }),
+  z.object({
+    type: z.literal('red_highlight'),
+    followupId: z.string(),
+    highlight: turnHighlightSchema,
+  }),
+  z.object({ type: z.literal('withdraw_red_highlights'), followupIds: z.array(z.string()) }),
   z.object({ type: z.literal('answer_delta'), text: z.string() }),
-  z.object({ type: z.literal('sources'), sources: z.array(webSourceSchema) }),
-  z.object({ type: z.literal('done'), index: z.number().int(), response: advisorResponseSchema }),
+  z.object({ type: z.literal('done'), index: z.number().int(), message: advisorMessageSchema }),
+  z.object({ type: z.literal('btw_done'), index: z.number().int(), message: btwMessageSchema }),
   z.object({ type: z.literal('error'), code: advisorTurnErrorCodeSchema }),
 ]);
 export type AdvisorStreamEvent = z.infer<typeof advisorStreamEventSchema>;

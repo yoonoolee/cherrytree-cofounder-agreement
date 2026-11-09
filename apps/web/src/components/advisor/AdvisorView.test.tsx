@@ -6,17 +6,20 @@ import AdvisorView from './AdvisorView.tsx';
 import type { AdvisorData } from '../../hooks/useAdvisor.ts';
 import { AgentError } from '../../lib/agent.ts';
 import {
-  followup,
+  REPLY,
   makeAdvisorState,
-  makeResponse,
+  makeBtwTurn,
+  makeFollowup,
+  makeMessage,
   makeTurn,
-  nextQuestion,
   withCurrent,
+  withFollowups,
 } from '../../test/fixtures/advisor.ts';
 
 const mocks = vi.hoisted(() => ({
   advisor: { status: 'loading' } as AdvisorData,
   streamAdvisorTurn: vi.fn(),
+  streamAdvisorBtw: vi.fn(),
   startDraft: vi.fn(),
 }));
 
@@ -25,11 +28,12 @@ vi.mock('../../lib/firebase.ts', () => ({ auth: {}, appCheck: null }));
 vi.mock('../../lib/agent.ts', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../lib/agent.ts')>()),
   streamAdvisorTurn: mocks.streamAdvisorTurn,
+  streamAdvisorBtw: mocks.streamAdvisorBtw,
   startDraft: mocks.startDraft,
 }));
 
-/** A turn stream that yields `events`, pausing before the last one until `release` is called. */
-function controlledStream(events: AdvisorStreamEvent[]) {
+/** A stream that yields `events`, pausing before the last one until `release` is called. */
+function controlledStream(mock: typeof mocks.streamAdvisorTurn, events: AdvisorStreamEvent[]) {
   let release: () => void = () => {};
   const gate = new Promise<void>((resolve) => (release = resolve));
   async function* stream() {
@@ -39,7 +43,7 @@ function controlledStream(events: AdvisorStreamEvent[]) {
       yield event;
     }
   }
-  mocks.streamAdvisorTurn.mockImplementation(stream);
+  mock.mockImplementation(stream);
   return {
     release: () =>
       act(async () => {
@@ -59,102 +63,127 @@ function setData(data: Partial<Extract<AdvisorData, { status: 'ready' }>> = {}) 
   mocks.advisor = { status: 'ready', state: makeAdvisorState(), turns: [], ...data };
 }
 
-const replyBox = () => screen.getByLabelText<HTMLTextAreaElement>('Your answer');
+/** The first screen after one reply, with a follow-up on "in 2023" being asked. */
+function oneReplyIn() {
+  const when = makeFollowup('f_when', 'What month in 2023?', 'in 2023', { status: 'current' });
+  setData({
+    state: withFollowups(makeAdvisorState({ turnCount: 1 }), 'background_meet', [when]),
+    turns: [makeTurn(0, { message: makeMessage({ questionId: 'f_when', answer: 'Nice.' }) })],
+  });
+}
+
+const replyBox = () => screen.getByLabelText<HTMLInputElement | HTMLTextAreaElement>('Your answer');
 
 function sendReply(text: string) {
   fireEvent.change(replyBox(), { target: { value: text } });
   fireEvent.click(screen.getByRole('button', { name: 'Send' }));
 }
 
+const markText = (text: string) =>
+  screen.getAllByText((_, el) => el?.tagName === 'MARK' && el.textContent?.endsWith(text) === true);
+
 beforeEach(() => {
   mocks.streamAdvisorTurn.mockReset();
+  mocks.streamAdvisorBtw.mockReset();
   vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   setData();
 });
 
 describe('AdvisorView', () => {
-  it('opens on the first question with its section, progress and the disclaimer', () => {
+  it('opens a blank screen on the first question, with the section and the disclaimer', () => {
     render(ui());
-    expect(screen.getByText('01 · Background')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'How did you two meet?' })).toBeInTheDocument();
-    expect(screen.getByText('1 of 3')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Background' })).toBeInTheDocument();
     expect(screen.getByText(/not a law firm/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
   });
 
-  it('stacks every exchange on the screen with highlights and follow-ups', () => {
-    setData({
-      state: makeAdvisorState({ turnCount: 2 }),
-      turns: [
-        makeTurn(0),
-        makeTurn(1, {
-          reply: 'About three years, we were roommates.',
-          response: makeResponse({
-            highlights: ['three years'],
-            answer: 'That history helps.',
-            question: followup('Have you worked together before?'),
-          }),
-        }),
-      ],
-    });
+  it('shows progress over every section from the section menu', () => {
+    setData({ state: withCurrent(makeAdvisorState(), 'roles_titles') });
     render(ui());
-    expect(screen.getByText('at a climbing gym in Oakland').tagName).toBe('MARK');
-    expect(screen.getByText('three years').tagName).toBe('MARK');
-    expect(screen.getByText('That history helps.')).toBeInTheDocument();
-    expect(screen.getByText('How long have you known each other?')).toBeInTheDocument();
-    expect(screen.getByText('Have you worked together before?')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Roles' }));
+    expect(screen.getByText('67% complete')).toBeInTheDocument();
+    expect(screen.getByText('1 section remaining')).toBeInTheDocument();
   });
 
-  it('streams a turn in place, hides the reply box meanwhile, then clears it once saved', async () => {
-    const response = makeResponse({ answer: 'Many founders meet that way.' });
-    const stream = controlledStream([
-      { type: 'highlights', highlights: ['climbing gym'] },
-      { type: 'answer_delta', text: 'Many founders' },
-      { type: 'done', index: 0, response },
+  it('streams a reply in place: highlights as written, the answer, then the follow-up', async () => {
+    const stream = controlledStream(mocks.streamAdvisorTurn, [
+      { type: 'green_highlight', highlight: { text: 'Oakland', start: 28, end: 35 } },
+      {
+        type: 'red_highlight',
+        followupId: 'f_when',
+        highlight: { turn: 0, text: 'in 2023', start: 36, end: 43 },
+      },
+      { type: 'answer_delta', text: 'Nice.' },
+      { type: 'done', index: 0, message: makeMessage({ answer: 'Nice.' }) },
     ]);
     const { rerender } = render(ui());
-    sendReply('We met at a climbing gym.');
+    sendReply(REPLY);
 
-    expect(await screen.findByText('Many founders')).toBeInTheDocument();
-    expect(screen.getByText('climbing gym').tagName).toBe('MARK');
+    expect(await screen.findByText('Nice.')).toBeInTheDocument();
+    expect(markText('Oakland')[0]).toHaveClass('bg-kept');
+    expect(markText('in 2023')[0]).toHaveClass('bg-needs');
+    expect(markText('in 2023')[0]).toHaveTextContent('1in 2023');
     expect(screen.queryByLabelText('Your answer')).toBeNull();
     expect(mocks.streamAdvisorTurn).toHaveBeenCalledWith(
       'org_1',
-      { reply: 'We met at a climbing gym.', expectedTurnIndex: 0 },
+      { reply: REPLY, expectedTurnIndex: 0 },
       expect.any(AbortSignal),
     );
 
     await stream.release();
-    expect(screen.getByText('Many founders meet that way.')).toBeInTheDocument();
-    expect(screen.getByText('How long have you known each other?')).toBeInTheDocument();
-    expect(replyBox().value).toBe('');
-
-    // The saved turn arrives through Firestore and replaces the live one.
-    setData({
-      state: makeAdvisorState({ turnCount: 1 }),
-      turns: [makeTurn(0, { reply: 'We met at a climbing gym.', response })],
-    });
+    // The saved turn and question list arrive through Firestore.
+    oneReplyIn();
     rerender(ui());
-    expect(screen.getAllByText('Many founders meet that way.')).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: 'What month in 2023?' })).toHaveTextContent(
+      '1What month in 2023?',
+    );
+    expect(screen.getAllByText('Nice.')).toHaveLength(1);
+    expect(replyBox()).toHaveValue('');
   });
 
-  it('holds an answer that moves on until the user continues to the next question', async () => {
-    const response = makeResponse({
-      answer: 'Co-workers often make strong cofounders.',
-      question: nextQuestion('Whose idea was the company?'),
+  it('moves an answered follow-up up under the reply, and settles its highlight green', () => {
+    const when = makeFollowup('f_when', 'What month in 2023?', 'in 2023', { status: 'done' });
+    const who = makeFollowup('f_who', 'Who suggested it?', 'climbing gym', { status: 'current' });
+    setData({
+      state: withFollowups(makeAdvisorState({ turnCount: 2 }), 'background_meet', [when, who]),
+      turns: [
+        makeTurn(0, { message: makeMessage({ questionId: 'f_when' }) }),
+        makeTurn(1, {
+          reply: 'March.',
+          greenHighlights: [{ text: 'March', start: 0, end: 5 }],
+          message: makeMessage({ questionId: 'f_who' }),
+        }),
+      ],
     });
-    const stream = controlledStream([{ type: 'done', index: 0, response }]);
-    const { rerender } = render(ui());
-    sendReply('We worked together at Stripe.');
-    await stream.release();
+    render(ui());
 
+    expect(screen.getByText('What month in 2023?')).toBeInTheDocument();
+    expect(markText('in 2023')[0]).toHaveClass('bg-kept');
+    expect(markText('in 2023')[0]).toHaveTextContent('2in 2023');
+    expect(markText('climbing gym')[0]).toHaveClass('bg-needs');
+    expect(markText('March')[0]).toHaveClass('bg-kept');
+    expect(screen.getByRole('heading', { name: 'Who suggested it?' })).toHaveTextContent(
+      '1Who suggested it?',
+    );
+  });
+
+  it('holds a move on the screen until Next, then opens the next question blank', () => {
+    const move = makeMessage({
+      type: 'next_question',
+      questionId: 'background_idea',
+      answer: 'Co-workers often make strong cofounders.',
+    });
     setData({
       state: withCurrent(makeAdvisorState({ turnCount: 1 }), 'background_idea'),
-      turns: [makeTurn(0, { response })],
+      turns: [makeTurn(0, { message: move })],
     });
-    rerender(ui());
-    expect(screen.getByRole('heading', { name: 'How did you two meet?' })).toBeInTheDocument();
+    render(ui());
+
     expect(screen.getByText('Co-workers often make strong cofounders.')).toBeInTheDocument();
+    expect(
+      screen.getByText("We're good for this part. Click Next to move on."),
+    ).toBeInTheDocument();
     expect(screen.queryByLabelText('Your answer')).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Next question' }));
@@ -162,34 +191,53 @@ describe('AdvisorView', () => {
       screen.getByRole('heading', { name: 'Whose idea was the company?' }),
     ).toBeInTheDocument();
     expect(screen.queryByText('Co-workers often make strong cofounders.')).toBeNull();
-    expect(screen.getByText('2 of 3')).toBeInTheDocument();
   });
 
-  it.each([
-    [{ type: 'next_section', text: 'Who does what?' } as const, 'Next section'],
-    [null, 'Continue'],
-  ])('asks to confirm every move, even without an answer (%o)', async (question, label) => {
-    const response = makeResponse({ answer: null, question });
-    const stream = controlledStream([{ type: 'done', index: 0, response }]);
+  it('labels a move into another section Next section', () => {
+    const move = makeMessage({ type: 'next_section', questionId: 'roles_titles' });
+    setData({
+      state: withCurrent(makeAdvisorState({ turnCount: 1 }), 'roles_titles'),
+      turns: [makeTurn(0, { message: move })],
+    });
     render(ui());
-    sendReply('We met in 2023.');
-    await stream.release();
+    expect(screen.getByRole('button', { name: 'Next section' })).toBeInTheDocument();
+  });
 
-    expect(screen.getByRole('heading', { name: 'How did you two meet?' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
-    expect(screen.queryByLabelText('Your answer')).toBeNull();
+  it('shows sources collapsed under the follow-up, only as http(s) links', () => {
+    oneReplyIn();
+    const turn = makeTurn(0, {
+      message: makeMessage({
+        answer: 'Vesting is common.',
+        sources: [
+          { title: 'Vesting guide', url: 'https://example.com/vesting' },
+          { title: 'Bad', url: 'javascript:alert(1)' },
+        ],
+      }),
+    });
+    if (mocks.advisor.status === 'ready') mocks.advisor.turns = [turn];
+    render(ui());
+
+    expect(screen.getByText('› Sources').closest('details')).not.toHaveAttribute('open');
+    const links = within(screen.getByRole('list', { name: 'Sources' })).getAllByRole('link');
+    expect(links).toHaveLength(1);
+    expect(links[0]).toHaveAttribute('href', 'https://example.com/vesting');
+    expect(links[0]).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
   it('keeps the reply after a temporary failure and retries it', async () => {
-    const failing = controlledStream([{ type: 'error', code: 'temporary' }]);
+    const failing = controlledStream(mocks.streamAdvisorTurn, [
+      { type: 'error', code: 'temporary' },
+    ]);
     render(ui());
     sendReply('We met in college.');
     await failing.release();
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong.');
-    expect(replyBox().value).toBe('We met in college.');
+    expect(replyBox()).toHaveValue('We met in college.');
 
-    const stream = controlledStream([{ type: 'done', index: 0, response: makeResponse() }]);
+    const stream = controlledStream(mocks.streamAdvisorTurn, [
+      { type: 'done', index: 0, message: makeMessage() },
+    ]);
     fireEvent.click(within(screen.getByRole('alert')).getByRole('button', { name: 'Retry' }));
     await stream.release();
     expect(screen.queryByRole('alert')).toBeNull();
@@ -201,56 +249,73 @@ describe('AdvisorView', () => {
   });
 
   it('asks to rephrase after a refusal, without a retry button', async () => {
-    const refused = controlledStream([{ type: 'error', code: 'refusal' }]);
+    const refused = controlledStream(mocks.streamAdvisorTurn, [{ type: 'error', code: 'refusal' }]);
     render(ui());
     sendReply('Something odd');
     await refused.release();
     expect(await screen.findByRole('alert')).toHaveTextContent('Try rephrasing your message.');
     expect(screen.queryByRole('button', { name: 'Retry' })).toBeNull();
-    expect(replyBox().value).toBe('Something odd');
+    expect(replyBox()).toHaveValue('Something odd');
   });
 
-  it('renders only http(s) source links', () => {
-    setData({
-      turns: [
-        makeTurn(0, {
-          response: makeResponse({
-            answer: 'Vesting is common.',
-            sources: [
-              { title: 'Vesting guide', url: 'https://example.com/vesting' },
-              { title: 'Bad', url: 'javascript:alert(1)' },
-            ],
-          }),
-        }),
-      ],
-    });
+  it('asks a btw about selected reply text, and drops it on close', async () => {
+    oneReplyIn();
+    if (mocks.advisor.status === 'ready') {
+      mocks.advisor.turns.push(makeBtwTurn(1));
+      mocks.advisor.state.turnCount = 2;
+    }
     render(ui());
-    const links = within(screen.getByRole('list', { name: 'Sources' })).getAllByRole('link');
-    expect(links).toHaveLength(1);
-    expect(links[0]).toHaveAttribute('href', 'https://example.com/vesting');
-    expect(links[0]).toHaveAttribute('rel', 'noopener noreferrer');
-  });
+    // Saved btws are history only.
+    expect(screen.queryByText('Not for the agreement.')).toBeNull();
 
-  it('ends the interview with the start of the draft once no question is current', async () => {
-    mocks.startDraft.mockResolvedValue({ draftStatus: 'queued' });
-    const state = makeAdvisorState();
-    setData({
-      state: {
-        ...state,
-        sections: state.sections.map((s) => ({
-          ...s,
-          questions: s.questions.map((q) => ({ ...q, status: 'done' as const })),
-        })),
+    const reply = screen.getByText((_, el) => el?.hasAttribute('data-reply') === true);
+    const range = document.createRange();
+    range.selectNodeContents(reply);
+    range.getBoundingClientRect = () => new DOMRect(0, 0, 10, 10);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(range);
+    fireEvent.mouseUp(reply);
+
+    const popup = screen.getByRole('dialog', { name: 'Ask about the selected text' });
+    const stream = controlledStream(mocks.streamAdvisorBtw, [
+      { type: 'answer_delta', text: 'Not ' },
+      {
+        type: 'btw_done',
+        index: 1,
+        message: { type: 'answer', text: 'Not really.', sources: [] },
       },
+    ]);
+    fireEvent.change(within(popup).getByLabelText('Your question'), {
+      target: { value: 'Does the gym matter?' },
+    });
+    fireEvent.click(within(popup).getByRole('button', { name: 'Ask' }));
+    await stream.release();
+
+    expect(mocks.streamAdvisorBtw).toHaveBeenCalledWith(
+      'org_1',
+      { quote: REPLY, question: 'Does the gym matter?', expectedTurnIndex: 2 },
+      expect.any(AbortSignal),
+    );
+    expect(within(popup).getByText('Not really.')).toBeInTheDocument();
+
+    fireEvent.click(within(popup).getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('ends the interview with the last answer and the start of the draft', async () => {
+    mocks.startDraft.mockResolvedValue({ draftStatus: 'queued' });
+    const done = makeMessage({ type: 'interview_complete', questionId: null, answer: 'All set.' });
+    setData({
+      state: withCurrent(makeAdvisorState({ turnCount: 1 }), 'none'),
+      turns: [makeTurn(0, { message: done })],
     });
     render(ui());
+    expect(screen.getByText('All set.')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'That covers everything.' })).toBeInTheDocument();
-    expect(screen.queryByLabelText('Your answer')).toBeNull();
 
     const button = screen.getByRole('button', { name: 'Write my draft' });
     await act(async () => fireEvent.click(button));
     expect(mocks.startDraft).toHaveBeenCalledWith('org_1');
-    // The page moves on when draftStatus changes; until then the button stays disabled.
     expect(button).toBeDisabled();
   });
 

@@ -1,4 +1,4 @@
-import { projectSchema } from './project.ts';
+import { normalizeProjectName, projectSchema } from './project.ts';
 
 const timestamp = { toDate: () => new Date(0), toMillis: () => 0 };
 
@@ -36,5 +36,26 @@ describe('projectSchema', () => {
       projectSchema.safeParse({ ...project, members: { user_1: { role: 'viewer' } } }).success,
     ).toBe(false);
     expect(projectSchema.safeParse({ ...project, createdAt: '2026-01-01' }).success).toBe(false);
+  });
+});
+
+describe('normalizeProjectName', () => {
+  it('trims and keeps the raw text, including characters an HTML escape would change', () => {
+    expect(normalizeProjectName('  Acme & Co  ')).toBe('Acme & Co');
+  });
+
+  it('strips NUL bytes', () => {
+    expect(normalizeProjectName('Ac\0me')).toBe('Acme');
+  });
+
+  it('caps the length at 100 characters', () => {
+    expect(normalizeProjectName('x'.repeat(150))).toHaveLength(100);
+  });
+
+  it('returns null for non-strings and names shorter than two characters', () => {
+    expect(normalizeProjectName(undefined)).toBeNull();
+    expect(normalizeProjectName(42)).toBeNull();
+    expect(normalizeProjectName(' a ')).toBeNull();
+    expect(normalizeProjectName('')).toBeNull();
   });
 });

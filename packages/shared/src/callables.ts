@@ -13,7 +13,8 @@ export interface CallableMap {
   createCheckoutSession: {
     /** The price and redirect URLs are server-side configuration keyed by `plan`. */
     request: { plan: Plan; projectName: string };
-    response: { sessionId: string; url: string | null };
+    /** Where to send the browser: Stripe Checkout, or the new project when payment is skipped. */
+    response: { url: string | null };
   };
   sendContactMessage: {
     request: { name: string; email: string; message: string };

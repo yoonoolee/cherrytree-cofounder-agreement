@@ -16,8 +16,11 @@ from tests.helpers import (
     STRANGER,
     FakeModel,
     advisor_json,
+    btw_json,
+    followup_update,
     headers,
     message,
+    status_update,
     text,
     tool_use,
     use_model,
@@ -25,6 +28,8 @@ from tests.helpers import (
 
 SESSION = f"/v1/projects/{PROJECT_ID}/advisor/session"
 TURNS = f"/v1/projects/{PROJECT_ID}/advisor/turns"
+BTW = f"/v1/projects/{PROJECT_ID}/advisor/btw"
+REPLY = "We met at a park in middle school. We talked about starting something for years."
 
 
 def events(response: httpx.Response) -> list[dict[str, Any]]:
@@ -39,6 +44,20 @@ async def send(client: httpx.AsyncClient, reply: str, index: int = 0) -> httpx.R
     return await client.post(
         TURNS, headers=headers(), json={"reply": reply, "expectedTurnIndex": index}
     )
+
+
+async def ask_btw(
+    client: httpx.AsyncClient, quote: str, question: str, index: int
+) -> httpx.Response:
+    return await client.post(
+        BTW,
+        headers=headers(),
+        json={"quote": quote, "question": question, "expectedTurnIndex": index},
+    )
+
+
+def questions(saved_state: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {q["id"]: q for s in saved_state["sections"] for q in s["questions"]}
 
 
 async def saved(db: AsyncClient, collection: str) -> list[dict[str, Any]]:
@@ -112,86 +131,196 @@ async def test_starting_the_session_copies_the_questions_once(
 # ---------------------------------------------------------------------------
 
 
-async def test_a_turn_streams_and_saves_with_its_question_list_changes(
+async def test_a_turn_streams_highlights_and_saves_with_its_question_list_changes(
     client: httpx.AsyncClient, db: AsyncClient
 ) -> None:
     await client.post(SESSION, headers=headers())
-    response_json = advisor_json(
-        highlights=["at a park"],
-        answer="That's a long friendship.",
-        question={
-            "type": "next_question",
-            "text": "Whose idea was the company, and what work happened before you teamed up?",
-        },
-    )
     use_model(
         FakeModel(
             message(
+                tool_use("t1", "add_green_highlights", {"quotes": ["at a park", "middle school"]}),
                 tool_use(
-                    "t1",
-                    "update_questions",
+                    "t2",
+                    "update_question_list",
                     {
-                        "additions": [],
                         "updates": [
-                            {
-                                "question_id": "background_meet",
-                                "status": "done",
-                                "advisor_notes": None,
-                            },
-                            {
-                                "question_id": "background_idea",
-                                "status": "current",
-                                "advisor_notes": None,
-                            },
-                        ],
+                            followup_update(
+                                "f_idea",
+                                "background_meet",
+                                "talked about starting something for years",
+                                "Whose idea was it to actually start?",
+                            ),
+                            status_update("background_idea", "skipped", "Covered here."),
+                        ]
                     },
                 ),
                 stop_reason="tool_use",
             ),
-            message(text(response_json)),
+            message(text(advisor_json("f_idea", answer="That's a long friendship."))),
         )
     )
 
-    response = await send(client, "We met at a park.")
+    response = await send(client, REPLY)
 
     assert response.headers["content-type"].startswith("text/event-stream")
     stream = events(response)
     assert [e["type"] for e in stream if e["type"] != "answer_delta"] == [
-        "highlights",
-        "sources",
+        "green_highlight",
+        "green_highlight",
+        "red_highlight",
         "done",
     ]
+    assert stream[2] == {
+        "type": "red_highlight",
+        "followupId": "f_idea",
+        "highlight": {
+            "turn": 0,
+            "text": "talked about starting something for years",
+            "start": 38,
+            "end": 79,
+        },
+    }
     assert "".join(e["text"] for e in stream if e["type"] == "answer_delta") == (
         "That's a long friendship."
     )
-    assert stream[-1] == {"type": "done", "index": 0, "response": json.loads(response_json)}
+    done_message = {
+        "type": "followup",
+        "questionId": "f_idea",
+        "answer": "That's a long friendship.",
+        "sources": [],
+    }
+    assert stream[-1] == {"type": "done", "index": 0, "message": done_message}
 
     [turn] = await saved(db, "turns")
-    assert turn["uid"] == ADMIN
-    assert turn["reply"] == "We met at a park."
-    assert turn["response"] == json.loads(response_json)
+    assert (turn["kind"], turn["uid"], turn["screen"]) == ("turn", ADMIN, "background_meet")
+    assert turn["reply"] == REPLY
+    assert turn["greenHighlights"] == [
+        {"text": "at a park", "start": 7, "end": 16},
+        {"text": "middle school", "start": 20, "end": 33},
+    ]
+    assert turn["message"] == done_message
 
     [entry] = await saved(db, "transcript")
     replay = json.loads(entry["messages"])
     assert [m["role"] for m in replay] == ["user", "assistant", "user", "assistant"]
-    assert replay[0]["content"][1] == {"type": "text", "text": "We met at a park."}
+    assert replay[0]["content"][1] == {"type": "text", "text": REPLY}
     assert "<question_list>" in replay[0]["content"][0]["text"]
 
     saved_state = await state(db)
     assert saved_state["turnCount"] == 1
-    statuses = {q["id"]: q["status"] for q in saved_state["sections"][0]["questions"]}
-    assert statuses == {"background_meet": "done", "background_idea": "current"}
+    listed = questions(saved_state)
+    assert listed["background_meet"]["status"] == "current"
+    assert listed["background_meet"]["followups"][0]["status"] == "current"
+    assert listed["background_idea"]["status"] == "skipped"
+
+
+async def test_moving_on_opens_the_next_screen(client: httpx.AsyncClient, db: AsyncClient) -> None:
+    """The model sent a follow-up type for a main question: the list decides it's next_question."""
+    await client.post(SESSION, headers=headers())
+    use_model(FakeModel(message(text(advisor_json("background_idea")))))
+    first = await send(client, REPLY)
+    assert events(first)[-1]["message"]["type"] == "next_question"
+
+    model = use_model(
+        FakeModel(
+            message(
+                tool_use(
+                    "t1",
+                    "update_question_list",
+                    {"updates": [followup_update("f_x", "background_idea", "my idea")]},
+                ),
+                stop_reason="tool_use",
+            ),
+            message(text(advisor_json("f_x"))),
+        )
+    )
+    second = await send(client, "It was my idea.", index=1)
+
+    assert events(second)[-1]["message"]["questionId"] == "f_x"
+    turns = await saved(db, "turns")
+    assert [t["screen"] for t in turns] == ["background_meet", "background_idea"]
+    listed = questions(await state(db))
+    assert listed["background_meet"]["status"] == "done"
+    assert listed["background_idea"]["followups"][0]["highlight"]["turn"] == 1
+    assert len(model.calls) == 2
+
+
+async def test_a_message_that_does_not_fit_is_rewritten(
+    client: httpx.AsyncClient, db: AsyncClient
+) -> None:
+    await client.post(SESSION, headers=headers())
+    model = use_model(
+        FakeModel(
+            message(text(advisor_json("no_such_question"))),
+            message(text(advisor_json("background_idea"))),
+        )
+    )
+    response = await send(client, REPLY)
+
+    assert events(response)[-1]["message"]["questionId"] == "background_idea"
+    correction = model.calls[1]["messages"][-1]
+    assert correction["role"] == "user"
+    assert "Unknown id: no_such_question" in correction["content"]
+    [entry] = await saved(db, "transcript")
+    assert [m["role"] for m in json.loads(entry["messages"])] == [
+        "user",
+        "assistant",
+        "user",
+        "assistant",
+    ]
+
+
+async def test_a_btw_answers_and_changes_only_the_history(
+    client: httpx.AsyncClient, db: AsyncClient
+) -> None:
+    await client.post(SESSION, headers=headers())
+    before = questions(await state(db))
+    model = use_model(
+        FakeModel(
+            message(
+                tool_use("t1", "add_green_highlights", {"quotes": ["middle school"]}),
+                stop_reason="tool_use",
+            ),
+            message(text(btw_json("Plenty of founders met young."))),
+        )
+    )
+
+    response = await ask_btw(client, "middle school", "Is that unusual?", 0)
+
+    stream = events(response)
+    assert [e["type"] for e in stream if e["type"] != "answer_delta"] == ["btw_done"]
+    assert stream[-1]["message"] == {
+        "type": "answer",
+        "text": "Plenty of founders met young.",
+        "sources": [],
+    }
+    tool_result = model.calls[1]["messages"][-1]["content"][0]
+    assert tool_result["is_error"] is True
+    assert "btw" in tool_result["content"]
+    sent = model.calls[0]["messages"][-1]["content"]
+    assert "<selected_text>\nmiddle school\n</selected_text>" in sent[0]["text"]
+    assert sent[1]["text"] == "Is that unusual?"
+
+    [turn] = await saved(db, "turns")
+    assert (turn["kind"], turn["quote"], turn["question"]) == (
+        "btw",
+        "middle school",
+        "Is that unusual?",
+    )
+    saved_state = await state(db)
+    assert saved_state["turnCount"] == 1
+    assert questions(saved_state) == before
 
 
 async def test_the_next_turn_replays_the_saved_history_exactly(
     client: httpx.AsyncClient, db: AsyncClient
 ) -> None:
     await client.post(SESSION, headers=headers())
-    use_model(FakeModel(message(text(advisor_json(answer="One.")))))
+    use_model(FakeModel(message(text(advisor_json("background_idea", answer="One.")))))
     await send(client, "First reply.")
     [entry] = await saved(db, "transcript")
 
-    model = use_model(FakeModel(message(text(advisor_json(answer="Two.")))))
+    model = use_model(FakeModel(message(text(advisor_json("roles_titles", answer="Two.")))))
     response = await send(client, "Second reply.", index=1)
 
     assert events(response)[-1]["type"] == "done"
@@ -228,8 +357,8 @@ async def test_a_reply_must_not_be_empty(client: httpx.AsyncClient) -> None:
             ),
             "refusal",
         ),
-        (FakeModel(message(text("not the response format"))), "temporary"),
-        (FakeModel(message(text('{"highlights": ['), stop_reason="max_tokens")), "temporary"),
+        (FakeModel(*[message(text("not the response format"))] * 3), "temporary"),
+        (FakeModel(message(text('{"message": {'), stop_reason="max_tokens")), "temporary"),
     ],
     ids=["refusal", "invalid response", "cut off"],
 )
@@ -254,7 +383,7 @@ async def test_a_turn_saved_meanwhile_wins(client: httpx.AsyncClient, db: AsyncC
     async def another_tab_saves_first() -> None:
         await advisor_state_ref(db, PROJECT_ID).update({"turnCount": 1})
 
-    use_model(FakeModel(another_tab_saves_first, message(text(advisor_json(answer="Late.")))))
+    use_model(FakeModel(another_tab_saves_first, message(text(advisor_json("background_idea")))))
     response = await send(client, "Hello")
 
     assert events(response)[-1] == {"type": "error", "code": "stale"}
@@ -279,51 +408,9 @@ async def test_the_rate_limit_window_resets(client: httpx.AsyncClient, db: Async
     limits = db.collection("rateLimits").document(ADMIN)
     an_hour_ago = datetime.now(UTC) - timedelta(hours=1, seconds=1)
     await limits.set({"windowStart": an_hour_ago, "count": AGENT_RUNS_PER_WINDOW})
-    use_model(FakeModel(message(text(advisor_json(answer="Hi.")))))
+    use_model(FakeModel(message(text(advisor_json("background_idea")))))
 
     response = await send(client, "Hello")
 
     assert events(response)[-1]["type"] == "done"
     assert ((await limits.get()).to_dict() or {})["count"] == 1
-
-
-async def test_the_saved_question_follows_the_question_list(
-    client: httpx.AsyncClient, db: AsyncClient
-) -> None:
-    """The model moved to the next question but sent a follow-up: the turn opens its screen."""
-    await client.post(SESSION, headers=headers())
-    use_model(
-        FakeModel(
-            message(
-                tool_use(
-                    "t1",
-                    "update_questions",
-                    {
-                        "additions": [],
-                        "updates": [
-                            {
-                                "question_id": "background_meet",
-                                "status": "done",
-                                "advisor_notes": None,
-                            },
-                            {
-                                "question_id": "background_idea",
-                                "status": "current",
-                                "advisor_notes": None,
-                            },
-                        ],
-                    },
-                ),
-                stop_reason="tool_use",
-            ),
-            message(text(advisor_json(question={"type": "followup", "text": "Who wrote code?"}))),
-        )
-    )
-    response = await send(client, "We met at a park, and it was my idea.")
-    done = events(response)[-1]
-    assert done["response"]["question"] == {
-        "type": "next_question",
-        "text": "Whose idea was the company, and what work happened before you teamed up?",
-    }
-    [turn] = await saved(db, "turns")
-    assert turn["response"]["question"] == done["response"]["question"]

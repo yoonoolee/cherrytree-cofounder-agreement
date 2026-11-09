@@ -13,10 +13,10 @@ src/cherrytree_agent/
 ├── contracts/           # GENERATED from packages/shared's Zod schemas: models.py, schema.json
 ├── llm/                 # The shared runtime: AgentConfig, run_agent (the loop), call_model (the only model caller)
 ├── tools/               # Tools by name (registry.py); our own run here, web_search/web_fetch run at Anthropic
-├── advisor/             # Advisor config, session start, turn (run + atomic save), stream parser, transcript
+├── advisor/             # Advisor config, session start, turn and btw (run + atomic save), stream parser, transcript
 ├── drafting/            # Drafting config, job start (browser) and the job itself (Cloud Tasks worker)
 ├── review/              # Review config and its first-draft run
-├── draft/               # Shared draft context (template, transcript, summaries), the draft with block ids
+├── draft/               # Shared draft context (template, transcript), the draft with block ids
 │                        # and the run's proposed edits/threads, client of the draftDocument function
 ├── prompts/             # One system prompt per agent (advisor.md, drafting.md, review.md)
 └── content/             # questions.json, rag_seed.json, agreement-template.md

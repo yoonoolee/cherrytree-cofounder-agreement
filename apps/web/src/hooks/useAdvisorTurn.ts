@@ -1,47 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
-import type { AdvisorResponse, WebSource } from '@cherrytree/shared';
+import type { Highlight } from '@cherrytree/shared';
 
 import { AgentError, streamAdvisorTurn } from '../lib/agent.ts';
-import type { AdvisorScreen } from '../utils/advisorScreen.ts';
+import type { LiveRedHighlight } from '../utils/advisorScreen.ts';
 
 /**
- * The turn this tab sent, shown on the screen it was sent from until the saved turn arrives
- * through Firestore.
- * - `streaming`: highlights, answer and sources as they arrive.
- * - `saved`: the saved response. `held` when it moves on to the next main question (or ends the
- *   interview): it stays on this screen until the user confirms the move.
+ * The turn this tab is sending, shown on its screen until the saved turn arrives through
+ * Firestore: the reply, then its highlights and the answer as they stream. `saved` once the
+ * service has saved it.
  */
-export type LiveTurn =
-  | {
-      status: 'streaming';
-      screen: AdvisorScreen;
-      reply: string;
-      /** `null` until the highlights arrive. */
-      highlights: string[] | null;
-      answer: string;
-      sources: WebSource[];
-    }
-  | {
-      status: 'saved';
-      screen: AdvisorScreen;
-      reply: string;
-      index: number;
-      response: AdvisorResponse;
-      held: boolean;
-    };
-
-type StreamingTurn = Extract<LiveTurn, { status: 'streaming' }>;
+interface LiveTurn {
+  index: number;
+  screen: string;
+  reply: string;
+  greenHighlights: Highlight[];
+  redHighlights: LiveRedHighlight[];
+  answer: string;
+  saved: boolean;
+}
 
 export interface AdvisorTurnControls {
   live: LiveTurn | null;
   error: AgentError | null;
   /** Resolves `true` once the turn is saved; on failure the reply is not cleared. */
-  send: (screen: AdvisorScreen, reply: string, expectedTurnIndex: number) => Promise<boolean>;
-  /** Leaves a held turn for the next main question's screen. */
-  advance: () => void;
+  send: (screen: string, reply: string, expectedTurnIndex: number) => Promise<boolean>;
 }
-
-const holdsScreen = ({ question }: AdvisorResponse): boolean => question?.type !== 'followup';
 
 /** Sends Advisor turns one at a time. Leaving the page aborts a running turn (nothing is saved). */
 export function useAdvisorTurn(projectId: string): AdvisorTurnControls {
@@ -51,38 +34,50 @@ export function useAdvisorTurn(projectId: string): AdvisorTurnControls {
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
-  const send = async (screen: AdvisorScreen, reply: string, expectedTurnIndex: number) => {
+  const send = async (screen: string, reply: string, expectedTurnIndex: number) => {
     if (abortRef.current) return false;
     const controller = new AbortController();
     abortRef.current = controller;
     setError(null);
-    setLive({ status: 'streaming', screen, reply, highlights: null, answer: '', sources: [] });
-
-    const update = (change: (turn: StreamingTurn) => Partial<StreamingTurn>) =>
-      setLive((turn) => (turn?.status === 'streaming' ? { ...turn, ...change(turn) } : turn));
+    setLive({
+      index: expectedTurnIndex,
+      screen,
+      reply,
+      greenHighlights: [],
+      redHighlights: [],
+      answer: '',
+      saved: false,
+    });
+    const update = (change: (turn: LiveTurn) => Partial<LiveTurn>) =>
+      setLive((turn) => turn && { ...turn, ...change(turn) });
 
     try {
-      const events = streamAdvisorTurn(projectId, { reply, expectedTurnIndex }, controller.signal);
-      for await (const event of events) {
+      const request = { reply, expectedTurnIndex };
+      for await (const event of streamAdvisorTurn(projectId, request, controller.signal)) {
         switch (event.type) {
-          case 'highlights':
-            update(() => ({ highlights: event.highlights }));
+          case 'green_highlight':
+            update((turn) => ({ greenHighlights: [...turn.greenHighlights, event.highlight] }));
+            break;
+          case 'red_highlight':
+            update((turn) => ({
+              redHighlights: [
+                ...turn.redHighlights,
+                { followupId: event.followupId, highlight: event.highlight },
+              ],
+            }));
+            break;
+          case 'withdraw_red_highlights':
+            update((turn) => ({
+              redHighlights: turn.redHighlights.filter(
+                (red) => !event.followupIds.includes(red.followupId),
+              ),
+            }));
             break;
           case 'answer_delta':
             update((turn) => ({ answer: turn.answer + event.text }));
             break;
-          case 'sources':
-            update(() => ({ sources: event.sources }));
-            break;
           case 'done':
-            setLive({
-              status: 'saved',
-              screen,
-              reply,
-              index: event.index,
-              response: event.response,
-              held: holdsScreen(event.response),
-            });
+            update(() => ({ saved: true }));
             return true;
         }
       }
@@ -98,5 +93,5 @@ export function useAdvisorTurn(projectId: string): AdvisorTurnControls {
     }
   };
 
-  return { live, error, send, advance: () => setLive(null) };
+  return { live, error, send };
 }

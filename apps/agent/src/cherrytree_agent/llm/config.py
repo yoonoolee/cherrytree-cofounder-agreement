@@ -22,13 +22,15 @@ class ModelSettings:
     system_cache_ttl: Literal["5m", "1h"] = "1h"
     """Explicit cache breakpoint on the system prompt (and the tool definitions before it)."""
     prefix_cache_ttl: Literal["5m", "1h"] = "1h"
-    """Drafting, Review and Editing: the breakpoint after their fixed prefix (template, transcript,
-    section summaries; `draft/context.py`). An hour pays off only when runs repeat within it."""
+    """Drafting, Review and Editing: the breakpoint after their fixed prefix (template, transcript;
+    `draft/context.py`). An hour pays off only when runs repeat within it."""
     cache_tail: bool = True
     """Automatic 5-minute breakpoint on the last block, so a turn's tool loop re-reads its own
     history from the cache."""
-    compaction_trigger_tokens: int = 900_000
-    """Server-side compaction is a safety net near the 1M context limit; nothing happens below."""
+    compaction_trigger_tokens: int = 350_000
+    """Server-side compaction summarizes the conversation once a request's input passes this: 35%
+    of the 1M context window. Later requests still send the full history; the API drops what
+    comes before the summary."""
 
 
 @dataclass(frozen=True)

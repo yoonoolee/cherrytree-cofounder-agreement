@@ -5,8 +5,23 @@ import { draftStatusSchema } from './draft.ts';
 
 /**
  * `projects/{clerkOrgId}` — the document id is the Clerk organization id.
- * Created by `stripeWebhook` once a checkout completes.
+ * Created by `stripeWebhook` once a checkout completes (by checkout itself where `SKIP_PAYMENT` is on).
  */
+
+export const PROJECT_NAME_MIN_LENGTH = 2;
+export const PROJECT_NAME_MAX_LENGTH = 100;
+
+/**
+ * Normalizes a user-entered project/company name for storage: strips NUL bytes, trims, caps
+ * the length. Returns `null` when the result is too short to be a name.
+ * The value is stored raw; escape it where it is rendered.
+ */
+export function normalizeProjectName(input: unknown): string | null {
+  if (typeof input !== 'string') return null;
+
+  const name = input.replace(/\0/g, '').trim().slice(0, PROJECT_NAME_MAX_LENGTH).trim();
+  return name.length >= PROJECT_NAME_MIN_LENGTH ? name : null;
+}
 
 export const planSchema = z.enum(['starter', 'pro']);
 export type Plan = z.infer<typeof planSchema>;

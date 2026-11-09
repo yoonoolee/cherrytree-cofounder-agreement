@@ -94,7 +94,7 @@ async def finish_interview(client: httpx.AsyncClient, db: AsyncClient) -> None:
     for section in state["sections"]:
         for question in section["questions"]:
             question["status"] = "done"
-    state["sectionSummaries"] = {"equity": "- Avery and Sam split equity 50/50."}
+    state["sections"][0]["questions"][0]["advisorNotes"] = "Avery and Sam split equity 50/50."
     await ref.set(state)
 
 
@@ -189,7 +189,7 @@ async def test_only_the_project_admin_can_start(client: httpx.AsyncClient, db: A
 async def test_drafting_closes_the_advisor(client: httpx.AsyncClient, db: AsyncClient) -> None:
     await client.post(SESSION, headers=headers())
     await project_ref(db, PROJECT_ID).update({"draftStatus": "queued"})
-    use_model(FakeModel(message(text(advisor_json(answer="Too late.")))))
+    use_model(FakeModel(message(text(advisor_json("background_idea")))))
     response = await client.post(
         f"/v1/projects/{PROJECT_ID}/advisor/turns",
         headers=headers(),
@@ -228,14 +228,14 @@ async def test_the_job_drafts_reviews_and_saves_the_draft_with_its_threads(
     assert response.status_code == 204
     assert await draft_status(db) == "ready"
 
-    # Drafting got the template, the transcript and the summaries, cached as one prefix.
+    # Drafting got the template and the transcript (with the question list), cached as one prefix.
     drafting_input = model.calls[0]["messages"][0]["content"]
     assert drafting_input[0]["text"].startswith("<agreement_template")
-    assert "50/50" in drafting_input[2]["text"]
-    assert drafting_input[2]["cache_control"] == {"type": "ephemeral", "ttl": "5m"}
+    assert "50/50" in drafting_input[1]["text"]
+    assert drafting_input[1]["cache_control"] == {"type": "ephemeral", "ttl": "5m"}
     # Review read the converted draft with its block ids.
     review_input = model.calls[1]["messages"][0]["content"]
-    assert "[b1] The founders split equity 50/50." in review_input[3]["text"]
+    assert "[b1] The founders split equity 50/50." in review_input[2]["text"]
 
     [(fixes, anchors)] = documents.applied
     assert fixes == [DraftFix(op="replace", para="b1", old="founders", new="Founders")]

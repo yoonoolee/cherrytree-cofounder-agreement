@@ -1,5 +1,23 @@
 import type { AgentErrorCode } from '../lib/agent.ts';
 
+/** The bottom box once a main question is covered; the button opens the next one's screen. */
+export const ADVISOR_MOVE_ON = {
+  text: "We're good for this part. Click Next to move on.",
+  next_question: 'Next question',
+  next_section: 'Next section',
+};
+
+/** The highlight legend in the bottom box. */
+export const ADVISOR_LEGEND = { kept: 'Kept', needs: 'Needs more' };
+
+export const ADVISOR_COPY = {
+  replyPlaceholder: 'Start anywhere. Say as much as you want.',
+  followupPlaceholder: 'Say as much as you want.',
+  selectHint: 'Select to ask',
+  btwPlaceholder: 'Ask a question…',
+  thinking: 'Thinking…',
+};
+
 /** Shown once every main question is done or skipped; `action` starts the draft. */
 export const ADVISOR_COMPLETE = {
   title: 'That covers everything.',

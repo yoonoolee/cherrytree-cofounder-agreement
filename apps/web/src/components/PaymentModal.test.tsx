@@ -80,7 +80,6 @@ describe('PaymentModal', () => {
 
   it('creates a checkout session for the trimmed name and selected plan, then leaves for Stripe', async () => {
     mocks.callFunction.mockResolvedValue({
-      sessionId: 'cs_1',
       url: 'https://checkout.stripe.test/cs_1',
     });
     const { nameInput, submit } = renderModal();
@@ -109,7 +108,7 @@ describe('PaymentModal', () => {
   });
 
   it('treats a missing checkout URL as a failure', async () => {
-    mocks.callFunction.mockResolvedValue({ sessionId: 'cs_1', url: null });
+    mocks.callFunction.mockResolvedValue({ url: null });
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
     const { nameInput, submit } = renderModal();
     fireEvent.change(nameInput, { target: { value: 'Acme' } });

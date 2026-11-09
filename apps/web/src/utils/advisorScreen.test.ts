@@ -1,78 +1,109 @@
-import { advisorProgress, currentScreen } from './advisorScreen.ts';
 import {
-  followup,
+  advisorProgress,
+  advisorView,
+  marksFor,
+  numberHighlights,
+  questionText,
+} from './advisorScreen.ts';
+import {
   makeAdvisorState,
-  makeResponse,
+  makeBtwTurn,
+  makeFollowup,
+  makeMessage,
   makeTurn,
-  nextQuestion,
   withCurrent,
+  withFollowups,
 } from '../test/fixtures/advisor.ts';
 
-describe('currentScreen', () => {
-  it('opens on the first question of the first section', () => {
-    expect(currentScreen(makeAdvisorState(), [])).toEqual({
-      sectionNumber: 1,
-      sectionName: 'Background',
-      question: 'How did you two meet?',
-      turns: [],
-    });
+describe('advisorView', () => {
+  it('shows the current question with only its replies, not btws', () => {
+    const view = advisorView(makeAdvisorState(), [makeTurn(0), makeBtwTurn(1)], null);
+    expect(view?.kind).toBe('screen');
+    if (view?.kind !== 'screen') return;
+    expect(view.screen.question.id).toBe('background_meet');
+    expect(view.screen.sectionNumber).toBe(1);
+    expect(view.screen.turns.map((t) => t.index)).toEqual([0]);
+    expect(view.moving).toBeNull();
   });
 
-  it('stacks follow-up turns on the screen they were answered on', () => {
-    const turns = [
-      makeTurn(0),
-      makeTurn(1, { response: makeResponse({ question: followup('Q') }) }),
-    ];
-    expect(currentScreen(makeAdvisorState(), turns)?.turns).toEqual(turns);
-  });
-
-  it('starts a new screen at the last turn that moved on, headed by the list wording', () => {
-    const opener = makeTurn(1, {
-      response: makeResponse({ question: nextQuestion('So whose idea was it?') }),
-    });
-    const after = makeTurn(2);
-    const state = withCurrent(makeAdvisorState(), 'background_idea');
-    expect(currentScreen(state, [makeTurn(0), opener, after])).toMatchObject({
-      sectionNumber: 1,
-      question: 'Whose idea was the company?',
-      turns: [after],
-    });
-  });
-
-  it("takes the section from the current question's section", () => {
-    const opener = makeTurn(0, {
-      response: makeResponse({ question: { type: 'next_section', text: 'Who does what?' } }),
-    });
+  it('keeps a moving turn on its screen until Next, also after a reload', () => {
     const state = withCurrent(makeAdvisorState(), 'roles_titles');
-    expect(currentScreen(state, [opener])).toMatchObject({
-      sectionNumber: 2,
-      sectionName: 'Roles',
-      question: 'What will each of you be responsible for?',
-    });
+    const move = makeMessage({ type: 'next_section', questionId: 'roles_titles' });
+    const turns = [makeTurn(0, { message: move })];
+
+    const held = advisorView(state, turns, null);
+    expect(held).toMatchObject({ kind: 'screen', moving: move });
+    if (held?.kind === 'screen') expect(held.screen.question.id).toBe('background_meet');
+
+    const next = advisorView(state, turns, 0);
+    if (next?.kind !== 'screen') throw new Error('expected a screen');
+    expect(next.screen.question.id).toBe('roles_titles');
+    expect(next.screen.turns).toEqual([]);
   });
 
-  it('is null once no question is current', () => {
-    const state = makeAdvisorState();
-    const done = {
-      ...state,
-      sections: state.sections.map((s) => ({
-        ...s,
-        questions: s.questions.map((q) => ({ ...q, status: 'done' as const })),
-      })),
-    };
-    expect(currentScreen(done, [makeTurn(0, { response: makeResponse({ question: null }) })])).toBe(
-      null,
-    );
+  it('is complete once no question is current, with the last answer', () => {
+    const state = withCurrent(makeAdvisorState(), 'none');
+    const done = makeMessage({ type: 'interview_complete', questionId: null, answer: 'All set.' });
+    expect(advisorView(state, [makeTurn(0, { message: done })], null)).toEqual({
+      kind: 'complete',
+      answer: 'All set.',
+    });
   });
 });
 
-describe('advisorProgress', () => {
-  it('counts done and skipped questions across every section', () => {
-    expect(advisorProgress(makeAdvisorState())).toEqual({ position: 1, total: 3, fraction: 0 });
-    expect(advisorProgress(withCurrent(makeAdvisorState(), 'roles_titles'))).toEqual({
-      position: 3,
-      total: 3,
-      fraction: 2 / 3,
-    });
+describe('numberHighlights', () => {
+  const when = makeFollowup('f_when', 'When?', 'in 2023', { status: 'done' });
+  const where = makeFollowup('f_where', 'Which gym?', 'climbing gym');
+  const why = makeFollowup('f_why', 'Why climbing?', 'climbing gym', { status: 'done' });
+
+  it('numbers by first appearance, shares a number per highlight and is open while any is', () => {
+    const { highlights, numberOf } = numberHighlights([when, where, why]);
+    expect(highlights.map((h) => [h.highlight.text, h.number, h.open])).toEqual([
+      ['climbing gym', 1, true],
+      ['in 2023', 2, false],
+    ]);
+    expect([numberOf('f_where'), numberOf('f_why'), numberOf('f_when')]).toEqual([1, 1, 2]);
+  });
+
+  it('adds live red highlights as open', () => {
+    const live = [{ followupId: 'f_new', highlight: { turn: 0, text: 'We', start: 0, end: 2 } }];
+    const { highlights, numberOf } = numberHighlights([when], live);
+    expect(highlights.map((h) => [h.highlight.text, h.number, h.open])).toEqual([
+      ['We', 1, true],
+      ['in 2023', 2, false],
+    ]);
+    expect(numberOf('f_new')).toBe(1);
+  });
+
+  it('gives each reply its own marks', () => {
+    const { highlights } = numberHighlights([
+      when,
+      makeFollowup('f_x', 'X?', 'yes', { turn: 1, reply: 'yes' }),
+    ]);
+    expect(marksFor(0, [{ start: 0, end: 2 }], highlights)).toEqual([
+      { start: 0, end: 2, kind: 'kept' },
+      { start: 36, end: 43, kind: 'resolved', number: 1 },
+    ]);
+    expect(marksFor(1, [], highlights)).toEqual([{ start: 0, end: 3, kind: 'needs', number: 2 }]);
+  });
+});
+
+describe('questionText and advisorProgress', () => {
+  it('finds main questions and follow-ups, and counts settled questions', () => {
+    const state = withFollowups(
+      withCurrent(makeAdvisorState(), 'background_idea'),
+      'background_meet',
+      [makeFollowup('f_when', 'When?', 'in 2023')],
+    );
+    expect(questionText(state, 'f_when')).toBe('When?');
+    expect(questionText(state, 'roles_titles')).toBe('What will each of you be responsible for?');
+    expect(questionText(state, 'nope')).toBeNull();
+
+    const progress = advisorProgress(state, 'Background');
+    expect(progress.fraction).toBeCloseTo(1 / 3);
+    expect(progress.sections).toEqual([
+      { name: 'Background', done: false, active: true },
+      { name: 'Roles', done: false, active: false },
+    ]);
   });
 });

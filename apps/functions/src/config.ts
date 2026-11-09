@@ -6,7 +6,7 @@
  * `functions/.env.<projectId>` (committed) and are resolved by the Firebase CLI at deploy time
  * and by the emulator. Neither is available at import time: call `.value()` inside handlers.
  */
-import { defineSecret, defineString } from 'firebase-functions/params';
+import { defineBoolean, defineSecret, defineString } from 'firebase-functions/params';
 import type { CallableOptions, HttpsOptions } from 'firebase-functions/v2/https';
 
 // ---------------------------------------------------------------------------
@@ -34,6 +34,15 @@ export const STRIPE_STARTER_PRICE_ID = defineString('STRIPE_STARTER_PRICE_ID', {
 });
 export const STRIPE_PRO_PRICE_ID = defineString('STRIPE_PRO_PRICE_ID', {
   description: 'Stripe Price id of the pro plan',
+});
+
+/**
+ * Testing only, removed before launch (TODO.md): checkout creates the project without Stripe.
+ * `true` only in the dev project's env file.
+ */
+export const SKIP_PAYMENT = defineBoolean('SKIP_PAYMENT', {
+  description: 'Create projects without payment (testing only)',
+  default: false,
 });
 
 /** The Vite dev server; accepted as a redirect origin so local development round-trips. */
@@ -87,8 +96,6 @@ export const AGENT_SERVICE_OPTIONS = {
 
 /** RFC 5321 maximum. */
 export const EMAIL_MAX_LENGTH = 254;
-export const PROJECT_NAME_MIN_LENGTH = 2;
-export const PROJECT_NAME_MAX_LENGTH = 100;
 
 export const CONTACT_RECIPIENT_EMAIL = 'hello@cherrytree.app';
 export const CONTACT_NAME_MAX_LENGTH = 200;

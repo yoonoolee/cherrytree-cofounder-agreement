@@ -1,8 +1,14 @@
 import type { AdvisorStreamEvent } from '@cherrytree/shared';
 
-import { AgentError, startAdvisorSession, startDraft, streamAdvisorTurn } from './agent.ts';
+import {
+  AgentError,
+  startAdvisorSession,
+  startDraft,
+  streamAdvisorBtw,
+  streamAdvisorTurn,
+} from './agent.ts';
 import { SESSION_NOT_READY_MESSAGE } from './functions.ts';
-import { makeResponse } from '../test/fixtures/advisor.ts';
+import { makeMessage } from '../test/fixtures/advisor.ts';
 
 const mocks = vi.hoisted(() => ({
   getLimitedUseToken: vi.fn(() => Promise.resolve({ token: 'app-check-token' })),
@@ -110,21 +116,23 @@ describe('startDraft', () => {
 
 describe('streamAdvisorTurn', () => {
   it('sends the reply and yields the events up to done, across split chunks', async () => {
-    const response = makeResponse({ answer: 'Common.' });
+    const message = makeMessage({ answer: 'Common.' });
+    const green = { text: 'Oakland', start: 28, end: 35 };
+    const red = { turn: 2, text: 'in 2023', start: 36, end: 43 };
     const body = [
-      sse({ type: 'highlights', highlights: ['Oakland'] }),
+      sse({ type: 'green_highlight', highlight: green }),
+      sse({ type: 'red_highlight', followupId: 'f_when', highlight: red }),
       sse({ type: 'answer_delta', text: 'Com' }) + sse({ type: 'answer_delta', text: 'mon.' }),
-      sse({ type: 'sources', sources: [] }),
-      sse({ type: 'done', index: 2, response }),
+      sse({ type: 'done', index: 2, message }),
     ].join('');
     fetchMock.mockResolvedValue(sseResponse([body.slice(0, 30), body.slice(30)]));
 
     expect(await collect()).toEqual([
-      { type: 'highlights', highlights: ['Oakland'] },
+      { type: 'green_highlight', highlight: green },
+      { type: 'red_highlight', followupId: 'f_when', highlight: red },
       { type: 'answer_delta', text: 'Com' },
       { type: 'answer_delta', text: 'mon.' },
-      { type: 'sources', sources: [] },
-      { type: 'done', index: 2, response },
+      { type: 'done', index: 2, message },
     ]);
     const [url, init] = fetchMock.mock.calls[0] ?? [];
     expect(url).toBe('https://agent.test/v1/projects/org_1/advisor/turns');
@@ -133,13 +141,13 @@ describe('streamAdvisorTurn', () => {
 
   it.each(['temporary', 'refusal', 'stale'] as const)('throws an error event %s', async (code) => {
     fetchMock.mockResolvedValue(
-      sseResponse([sse({ type: 'highlights', highlights: [] }), sse({ type: 'error', code })]),
+      sseResponse([sse({ type: 'answer_delta', text: 'A' }), sse({ type: 'error', code })]),
     );
     await expect(collect()).rejects.toEqual(new AgentError(code));
   });
 
   it('treats a stream that ends without done as temporary', async () => {
-    fetchMock.mockResolvedValue(sseResponse([sse({ type: 'highlights', highlights: [] })]));
+    fetchMock.mockResolvedValue(sseResponse([sse({ type: 'answer_delta', text: 'A' })]));
     await expect(collect()).rejects.toMatchObject({ code: 'temporary' });
   });
 
@@ -159,5 +167,25 @@ describe('streamAdvisorTurn', () => {
   it('rejects a malformed event', async () => {
     fetchMock.mockResolvedValue(sseResponse(['data: {"type":"nope"}\n\n']));
     await expect(collect()).rejects.toThrow();
+  });
+});
+
+describe('streamAdvisorBtw', () => {
+  it('sends the quote and question and ends at btw_done', async () => {
+    const message = { type: 'answer' as const, text: 'Yes.', sources: [] };
+    fetchMock.mockResolvedValue(
+      sseResponse([
+        sse({ type: 'answer_delta', text: 'Yes.' }),
+        sse({ type: 'btw_done', index: 3, message }),
+      ]),
+    );
+    const request = { quote: 'Oakland', question: 'Does it matter?', expectedTurnIndex: 3 };
+    const events = [];
+    for await (const event of streamAdvisorBtw('org_1', request)) events.push(event);
+
+    expect(events.at(-1)).toEqual({ type: 'btw_done', index: 3, message });
+    const [url, init] = fetchMock.mock.calls[0] ?? [];
+    expect(url).toBe('https://agent.test/v1/projects/org_1/advisor/btw');
+    expect(init?.body).toBe(JSON.stringify(request));
   });
 });

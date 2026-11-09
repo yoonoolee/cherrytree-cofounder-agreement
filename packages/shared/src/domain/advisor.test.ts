@@ -1,13 +1,21 @@
 import { z } from 'zod';
 
 import {
-  advisorResponseSchema,
+  advisorMessageSchema,
+  advisorOutputSchema,
   advisorStateSchema,
   advisorTurnSchema,
   initialQuestionsSchema,
 } from './advisor.ts';
 
 const timestamp = { toDate: () => new Date(0), toMillis: () => 0 };
+
+const followup = {
+  id: 'f_idea',
+  text: 'Whose idea was it to start the company?',
+  status: 'todo',
+  highlight: { turn: 0, text: 'talked about it for years', start: 10, end: 35 },
+};
 
 const question = {
   id: 'q_equity_split',
@@ -16,33 +24,24 @@ const question = {
   status: 'current',
   source: 'initial',
   advisorNotes: null,
+  followups: [followup],
 };
 
-const response = {
-  highlights: ['50/50'],
-  answer: null,
-  sources: [],
-  question: { type: 'followup', text: 'Does that include future hires?' },
-};
+const message = { type: 'followup', questionId: 'f_idea', answer: null, sources: [] };
 
 describe('advisorStateSchema', () => {
-  it('accepts a question list with summaries', () => {
-    const state = {
-      sections: [{ id: 'equity', name: 'Equity', questions: [question] }],
-      sectionSummaries: { roles: '- Avery is CEO' },
-      turnCount: 3,
-      updatedAt: timestamp,
-    };
+  const withQuestion = (q: object) => ({
+    sections: [{ id: 'equity', name: 'Equity', questions: [q] }],
+    turnCount: 3,
+    updatedAt: timestamp,
+  });
+
+  it('accepts a question list with follow-ups', () => {
+    const state = withQuestion(question);
     expect(advisorStateSchema.parse(state)).toEqual(state);
   });
 
   it('rejects an unknown status or source', () => {
-    const withQuestion = (q: object) => ({
-      sections: [{ id: 'equity', name: 'Equity', questions: [q] }],
-      sectionSummaries: {},
-      turnCount: 0,
-      updatedAt: timestamp,
-    });
     expect(
       advisorStateSchema.safeParse(withQuestion({ ...question, status: 'open' })).success,
     ).toBe(false);
@@ -69,30 +68,44 @@ describe('initialQuestionsSchema', () => {
 });
 
 describe('advisorTurnSchema', () => {
-  it('accepts a turn', () => {
+  const base = { index: 0, uid: 'user_1', screen: 'q_equity_split', traceId: null };
+
+  it('accepts a turn and a btw', () => {
     const turn = {
-      index: 0,
-      uid: 'user_1',
+      ...base,
+      kind: 'turn',
       reply: "We're splitting 50/50.",
-      response,
-      traceId: null,
+      greenHighlights: [{ text: '50/50', start: 17, end: 22 }],
+      message,
+      createdAt: timestamp,
+    };
+    const btw = {
+      ...base,
+      kind: 'btw',
+      quote: '50/50',
+      question: 'Is that common?',
+      message: { type: 'answer', text: 'Yes, for two founders.', sources: [] },
       createdAt: timestamp,
     };
     expect(advisorTurnSchema.parse(turn)).toEqual(turn);
+    expect(advisorTurnSchema.parse(btw)).toEqual(btw);
   });
 
-  it('rejects an unknown question type', () => {
-    expect(
-      advisorResponseSchema.safeParse({ ...response, question: { type: 'next', text: 'x' } })
-        .success,
-    ).toBe(false);
+  it('rejects an unknown message type', () => {
+    expect(advisorMessageSchema.safeParse({ ...message, type: 'next' }).success).toBe(false);
   });
 });
 
-describe('advisorResponseSchema as JSON Schema', () => {
-  it('requires every property, so structured output keeps the streaming order', () => {
-    const jsonSchema = z.toJSONSchema(advisorResponseSchema);
-    expect(jsonSchema.required).toEqual(['highlights', 'answer', 'sources', 'question']);
+describe('advisorOutputSchema as JSON Schema', () => {
+  it('requires every message property, so structured output keeps the streaming order', () => {
+    const jsonSchema = z.toJSONSchema(advisorMessageSchema);
+    expect(jsonSchema.required).toEqual(['type', 'questionId', 'answer', 'sources']);
     expect(Object.keys(jsonSchema.properties ?? {})).toEqual(jsonSchema.required);
+  });
+
+  it('takes a turn message or a btw answer', () => {
+    expect(advisorOutputSchema.parse({ message }).message).toEqual(message);
+    const answer = { type: 'answer', text: 'Yes.', sources: [] };
+    expect(advisorOutputSchema.parse({ message: answer }).message).toEqual(answer);
   });
 });

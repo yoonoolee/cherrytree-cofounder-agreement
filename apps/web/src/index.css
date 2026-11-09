@@ -11,10 +11,14 @@
   --font-ui: 'Outfit', sans-serif;
   --color-paper: #f6f3ee;
   --color-ink: #1a1a1a;
-  --color-ink-muted: #6b6b6b;
-  --color-line: #e2ddd4;
+  --color-ink-muted: #6b6560;
+  --color-ink-faint: #9a958c;
+  --color-line: #e3dfd8;
   --color-accent: #4e7068;
-  --color-highlight: #dce8df;
+  --color-kept: #bfd6c6;
+  --color-kept-ink: #3d5e52;
+  --color-needs: #efc3a8;
+  --color-needs-ink: #c85a32;
   --color-danger: #a8402f;
 }
 

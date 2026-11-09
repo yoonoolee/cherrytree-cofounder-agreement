@@ -6,7 +6,6 @@ Outstanding tasks for the Cherrytree platform.
 
 ## Manual cleanup and next deploy (do once)
 
-- [ ] **Prod IAM:** grant `roles/firebaseappcheck.tokenVerifier` to `cloud-functions@cherrytree-cofounder-agreement.iam.gserviceaccount.com` (command in `README.md` → Functions runtime service account). App Check is enforced on every callable, so without it every callable rejects with `app-check/permission-denied`. Already granted on dev.
 - [ ] **Removed functions:** on dev, `npm run deploy:dev` asks to delete `submitSurvey`, `generatePreviewPDF`, `createOrganizationInvitation` and `removeOrganizationMember` — confirm. On prod, the workflow's `--force` deletes them (and `deleteAccount` and the unused Firestore indexes) automatically.
 - [ ] Delete the `MAKE_WEBHOOK_URL` secret on dev and prod: `firebase functions:secrets:destroy MAKE_WEBHOOK_URL --project <id>`.
 - [ ] Clerk webhook endpoints (dev and prod): unsubscribe `organization.created`, `organizationMembership.created` and `organizationMembership.deleted`; only `user.*` events are handled.
@@ -21,6 +20,10 @@ Outstanding tasks for the Cherrytree platform.
 ---
 
 ## Before Launch
+
+### Remove the skip-payment flag
+
+- [ ] `SKIP_PAYMENT` makes checkout create the project without Stripe, for testing on dev. Delete the flag (`apps/functions/src/config.ts`, both `apps/functions/.env.*` files), its branch at the top of `createCheckoutSession` (`apps/functions/src/stripe.ts`) and its test, then redeploy functions.
 
 ### Stripe go-live (prod is on test mode today)
 
@@ -78,7 +81,7 @@ Each file already has small, made-up sample data in its real schema, so everythi
 - [ ] **Legal reviewer** for the template and disclaimers. Until then all legal text is unreviewed.
 - [ ] **State-specific rules** (non-compete by state, LLC vs C-corp language). Parking lot; where they load is not designed yet.
 
-- [ ] **Agent service deploy (Phase 7):** in prod, the `agent-service` service account and the Drafting job setup (`apps/agent/README.md` → Service account, Drafting job: queue, `cloud-tasks` account, grants, `ANTHROPIC_API_KEY` and Langfuse secrets from a prod Langfuse project) and `apps/agent/.env.cherrytree-cofounder-agreement`; a CI deploy of the service (dev deploys with `npm run deploy:agent:dev`); `VITE_AGENT_URL` (the Cloud Run URL) in the `deploy-dev` / `deploy-prod` workflows and GitHub secrets, and the URL in the hosting CSP `connect-src` in `firebase.json`.
+- [ ] **Agent service deploy (Phase 7):** in prod, the `agent-service` service account and the Drafting job setup (`apps/agent/README.md` → Service account, Drafting job: queue, `cloud-tasks` account, grants, `ANTHROPIC_API_KEY` and Langfuse secrets from a prod Langfuse project) and `apps/agent/.env.cherrytree-cofounder-agreement`; a CI deploy of the service (dev deploys with `npm run deploy:agent:dev`); `VITE_AGENT_URL` (the prod Cloud Run URL) in the `deploy-prod` workflow, and that URL in the hosting CSP `connect-src` in `firebase.json`.
 - [ ] **Draft job stuck after a crash on its last attempt:** if the Cloud Run instance dies (e.g. out of memory) during the last of the 3 attempts, nothing marks the job `failed`, so the status screen keeps spinning with no retry. Rare (needs three failed attempts); the Phase 7 alert on `draft_job_failed` logs covers the attempts before it. Fix if it shows up: record when the job last changed status and let a start after the dispatch deadline take over.
 - [ ] Dashboard card progress is fixed at 0% (`PROJECT_PROGRESS_PERCENT`, `apps/web/src/pages/DashboardPage.tsx`). Derive it from the agent conversation.
 - [ ] Pro upgrade entry point in the agent UI: a Starter → Pro upgrade with the Pro waitlist form (`ProWaitlistForm`, today only in `PaymentModal`).
