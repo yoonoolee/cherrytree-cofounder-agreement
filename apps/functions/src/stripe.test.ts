@@ -83,6 +83,7 @@ beforeEach(() => {
     APP_ORIGIN,
     STRIPE_STARTER_PRICE_ID: 'price_starter',
     STRIPE_PRO_PRICE_ID: 'price_pro',
+    SKIP_PAYMENT: 'false',
   });
   collections.users = fakeCollection({
     [USER]: { userId: USER, email: 'founder@example.com', firstName: 'Ada', lastName: 'Lovelace' },
@@ -169,9 +170,24 @@ describe('createCheckoutSession', () => {
       },
       client_reference_id: USER,
     });
-    expect(result).toEqual({
-      sessionId: 'cs_test_1',
-      url: 'https://checkout.stripe.com/c/pay/cs_test_1',
+    expect(result).toEqual({ url: 'https://checkout.stripe.com/c/pay/cs_test_1' });
+  });
+
+  it('creates the project without Stripe where payment is skipped', async () => {
+    process.env.SKIP_PAYMENT = 'true';
+    clerkMocks.createOrganization.mockResolvedValue({ id: 'org_test' });
+
+    const result = await createCheckoutSession.run(
+      call(USER, { plan: 'starter', projectName: '  Acme  ' }, APP_ORIGIN),
+    );
+
+    expect(result).toEqual({ url: `${APP_ORIGIN}/projects/org_test` });
+    expect(stripeMocks.sessionsCreate).not.toHaveBeenCalled();
+    expect(collections.projects.store.get('org_test')).toMatchObject({
+      name: 'Acme',
+      members: { [USER]: { role: 'admin' } },
+      currentPlan: 'starter',
+      payments: {},
     });
   });
 
@@ -336,6 +352,7 @@ describe('stripeWebhook', () => {
           purchasedAt: new Date(1_700_000_000 * 1000),
         },
       },
+      draftStatus: null,
       createdAt: FieldValue.serverTimestamp(),
       lastUpdated: FieldValue.serverTimestamp(),
       lastOpened: FieldValue.serverTimestamp(),

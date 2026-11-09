@@ -4,8 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --mode dev",
-    "start": "vite --mode dev",
+    "dev": "VITE_AGENT_URL=http://localhost:8000 vite --mode dev",
     "build": "vite build",
     "build:dev": "vite build --mode dev",
     "preview": "vite preview"
@@ -13,6 +12,7 @@
   "dependencies": {
     "@clerk/react": "6.16.1",
     "@sentry/react": "10.35.0",
+    "eventsource-parser": "4.1.2",
     "firebase": "13.1.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",

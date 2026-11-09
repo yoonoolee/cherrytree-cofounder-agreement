@@ -1,13 +1,17 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router';
 import { serverTimestamp, updateDoc } from 'firebase/firestore';
 
+import AdvisorView from '../components/advisor/AdvisorView.tsx';
+import DraftStatusView from '../components/draft/DraftStatusView.tsx';
+import ProjectLayout from '../components/ProjectLayout.tsx';
+import { useProject } from '../hooks/useProject.ts';
 import { useProjectId } from '../hooks/useProjectId.ts';
 import { projectRef } from '../lib/firebase.ts';
 
-/** A project's workspace. Placeholder until the agent product UI is built. */
+/** A project's workspace: the Advisor interview until the draft starts, then the draft. */
 function ProjectPage() {
   const projectId = useProjectId();
+  const project = useProject(projectId);
 
   // The dashboard orders projects by when they were last opened.
   useEffect(() => {
@@ -16,27 +20,24 @@ function ProjectPage() {
     });
   }, [projectId]);
 
-  return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '16px',
-        background: '#F6F3EE',
-        fontFamily: "'Outfit', sans-serif",
-        color: '#1a1a1a',
-      }}
-    >
-      <h1 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '40px', fontWeight: 200 }}>
-        Coming soon
-      </h1>
-      <Link to="/dashboard" style={{ fontSize: '14px', fontWeight: 300, color: '#4e7068' }}>
-        Back to dashboard
-      </Link>
-    </div>
+  if (project.status !== 'ready') {
+    return (
+      <ProjectLayout>
+        <p className="text-sm font-light text-ink-muted">
+          {project.status === 'loading'
+            ? 'Loading your project…'
+            : "We couldn't load this project."}
+        </p>
+      </ProjectLayout>
+    );
+  }
+
+  const { draftStatus } = project.project;
+  // Keyed so another project starts from a clean state.
+  return draftStatus === null ? (
+    <AdvisorView key={projectId} projectId={projectId} />
+  ) : (
+    <DraftStatusView key={projectId} projectId={projectId} status={draftStatus} />
   );
 }
 

@@ -58,9 +58,9 @@ describe('App', () => {
   it.each([
     ['/dashboard', 'DashboardPage'],
     ['/projects/org_1', 'ProjectPage'],
-  ])('serves %s behind ProtectedRoute as %s', (url, name) => {
+  ])('serves %s behind ProtectedRoute as %s', async (url, name) => {
     renderAt(url);
-    expect(page()).toBe(name);
+    expect(await screen.findByTestId('page')).toHaveTextContent(name);
     expect(isProtected()).toBe(true);
   });
 

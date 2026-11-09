@@ -1,14 +1,15 @@
 # Cherrytree
 
-A SaaS platform that helps startup cofounders create a cofounder agreement with AI agents (Advisor, Drafting, Review, Editing). The agent product is designed but not built yet; its design is linked from [ARCHITECTURE.md](ARCHITECTURE.md).
+A SaaS platform that helps startup cofounders create a cofounder agreement with AI agents (Advisor, Drafting, Review, Editing). The agent product is being built (the agent service runs the Advisor and the Drafting + Review job); its design is linked from [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Tech Stack
 
-- **Language**: TypeScript everywhere (strict)
+- **Language**: TypeScript (strict) for the web app and functions; Python 3.13 for the agent service (`apps/agent`)
 - **Frontend**: React 19, React Router 8 (declarative `BrowserRouter`), Tailwind CSS 4 (`@tailwindcss/vite`), built with Vite 8
 - **Backend**: Firebase (Firestore, Cloud Functions v2 on Node 24, Hosting, App Check)
 - **Tooling**: npm workspaces, ESLint 10, Prettier, Vitest, knip, esbuild (functions bundle)
-- **Schemas**: Zod (`packages/shared`), the source for Firestore document types and read validation
+- **Schemas**: Zod (`packages/shared`), the source for Firestore document types, read validation and the agent service's generated Pydantic models
+- **Agents**: Anthropic Python SDK (Claude Sonnet 5.5 at `medium` effort, set per agent), Langfuse tracing
 - **Authentication**: Clerk (`@clerk/react` 6; one Clerk organization per project)
 - **Payments**: Stripe
 - **External Services**: Resend (contact form email), Sentry (optional)
@@ -31,12 +32,14 @@ A SaaS platform that helps startup cofounders create a cofounder agreement with 
 │   │   ├── test/               # endpoint golden, rules tests, Admin SDK test helpers
 │   │   ├── esbuild.config.ts   # Bundles src/index.ts (+ packages/shared) into lib/index.cjs at deploy
 │   │   └── .env.<projectId>    # Non-secret per-project params (committed)
-│   └── agent/                  # Reserved for the Python agent service (FastAPI on Cloud Run)
+│   └── agent/                  # Agent service: Python 3.13, FastAPI on Cloud Run, uv (see apps/agent/README.md)
 ├── packages/
 │   └── shared/                 # @cherrytree/shared (npm workspace): Zod schemas + types for both sides
 │       └── src/
 │           ├── domain/         # Firestore documents (Project, UserDoc, ProWaitlistSignup)
-│           └── callables.ts    # Request/response contract of every onCall function
+│           ├── callables.ts    # Request/response contract of every onCall function
+│           ├── agentApi.ts     # Request/response/stream contract of the agent service
+│           └── draftDocument.ts # Contract of the draftDocument function (Plate code for the agent service)
 ├── ARCHITECTURE.md             # Links to the agent design (Notion Working Doc, FigJam diagram)
 ├── firestore.rules             # Firestore security rules (tested by npm run test:rules)
 ├── firestore.indexes.json
@@ -54,7 +57,8 @@ A SaaS platform that helps startup cofounders create a cofounder agreement with 
 
 - Node.js 24.21.0, pinned in `.nvmrc` so local and CI run the same Node and bundled npm (a different npm writes a different lockfile and `npm ci` fails in CI); with nvm: `nvm install && nvm use`
 - Firebase CLI: `npm install -g firebase-tools`
-- Java 21+ (only for `npm run test:rules`, which runs the Firestore emulator)
+- Java 21+ (only for `npm run test:rules` and `npm run test:agent`, which run the Firestore emulator)
+- uv (`brew install uv`) for the agent service; see [apps/agent/README.md](apps/agent/README.md)
 - Access to the two Firebase projects:
   - `cherrytree-cofounder-agree-dev` (development)
   - `cherrytree-cofounder-agreement` (production)
@@ -69,6 +73,7 @@ A SaaS platform that helps startup cofounders create a cofounder agreement with 
 | `apps/web/.env.dev.local` | Local overrides (optional) | ❌ No |
 | `apps/functions/.env.cherrytree-cofounder-agree-dev` | Dev functions params (`APP_ORIGIN`, Stripe price ids) | ✅ Yes |
 | `apps/functions/.env.cherrytree-cofounder-agreement` | Prod functions params | ✅ Yes |
+| `apps/agent/.env.cherrytree-cofounder-agree-dev` | Dev agent service settings (project, CORS origins, Drafting job: Cloud Run URL, queue, Cloud Tasks account, `draftDocument` URL) | ✅ Yes |
 
 All browser-exposed variables are prefixed `VITE_` and are typed in `apps/web/src/vite-env.d.ts`. Secrets never go in env files — see [Firebase Secrets](#firebase-secrets).
 
@@ -82,6 +87,7 @@ All browser-exposed variables are prefixed `VITE_` and are typed in `apps/web/sr
    nvm use
    npm ci
    npm --prefix apps/functions ci
+   uv sync --directory apps/agent
    ```
 
 2. **Set up environment variables**
@@ -112,18 +118,24 @@ npm run dev
 ```
 
 - Serves http://localhost:3000 (the port is baked into the Clerk dev origins)
-- Uses `apps/web/.env.dev`
+- Uses `apps/web/.env.dev`, with the agent service at http://localhost:8000
 - Hot reload on file changes
+
+A project page (`/projects/:projectId`) runs the Advisor against the agent service. Run it beside the web app with `npm run dev:agent` (setup in [apps/agent/README.md](apps/agent/README.md)); `npm run dev` points the browser at it. Hosted dev builds use the dev Cloud Run service (`VITE_AGENT_URL` in `apps/web/.env.dev`), so redeploy it (`npm run deploy:agent:dev`) along with agent changes.
+
+The Drafting + Review job always runs on the dev Cloud Run service: Cloud Tasks has no local emulator and cannot reach localhost. "Write my draft" on a local page queues the job on the dev queue, and the page follows `draftStatus` in Firestore (setup in [apps/agent/README.md → Drafting job](apps/agent/README.md#drafting-job)).
 
 ### Quality checks
 
 ```bash
-npm run check         # lint + format check + typecheck + tests + build — run before every push
+npm run check         # lint + format check + typecheck + tests + agent checks + build — run before every push
 npm run lint          # ESLint (npm run lint:fix to autofix)
 npm run format        # Prettier (write); format:check to verify
 npm run typecheck     # tsc for apps/web, packages/shared and apps/functions
 npm test              # Vitest: apps/web (jsdom), packages/shared, apps/functions
 npm run test:rules    # Firestore rules under the emulator (Java required)
+npm run check:agent   # agent service: Ruff, Pyright, unit tests
+npm run test:agent    # agent service: all tests, Firestore ones under the emulator
 npm run knip          # unused files / exports / dependencies
 ```
 
@@ -131,7 +143,7 @@ Single test file: `cd apps/web && npx vitest run src/pages/DashboardPage.test.ts
 
 ### Continuous integration
 
-- **Pull requests to `master`** (`ci.yml`): `npm run check`, `knip`, `npm audit --audit-level=high` in both the root and `apps/functions/`, and the Firestore rules tests.
+- **Pull requests to `master`** (`ci.yml`): `npm run check`, `knip`, the agent service's generated types check, `npm audit --audit-level=high` in both the root and `apps/functions/`, the Firestore rules tests and the agent service tests.
 - **Push to `master`** (`deploy-prod.yml`): the full `ci.yml` job above, then hosting + functions + rules/indexes to prod with `firebase deploy --force` (the `--force` lets the non-interactive CLI delete functions removed from source).
 - **`deploy-dev.yml`** (same CI gate) is run by hand from the Actions tab; day to day, dev is deployed locally.
 
@@ -153,6 +165,7 @@ firebase use                    # must say cherrytree-cofounder-agree-dev
 npm run deploy:dev              # build:dev + functions + hosting + rules + indexes
 npm run deploy:hosting:dev      # Frontend only
 npm run deploy:functions:dev    # Backend only
+npm run deploy:agent:dev        # Agent service → dev Cloud Run (apps/agent/README.md)
 firebase deploy --only firestore:rules
 ```
 
@@ -270,6 +283,7 @@ npm run build                       # Production build → apps/web/dist
 
 # Deployment
 npm run deploy:dev                  # Deploy all to dev
+npm run deploy:agent:dev            # Deploy the agent service to dev Cloud Run
 
 # Firebase
 firebase use dev/prod               # Switch environment

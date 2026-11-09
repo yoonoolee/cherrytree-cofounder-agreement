@@ -66,7 +66,7 @@ function ProWaitlistForm({ source = 'unknown' }: ProWaitlistFormProps) {
           value={waitlistEmail}
           onChange={(e) => setWaitlistEmail(e.target.value)}
           placeholder="your@email.com"
-          className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-sm focus:border-black focus:ring-1 focus:ring-black bg-white"
+          className="flex-1"
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();

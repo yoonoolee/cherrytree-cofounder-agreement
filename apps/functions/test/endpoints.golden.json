@@ -112,5 +112,23 @@
       "labels": {},
       "httpsTrigger": {}
     }
+  },
+  "draftDocument": {
+    "__endpoint": {
+      "availableMemoryMb": 256,
+      "timeoutSeconds": null,
+      "minInstances": null,
+      "maxInstances": null,
+      "ingressSettings": null,
+      "concurrency": null,
+      "serviceAccountEmail": "cloud-functions@test-project.iam.gserviceaccount.com",
+      "vpc": null,
+      "platform": "gcfv2",
+      "region": ["us-west2"],
+      "labels": {},
+      "httpsTrigger": {
+        "invoker": ["agent-service@test-project.iam.gserviceaccount.com"]
+      }
+    }
   }
 }

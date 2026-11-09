@@ -5,6 +5,21 @@
 
 @theme {
   --font-sans: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Product UI tokens (the agent screens use only these): restyle here, not per component. */
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-ui: 'Outfit', sans-serif;
+  --color-paper: #f6f3ee;
+  --color-ink: #1a1a1a;
+  --color-ink-muted: #6b6560;
+  --color-ink-faint: #9a958c;
+  --color-line: #e3dfd8;
+  --color-accent: #4e7068;
+  --color-kept: #bfd6c6;
+  --color-kept-ink: #3d5e52;
+  --color-needs: #efc3a8;
+  --color-needs-ink: #c85a32;
+  --color-danger: #a8402f;
 }
 
 /* Clickable controls show the pointer cursor (Preflight's default is `default`). */
@@ -37,107 +52,110 @@ body {
   }
 }
 
-/* Make all placeholders lighter */
-::placeholder {
-  color: #bbb !important;
-  opacity: 1 !important;
-  font-family: 'Outfit', sans-serif !important;
-  font-weight: 300 !important;
-}
+/* Default form control look. In the base layer and without !important, so a component's own
+   classes or rules always override it. */
+@layer base {
+  /* Make all placeholders lighter */
+  ::placeholder {
+    color: #bbb;
+    opacity: 1;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 300;
+  }
 
-/* Remove number input spinners */
-input[type='number']::-webkit-inner-spin-button,
-input[type='number']::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
+  /* Remove number input spinners */
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 
-input[type='number'] {
-  -moz-appearance: textfield;
-}
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
 
-/* Make checkboxes more round and smaller */
-input[type='checkbox'] {
-  border-radius: 0.25rem !important;
-  width: 0.75rem !important;
-  height: 0.75rem !important;
-  accent-color: #000000 !important;
-}
+  /* Make checkboxes more round and smaller */
+  input[type='checkbox'] {
+    border-radius: 0.25rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    accent-color: #000000;
+  }
 
-input[type='radio'] {
-  width: 0.75rem !important;
-  height: 0.75rem !important;
-  accent-color: #000000 !important;
-}
+  input[type='radio'] {
+    width: 0.75rem;
+    height: 0.75rem;
+    accent-color: #000000;
+  }
 
-/* Style text inputs with underline instead of box */
-input[type='text'],
-input[type='email'],
-input[type='password'],
-input[type='date'],
-input[type='number'],
-textarea {
-  width: 100% !important;
-  border: none !important;
-  border-bottom: 1px solid #bbb !important;
-  border-radius: 0 !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  padding-top: 6px !important;
-  padding-bottom: 6px !important;
-  position: relative;
-  background-color: transparent !important;
-  color: #555 !important;
-  font-weight: 300 !important;
-  font-size: 14px !important;
-  font-family: 'Outfit', sans-serif !important;
-  transition: border-color 0.2s !important;
-}
+  /* Style text inputs with underline instead of box */
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='date'],
+  input[type='number'],
+  textarea {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #bbb;
+    border-radius: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    position: relative;
+    background-color: transparent;
+    color: #555;
+    font-weight: 300;
+    font-size: 14px;
+    font-family: 'Outfit', sans-serif;
+    transition: border-color 0.2s;
+  }
 
-input[type='text']:focus,
-input[type='email']:focus,
-input[type='password']:focus,
-input[type='date']:focus,
-input[type='number']:focus,
-textarea:focus {
-  outline: none !important;
-  border-bottom: 1px solid #555 !important;
-  box-shadow: none !important;
-}
+  input[type='text']:focus,
+  input[type='email']:focus,
+  input[type='password']:focus,
+  input[type='date']:focus,
+  input[type='number']:focus,
+  textarea:focus {
+    outline: none;
+    border-bottom: 1px solid #555;
+    box-shadow: none;
+  }
 
-input[type='text']:disabled,
-input[type='email']:disabled,
-input[type='password']:disabled,
-input[type='date']:disabled,
-input[type='number']:disabled,
-textarea:disabled {
-  background-color: transparent !important;
-  border-bottom: 1px solid #ddd !important;
-  opacity: 0.6;
-}
+  input[type='text']:disabled,
+  input[type='email']:disabled,
+  input[type='password']:disabled,
+  input[type='date']:disabled,
+  input[type='number']:disabled,
+  textarea:disabled {
+    background-color: transparent;
+    border-bottom: 1px solid #ddd;
+    opacity: 0.6;
+  }
 
-/* Style select dropdowns with underline like text inputs */
-select {
-  background-color: transparent !important;
-  border: none !important;
-  border-bottom: 2px solid #d1d5db !important;
-  border-radius: 0 !important;
-  padding-left: 0 !important;
-  padding-bottom: 2px !important;
-  color: #374151 !important;
-}
+  /* Style select dropdowns with underline like text inputs */
+  select {
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px solid #d1d5db;
+    border-radius: 0;
+    padding-left: 0;
+    padding-bottom: 2px;
+    color: #374151;
+  }
 
-select:focus {
-  outline: none !important;
-  border-bottom: 3px solid #000000 !important;
-  ring: 0 !important;
-  box-shadow: none !important;
-}
+  select:focus {
+    outline: none;
+    border-bottom: 3px solid #000000;
+    box-shadow: none;
+  }
 
-select:disabled {
-  background-color: transparent !important;
-  border-bottom: 2px solid #e5e7eb !important;
-  opacity: 0.6;
+  select:disabled {
+    background-color: transparent;
+    border-bottom: 2px solid #e5e7eb;
+    opacity: 0.6;
+  }
 }
 
 /* Make scrollbars always visible */
@@ -2597,15 +2615,15 @@ select:disabled {
   position: relative;
 }
 input.lp-eq-input[type='text'] {
-  width: 100% !important;
-  padding: 12px 16px !important;
-  font-size: 14px !important;
-  font-family: 'Outfit', sans-serif !important;
-  border: 1.5px solid var(--lp-bg3) !important;
-  border-radius: 8px !important;
-  background: #fff !important;
-  color: var(--lp-ink) !important;
-  font-weight: 400 !important;
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-family: 'Outfit', sans-serif;
+  border: 1.5px solid var(--lp-bg3);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--lp-ink);
+  font-weight: 400;
   transition:
     border-color 0.15s,
     box-shadow 0.15s;
@@ -2613,7 +2631,7 @@ input.lp-eq-input[type='text'] {
 }
 input.lp-eq-input[type='text']:focus {
   outline: none;
-  border-color: var(--lp-green) !important;
+  border-color: var(--lp-green);
   box-shadow: 0 0 0 3px var(--lp-green-bg);
 }
 .lp-eq-remove-btn {
@@ -2719,15 +2737,15 @@ input.lp-eq-input[type='text']:focus {
   gap: 8px;
 }
 input.lp-eq-modal-input[type='text'] {
-  flex: 1 !important;
-  padding: 10px 12px !important;
-  font-size: 13px !important;
-  border: 1.5px solid var(--lp-bg3) !important;
-  border-radius: 8px !important;
-  background: var(--lp-bg2) !important;
-  color: var(--lp-muted) !important;
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 13px;
+  border: 1.5px solid var(--lp-bg3);
+  border-radius: 8px;
+  background: var(--lp-bg2);
+  color: var(--lp-muted);
   min-width: 0;
-  width: auto !important;
+  width: auto;
 }
 @media (max-width: 600px) {
   .lp-eq-section {
@@ -2894,17 +2912,17 @@ input.lp-eq-modal-input[type='text'] {
 input.lp-form-input[type='text'],
 input.lp-form-input[type='email'],
 textarea.lp-form-input {
-  width: 100% !important;
-  border: 1.5px solid var(--lp-bg3) !important;
-  border-radius: 8px !important;
-  padding: 0 14px !important;
+  width: 100%;
+  border: 1.5px solid var(--lp-bg3);
+  border-radius: 8px;
+  padding: 0 14px;
   height: 44px;
-  font-size: 13px !important;
-  font-family: 'Outfit', sans-serif !important;
-  color: var(--lp-ink) !important;
-  background: #fff !important;
+  font-size: 13px;
+  font-family: 'Outfit', sans-serif;
+  color: var(--lp-ink);
+  background: #fff;
   outline: none;
-  font-weight: 400 !important;
+  font-weight: 400;
   transition:
     border-color 0.15s,
     box-shadow 0.15s;
@@ -2913,15 +2931,15 @@ textarea.lp-form-input {
 input.lp-form-input[type='text']:focus,
 input.lp-form-input[type='email']:focus,
 textarea.lp-form-input:focus {
-  border-color: var(--lp-green) !important;
-  box-shadow: 0 0 0 3px var(--lp-green-bg) !important;
+  border-color: var(--lp-green);
+  box-shadow: 0 0 0 3px var(--lp-green-bg);
 }
 .lp-form-input::placeholder {
   color: var(--lp-faint);
 }
 textarea.lp-form-input {
-  height: auto !important;
-  padding: 12px 14px !important;
+  height: auto;
+  padding: 12px 14px;
   resize: vertical;
   line-height: 1.6;
 }

@@ -51,6 +51,7 @@ jobs:
           VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.DEV_CLERK_PUBLISHABLE_KEY }}
           VITE_USE_EMULATORS=false
           VITE_SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          VITE_AGENT_URL=https://agent-217617302254.us-west2.run.app
           EOF
 
       # The ci job already ran every check; this builds apps/web/dist with this environment's keys.

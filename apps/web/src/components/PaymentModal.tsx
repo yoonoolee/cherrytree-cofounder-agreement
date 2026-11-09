@@ -1,5 +1,10 @@
 import { useState, type FormEvent } from 'react';
-import { toErrorMessage, type Plan } from '@cherrytree/shared';
+import {
+  PROJECT_NAME_MAX_LENGTH,
+  PROJECT_NAME_MIN_LENGTH,
+  toErrorMessage,
+  type Plan,
+} from '@cherrytree/shared';
 
 import { callFunction } from '../lib/functions.ts';
 import { useUser } from '../hooks/useUser.ts';
@@ -8,10 +13,6 @@ import ProWaitlistForm from './ProWaitlistForm.tsx';
 
 // Constants
 const WIGGLE_DURATION_MS = 500; // Duration of wiggle animation for validation errors
-// Mirror functions/src/config.ts (normalizeProjectName) so the server never rejects a name
-// the client accepted.
-const PROJECT_NAME_MIN_LENGTH = 2;
-const PROJECT_NAME_MAX_LENGTH = 100;
 
 /** A plan that can be bought (as opposed to the contact-us Enterprise tier). */
 type PurchasablePlan = PricingPlan & { key: Plan };
@@ -91,7 +92,7 @@ function PaymentModal({ onClose }: PaymentModalProps) {
         projectName: trimmedName,
       });
 
-      // Redirect to Stripe checkout
+      // Stripe Checkout, or the new project when the server skips payment.
       if (url) {
         window.location.href = url;
       } else {
@@ -136,7 +137,7 @@ function PaymentModal({ onClose }: PaymentModalProps) {
               type="text"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              className={`w-full px-0 py-2 border-0 border-b-2 border-gray-300 focus:border-black focus:ring-0 bg-transparent text-gray-900 ${isWiggling ? 'animate-wiggle' : ''}`}
+              className={isWiggling ? 'animate-wiggle' : undefined}
               placeholder="Enter company name"
             />
           </div>
