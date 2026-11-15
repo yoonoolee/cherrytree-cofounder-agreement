@@ -3,28 +3,26 @@ import type {
   AdvisorReplyTurn,
   AdvisorState,
   AdvisorTurn,
+  ChecklistItem,
   Followup,
-  Question,
+  Screen,
   TurnHighlight,
 } from '@cherrytree/shared';
 
 import type { Mark } from './highlights.ts';
 
-/** One main question's screen: the question, then every reply sent on it, stacked. */
-export interface AdvisorScreen {
-  /** 1-based, in interview order. */
-  sectionNumber: number;
+/** One screen: the Advisor's question, then every reply sent on it, stacked. */
+export interface AdvisorScreen extends Screen {
   sectionName: string;
-  question: Question;
   /** Oldest first. */
   turns: AdvisorReplyTurn[];
 }
 
 /**
  * Where the interview is:
- * - `screen`: a main question's screen. `moving` holds a saved `next_question` or `next_section`
+ * - `screen`: a question's screen. `moving` holds a saved `next_question` or `next_section`
  *   message until the user clicks Next.
- * - `complete`: every main question is done or skipped; `answer` is the last message's answer.
+ * - `complete`: the Advisor ended the interview; `answer` is the last message's answer.
  */
 export type AdvisorView =
   | { kind: 'screen'; screen: AdvisorScreen; moving: AdvisorMessage | null }
@@ -37,24 +35,21 @@ const MOVES: readonly AdvisorMessage['type'][] = ['next_question', 'next_section
 function screenFor(
   state: AdvisorState,
   turns: AdvisorReplyTurn[],
-  questionId: string,
+  screenId: string,
 ): AdvisorScreen | null {
-  for (const [sectionIndex, section] of state.sections.entries()) {
-    const question = section.questions.find((q) => q.id === questionId);
-    if (!question) continue;
-    return {
-      sectionNumber: sectionIndex + 1,
-      sectionName: section.name,
-      question,
-      turns: turns.filter((turn) => turn.screen === questionId),
-    };
-  }
-  return null;
+  const screen = state.screens.find((s) => s.id === screenId);
+  const section = state.sections.find((s) => s.id === screen?.section);
+  if (!screen || !section) return null;
+  return {
+    ...screen,
+    sectionName: section.name,
+    turns: turns.filter((turn) => turn.screen === screenId),
+  };
 }
 
 /**
- * The view to show. A turn that moves to the next main question keeps its screen until the user
- * clicks Next (`movedOn` is the index of the turn they clicked Next on), also after a reload.
+ * The view to show. A turn that opens a new screen keeps its own screen until the user clicks
+ * Next (`movedOn` is the index of the turn they clicked Next on), also after a reload.
  */
 export function advisorView(
   state: AdvisorState,
@@ -67,8 +62,8 @@ export function advisorView(
     const screen = screenFor(state, replies, last.screen);
     return screen && { kind: 'screen', screen, moving: last.message };
   }
-  const current = state.sections.flatMap((s) => s.questions).find((q) => q.status === 'current');
-  if (!current) {
+  const current = state.screens.at(-1);
+  if (state.complete || !current) {
     const answer = last?.message.type === 'interview_complete' ? last.message.answer : null;
     return { kind: 'complete', answer };
   }
@@ -77,20 +72,20 @@ export function advisorView(
 }
 
 export interface AdvisorProgress {
-  /** Share of main questions done or skipped, 0–1. */
+  /** Share of checklist items done or skipped, 0–1. */
   fraction: number;
   sections: { name: string; done: boolean; active: boolean }[];
 }
 
-/** Progress over the live question list, which grows as the Advisor adds main questions. */
+/** Progress over the live checklist, which grows as the Advisor adds items. */
 export function advisorProgress(state: AdvisorState, activeSection: string): AdvisorProgress {
-  const settled = (q: Question) => q.status === 'done' || q.status === 'skipped';
-  const questions = state.sections.flatMap((section) => section.questions);
+  const settled = (item: ChecklistItem) => item.status === 'done' || item.status === 'skipped';
+  const items = state.sections.flatMap((section) => section.checklist);
   return {
-    fraction: questions.length === 0 ? 1 : questions.filter(settled).length / questions.length,
+    fraction: items.length === 0 ? 1 : items.filter(settled).length / items.length,
     sections: state.sections.map((section) => ({
       name: section.name,
-      done: section.questions.every(settled),
+      done: section.checklist.every(settled),
       active: section.name === activeSection,
     })),
   };
@@ -166,14 +161,11 @@ export function marksFor(
   ];
 }
 
-/** The text of a follow-up or main question by id. */
-export function questionText(state: AdvisorState, id: string): string | null {
-  for (const section of state.sections) {
-    for (const question of section.questions) {
-      if (question.id === id) return question.text;
-      const followup = question.followups.find((f) => f.id === id);
-      if (followup) return followup.text;
-    }
+/** The text of a follow-up by id. */
+export function followupText(state: AdvisorState, id: string): string | null {
+  for (const screen of state.screens) {
+    const followup = screen.followups.find((f) => f.id === id);
+    if (followup) return followup.text;
   }
   return null;
 }

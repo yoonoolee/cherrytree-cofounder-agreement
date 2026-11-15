@@ -5,7 +5,7 @@ import {
   advisorOutputSchema,
   advisorStateSchema,
   advisorTurnSchema,
-  initialQuestionsSchema,
+  interviewSchema,
 } from './advisor.ts';
 
 const timestamp = { toDate: () => new Date(0), toMillis: () => 0 };
@@ -17,58 +17,65 @@ const followup = {
   highlight: { turn: 0, text: 'talked about it for years', start: 10, end: 35 },
 };
 
-const question = {
-  id: 'q_equity_split',
-  text: 'How do you plan to split equity?',
-  description: 'Percentages per cofounder and the reasoning.',
-  status: 'current',
+const item = {
+  id: 'equity_1',
+  item: "Each cofounder's percentage",
+  status: 'done',
   source: 'initial',
-  advisorNotes: null,
-  followups: [followup],
+  note: '50/50',
 };
 
-const message = { type: 'followup', questionId: 'f_idea', answer: null, sources: [] };
+const message = {
+  type: 'followup',
+  question: null,
+  followupId: 'f_idea',
+  answer: null,
+  sources: [],
+};
 
 describe('advisorStateSchema', () => {
-  const withQuestion = (q: object) => ({
-    sections: [{ id: 'equity', name: 'Equity', questions: [q] }],
+  const state = (overrides: object = {}) => ({
+    sections: [{ id: 'equity', name: 'Equity', checklist: [item] }],
+    screens: [{ id: 'screen_1', section: 'equity', question: 'How?', followups: [followup] }],
+    complete: false,
     turnCount: 3,
     updatedAt: timestamp,
+    ...overrides,
   });
 
-  it('accepts a question list with follow-ups', () => {
-    const state = withQuestion(question);
-    expect(advisorStateSchema.parse(state)).toEqual(state);
+  it('accepts a checklist and screens with follow-ups', () => {
+    expect(advisorStateSchema.parse(state())).toEqual(state());
   });
 
-  it('rejects an unknown status or source', () => {
-    expect(
-      advisorStateSchema.safeParse(withQuestion({ ...question, status: 'open' })).success,
-    ).toBe(false);
-    expect(
-      advisorStateSchema.safeParse(withQuestion({ ...question, source: 'user' })).success,
-    ).toBe(false);
+  it('rejects an unknown item status or source, and no screens', () => {
+    const withItem = (changes: object) =>
+      state({ sections: [{ id: 'equity', name: 'Equity', checklist: [{ ...item, ...changes }] }] });
+    expect(advisorStateSchema.safeParse(withItem({ status: 'current' })).success).toBe(false);
+    expect(advisorStateSchema.safeParse(withItem({ source: 'user' })).success).toBe(false);
+    expect(advisorStateSchema.safeParse(state({ screens: [] })).success).toBe(false);
   });
 });
 
-describe('initialQuestionsSchema', () => {
-  it('takes only id, text and description per question', () => {
+describe('interviewSchema', () => {
+  it('takes a guide per section and an optional guide per item', () => {
     const file = {
+      opener: 'What are you building?',
       sections: [
-        { id: 'equity', name: 'Equity', questions: [{ id: 'q1', text: 'T', description: 'D' }] },
+        {
+          id: 'company',
+          name: 'The company',
+          guide: 'Let them tell the story.',
+          checklist: [{ item: 'Company name' }, { item: 'Entity type', guide: 'Suggest C-Corp.' }],
+        },
       ],
     };
-    expect(initialQuestionsSchema.parse(file)).toEqual(file);
-    expect(
-      initialQuestionsSchema.parse({
-        sections: [{ ...file.sections[0], questions: [question] }],
-      }).sections[0]?.questions[0],
-    ).toEqual({ id: question.id, text: question.text, description: question.description });
+    expect(interviewSchema.parse(file)).toEqual(file);
+    expect(interviewSchema.safeParse({ ...file, opener: undefined }).success).toBe(false);
   });
 });
 
 describe('advisorTurnSchema', () => {
-  const base = { index: 0, uid: 'user_1', screen: 'q_equity_split', traceId: null };
+  const base = { index: 0, uid: 'user_1', screen: 'screen_1', traceId: null };
 
   it('accepts a turn and a btw', () => {
     const turn = {
@@ -99,7 +106,7 @@ describe('advisorTurnSchema', () => {
 describe('advisorOutputSchema as JSON Schema', () => {
   it('requires every message property, so structured output keeps the streaming order', () => {
     const jsonSchema = z.toJSONSchema(advisorMessageSchema);
-    expect(jsonSchema.required).toEqual(['type', 'questionId', 'answer', 'sources']);
+    expect(jsonSchema.required).toEqual(['type', 'question', 'followupId', 'answer', 'sources']);
     expect(Object.keys(jsonSchema.properties ?? {})).toEqual(jsonSchema.required);
   });
 

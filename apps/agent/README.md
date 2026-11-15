@@ -19,7 +19,7 @@ src/cherrytree_agent/
 ├── draft/               # Shared draft context (template, transcript), the draft with block ids
 │                        # and the run's proposed edits/threads, client of the draftDocument function
 ├── prompts/             # One system prompt per agent (advisor.md, drafting.md, review.md)
-└── content/             # questions.json, rag_seed.json, agreement-template.md
+└── content/             # interview.json, rag_seed.json, agreement-template.md
 tests/                   # pytest; Firestore tests run against the emulator
 Dockerfile               # The Cloud Run image (npm run deploy:agent:dev)
 ```
@@ -50,7 +50,7 @@ gcloud iam service-accounts add-iam-policy-binding agent-service@<projectId>.iam
   --project=<projectId> --member=user:<google-account> --role=roles/iam.serviceAccountTokenCreator
 ```
 
-`ANTHROPIC_API_KEY` comes from your shell (macOS keychain, read in `~/.zshrc`). Langfuse tracing is on only when `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` are set: from the shell the same way locally, from Secret Manager on Cloud Run. Traces go to the Langfuse Cloud US project of the environment (`LANGFUSE_BASE_URL`), one session per project id. Non-secret settings are in `.env.cherrytree-cofounder-agree-dev` (committed).
+`ANTHROPIC_API_KEY` comes from your shell (macOS keychain, read in `~/.zshrc`). Langfuse tracing is on only when `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` are set: from the shell the same way locally, from Secret Manager on Cloud Run. Traces go to the Langfuse Cloud US project of the environment (`LANGFUSE_BASE_URL`), one session per project id, tagged `local` or `dev` (`LANGFUSE_TRACING_ENVIRONMENT`, set by the npm scripts). Non-secret settings are in `.env.cherrytree-cofounder-agree-dev` (committed).
 
 ## Drafting job
 
@@ -92,7 +92,7 @@ Then deploy the functions (`draftDocument` grants `agent-service` its invoker ro
 ## Commands (from the repo root)
 
 ```bash
-npm run dev:agent              # http://localhost:8000 against the dev project, reloads on change
+npm run dev:agent              # http://localhost:8000 against the dev project, reloads on code, prompt and content changes
 npm run check:agent            # Ruff lint + format check, Pyright, unit tests (part of npm run check)
 npm run test:agent             # every test, Firestore ones under the emulator (Java 21+)
 npm run generate:agent-types   # regenerate contracts/ after changing packages/shared schemas
@@ -101,6 +101,19 @@ npm run deploy:agent:dev       # build and deploy to dev Cloud Run (Cloud Build,
 
 Never edit `contracts/` by hand; CI fails if it is out of date with the Zod schemas.
 
-## Sample data
+## Tuning the agents
 
-`content/questions.json`, `content/rag_seed.json` and `content/agreement-template.md` hold small made-up samples in their real formats; the real content replaces them (TODO.md → Content to write). `search_rag` searches the seed by keyword until the vector store is chosen.
+Where each agent's behavior and content live. Paths are under `src/cherrytree_agent/` unless noted. `npm run dev:agent` reloads on every change here; Drafting and Review run only on Cloud Run, so test them after `npm run deploy:agent:dev`.
+
+| What | Where | Notes |
+|------|-------|-------|
+| System prompts | `prompts/advisor.md`, `drafting.md`, `review.md` | When and why to use each tool; tone; what never to state |
+| Tool descriptions | `tools/checklist.py` (Advisor), `tools/draft.py` (Review), `tools/rag.py`, `tools/project.py` | What a tool does and what each field means. Don't repeat the prompt |
+| Model, effort, tools per agent | `advisor/config.py`, `drafting/config.py`, `review/config.py` | `max_tokens` default in `llm/config.py` |
+| Web search and fetch | `tools/registry.py` (`web_search`, `web_fetch`) | Tool versions; fetch size limit |
+| Interview | `content/interview.json` | `opener` (the first question), then sections (`id`, `name`, `guide`), each with a `checklist` of `{item, guide?}`. Guides go to the Advisor's system prompt; the checklist starts each project, and the Advisor adds to it |
+| RAG content | `content/rag_seed.json` | One entry per chunk (`id`, `text`, `title`, `url`, `section`, `dateAdded`); searched by keyword in `tools/rag.py` until the vector store is chosen |
+| Agreement template | `content/agreement-template.md` | Bracketed fill-ins; unnumbered headings, cross-references by heading name. Each draft records its version (`agreement-template.md@<hash>`) |
+| UI copy | `apps/web/src/constants/project.ts` (`DISCLAIMER`), `advisor.ts`, `draft.ts` | Disclaimer, end-of-interview text, errors, draft status screen |
+
+`rag_seed.json` and `agreement-template.md` hold small made-up samples in their real formats; TODO.md → Content to write tracks replacing them. Check prompt changes on the traces in Langfuse (`cherrytree-dev` project).

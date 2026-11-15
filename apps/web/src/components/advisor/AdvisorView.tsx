@@ -16,8 +16,8 @@ import { AgentError } from '../../lib/agent.ts';
 import {
   advisorProgress,
   advisorView,
+  followupText,
   numberHighlights,
-  questionText,
 } from '../../utils/advisorScreen.ts';
 
 /** Runs `update` as a view transition where the browser supports it (the reply slides up). */
@@ -30,7 +30,7 @@ function withViewTransition(update: () => void) {
 }
 
 /**
- * The Advisor interview: one screen per main question. A blank screen asks the question; once the
+ * The Advisor interview: one screen per question the Advisor asks. A blank screen asks it; once the
  * user replies, the replies stack on it with the Advisor's highlights, and the bottom box asks the
  * follow-ups, then moves on. Selecting reply text opens the btw popup. Mount it keyed by project.
  */
@@ -88,17 +88,12 @@ function AdvisorView({ projectId }: { projectId: string }) {
   const { screen, moving } = view;
   // This tab's turn shows until Firestore has it.
   const liveTurn =
-    live && live.screen === screen.question.id && !turns.some((t) => t.index === live.index)
-      ? live
-      : null;
+    live && live.screen === screen.id && !turns.some((t) => t.index === live.index) ? live : null;
   const busy = liveTurn !== null || btws.btw?.status === 'streaming';
-  const { highlights, numberOf } = numberHighlights(
-    screen.question.followups,
-    liveTurn?.redHighlights,
-  );
+  const { highlights, numberOf } = numberHighlights(screen.followups, liveTurn?.redHighlights);
 
   const submit = () => {
-    const sent = send(screen.question.id, reply.trim(), state.turnCount);
+    const sent = send(screen.id, reply.trim(), state.turnCount);
     void sent.then((ok) => ok && setReply(''));
   };
   const submitFirstReply = () => withViewTransition(submit);
@@ -117,12 +112,12 @@ function AdvisorView({ projectId }: { projectId: string }) {
         window.scrollTo(0, 0);
       },
     };
-  } else if (last?.message.questionId) {
+  } else if (last?.message.followupId) {
     box = {
       kind: 'followup',
       message: last.message,
-      question: questionText(state, last.message.questionId),
-      number: numberOf(last.message.questionId),
+      question: followupText(state, last.message.followupId),
+      number: numberOf(last.message.followupId),
       value: reply,
       onChange: setReply,
       onSubmit: submit,
@@ -153,7 +148,7 @@ function AdvisorView({ projectId }: { projectId: string }) {
       {screen.turns.length === 0 && !liveTurn ? (
         <>
           <AskView
-            question={screen.question.text}
+            question={screen.question}
             value={reply}
             onChange={setReply}
             onSubmit={submitFirstReply}

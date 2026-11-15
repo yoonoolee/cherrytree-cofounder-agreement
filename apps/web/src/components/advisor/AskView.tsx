@@ -10,7 +10,7 @@ interface AskViewProps {
   onSubmit: () => void;
 }
 
-/** A new main question's blank screen: the question centered, and the first reply under it. */
+/** A new screen before its first reply: the question centered, and the reply box under it. */
 function AskView({ question, value, onChange, onSubmit }: AskViewProps) {
   const canSend = value.trim().length > 0;
 

@@ -17,6 +17,8 @@ os.environ.setdefault(
     "TASKS_SERVICE_ACCOUNT", "cloud-tasks@demo-cherrytree.iam.gserviceaccount.com"
 )
 os.environ.setdefault("DRAFT_DOCUMENT_URL", "https://draft-document.test")
+# Tests never send traces, even from a shell that has Langfuse keys.
+os.environ["LANGFUSE_TRACING_ENABLED"] = "false"
 logging.getLogger("langfuse").setLevel(logging.ERROR)
 
 import firebase_admin  # noqa: E402

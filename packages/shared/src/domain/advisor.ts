@@ -5,7 +5,7 @@ import { webSourceSchema } from './webSource.ts';
 
 /**
  * Advisor Agent data under `projects/{clerkOrgId}`. Written only by the agent service; one turn or
- * btw is saved atomically with its question list changes.
+ * btw is saved atomically with its checklist and screen changes.
  */
 
 // ---------------------------------------------------------------------------
@@ -25,65 +25,93 @@ export const turnHighlightSchema = highlightSchema.extend({ turn: z.number().int
 export type TurnHighlight = z.infer<typeof turnHighlightSchema>;
 
 // ---------------------------------------------------------------------------
-// Question list
+// Checklist: what the interview needs to learn
 // ---------------------------------------------------------------------------
 
-export const questionStatusSchema = z.enum(['todo', 'current', 'done', 'skipped']);
-export type QuestionStatus = z.infer<typeof questionStatusSchema>;
+/**
+ * `revisit`: the user doesn't know yet or isn't sure. The Advisor asks again before the end; one
+ * still open then becomes a placeholder in the draft.
+ */
+export const checklistStatusSchema = z.enum(['todo', 'revisit', 'done', 'skipped']);
+export type ChecklistStatus = z.infer<typeof checklistStatusSchema>;
 
-export const questionSourceSchema = z.enum(['initial', 'added_by_agent']);
-export type QuestionSource = z.infer<typeof questionSourceSchema>;
+export const checklistSourceSchema = z.enum(['initial', 'added_by_agent']);
+export type ChecklistSource = z.infer<typeof checklistSourceSchema>;
 
-/** A follow-up on part of a reply (a red highlight). Done and skipped ones stay in the list. */
+/** One thing to learn. The Advisor decides what to ask to cover it. */
+export const checklistItemSchema = z.object({
+  id: z.string(),
+  item: z.string(),
+  status: checklistStatusSchema,
+  source: checklistSourceSchema,
+  /** What was settled, in the Advisor's words, or why it was skipped. */
+  note: z.string().nullable(),
+});
+export type ChecklistItem = z.infer<typeof checklistItemSchema>;
+
+export const checklistSectionSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  checklist: z.array(checklistItemSchema),
+});
+export type ChecklistSection = z.infer<typeof checklistSectionSchema>;
+
+/**
+ * The interview in the repo (`content/interview.json`). Its checklist is copied into
+ * `AdvisorState.sections` when a project's first session opens; the guides go to the Advisor's
+ * system prompt.
+ */
+export const interviewSchema = z.object({
+  /** The first screen's question, shown before the Advisor has run. */
+  opener: z.string(),
+  sections: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      guide: z.string(),
+      checklist: z.array(z.object({ item: z.string(), guide: z.string().optional() })),
+    }),
+  ),
+});
+export type Interview = z.infer<typeof interviewSchema>;
+
+// ---------------------------------------------------------------------------
+// Screens: the questions the Advisor asked
+// ---------------------------------------------------------------------------
+
+export const followupStatusSchema = z.enum(['todo', 'current', 'done', 'skipped']);
+export type FollowupStatus = z.infer<typeof followupStatusSchema>;
+
+/** A follow-up on part of a reply (a red highlight). Done and skipped ones stay on the screen. */
 export const followupSchema = z.object({
   id: z.string(),
   text: z.string(),
-  status: questionStatusSchema,
+  status: followupStatusSchema,
   highlight: turnHighlightSchema,
 });
 export type Followup = z.infer<typeof followupSchema>;
 
-/** A main question. Each gets its own screen, where its follow-ups are asked. */
-export const questionSchema = z.object({
+/** One question the Advisor asked, with the follow-ups asked on its replies. */
+export const screenSchema = z.object({
   id: z.string(),
-  text: z.string(),
-  description: z.string(),
-  status: questionStatusSchema,
-  source: questionSourceSchema,
-  /** The Advisor's notes on the question, such as why it was skipped. */
-  advisorNotes: z.string().nullable(),
+  /** The section it belongs to. */
+  section: z.string(),
+  question: z.string(),
   followups: z.array(followupSchema),
 });
-export type Question = z.infer<typeof questionSchema>;
-
-export const questionSectionSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  questions: z.array(questionSchema),
-});
-export type QuestionSection = z.infer<typeof questionSectionSchema>;
-
-/**
- * The initial questions in the repo, copied into `AdvisorState.sections` when a project's first
- * session opens: every question `todo` (the first one `current`) from source `initial`, with no
- * notes or follow-ups.
- */
-export const initialQuestionsSchema = z.object({
-  sections: z.array(
-    questionSectionSchema.extend({
-      questions: z.array(questionSchema.pick({ id: true, text: true, description: true })),
-    }),
-  ),
-});
-export type InitialQuestions = z.infer<typeof initialQuestionsSchema>;
+export type Screen = z.infer<typeof screenSchema>;
 
 // ---------------------------------------------------------------------------
 // projects/{clerkOrgId}/advisor/state
 // ---------------------------------------------------------------------------
 
 export const advisorStateSchema = z.object({
-  /** The live question list, in interview order. One main question is current until the end. */
-  sections: z.array(questionSectionSchema),
+  /** The live checklist, in interview order. */
+  sections: z.array(checklistSectionSchema),
+  /** Every screen so far; the last one is on screen until the interview is complete. */
+  screens: z.array(screenSchema).min(1),
+  /** No checklist item is left to do, and the Advisor ended the interview. */
+  complete: z.boolean(),
   /** Number of saved turns and btws. One saves only if no other was saved since it started. */
   turnCount: z.number().int(),
   updatedAt: timestampSchema,
@@ -95,8 +123,8 @@ export type AdvisorState = z.infer<typeof advisorStateSchema>;
 // ---------------------------------------------------------------------------
 
 /**
- * What the screen does next: ask a follow-up on this screen, move to the next main question (or
- * the first of the next section), or end the interview.
+ * What the screen does next: ask a follow-up on this screen, open a new screen in this section or
+ * the next one, or end the interview.
  */
 export const advisorMessageTypeSchema = z.enum([
   'followup',
@@ -107,13 +135,15 @@ export const advisorMessageTypeSchema = z.enum([
 export type AdvisorMessageType = z.infer<typeof advisorMessageTypeSchema>;
 
 /**
- * A turn's message. The question's text comes from the question list by `questionId`. Every
- * property is required so structured output keeps this order, and `answer` streams last but one.
+ * A turn's message. Every property is required so structured output keeps this order, and
+ * `answer` streams last but one.
  */
 export const advisorMessageSchema = z.object({
   type: advisorMessageTypeSchema,
-  /** The follow-up or main question asked next; null only for `interview_complete`. */
-  questionId: z.string().nullable(),
+  /** The new screen's question, for `next_question` and `next_section`. */
+  question: z.string().nullable(),
+  /** The follow-up asked on this screen, for `followup`. */
+  followupId: z.string().nullable(),
   /** The Advisor's reply to anything the user asked in their reply, shown before the question. */
   answer: z.string().nullable(),
   sources: z.array(webSourceSchema),
@@ -138,7 +168,7 @@ const turnBaseSchema = z.object({
   index: z.number().int(),
   /** Clerk user id of the member who sent it. */
   uid: z.string(),
-  /** The main question whose screen it was sent from. */
+  /** The id of the screen it was sent from. */
   screen: z.string(),
   /** Langfuse trace of the run. */
   traceId: z.string().nullable(),

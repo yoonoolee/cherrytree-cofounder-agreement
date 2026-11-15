@@ -57,13 +57,13 @@ describe('useAdvisorTurn', () => {
 
     let sent: boolean | undefined;
     await act(async () => {
-      sent = await result.current.send('background_meet', 'We met.', 0);
+      sent = await result.current.send('screen_1', 'We met.', 0);
     });
 
     expect(sent).toBe(true);
     expect(result.current.live).toMatchObject({
       index: 0,
-      screen: 'background_meet',
+      screen: 'screen_1',
       reply: 'We met.',
       greenHighlights: [{ text: 'We', start: 0, end: 2 }],
       redHighlights: [{ followupId: 'f_b' }],
@@ -79,7 +79,7 @@ describe('useAdvisorTurn', () => {
     ]);
     const { result } = renderHook(() => useAdvisorTurn('org_1'));
     await act(async () => {
-      await result.current.send('background_meet', 'Hello', 0);
+      await result.current.send('screen_1', 'Hello', 0);
     });
     expect(result.current.live).toBeNull();
     expect(result.current.error?.code).toBe('refusal');
@@ -90,8 +90,8 @@ describe('useAdvisorTurn', () => {
     const { result } = renderHook(() => useAdvisorTurn('org_1'));
     let second: Promise<boolean> | undefined;
     act(() => {
-      void result.current.send('background_meet', 'First', 0);
-      second = result.current.send('background_meet', 'Second', 0);
+      void result.current.send('screen_1', 'First', 0);
+      second = result.current.send('screen_1', 'Second', 0);
     });
     await expect(second).resolves.toBe(false);
     expect(mocks.streamAdvisorTurn).toHaveBeenCalledTimes(1);
@@ -102,7 +102,7 @@ describe('useAdvisorTurn', () => {
     const { result, unmount } = renderHook(() => useAdvisorTurn('org_1'));
     let sent: Promise<boolean> | undefined;
     act(() => {
-      sent = result.current.send('background_meet', 'We met in 2023.', 0);
+      sent = result.current.send('screen_1', 'We met in 2023.', 0);
     });
     await vi.waitFor(() => expect(signal()).toBeDefined());
 

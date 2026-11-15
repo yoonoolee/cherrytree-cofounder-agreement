@@ -195,15 +195,6 @@
       ],
       "additionalProperties": false
     },
-    "QuestionStatus": {
-      "type": "string",
-      "enum": [
-        "todo",
-        "current",
-        "done",
-        "skipped"
-      ]
-    },
     "Highlight": {
       "type": "object",
       "properties": {
@@ -258,6 +249,82 @@
       ],
       "additionalProperties": false
     },
+    "ChecklistStatus": {
+      "type": "string",
+      "enum": [
+        "todo",
+        "revisit",
+        "done",
+        "skipped"
+      ]
+    },
+    "ChecklistItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "item": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/ChecklistStatus"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "initial",
+            "added_by_agent"
+          ]
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "item",
+        "status",
+        "source",
+        "note"
+      ],
+      "additionalProperties": false
+    },
+    "ChecklistSection": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "checklist": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChecklistItem"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "checklist"
+      ],
+      "additionalProperties": false
+    },
+    "FollowupStatus": {
+      "type": "string",
+      "enum": [
+        "todo",
+        "current",
+        "done",
+        "skipped"
+      ]
+    },
     "Followup": {
       "type": "object",
       "properties": {
@@ -268,7 +335,7 @@
           "type": "string"
         },
         "status": {
-          "$ref": "#/$defs/QuestionStatus"
+          "$ref": "#/$defs/FollowupStatus"
         },
         "highlight": {
           "$ref": "#/$defs/TurnHighlight"
@@ -282,33 +349,17 @@
       ],
       "additionalProperties": false
     },
-    "Question": {
+    "Screen": {
       "type": "object",
       "properties": {
         "id": {
           "type": "string"
         },
-        "text": {
+        "section": {
           "type": "string"
         },
-        "description": {
+        "question": {
           "type": "string"
-        },
-        "status": {
-          "$ref": "#/$defs/QuestionStatus"
-        },
-        "source": {
-          "type": "string",
-          "enum": [
-            "initial",
-            "added_by_agent"
-          ]
-        },
-        "advisorNotes": {
-          "type": [
-            "string",
-            "null"
-          ]
         },
         "followups": {
           "type": "array",
@@ -319,54 +370,32 @@
       },
       "required": [
         "id",
-        "text",
-        "description",
-        "status",
-        "source",
-        "advisorNotes",
+        "section",
+        "question",
         "followups"
       ],
       "additionalProperties": false
     },
-    "QuestionSection": {
+    "Interview": {
       "type": "object",
       "properties": {
-        "id": {
+        "opener": {
           "type": "string"
         },
-        "name": {
-          "type": "string"
-        },
-        "questions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Question"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "questions"
-      ],
-      "additionalProperties": false
-    },
-    "InitialQuestions": {
-      "type": "object",
-      "properties": {
         "sections": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/InitialQuestionSection"
+            "$ref": "#/$defs/InterviewSection"
           }
         }
       },
       "required": [
+        "opener",
         "sections"
       ],
       "additionalProperties": false
     },
-    "InitialQuestionSection": {
+    "InterviewSection": {
       "type": "object",
       "properties": {
         "id": {
@@ -375,37 +404,36 @@
         "name": {
           "type": "string"
         },
-        "questions": {
+        "guide": {
+          "type": "string"
+        },
+        "checklist": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/InitialQuestion"
+            "$ref": "#/$defs/InterviewItem"
           }
         }
       },
       "required": [
         "id",
         "name",
-        "questions"
+        "guide",
+        "checklist"
       ],
       "additionalProperties": false
     },
-    "InitialQuestion": {
+    "InterviewItem": {
       "type": "object",
       "properties": {
-        "id": {
+        "item": {
           "type": "string"
         },
-        "text": {
-          "type": "string"
-        },
-        "description": {
+        "guide": {
           "type": "string"
         }
       },
       "required": [
-        "id",
-        "text",
-        "description"
+        "item"
       ],
       "additionalProperties": false
     },
@@ -415,8 +443,18 @@
         "sections": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/QuestionSection"
+            "$ref": "#/$defs/ChecklistSection"
           }
+        },
+        "screens": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Screen"
+          }
+        },
+        "complete": {
+          "type": "boolean"
         },
         "turnCount": {
           "type": "integer",
@@ -430,6 +468,8 @@
       },
       "required": [
         "sections",
+        "screens",
+        "complete",
         "turnCount",
         "updatedAt"
       ],
@@ -447,7 +487,13 @@
             "interview_complete"
           ]
         },
-        "questionId": {
+        "question": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "followupId": {
           "type": [
             "string",
             "null"
@@ -468,7 +514,8 @@
       },
       "required": [
         "type",
-        "questionId",
+        "question",
+        "followupId",
         "answer",
         "sources"
       ],

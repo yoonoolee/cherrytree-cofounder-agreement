@@ -1,8 +1,8 @@
 """One Advisor run, a turn or a btw: the user's input → the Advisor (with tool calls) → its message,
-saved together with the run's question list changes, or not at all.
+saved together with the run's checklist and screen changes, or not at all.
 
-- Turn: a reply to the question on screen. The Advisor highlights facts, updates the question
-  list and picks what to ask next.
+- Turn: a reply to the question on screen. The Advisor highlights facts, updates the checklist
+  and writes what to ask next.
 - btw: a one-off question about selected text, answered with the whole conversation as context.
   It changes nothing but the history.
 
@@ -28,7 +28,8 @@ from cherrytree_agent.advisor.working_state import (
     AdvisorWorkingState,
     MessageError,
     RunKind,
-    render_question_list,
+    render_checklist,
+    render_screen,
 )
 from cherrytree_agent.auth import Caller
 from cherrytree_agent.contracts.models import (
@@ -62,7 +63,7 @@ TRANSCRIPT_ENTRY_MAX_BYTES = 900_000
 """Below Firestore's 1 MiB document limit, with room for the other fields."""
 
 MESSAGE_RETRIES = 2
-"""Times the model may rewrite a message that does not fit the question list."""
+"""Times the model may rewrite a message that does not fit the interview."""
 
 
 class StaleTurnError(Exception):
@@ -88,7 +89,7 @@ class PreparedRun:
     input: TurnInput | BtwInput
     state: AdvisorState
     screen: str
-    """The current main question: the screen the input was sent from."""
+    """The id of the screen the input was sent from."""
     replies: dict[int, str]
     """The replies already on that screen, by turn index."""
     history: list[dict[str, Any]]
@@ -97,14 +98,6 @@ class PreparedRun:
     @property
     def kind(self) -> RunKind:
         return "turn" if isinstance(self.input, TurnInput) else "btw"
-
-
-def _current_question(state: AdvisorState) -> str | None:
-    for section in state.sections:
-        for question in section.questions:
-            if question.status == "current":
-                return question.id
-    return None
 
 
 async def _check_open(
@@ -124,9 +117,9 @@ async def prepare_run(
     db: AsyncClient, caller: Caller, run_input: TurnInput | BtwInput, index: int
 ) -> PreparedRun:
     state = await _check_open(db, caller.project_id, index)
-    screen = _current_question(state)
-    if screen is None:
+    if state.complete:
         raise StaleTurnError
+    screen = state.screens[-1].id
     project = project_ref(db, caller.project_id)
     history: list[dict[str, Any]] = []
     async for snapshot in project.collection("transcript").order_by("index").stream():
@@ -150,10 +143,12 @@ async def prepare_run(
 
 
 def user_message(run: PreparedRun) -> dict[str, Any]:
-    """A turn: the question list as it stands, then the reply (each turn's copy of the list stays
-    in the transcript). A btw: the selected text, then the question."""
+    """A turn: the checklist and the screen as they stand, then the reply (each turn's copy stays in
+    the transcript). A btw: the selected text, then the question."""
     if isinstance(run.input, TurnInput):
-        context = f"<question_list>\n{render_question_list(run.state.sections)}\n</question_list>"
+        checklist = render_checklist(run.state.sections)
+        screen = render_screen(run.state.screens[-1])
+        context = f"<checklist>\n{checklist}\n</checklist>\n<screen>\n{screen}\n</screen>"
         text = run.input.reply
     else:
         context = f"<btw>\n<selected_text>\n{run.input.quote}\n</selected_text>\n</btw>"
@@ -165,7 +160,7 @@ def user_message(run: PreparedRun) -> dict[str, Any]:
 
 
 def _message(state: AdvisorWorkingState, text: str) -> AdvisorMessage | BtwMessage:
-    """The run's message, checked against the question list (a turn's question made current)."""
+    """The run's message, checked against the interview and applied to it (a turn's)."""
     try:
         message = AdvisorOutput.model_validate_json(text).message
     except ValidationError as error:
@@ -225,19 +220,6 @@ async def _run_until_valid(
                 }
             ]
             continue
-        if isinstance(message, AdvisorMessage):
-            sent = AdvisorOutput.model_validate_json(result.text).message
-            if sent.type != message.type:
-                logger.warning(
-                    "Advisor message type corrected to match the question list",
-                    extra={
-                        "event": "advisor_message_corrected",
-                        "project_id": run.caller.project_id,
-                        "turn_index": run.index,
-                        "sent": sent.type,
-                        "saved": message.type,
-                    },
-                )
         return message, messages
     raise AssertionError("unreachable")
 
@@ -291,7 +273,13 @@ async def _save(
         transaction.set(
             state_ref,
             to_firestore(
-                AdvisorState(sections=state.sections, turn_count=run.index + 1, updated_at=now)
+                AdvisorState(
+                    sections=state.sections,
+                    screens=state.screens,
+                    complete=state.complete,
+                    turn_count=run.index + 1,
+                    updated_at=now,
+                )
             ),
         )
 
@@ -308,9 +296,7 @@ async def _run_and_save(
     replies = dict(run.replies)
     if isinstance(run.input, TurnInput):
         replies[run.index] = run.input.reply
-    state = AdvisorWorkingState.start(
-        run.state, kind=run.kind, index=run.index, screen=run.screen, replies=replies
-    )
+    state = AdvisorWorkingState.start(run.state, kind=run.kind, index=run.index, replies=replies)
     parser = AdvisorStreamParser(events, state)
     message, messages = await _run_until_valid(db, run, state, parser, call)
 

@@ -2,7 +2,7 @@
 
 - Highlights: both highlight tools stream their input (eager input streaming). Each quote is sent
   once it is complete and found once in its reply, checked as the tool will check it. A rejected
-  question list change withdraws the red highlights it sent.
+  checklist change withdraws the red highlights it sent.
 - The message: its `answer` (a btw: its `text`) streams as deltas. The rest is sent only with the
   saved turn.
 """
@@ -12,7 +12,7 @@ from typing import Any
 
 from pydantic_core import from_json
 
-from cherrytree_agent.advisor.working_state import AdvisorWorkingState, QuestionListError
+from cherrytree_agent.advisor.working_state import AdvisorWorkingState, ChecklistError
 from cherrytree_agent.contracts.models import (
     AdvisorAnswerDeltaEvent,
     AdvisorGreenHighlightEvent,
@@ -76,7 +76,7 @@ class AdvisorStreamParser:
             return
         if name == "add_green_highlights":
             await self._send_green(tool_input.get("quotes"))
-        elif name == "update_question_list":
+        elif name == "update_checklist":
             await self._send_red(tool_use_id, tool_input.get("updates"))
 
     async def on_tool_result(self, tool_use_id: str, is_error: bool) -> None:
@@ -110,17 +110,16 @@ class AdvisorStreamParser:
             return
         sent = self._red_sent.setdefault(tool_use_id, [])
         for update in updates:
-            if not isinstance(update, dict) or update.get("op") != "add":
+            if not isinstance(update, dict) or update.get("op") != "add_followup":
                 continue
-            followup_id = update.get("id")
-            under, quote = update.get("under"), update.get("highlight")
-            if not (isinstance(followup_id, str) and isinstance(under, str)):
+            followup_id, quote = update.get("id"), update.get("highlight")
+            if not (isinstance(followup_id, str) and isinstance(quote, str)):
                 continue
-            if not isinstance(quote, str) or followup_id in sent:
+            if followup_id in sent:
                 continue
             try:
-                highlight = self.state.followup_highlight(under, quote)
-            except QuestionListError:
+                highlight = self.state.followup_highlight(quote)
+            except ChecklistError:
                 continue
             sent.append(followup_id)
             await self.events.put(

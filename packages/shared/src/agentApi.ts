@@ -56,7 +56,7 @@ export type AdvisorTurnErrorCode = z.infer<typeof advisorTurnErrorCodeSchema>;
  * saved, or with `error`, which drops everything streamed before it.
  * - `green_highlight`: a fact noted in this turn's reply, as the model writes it.
  * - `red_highlight`: a follow-up's highlight, as the model writes it. `withdraw_red_highlights`
- *   takes back those of a question list change that was rejected.
+ *   takes back those of a checklist change that was rejected.
  * - `answer_delta`: the message's `answer` (a btw: its `text`) as it is written.
  * `done` and `btw_done` carry the saved message, which is authoritative.
  */
@@ -76,8 +76,8 @@ export const advisorStreamEventSchema = z.discriminatedUnion('type', [
 export type AdvisorStreamEvent = z.infer<typeof advisorStreamEventSchema>;
 
 /**
- * `POST /v1/projects/{projectId}/draft` — starts Drafting + Review once every main question is
- * done or skipped, and closes the Advisor. Answers right away with `queued`; the job runs in the
+ * `POST /v1/projects/{projectId}/draft` — starts Drafting + Review once the interview is
+ * complete, and closes the Advisor. Answers right away with `queued`; the job runs in the
  * background and the browser follows `Project.draftStatus`. 409 if the interview is not finished
  * or a job already started (starting again is allowed only after `failed`).
  */

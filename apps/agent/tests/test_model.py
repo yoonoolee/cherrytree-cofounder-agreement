@@ -37,7 +37,7 @@ def test_the_advisor_message_keeps_the_streaming_order() -> None:
     assert schema is not None
     assert schema["required"] == ["message"]
     turn_message = schema["$defs"]["AdvisorMessage"]
-    assert turn_message["required"] == ["type", "questionId", "answer", "sources"]
+    assert turn_message["required"] == ["type", "question", "followupId", "answer", "sources"]
     assert turn_message["additionalProperties"] is False
 
 
@@ -45,12 +45,12 @@ def test_our_tools_are_strict_and_server_tools_are_declared_by_type() -> None:
     tools = {tool["name"]: tool for tool in definitions(ADVISOR.tools)}
     assert tools["web_search"]["type"] == "web_search_20260318"
     assert tools["web_fetch"]["type"] == "web_fetch_20260209"
-    for name in ("add_green_highlights", "update_question_list", "read_project", "search_rag"):
+    for name in ("add_green_highlights", "update_checklist", "read_project", "search_rag"):
         assert tools[name]["strict"] is True
         assert tools[name]["input_schema"]["additionalProperties"] is False
     # The highlight tools stream their input, so highlights show as they are written.
     eager = {name for name, tool in tools.items() if tool.get("eager_input_streaming")}
-    assert eager == {"add_green_highlights", "update_question_list"}
+    assert eager == {"add_green_highlights", "update_checklist"}
 
 
 def test_cost_counts_every_attempt_cache_write_ttl_and_search() -> None:

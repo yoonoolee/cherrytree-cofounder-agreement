@@ -1,4 +1,4 @@
-"""The question list and highlights as one Advisor turn or btw changes them.
+"""The checklist, screens and highlights as one Advisor turn or btw changes them.
 
 Tools edit this copy; the run saves it together with the turn, so a failed run changes nothing.
 """
@@ -11,11 +11,12 @@ from typing import Literal
 from cherrytree_agent.contracts.models import (
     AdvisorMessage,
     AdvisorState,
+    ChecklistItem,
+    ChecklistSection,
+    ChecklistStatus,
     Followup,
     Highlight,
-    Question,
-    QuestionSection,
-    QuestionStatus,
+    Screen,
     TurnHighlight,
 )
 
@@ -24,12 +25,12 @@ type RunKind = Literal["turn", "btw"]
 ID_PATTERN = re.compile(r"^[a-z0-9_]{1,40}$")
 
 
-class QuestionListError(ValueError):
-    """A change the model asked for that the question list cannot take."""
+class ChecklistError(ValueError):
+    """A change the model asked for that the checklist or screen cannot take."""
 
 
 class MessageError(ValueError):
-    """A message that does not fit the question list. The model is asked to write it again."""
+    """A message that does not fit the interview. The model is asked to write it again."""
 
 
 def quote_positions(text: str, quote: str) -> list[int]:
@@ -45,14 +46,14 @@ def quote_positions(text: str, quote: str) -> list[int]:
 def locate_quote(quote: str, replies: dict[int, str]) -> TurnHighlight:
     """The one place `quote` appears in `replies` (turn index → reply text)."""
     if not quote.strip():
-        raise QuestionListError("The quote is empty.")
+        raise ChecklistError("The quote is empty.")
     matches = [
         (turn, start) for turn, reply in replies.items() for start in quote_positions(reply, quote)
     ]
     if not matches:
-        raise QuestionListError(f'"{quote}" is not in the user\'s replies on this screen.')
+        raise ChecklistError(f'"{quote}" is not in the user\'s replies on this screen.')
     if len(matches) > 1:
-        raise QuestionListError(
+        raise ChecklistError(
             f'"{quote}" appears {len(matches)} times; quote more words so it matches once.'
         )
     turn, start = matches[0]
@@ -61,68 +62,70 @@ def locate_quote(quote: str, replies: dict[int, str]) -> TurnHighlight:
 
 @dataclass
 class AdvisorWorkingState:
-    """One run's view of the interview. `replies` holds the replies on the screen (turn index →
-    text), this turn's included."""
+    """One run's view of the interview. `replies` holds the replies on the current screen (turn
+    index → text), this turn's included."""
 
-    sections: list[QuestionSection]
+    sections: list[ChecklistSection]
+    screens: list[Screen]
+    complete: bool
     kind: RunKind
     index: int
-    screen: str
-    """The main question on screen when the run started."""
     replies: dict[int, str]
     green_highlights: list[Highlight] = field(default_factory=list)
 
     @classmethod
     def start(
-        cls,
-        state: AdvisorState,
-        *,
-        kind: RunKind,
-        index: int,
-        screen: str,
-        replies: dict[int, str],
+        cls, state: AdvisorState, *, kind: RunKind, index: int, replies: dict[int, str]
     ) -> "AdvisorWorkingState":
-        return cls(deepcopy(state.sections), kind, index, screen, dict(replies))
+        return cls(
+            deepcopy(state.sections),
+            deepcopy(state.screens),
+            state.complete,
+            kind,
+            index,
+            dict(replies),
+        )
+
+    @property
+    def screen(self) -> Screen:
+        """The screen on display: the last one."""
+        return self.screens[-1]
 
     # -- Lookups -----------------------------------------------------------------------------
 
-    def find(self, item_id: str) -> tuple[QuestionSection, Question, Followup | None]:
-        """The section, main question and (for a follow-up id) follow-up of `item_id`."""
+    def _item(self, item_id: str) -> ChecklistItem | None:
         for section in self.sections:
-            for question in section.questions:
-                if question.id == item_id:
-                    return section, question, None
-                for followup in question.followups:
-                    if followup.id == item_id:
-                        return section, question, followup
-        raise QuestionListError(f"Unknown id: {item_id}")
+            for item in section.checklist:
+                if item.id == item_id:
+                    return item
+        return None
 
-    def _section(self, section_id: str) -> QuestionSection:
+    def _section(self, section_id: str) -> ChecklistSection:
         for section in self.sections:
             if section.id == section_id:
                 return section
-        raise QuestionListError(f"Unknown section id: {section_id}")
+        raise ChecklistError(f"Unknown section id: {section_id}")
 
     def _ids(self) -> set[str]:
         ids = {section.id for section in self.sections}
         for section in self.sections:
-            for question in section.questions:
-                ids.add(question.id)
-                ids.update(followup.id for followup in question.followups)
+            ids.update(item.id for item in section.checklist)
+        for screen in self.screens:
+            ids.update(followup.id for followup in screen.followups)
         return ids
 
     def _new_id(self, item_id: str) -> str:
         if not ID_PATTERN.fullmatch(item_id):
-            raise QuestionListError(
+            raise ChecklistError(
                 f"Id {item_id!r} must be 1-40 lowercase letters, digits or underscores."
             )
         if item_id in self._ids():
-            raise QuestionListError(f"Id {item_id!r} is already in use.")
+            raise ChecklistError(f"Id {item_id!r} is already in use.")
         return item_id
 
     def _refuse_in_btw(self) -> None:
         if self.kind == "btw":
-            raise QuestionListError("Not available in a btw: answer the question only.")
+            raise ChecklistError("Not available in a btw: answer the question only.")
 
     # -- Changes from tools ------------------------------------------------------------------
 
@@ -131,9 +134,9 @@ class AdvisorWorkingState:
         self._refuse_in_btw()
         positions = quote_positions(self.replies[self.index], quote) if quote.strip() else []
         if not positions:
-            raise QuestionListError(f'"{quote}" is not in the reply.')
+            raise ChecklistError(f'"{quote}" is not in the reply.')
         if len(positions) > 1:
-            raise QuestionListError(
+            raise ChecklistError(
                 f'"{quote}" appears {len(positions)} times; quote more words so it matches once.'
             )
         highlight = Highlight(text=quote, start=positions[0], end=positions[0] + len(quote))
@@ -141,143 +144,141 @@ class AdvisorWorkingState:
             self.green_highlights.append(highlight)
         return highlight
 
-    def followup_highlight(self, under: str, quote: str) -> TurnHighlight:
-        """Where a new follow-up under `under` points: one place in a reply on this screen."""
-        if under != self.screen:
-            raise QuestionListError(
-                f"Follow-ups go under the main question on screen ({self.screen})."
-            )
+    def followup_highlight(self, quote: str) -> TurnHighlight:
+        """Where a new follow-up points: one place in a reply on this screen."""
         return locate_quote(quote, self.replies)
 
-    def add_question(self, item_id: str, section_id: str, text: str, description: str) -> None:
+    def add_item(self, item_id: str, section_id: str, item: str) -> None:
         self._refuse_in_btw()
-        self._section(section_id).questions.append(
-            Question(
+        self._section(section_id).checklist.append(
+            ChecklistItem(
                 id=self._new_id(item_id),
-                text=text,
-                description=description,
+                item=item,
                 status="todo",
                 source="added_by_agent",
-                advisor_notes=None,
-                followups=[],
+                note=None,
             )
         )
 
-    def add_followup(self, item_id: str, under: str, text: str, quote: str) -> None:
+    def add_followup(self, item_id: str, text: str, quote: str) -> None:
         self._refuse_in_btw()
-        _, question, followup = self.find(under)
-        if followup is not None:
-            raise QuestionListError(f"{under} is a follow-up; add follow-ups under its question.")
-        question.followups.append(
+        self.screen.followups.append(
             Followup(
                 id=self._new_id(item_id),
                 text=text,
                 status="todo",
-                highlight=self.followup_highlight(under, quote),
+                highlight=self.followup_highlight(quote),
             )
         )
 
-    def set_status(self, item_id: str, status: QuestionStatus, note: str | None) -> None:
+    def set_status(self, item_id: str, status: ChecklistStatus, note: str | None) -> None:
+        """A checklist item's status and note, or the status of a follow-up on this screen."""
         self._refuse_in_btw()
-        if status == "current":
-            raise QuestionListError(
-                "Your message makes the question you ask current; set todo, done or skipped."
-            )
-        _, question, followup = self.find(item_id)
-        if followup is not None:
+        item = self._item(item_id)
+        if item is not None:
+            item.status = status
             if note is not None:
-                raise QuestionListError("Notes are for main questions only.")
-            followup.status = status
+                item.note = note
             return
-        question.status = status
-        if note is not None:
-            question.advisor_notes = note
+        followup = next((f for f in self.screen.followups if f.id == item_id), None)
+        if followup is None:
+            raise ChecklistError(f"Unknown id: {item_id} (follow-ups: this screen's only)")
+        if note is not None or status == "revisit":
+            raise ChecklistError("Notes and revisit are for checklist items only.")
+        followup.status = status
 
     def snapshot(self) -> "AdvisorWorkingState":
         return deepcopy(self)
 
     def restore(self, snapshot: "AdvisorWorkingState") -> None:
         self.sections = snapshot.sections
+        self.screens = snapshot.screens
         self.green_highlights = snapshot.green_highlights
 
     # -- The message -------------------------------------------------------------------------
 
+    def _todo(self, sections: list[ChecklistSection]) -> list[str]:
+        return [item.id for s in sections for item in s.checklist if item.status == "todo"]
+
     def apply_message(self, message: AdvisorMessage) -> AdvisorMessage:
-        """Checks the message against the question list and makes its question current. Returns
-        the message with its `type` set from the list, which decides it."""
-        _, on_screen, _ = self.find(self.screen)
-        open_followups = [f for f in on_screen.followups if f.status in ("todo", "current")]
+        """Checks the message against the interview and applies it: makes its follow-up current,
+        opens its new screen, or ends the interview. Returns it without the field its type
+        does not use."""
+        open_followups = [f for f in self.screen.followups if f.status in ("todo", "current")]
 
-        if message.question_id is None:
-            if message.type != "interview_complete":
-                raise MessageError("questionId is null only for interview_complete.")
-            left = [
-                q.id
-                for section in self.sections
-                for q in section.questions
-                if q.status == "todo" or (q.status == "current" and q.id != self.screen)
-            ]
-            if left:
+        if message.type == "followup":
+            followup = next((f for f in open_followups if f.id == message.followup_id), None)
+            if followup is None:
                 raise MessageError(
-                    f"The interview is not complete: {', '.join(left)} are still to do. Ask the "
-                    "next one, or mark them skipped first."
+                    f"followupId {message.followup_id} is not an open follow-up on this screen."
                 )
-            self._close_screen(on_screen, open_followups)
-            return message
-
-        try:
-            section, question, followup = self.find(message.question_id)
-        except QuestionListError as error:
-            raise MessageError(str(error)) from error
-
-        if followup is not None:
-            if question.id != self.screen:
-                raise MessageError(
-                    f"{followup.id} is not a follow-up of the question on screen ({self.screen})."
-                )
-            if followup.status in ("done", "skipped"):
-                raise MessageError(f"{followup.id} is {followup.status}; ask an open follow-up.")
             for other in open_followups:
                 if other.status == "current":
                     other.status = "todo"
             followup.status = "current"
-            on_screen.status = "current"
-            return message.model_copy(update={"type": "followup"})
+            return message.model_copy(update={"question": None})
 
-        if question.id == self.screen:
-            raise MessageError(
-                f"{question.id} is already on screen; ask one of its follow-ups, or move on."
+        if message.type == "interview_complete":
+            left = self._todo(self.sections)
+            if left:
+                raise MessageError(
+                    f"The interview is not complete: {', '.join(left)} are still to do. Ask "
+                    "about them, or mark them first."
+                )
+            self._close_screen(open_followups)
+            self.complete = True
+            return message.model_copy(update={"question": None, "followup_id": None})
+
+        if not (message.question or "").strip():
+            raise MessageError(f"A {message.type} message needs the question.")
+        section = self._section(self.screen.section)
+        if message.type == "next_section":
+            left = self._todo([section])
+            if left:
+                raise MessageError(
+                    f"{section.name} still has items to do: {', '.join(left)}. Ask about them, "
+                    "or skip them first."
+                )
+            position = self.sections.index(section)
+            later = [s for s in self.sections[position + 1 :] if self._todo([s])]
+            if not later:
+                raise MessageError("No later section has items to do: end the interview.")
+            section = later[0]
+        self._close_screen(open_followups)
+        self.screens.append(
+            Screen(
+                id=f"screen_{len(self.screens) + 1}",
+                section=section.id,
+                question=message.question or "",
+                followups=[],
             )
-        if question.status != "todo":
-            raise MessageError(f"{question.id} is {question.status}; ask a question still to do.")
-        screen_section, _, _ = self.find(self.screen)
-        self._close_screen(on_screen, open_followups)
-        question.status = "current"
-        moved = "next_section" if section.id != screen_section.id else "next_question"
-        return message.model_copy(update={"type": moved})
+        )
+        return message.model_copy(update={"followup_id": None})
 
-    def _close_screen(self, on_screen: Question, open_followups: list[Followup]) -> None:
-        """Leaving a screen: its question is done unless marked skipped, and follow-ups left
-        open are skipped, so no red highlight stays open on a screen the user has left."""
-        if on_screen.status in ("todo", "current"):
-            on_screen.status = "done"
+    def _close_screen(self, open_followups: list[Followup]) -> None:
+        """Leaving a screen: its open follow-ups are skipped, so no red highlight stays open on a
+        screen the user has left."""
         for followup in open_followups:
             followup.status = "skipped"
 
 
-def render_question_list(sections: list[QuestionSection]) -> str:
-    """The question list as the Advisor reads it every turn: every question in full."""
+def render_checklist(sections: list[ChecklistSection]) -> str:
+    """The checklist as the agents read it: every item with its status and note."""
     lines: list[str] = []
     for number, section in enumerate(sections, start=1):
         lines.append(f"Section {number}: {section.name} [id: {section.id}]")
-        for question in section.questions:
-            lines.append(f"  [{question.status}] {question.text} [id: {question.id}]")
-            lines.append(f"      Description: {question.description}")
-            if question.advisor_notes:
-                lines.append(f"      Your notes: {question.advisor_notes}")
-            for followup in question.followups:
-                lines.append(
-                    f"      Follow-up [{followup.status}] {followup.text} [id: {followup.id}] "
-                    f'on "{followup.highlight.text}"'
-                )
+        for item in section.checklist:
+            lines.append(f"  [{item.status}] {item.item} [id: {item.id}]")
+            if item.note:
+                lines.append(f"      Note: {item.note}")
+    return "\n".join(lines)
+
+
+def render_screen(screen: Screen) -> str:
+    """The screen on display: its question and follow-ups."""
+    lines = [f"Section: {screen.section}", f"Question: {screen.question}"]
+    lines.extend(
+        f'Follow-up [{f.status}] {f.text} [id: {f.id}] on "{f.highlight.text}"'
+        for f in screen.followups
+    )
     return "\n".join(lines)

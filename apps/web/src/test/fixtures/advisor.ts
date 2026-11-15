@@ -4,82 +4,76 @@ import type {
   AdvisorMessage,
   AdvisorReplyTurn,
   AdvisorState,
+  ChecklistItem,
+  ChecklistSection,
   Followup,
-  Question,
-  QuestionSection,
-  QuestionStatus,
+  FollowupStatus,
 } from '@cherrytree/shared';
 
 import { timestamp } from './project.ts';
 
-const question = (id: string, text: string, status: QuestionStatus = 'todo'): Question => ({
+const item = (id: string, text: string): ChecklistItem => ({
   id,
-  text,
-  description: '',
-  status,
+  item: text,
+  status: 'todo',
   source: 'initial',
-  advisorNotes: null,
-  followups: [],
+  note: null,
 });
 
-/** Two sections, as a session starts: the first question is current. */
-function makeSections(): QuestionSection[] {
+/** Two sections, as a session starts: every item to do. */
+function makeSections(): ChecklistSection[] {
   return [
     {
       id: 'background',
       name: 'Background',
-      questions: [
-        question('background_meet', 'How did you two meet?', 'current'),
-        question('background_idea', 'Whose idea was the company?'),
-      ],
+      checklist: [item('background_1', 'How they met'), item('background_2', 'Whose idea it was')],
     },
-    {
-      id: 'roles',
-      name: 'Roles',
-      questions: [question('roles_titles', 'What will each of you be responsible for?')],
-    },
+    { id: 'roles', name: 'Roles', checklist: [item('roles_1', 'What each one owns')] },
   ];
 }
 
+/** A session's start: the first screen asks the opener. */
 export function makeAdvisorState(overrides: Partial<AdvisorState> = {}): AdvisorState {
   return {
     sections: makeSections(),
+    screens: [
+      { id: 'screen_1', section: 'background', question: 'How did you two meet?', followups: [] },
+    ],
+    complete: false,
     turnCount: 0,
     updatedAt: timestamp('2026-10-25T10:00:00Z'),
     ...overrides,
   };
 }
 
-/** Marks `currentId` current, everything before it done. */
-export function withCurrent(state: AdvisorState, currentId: string): AdvisorState {
-  const ids = state.sections.flatMap((s) => s.questions.map((q) => q.id));
-  const at = ids.indexOf(currentId);
+/** Opens a new screen in `section`. */
+export function withScreen(state: AdvisorState, section: string, question: string): AdvisorState {
+  const id = `screen_${state.screens.length + 1}`;
+  return { ...state, screens: [...state.screens, { id, section, question, followups: [] }] };
+}
+
+/** Marks the checklist items `ids` done. */
+export function withDone(state: AdvisorState, ...ids: string[]): AdvisorState {
   return {
     ...state,
     sections: state.sections.map((section) => ({
       ...section,
-      questions: section.questions.map((q) => {
-        const i = ids.indexOf(q.id);
-        return { ...q, status: i < at ? 'done' : i === at ? 'current' : 'todo' };
-      }),
+      checklist: section.checklist.map((i) => (ids.includes(i.id) ? { ...i, status: 'done' } : i)),
     })),
   };
 }
 
-/** Adds follow-ups under the main question `questionId`. */
+/** Adds follow-ups to the screen `screenId`. */
 export function withFollowups(
   state: AdvisorState,
-  questionId: string,
+  screenId: string,
   followups: Followup[],
 ): AdvisorState {
   return {
     ...state,
-    sections: state.sections.map((section) => ({
-      ...section,
-      questions: section.questions.map((q) =>
-        q.id === questionId ? { ...q, followups: [...q.followups, ...followups] } : q,
-      ),
-    })),
+    screens: state.screens.map((s) =>
+      s.id === screenId ? { ...s, followups: [...s.followups, ...followups] } : s,
+    ),
   };
 }
 
@@ -94,14 +88,21 @@ export function makeFollowup(
     turn = 0,
     status = 'todo',
     reply = REPLY,
-  }: { turn?: number; status?: QuestionStatus; reply?: string } = {},
+  }: { turn?: number; status?: FollowupStatus; reply?: string } = {},
 ): Followup {
   const start = reply.indexOf(quote);
   return { id, text, status, highlight: { turn, text: quote, start, end: start + quote.length } };
 }
 
 export function makeMessage(overrides: Partial<AdvisorMessage> = {}): AdvisorMessage {
-  return { type: 'followup', questionId: 'f_when', answer: null, sources: [], ...overrides };
+  return {
+    type: 'followup',
+    question: null,
+    followupId: 'f_when',
+    answer: null,
+    sources: [],
+    ...overrides,
+  };
 }
 
 export function makeTurn(
@@ -112,7 +113,7 @@ export function makeTurn(
     index,
     kind: 'turn',
     uid: 'user_admin',
-    screen: 'background_meet',
+    screen: 'screen_1',
     reply: REPLY,
     greenHighlights: [{ text: 'Oakland', start: 28, end: 35 }],
     message: makeMessage(),
@@ -130,7 +131,7 @@ export function makeBtwTurn(
     index,
     kind: 'btw',
     uid: 'user_admin',
-    screen: 'background_meet',
+    screen: 'screen_1',
     quote: 'climbing gym',
     question: 'Does it matter where we met?',
     message: { type: 'answer', text: 'Not for the agreement.', sources: [] },

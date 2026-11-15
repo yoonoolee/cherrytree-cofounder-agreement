@@ -8,7 +8,7 @@ import { ADVISOR_COPY, ADVISOR_LEGEND, ADVISOR_MOVE_ON } from '../../constants/a
 /**
  * - `thinking`: the Advisor is writing; its answer shows as it streams.
  * - `followup`: the follow-up to answer, under the Advisor's answer, with the reply input.
- * - `moving`: the main question is covered; Next opens the next one's screen.
+ * - `moving`: the screen is covered; Next opens the next one.
  */
 export type BottomBoxContent =
   | { kind: 'thinking'; answer: string }
@@ -81,7 +81,8 @@ function FollowupForm(content: Extract<BottomBoxContent, { kind: 'followup' }>) 
           maxLength={ADVISOR_REPLY_MAX_LENGTH}
           placeholder={ADVISOR_COPY.followupPlaceholder}
           autoFocus
-          className="min-w-0 flex-1 bg-transparent text-lg leading-normal outline-none placeholder:font-light placeholder:text-ink-faint"
+          autoComplete="off"
+          className="min-w-0 flex-1 border-0 bg-transparent p-0 text-lg leading-normal outline-none placeholder:font-light placeholder:text-ink-faint"
         />
         <button
           type="submit"
