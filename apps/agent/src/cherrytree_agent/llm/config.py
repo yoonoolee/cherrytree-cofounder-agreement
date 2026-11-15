@@ -43,10 +43,13 @@ class AgentConfig:
     """Tool names from the registry (`tools/registry.py`), in the order they are sent."""
     output_schema: dict[str, Any] | None = field(default=None)
     """JSON Schema the final response must follow (structured outputs), if any."""
+    prompt_appendix: str = ""
+    """Content added after the prompt file, such as the Advisor's interview guides."""
 
     @cached_property
     def system_prompt(self) -> str:
-        return (PROMPTS_DIR / self.prompt_file).read_text()
+        prompt = (PROMPTS_DIR / self.prompt_file).read_text()
+        return f"{prompt.rstrip()}\n\n{self.prompt_appendix}" if self.prompt_appendix else prompt
 
     @cached_property
     def prompt_version(self) -> str:

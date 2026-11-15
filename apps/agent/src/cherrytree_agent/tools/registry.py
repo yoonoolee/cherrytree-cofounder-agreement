@@ -8,7 +8,7 @@ from typing import Any
 from anthropic import transform_schema
 from pydantic import BaseModel
 
-from cherrytree_agent.tools import draft, project, questions, rag
+from cherrytree_agent.tools import checklist, draft, project, rag
 from cherrytree_agent.tools.context import ToolContext
 
 
@@ -40,16 +40,16 @@ TOOLS: dict[str, Tool[Any]] = {
     for tool in [
         Tool(
             "add_green_highlights",
-            questions.ADD_GREEN_HIGHLIGHTS_DESCRIPTION,
-            questions.AddGreenHighlightsInput,
-            questions.add_green_highlights,
+            checklist.ADD_GREEN_HIGHLIGHTS_DESCRIPTION,
+            checklist.AddGreenHighlightsInput,
+            checklist.add_green_highlights,
             eager_input_streaming=True,
         ),
         Tool(
-            "update_question_list",
-            questions.UPDATE_QUESTION_LIST_DESCRIPTION,
-            questions.UpdateQuestionListInput,
-            questions.update_question_list,
+            "update_checklist",
+            checklist.UPDATE_CHECKLIST_DESCRIPTION,
+            checklist.UpdateChecklistInput,
+            checklist.update_checklist,
             eager_input_streaming=True,
         ),
         Tool(

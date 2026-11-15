@@ -4,8 +4,8 @@ import type { AdvisorMessage, AdvisorState, Highlight } from '@cherrytree/shared
 import MarkedText, { NumberTag } from './MarkedText.tsx';
 import { ADVISOR_COPY } from '../../constants/advisor.ts';
 import {
+  followupText,
   marksFor,
-  questionText,
   type AdvisorScreen,
   type NumberedHighlight,
 } from '../../utils/advisorScreen.ts';
@@ -65,7 +65,7 @@ function AnsweredQuestion({
 }
 
 /**
- * A main question's screen after the first reply: the question small at the top, then every reply
+ * A screen after the first reply: the question small at the top, then every reply
  * with its highlights, each later reply under the follow-up it answers. Selecting text in a reply
  * opens the btw popup.
  */
@@ -122,18 +122,18 @@ function ScreenThread({
         className="mb-2 text-[26px] leading-[1.1] font-normal tracking-[-0.015em] sm:text-[32px]"
         style={{ viewTransitionName: 'advisor-question' }}
       >
-        {screen.question.text}
+        {screen.question}
       </h1>
       <div onMouseUp={onMouseUp} onMouseMove={onMouseMove} className="mt-12">
         {exchanges.map((exchange, i) => {
-          const asked = exchange.answers?.questionId ?? null;
+          const asked = exchange.answers?.followupId ?? null;
           const number = asked ? numberOf(asked) : undefined;
           return (
             <section key={exchange.index}>
               {exchange.answers && (
                 <AnsweredQuestion
                   message={exchange.answers}
-                  text={asked ? questionText(state, asked) : null}
+                  text={asked ? followupText(state, asked) : null}
                   number={number}
                 />
               )}

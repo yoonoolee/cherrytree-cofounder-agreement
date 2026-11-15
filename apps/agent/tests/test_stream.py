@@ -2,7 +2,7 @@ import asyncio
 import json
 from typing import Any
 
-from cherrytree_agent.advisor.session import initial_state
+from cherrytree_agent.advisor.interview import initial_state
 from cherrytree_agent.advisor.stream import AdvisorStreamParser
 from cherrytree_agent.advisor.working_state import AdvisorWorkingState, RunKind
 from cherrytree_agent.contracts.models import AdvisorStreamEvent
@@ -13,9 +13,7 @@ REPLY = "we met at a park in middle school, around 15 years ago"
 
 def parser(kind: RunKind = "turn") -> tuple[AdvisorStreamParser, asyncio.Queue[Any]]:
     events: asyncio.Queue[AdvisorStreamEvent | None] = asyncio.Queue()
-    state = AdvisorWorkingState.start(
-        initial_state(), kind=kind, index=1, screen="background_meet", replies={1: REPLY}
-    )
+    state = AdvisorWorkingState.start(initial_state(), kind=kind, index=1, replies={1: REPLY})
     return AdvisorStreamParser(events, state), events
 
 
@@ -73,12 +71,12 @@ async def test_red_highlights_stream_and_a_rejected_change_withdraws_them() -> N
     handler, events = parser()
     change = {
         "updates": [
-            status_update("background_idea", "skipped"),
-            followup_update("f_park", "background_meet", "at a park"),
-            followup_update("f_bad", "roles_titles", "middle school"),
+            status_update("company_2", "skipped"),
+            followup_update("f_park", "at a park"),
+            followup_update("f_bad", "not in the reply"),
         ]
     }
-    await write_tool(handler, "t1", "update_question_list", change)
+    await write_tool(handler, "t1", "update_checklist", change)
     assert drain(events) == [
         {
             "type": "red_highlight",

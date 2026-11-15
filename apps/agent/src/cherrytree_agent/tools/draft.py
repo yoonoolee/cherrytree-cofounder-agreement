@@ -113,9 +113,7 @@ class CreateThreadInput(BaseModel):
 
 
 CREATE_THREAD_DESCRIPTION = """\
-Raise an open item as a comment thread on a paragraph: facts that conflict, a standard topic the \
-draft is missing, or something that needs the founders' decision. The founders reply in the \
-thread. Use edits for wording fixes, never threads."""
+Raise an open item as a comment thread on a paragraph. The founders reply in the thread."""
 
 
 async def create_thread(context: ToolContext, request: CreateThreadInput) -> str:

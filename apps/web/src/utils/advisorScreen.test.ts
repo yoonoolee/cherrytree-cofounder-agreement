@@ -1,9 +1,9 @@
 import {
   advisorProgress,
   advisorView,
+  followupText,
   marksFor,
   numberHighlights,
-  questionText,
 } from './advisorScreen.ts';
 import {
   makeAdvisorState,
@@ -11,39 +11,44 @@ import {
   makeFollowup,
   makeMessage,
   makeTurn,
-  withCurrent,
+  withDone,
   withFollowups,
+  withScreen,
 } from '../test/fixtures/advisor.ts';
 
 describe('advisorView', () => {
-  it('shows the current question with only its replies, not btws', () => {
+  it('shows the last screen with only its replies, not btws', () => {
     const view = advisorView(makeAdvisorState(), [makeTurn(0), makeBtwTurn(1)], null);
     expect(view?.kind).toBe('screen');
     if (view?.kind !== 'screen') return;
-    expect(view.screen.question.id).toBe('background_meet');
-    expect(view.screen.sectionNumber).toBe(1);
+    expect(view.screen.id).toBe('screen_1');
     expect(view.screen.turns.map((t) => t.index)).toEqual([0]);
     expect(view.moving).toBeNull();
   });
 
   it('keeps a moving turn on its screen until Next, also after a reload', () => {
-    const state = withCurrent(makeAdvisorState(), 'roles_titles');
-    const move = makeMessage({ type: 'next_section', questionId: 'roles_titles' });
+    const state = withScreen(makeAdvisorState(), 'roles', 'Who owns what?');
+    const move = makeMessage({
+      type: 'next_section',
+      question: 'Who owns what?',
+      followupId: null,
+    });
     const turns = [makeTurn(0, { message: move })];
 
     const held = advisorView(state, turns, null);
     expect(held).toMatchObject({ kind: 'screen', moving: move });
-    if (held?.kind === 'screen') expect(held.screen.question.id).toBe('background_meet');
+    if (held?.kind === 'screen') expect(held.screen.id).toBe('screen_1');
 
     const next = advisorView(state, turns, 0);
     if (next?.kind !== 'screen') throw new Error('expected a screen');
-    expect(next.screen.question.id).toBe('roles_titles');
+    expect(next.screen).toMatchObject({ id: 'screen_2', question: 'Who owns what?' });
+    expect(next.screen.sectionName).toBe('Roles');
     expect(next.screen.turns).toEqual([]);
   });
 
-  it('is complete once no question is current, with the last answer', () => {
-    const state = withCurrent(makeAdvisorState(), 'none');
-    const done = makeMessage({ type: 'interview_complete', questionId: null, answer: 'All set.' });
+  it('is complete once the Advisor ends the interview, with the last answer', () => {
+    const state = makeAdvisorState({ complete: true });
+    const done = makeMessage({ type: 'interview_complete', followupId: null, answer: 'All set.' });
     expect(advisorView(state, [makeTurn(0, { message: done })], null)).toEqual({
       kind: 'complete',
       answer: 'All set.',
@@ -88,16 +93,13 @@ describe('numberHighlights', () => {
   });
 });
 
-describe('questionText and advisorProgress', () => {
-  it('finds main questions and follow-ups, and counts settled questions', () => {
-    const state = withFollowups(
-      withCurrent(makeAdvisorState(), 'background_idea'),
-      'background_meet',
-      [makeFollowup('f_when', 'When?', 'in 2023')],
-    );
-    expect(questionText(state, 'f_when')).toBe('When?');
-    expect(questionText(state, 'roles_titles')).toBe('What will each of you be responsible for?');
-    expect(questionText(state, 'nope')).toBeNull();
+describe('followupText and advisorProgress', () => {
+  it('finds follow-ups on any screen, and counts settled checklist items', () => {
+    const state = withFollowups(withDone(makeAdvisorState(), 'background_1'), 'screen_1', [
+      makeFollowup('f_when', 'When?', 'in 2023'),
+    ]);
+    expect(followupText(state, 'f_when')).toBe('When?');
+    expect(followupText(state, 'nope')).toBeNull();
 
     const progress = advisorProgress(state, 'Background');
     expect(progress.fraction).toBeCloseTo(1 / 3);

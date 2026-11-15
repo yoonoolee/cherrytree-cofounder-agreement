@@ -1,6 +1,6 @@
 import type { AgentErrorCode } from '../lib/agent.ts';
 
-/** The bottom box once a main question is covered; the button opens the next one's screen. */
+/** The bottom box once a screen is covered; the button opens the next screen. */
 export const ADVISOR_MOVE_ON = {
   text: "We're good for this part. Click Next to move on.",
   next_question: 'Next question',
@@ -18,7 +18,7 @@ export const ADVISOR_COPY = {
   thinking: 'Thinking…',
 };
 
-/** Shown once every main question is done or skipped; `action` starts the draft. */
+/** Shown once the Advisor ends the interview; `action` starts the draft. */
 export const ADVISOR_COMPLETE = {
   title: 'That covers everything.',
   body: "Your answers are saved. Next, Cherrytree writes the first draft of your cofounder agreement from them. Once it starts, the interview is closed and your answers can't be changed here.",

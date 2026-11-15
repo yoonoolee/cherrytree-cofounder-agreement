@@ -92,9 +92,10 @@ async def finish_interview(client: httpx.AsyncClient, db: AsyncClient) -> None:
     ref = advisor_state_ref(db, PROJECT_ID)
     state = (await ref.get()).to_dict() or {}
     for section in state["sections"]:
-        for question in section["questions"]:
-            question["status"] = "done"
-    state["sections"][0]["questions"][0]["advisorNotes"] = "Avery and Sam split equity 50/50."
+        for item in section["checklist"]:
+            item["status"] = "done"
+    state["sections"][0]["checklist"][0]["note"] = "Avery and Sam split equity 50/50."
+    state["complete"] = True
     await ref.set(state)
 
 
@@ -189,7 +190,7 @@ async def test_only_the_project_admin_can_start(client: httpx.AsyncClient, db: A
 async def test_drafting_closes_the_advisor(client: httpx.AsyncClient, db: AsyncClient) -> None:
     await client.post(SESSION, headers=headers())
     await project_ref(db, PROJECT_ID).update({"draftStatus": "queued"})
-    use_model(FakeModel(message(text(advisor_json("background_idea")))))
+    use_model(FakeModel(message(text(advisor_json(question="Next?")))))
     response = await client.post(
         f"/v1/projects/{PROJECT_ID}/advisor/turns",
         headers=headers(),

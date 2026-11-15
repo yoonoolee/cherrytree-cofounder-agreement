@@ -29,7 +29,7 @@ class RagChunk(BaseModel):
     title: str
     url: str | None
     section: str
-    """The interview section the passage is about (a `questions.json` section id)."""
+    """The interview section the passage is about (an `interview.json` section id)."""
     date_added: date = Field(alias="dateAdded")
 
 

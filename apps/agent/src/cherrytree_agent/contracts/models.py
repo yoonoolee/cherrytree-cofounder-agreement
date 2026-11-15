@@ -51,9 +51,6 @@ class WebSource(BaseModel):
     url: str
 
 
-type QuestionStatus = Literal["todo", "current", "done", "skipped"]
-
-
 class Highlight(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -75,6 +72,34 @@ class TurnHighlight(BaseModel):
     turn: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
 
 
+type ChecklistStatus = Literal["todo", "revisit", "done", "skipped"]
+
+
+class ChecklistItem(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    id: str
+    item: str
+    status: ChecklistStatus
+    source: Literal["initial", "added_by_agent"]
+    note: str | None
+
+
+class ChecklistSection(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    id: str
+    name: str
+    checklist: list[ChecklistItem]
+
+
+type FollowupStatus = Literal["todo", "current", "done", "skipped"]
+
+
 class Followup(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -82,42 +107,28 @@ class Followup(BaseModel):
     )
     id: str
     text: str
-    status: QuestionStatus
+    status: FollowupStatus
     highlight: TurnHighlight
 
 
-class Question(BaseModel):
+class Screen(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
         populate_by_name=True,
     )
     id: str
-    text: str
-    description: str
-    status: QuestionStatus
-    source: Literal["initial", "added_by_agent"]
-    advisor_notes: Annotated[str | None, Field(alias="advisorNotes")]
+    section: str
+    question: str
     followups: list[Followup]
 
 
-class QuestionSection(BaseModel):
+class InterviewItem(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
         populate_by_name=True,
     )
-    id: str
-    name: str
-    questions: list[Question]
-
-
-class InitialQuestion(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-        populate_by_name=True,
-    )
-    id: str
-    text: str
-    description: str
+    item: str
+    guide: str | None = None
 
 
 class AdvisorState(BaseModel):
@@ -125,7 +136,9 @@ class AdvisorState(BaseModel):
         extra="forbid",
         populate_by_name=True,
     )
-    sections: list[QuestionSection]
+    sections: list[ChecklistSection]
+    screens: Annotated[list[Screen], Field(min_length=1)]
+    complete: bool
     turn_count: Annotated[int, Field(alias="turnCount", ge=-9007199254740991, le=9007199254740991)]
     updated_at: Annotated[AwareDatetime, Field(alias="updatedAt")]
 
@@ -136,7 +149,8 @@ class AdvisorMessage(BaseModel):
         populate_by_name=True,
     )
     type: Literal["followup", "next_question", "next_section", "interview_complete"]
-    question_id: Annotated[str | None, Field(alias="questionId")]
+    question: str | None
+    followup_id: Annotated[str | None, Field(alias="followupId")]
     answer: str | None
     sources: list[WebSource]
 
@@ -476,14 +490,15 @@ class Project(BaseModel):
     last_opened: Annotated[AwareDatetime, Field(alias="lastOpened")]
 
 
-class InitialQuestionSection(BaseModel):
+class InterviewSection(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
         populate_by_name=True,
     )
     id: str
     name: str
-    questions: list[InitialQuestion]
+    guide: str
+    checklist: list[InterviewItem]
 
 
 type DraftDocumentRequest = DraftFromMarkdownRequest | DraftApplyReviewRequest
@@ -500,12 +515,13 @@ type AdvisorStreamEvent = (
 )
 
 
-class InitialQuestions(BaseModel):
+class Interview(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
         populate_by_name=True,
     )
-    sections: list[InitialQuestionSection]
+    opener: str
+    sections: list[InterviewSection]
 
 
 PlateElement.model_rebuild()

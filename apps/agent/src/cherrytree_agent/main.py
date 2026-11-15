@@ -3,6 +3,7 @@
 Run locally: `npm run dev:agent` (see apps/agent/README.md).
 """
 
+import asyncio
 import logging
 import os
 from collections.abc import AsyncGenerator, AsyncIterator
@@ -60,6 +61,20 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
     get_client().shutdown()
 
 
+async def flush_traces() -> None:
+    """Send the run's traces before its request ends. Cloud Run gives the instance CPU only while
+    a request is open, so the SDK's background export would wait for the next request."""
+    await asyncio.to_thread(get_client().flush)
+
+
+async def _flushed(events: AsyncIterator[AdvisorStreamEvent]) -> AsyncIterator[AdvisorStreamEvent]:
+    try:
+        async for event in events:
+            yield event
+    finally:
+        await flush_traces()
+
+
 def get_call_model() -> CallModel:
     return call_model
 
@@ -105,7 +120,13 @@ async def prepared_btw(
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Cherrytree agent service", lifespan=lifespan)
+    # FastAPI's own OpenTelemetry is off: Langfuse is the tracing, and FastAPI's would continue
+    # Cloud Run's incoming trace, whose "not sampled" flag would drop every Langfuse span.
+    app = FastAPI(
+        title="Cherrytree agent service",
+        lifespan=lifespan,
+        telemetry={"tracing": False, "metrics": False, "logs": False},
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=get_settings().allowed_origins,
@@ -126,7 +147,7 @@ def create_app() -> FastAPI:
         db: Annotated[AsyncClient, Depends(get_db)],
         call: Annotated[CallModel, Depends(get_call_model)],
     ) -> AsyncIterator[AdvisorStreamEvent]:
-        async for event in advisor_run_events(db, run, call):
+        async for event in _flushed(advisor_run_events(db, run, call)):
             yield event
 
     @app.post("/v1/projects/{project_id}/advisor/btw", response_class=EventSourceResponse)
@@ -135,7 +156,7 @@ def create_app() -> FastAPI:
         db: Annotated[AsyncClient, Depends(get_db)],
         call: Annotated[CallModel, Depends(get_call_model)],
     ) -> AsyncIterator[AdvisorStreamEvent]:
-        async for event in advisor_run_events(db, run, call):
+        async for event in _flushed(advisor_run_events(db, run, call)):
             yield event
 
     @app.post("/v1/projects/{project_id}/draft")
@@ -162,7 +183,11 @@ def create_app() -> FastAPI:
         retry_count: Annotated[int, Header(alias="X-CloudTasks-TaskRetryCount")] = 0,
     ) -> None:
         """Called only by Cloud Tasks. A non-2xx answer makes Cloud Tasks retry the attempt."""
-        if not await run_draft_job(db, task.project_id, retry_count, call, documents):
+        try:
+            succeeded = await run_draft_job(db, task.project_id, retry_count, call, documents)
+        finally:
+            await flush_traces()
+        if not succeeded:
             raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Draft job failed; retrying")
 
     return app

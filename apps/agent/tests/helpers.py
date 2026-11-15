@@ -62,14 +62,25 @@ def tool_use(tool_id: str, name: str, tool_input: dict[str, Any]) -> dict[str, A
 
 
 def advisor_json(
-    question_id: str | None = None,
+    followup_id: str | None = None,
     *,
-    type: str = "followup",
+    question: str | None = None,
+    type: str | None = None,
     answer: str | None = None,
 ) -> str:
-    """A turn's output."""
+    """A turn's output: a follow-up by id, a new screen's question, or the end of the interview."""
+    if type is None:
+        type = "followup" if followup_id else "next_question" if question else "interview_complete"
     return json.dumps(
-        {"message": {"type": type, "questionId": question_id, "answer": answer, "sources": []}}
+        {
+            "message": {
+                "type": type,
+                "question": question,
+                "followupId": followup_id,
+                "answer": answer,
+                "sources": [],
+            }
+        }
     )
 
 
@@ -77,32 +88,23 @@ def btw_json(answer: str) -> str:
     return json.dumps({"message": {"type": "answer", "text": answer, "sources": []}})
 
 
+def _update(op: str, item_id: str, **fields: Any) -> dict[str, Any]:
+    empty = {"section": None, "text": None, "highlight": None, "status": None, "note": None}
+    return {"op": op, "id": item_id, **empty, **fields}
+
+
 def followup_update(
-    followup_id: str, under: str, highlight: str, text: str = "Tell me more?"
+    followup_id: str, highlight: str, text: str = "Tell me more?"
 ) -> dict[str, Any]:
-    return {
-        "op": "add",
-        "id": followup_id,
-        "under": under,
-        "highlight": highlight,
-        "text": text,
-        "description": None,
-        "status": None,
-        "note": None,
-    }
+    return _update("add_followup", followup_id, highlight=highlight, text=text)
+
+
+def item_update(item_id: str, section: str, text: str) -> dict[str, Any]:
+    return _update("add_item", item_id, section=section, text=text)
 
 
 def status_update(item_id: str, status: str, note: str | None = None) -> dict[str, Any]:
-    return {
-        "op": "status",
-        "id": item_id,
-        "under": None,
-        "highlight": None,
-        "text": None,
-        "description": None,
-        "status": status,
-        "note": note,
-    }
+    return _update("status", item_id, status=status, note=note)
 
 
 type Step = BetaMessage | Callable[[], Any]

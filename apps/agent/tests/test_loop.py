@@ -4,7 +4,7 @@ from typing import Any
 import pytest
 
 from cherrytree_agent.advisor.config import ADVISOR
-from cherrytree_agent.advisor.session import initial_state
+from cherrytree_agent.advisor.interview import initial_state
 from cherrytree_agent.advisor.working_state import AdvisorWorkingState
 from cherrytree_agent.llm.loop import (
     IncompleteResponseError,
@@ -23,7 +23,6 @@ def context() -> ToolContext:
         initial_state(),
         kind="turn",
         index=0,
-        screen="background_meet",
         replies={0: "We met in 2011."},
     )
     return ToolContext(db=None, project_id="org_1", advisor=state)  # type: ignore[arg-type]
@@ -45,15 +44,15 @@ async def run(
 async def test_runs_tools_until_the_model_answers() -> None:
     ctx = context()
     handler = RecordingHandler()
-    change = {"updates": [status_update("background_idea", "skipped")]}
+    change = {"updates": [status_update("company_2", "skipped")]}
     model = FakeModel(
-        message(tool_use("t1", "update_question_list", change), stop_reason="tool_use"),
+        message(tool_use("t1", "update_checklist", change), stop_reason="tool_use"),
         message(text('{"done": true}')),
     )
     result = await run(model, ctx, handler)
 
     assert ctx.advisor is not None
-    assert ctx.advisor.sections[0].questions[1].status == "skipped"
+    assert ctx.advisor.sections[0].checklist[1].status == "skipped"
     assert handler.tool_results == {"t1": False}
     assert handler.tool_inputs["t1"] == json.dumps(change)
     assert [m["role"] for m in result.messages] == ["user", "assistant", "user", "assistant"]
@@ -68,8 +67,8 @@ async def test_tool_errors_go_back_to_the_model() -> None:
     handler = RecordingHandler()
     model = FakeModel(
         message(
-            tool_use("t1", "update_question_list", {"updates": [status_update("nope", "done")]}),
-            tool_use("t2", "update_question_list", {"bad": "input"}),
+            tool_use("t1", "update_checklist", {"updates": [status_update("nope", "done")]}),
+            tool_use("t2", "update_checklist", {"bad": "input"}),
             tool_use("t3", "no_such_tool", {}),
             stop_reason="tool_use",
         ),

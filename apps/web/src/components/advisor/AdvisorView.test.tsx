@@ -12,8 +12,9 @@ import {
   makeFollowup,
   makeMessage,
   makeTurn,
-  withCurrent,
+  withDone,
   withFollowups,
+  withScreen,
 } from '../../test/fixtures/advisor.ts';
 
 const mocks = vi.hoisted(() => ({
@@ -67,8 +68,8 @@ function setData(data: Partial<Extract<AdvisorData, { status: 'ready' }>> = {}) 
 function oneReplyIn() {
   const when = makeFollowup('f_when', 'What month in 2023?', 'in 2023', { status: 'current' });
   setData({
-    state: withFollowups(makeAdvisorState({ turnCount: 1 }), 'background_meet', [when]),
-    turns: [makeTurn(0, { message: makeMessage({ questionId: 'f_when', answer: 'Nice.' }) })],
+    state: withFollowups(makeAdvisorState({ turnCount: 1 }), 'screen_1', [when]),
+    turns: [makeTurn(0, { message: makeMessage({ followupId: 'f_when', answer: 'Nice.' }) })],
   });
 }
 
@@ -99,7 +100,13 @@ describe('AdvisorView', () => {
   });
 
   it('shows progress over every section from the section menu', () => {
-    setData({ state: withCurrent(makeAdvisorState(), 'roles_titles') });
+    setData({
+      state: withScreen(
+        withDone(makeAdvisorState(), 'background_1', 'background_2'),
+        'roles',
+        'What will each of you be responsible for?',
+      ),
+    });
     render(ui());
     fireEvent.click(screen.getByRole('button', { name: 'Roles' }));
     expect(screen.getByText('67% complete')).toBeInTheDocument();
@@ -146,13 +153,13 @@ describe('AdvisorView', () => {
     const when = makeFollowup('f_when', 'What month in 2023?', 'in 2023', { status: 'done' });
     const who = makeFollowup('f_who', 'Who suggested it?', 'climbing gym', { status: 'current' });
     setData({
-      state: withFollowups(makeAdvisorState({ turnCount: 2 }), 'background_meet', [when, who]),
+      state: withFollowups(makeAdvisorState({ turnCount: 2 }), 'screen_1', [when, who]),
       turns: [
-        makeTurn(0, { message: makeMessage({ questionId: 'f_when' }) }),
+        makeTurn(0, { message: makeMessage({ followupId: 'f_when' }) }),
         makeTurn(1, {
           reply: 'March.',
           greenHighlights: [{ text: 'March', start: 0, end: 5 }],
-          message: makeMessage({ questionId: 'f_who' }),
+          message: makeMessage({ followupId: 'f_who' }),
         }),
       ],
     });
@@ -171,11 +178,16 @@ describe('AdvisorView', () => {
   it('holds a move on the screen until Next, then opens the next question blank', () => {
     const move = makeMessage({
       type: 'next_question',
-      questionId: 'background_idea',
+      question: 'Whose idea was the company?',
+      followupId: null,
       answer: 'Co-workers often make strong cofounders.',
     });
     setData({
-      state: withCurrent(makeAdvisorState({ turnCount: 1 }), 'background_idea'),
+      state: withScreen(
+        makeAdvisorState({ turnCount: 1 }),
+        'background',
+        'Whose idea was the company?',
+      ),
       turns: [makeTurn(0, { message: move })],
     });
     render(ui());
@@ -194,9 +206,13 @@ describe('AdvisorView', () => {
   });
 
   it('labels a move into another section Next section', () => {
-    const move = makeMessage({ type: 'next_section', questionId: 'roles_titles' });
+    const move = makeMessage({
+      type: 'next_section',
+      question: 'What will each of you be responsible for?',
+      followupId: null,
+    });
     setData({
-      state: withCurrent(makeAdvisorState({ turnCount: 1 }), 'roles_titles'),
+      state: withScreen(makeAdvisorState({ turnCount: 1 }), 'roles', 'What will each of you own?'),
       turns: [makeTurn(0, { message: move })],
     });
     render(ui());
@@ -304,9 +320,13 @@ describe('AdvisorView', () => {
 
   it('ends the interview with the last answer and the start of the draft', async () => {
     mocks.startDraft.mockResolvedValue({ draftStatus: 'queued' });
-    const done = makeMessage({ type: 'interview_complete', questionId: null, answer: 'All set.' });
+    const done = makeMessage({
+      type: 'interview_complete',
+      followupId: null,
+      answer: 'All set.',
+    });
     setData({
-      state: withCurrent(makeAdvisorState({ turnCount: 1 }), 'none'),
+      state: makeAdvisorState({ turnCount: 1, complete: true }),
       turns: [makeTurn(0, { message: done })],
     });
     render(ui());
