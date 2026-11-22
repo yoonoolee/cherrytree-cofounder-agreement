@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 
 import { ADVISOR_REPLY_MAX_LENGTH } from '@cherrytree/shared';
 
 import SourceLinks from './SourceLinks.tsx';
+import Working from '../status/Working.tsx';
 import { ADVISOR_COPY, advisorErrorMessage } from '../../constants/advisor.ts';
 import type { Btw } from '../../hooks/useAdvisorBtw.ts';
 
@@ -70,9 +71,11 @@ function BtwPopup({ btw, top, left, busy, onAsk, onClose }: BtwPopupProps) {
       {btw.question ? (
         <div aria-live="polite" className="text-sm leading-normal">
           <p className="mb-1.5 text-ink">{btw.question}</p>
-          <p className="whitespace-pre-line text-ink-muted">
-            {btw.answer || ADVISOR_COPY.thinking}
-          </p>
+          {btw.answer ? (
+            <p className="animate-fade whitespace-pre-line text-ink-muted">{btw.answer}</p>
+          ) : (
+            <Working status={ADVISOR_COPY.btwThinking} className="text-sm" />
+          )}
           <SourceLinks sources={btw.sources} />
         </div>
       ) : (

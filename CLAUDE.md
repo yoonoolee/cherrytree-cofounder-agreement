@@ -2,7 +2,7 @@
 
 Cherrytree is a SaaS platform where startup cofounders create a cofounder agreement with AI agents (Advisor, Drafting, Review, Editing). This repo is the whole product: the web app (marketing pages + dashboard), the Firebase Cloud Functions, the shared schemas, and the Python agent service. Cherrytree is not live; one engineer works on it.
 
-The agent product is being built: the agent service runs the Advisor and the Drafting + Review background job, with their UI; the draft editor and the Editing agent come next. Its design lives outside the repo, linked from `ARCHITECTURE.md` (Notion Working Doc + FigJam diagram). Read it before working on anything agent-related.
+The agent product is being built: the agent service runs the Advisor, the Drafting + Review background job and the Editing agent, and the web app has their UI: the interview, the draft status screen and the draft editor (Plate; agent rewrites with undo, and comment threads). Finalize comes next. Its design lives outside the repo, linked from `ARCHITECTURE.md` (Notion Working Doc + FigJam diagram). Read it before working on anything agent-related.
 
 ## Architecture
 
@@ -80,7 +80,7 @@ Default to dev; confirm with `firebase use` before any deploy. Never deploy to p
 
 - **Sign-in:** Clerk. The web app exchanges its Clerk session token for a Firebase custom token via the `getFirebaseToken` callable and signs into Firebase Auth with it, so Firestore rules and every callable identify the caller by `request.auth.uid` = Clerk user id. `apps/functions/src/lib/auth.ts` verifies Clerk tokens with `@clerk/backend`.
 - **App Check** is enforced on every callable (`enforceAppCheck` + `consumeAppCheckToken` in `apps/functions/src/config.ts`, guarded by `apps/functions/test/endpoints.test.ts` against `endpoints.golden.json`). Built bundles use reCAPTCHA v3; `npm run dev` uses a debug token printed to the browser console on first run — register it once per browser under the **dev** project → App Check → Apps → Manage debug tokens, or every callable returns `unauthenticated` on localhost.
-- **Server-authoritative data.** Firestore rules let a project member read the project and update only `lastOpened` and `onboardingCompleted`; a user reads only their own `users/` doc. Everything else (project creation, members, payments, plan) is written by Cloud Functions with the Admin SDK, and agent data (including draft saves) by the agent service; members only read it. Keep it that way: a new client-writable field goes into `onlyClientFields()` in `firestore.rules` with a rules test.
+- **Server-authoritative data.** Firestore rules let a project member read the project and update only `lastOpened`; a user reads only their own `users/` doc. Everything else (project creation, members, payments, plan) is written by Cloud Functions with the Admin SDK, and agent data (including draft saves) by the agent service; members only read it. Keep it that way: a new client-writable field goes into `onlyClientFields()` in `firestore.rules` with a rules test.
 - **Webhooks** (`stripeWebhook`, `clerkWebhook`) are `onRequest` with `cors: false` and verify signatures; Stripe events are deduplicated in `stripeEvents/{eventId}`.
 - Functions run as the least-privilege service account `cloud-functions@<project>.iam.gserviceaccount.com` (roles: `datastore.user`, `firebaseauth.admin`, `iam.serviceAccountTokenCreator`, `serviceusage.serviceUsageConsumer`, `firebaseappcheck.tokenVerifier`).
 - The agent service runs as `agent-service@<project>.iam.gserviceaccount.com` (roles: `datastore.user`, `firebaseappcheck.tokenVerifier`; `cloudtasks.enqueuer` on the `drafting` queue, `iam.serviceAccountUser` on `cloud-tasks@`, reader of the `ANTHROPIC_API_KEY` secret); local runs impersonate it through ADC, so local and Cloud Run permissions match (`apps/agent/README.md`). Never grant service roles to personal accounts.
@@ -91,14 +91,14 @@ Default to dev; confirm with `firebase use` before any deploy. Never deploy to p
 Zod schemas in `packages/shared/src/domain/` are the source of truth; TypeScript types are inferred from them. Both the web (`apps/web/src/lib/firestore.ts`) and the functions (`apps/functions/src/lib/firebase.ts`) validate every document they read against its schema.
 
 ```
-projects/{clerkOrgId}         Project — name, members{uid → {role}}, onboardingCompleted{uid → bool},
-                              currentPlan, payments{checkoutSessionId → Payment}, draftStatus, createdAt, lastUpdated, lastOpened
+projects/{clerkOrgId}         Project — name, members{uid → {role}}, currentPlan, payments{checkoutSessionId → Payment},
+                              draftStatus, draftStartedAt, createdAt, lastUpdated, lastOpened
   advisor/state               AdvisorState — checklist by section, screens (the Advisor's questions, with follow-ups on reply highlights), complete, turnCount
   turns/{index}               AdvisorTurn — kind (turn: reply, greenHighlights, message | btw: quote, question, answer), uid, screen, traceId
   transcript/{index}          TranscriptEntry — the turn's or btw's raw Messages API content, server-only
-  draft/current               Draft — Plate value, templateVersion, version, blockVersions{blockId → n}
-  threads/{commentId}         Thread — status (open/resolved/deleted), createdBy, messages[]   (deleted: hidden)
-  suggestions/{id}            Suggestion — threadId, edits[] (op, para, old, new, status)
+  draft/current               Draft — Plate value, templateVersion, version (the editor saves it through the agent service)
+  threads/{commentId}         Thread — status (open/resolved/deleted), createdBy, quote, messages[] (agent ones with a suggestion)   (deleted: hidden)
+  edits/{id}                  AgentEdit — quote, instruction, replacement, message, title, status (applied/undone)
 users/{clerkUserId}           UserDoc — userId, email, firstName, lastName, picture, createdAt, lastLoginAt, deleted,
                               stripeCustomerId?, deletedAt?   (written only by the Clerk webhook / checkout)
 proWaitlist/{autoId}          ProWaitlistSignup — email, timestamp, source   (anonymous create only)

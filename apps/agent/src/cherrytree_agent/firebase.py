@@ -47,6 +47,10 @@ def thread_ref(db: AsyncClient, project_id: str, thread_id: str) -> AsyncDocumen
     return project_ref(db, project_id).collection("threads").document(thread_id)
 
 
+def edit_ref(db: AsyncClient, project_id: str, edit_id: str) -> AsyncDocumentReference:
+    return project_ref(db, project_id).collection("edits").document(edit_id)
+
+
 def turn_doc_id(index: int) -> str:
     """Zero-padded, so document ids sort in turn order."""
     return f"{index:05d}"

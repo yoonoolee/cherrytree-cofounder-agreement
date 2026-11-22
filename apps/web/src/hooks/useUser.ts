@@ -18,6 +18,9 @@ export interface UserContextValue {
   userProfile: UserDoc | null;
   /** True until Clerk has loaded, the Firebase session is established and the profile read. */
   loading: boolean;
+  /** Establishing the Firebase session failed; `retryAuth` tries again. */
+  authFailed: boolean;
+  retryAuth: () => void;
   /** Account name, else the email local part, else "User". */
   displayName: string;
   // Organization data (fetched once, shared everywhere)

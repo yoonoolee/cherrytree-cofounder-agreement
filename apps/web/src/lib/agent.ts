@@ -11,13 +11,20 @@ import { getLimitedUseToken } from 'firebase/app-check';
 import {
   advisorSessionResponseSchema,
   advisorStreamEventSchema,
+  agentEditResponseSchema,
+  saveDraftResponseSchema,
   startDraftResponseSchema,
   type AdvisorBtwRequest,
   type AdvisorSessionResponse,
   type AdvisorStreamEvent,
   type AdvisorTurnErrorCode,
   type AdvisorTurnRequest,
+  type AgentEditRequest,
+  type AgentEditResponse,
+  type CreateThreadRequest,
+  type SaveDraftRequest,
   type StartDraftResponse,
+  type ThreadStatusRequest,
 } from '@cherrytree/shared';
 
 import { env } from './env.ts';
@@ -81,12 +88,17 @@ function errorFor(response: Response): AgentError {
   }
 }
 
-async function post(path: string, body: unknown, signal?: AbortSignal): Promise<Response> {
+async function send(
+  method: 'POST' | 'PUT',
+  path: string,
+  body: unknown,
+  signal?: AbortSignal,
+): Promise<Response> {
   const headers = await authHeaders();
   let response: Response;
   try {
     response = await fetch(`${env.agentUrl}${path}`, {
-      method: 'POST',
+      method,
       headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
       signal,
@@ -98,6 +110,9 @@ async function post(path: string, body: unknown, signal?: AbortSignal): Promise<
   if (!response.ok) throw errorFor(response);
   return response;
 }
+
+const post = (path: string, body: unknown, signal?: AbortSignal) =>
+  send('POST', path, body, signal);
 
 const projectPath = (projectId: string) => `/v1/projects/${encodeURIComponent(projectId)}`;
 const advisorPath = (projectId: string) => `${projectPath(projectId)}/advisor`;
@@ -168,4 +183,57 @@ export const streamAdvisorBtw = (
 export async function startDraft(projectId: string): Promise<StartDraftResponse> {
   const response = await post(`${projectPath(projectId)}/draft`, {});
   return startDraftResponseSchema.parse(await response.json());
+}
+
+/** Dev and local only: ends the interview with the answers given so far. */
+export async function skipInterview(projectId: string): Promise<void> {
+  await post(`${advisorPath(projectId)}/skip`, {});
+}
+
+// ---------------------------------------------------------------------------
+// The draft editor
+// ---------------------------------------------------------------------------
+
+/** Saves the editor's document; `stale` if the draft changed since `version`. */
+export async function saveDraft(projectId: string, request: SaveDraftRequest): Promise<number> {
+  const response = await send('PUT', `${projectPath(projectId)}/draft`, request);
+  return saveDraftResponseSchema.parse(await response.json()).version;
+}
+
+/** The agent's rewrite of the selected text, logged under `edits/`; the editor applies it. */
+export async function requestAgentEdit(
+  projectId: string,
+  request: AgentEditRequest,
+): Promise<AgentEditResponse> {
+  const response = await post(`${projectPath(projectId)}/draft/edits`, request);
+  return agentEditResponseSchema.parse(await response.json());
+}
+
+export async function undoAgentEdit(projectId: string, editId: string): Promise<void> {
+  await post(`${projectPath(projectId)}/draft/edits/${encodeURIComponent(editId)}/undo`, {});
+}
+
+/** Starts a comment thread; resolves once the agent has replied in it. */
+export async function createThread(projectId: string, request: CreateThreadRequest): Promise<void> {
+  await post(`${projectPath(projectId)}/threads`, request);
+}
+
+export async function replyInThread(
+  projectId: string,
+  threadId: string,
+  text: string,
+): Promise<void> {
+  await post(`${projectPath(projectId)}/threads/${encodeURIComponent(threadId)}/messages`, {
+    text,
+  });
+}
+
+export async function setThreadStatus(
+  projectId: string,
+  threadId: string,
+  status: ThreadStatusRequest['status'],
+): Promise<void> {
+  await post(`${projectPath(projectId)}/threads/${encodeURIComponent(threadId)}/status`, {
+    status,
+  });
 }

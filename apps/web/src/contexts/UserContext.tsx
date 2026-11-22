@@ -21,6 +21,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   // a previous session's document.
   const [profile, setProfile] = useState<{ userId: string; doc: UserDoc | null } | null>(null);
   const [firebaseAuthReady, setFirebaseAuthReady] = useState(false);
+  // The Clerk → Firebase exchange that failed, by attempt, so a retry clears it.
+  const [authAttempt, setAuthAttempt] = useState(0);
+  const [failedAttempt, setFailedAttempt] = useState<number | null>(null);
   const clerkUserId = clerkUser?.id;
 
   // Sign in to Firebase Auth when Clerk user is authenticated
@@ -30,17 +33,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         try {
           // Get Clerk session token and exchange for Firebase token via cloud function
           const sessionToken = await getToken();
-          if (!sessionToken) return;
+          if (!sessionToken) throw new Error('Clerk returned no session token');
 
           const { firebaseToken } = await callFunction('getFirebaseToken', { sessionToken });
-
-          if (firebaseToken) {
-            await signInWithCustomToken(auth, firebaseToken);
-            setFirebaseAuthReady(true);
-          }
+          await signInWithCustomToken(auth, firebaseToken);
+          setFirebaseAuthReady(true);
         } catch (error) {
           console.error('Error signing in to Firebase:', error);
           setFirebaseAuthReady(false);
+          setFailedAttempt(authAttempt);
         }
       } else if (isLoaded && !clerkUserId) {
         setFirebaseAuthReady(false);
@@ -53,7 +54,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     };
 
     void signInToFirebase();
-  }, [clerkUserId, isLoaded, getToken]);
+  }, [clerkUserId, isLoaded, getToken, authAttempt]);
 
   // Follow the signed-in user's document in real time.
   useEffect(() => {
@@ -74,10 +75,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const profileForUser = clerkUserId && profile?.userId === clerkUserId ? profile : null;
   const userProfile = profileForUser?.doc ?? null;
 
+  const authFailed = failedAttempt === authAttempt;
+
   const value: UserContextValue = {
     currentUser: clerkUser,
     userProfile,
-    loading: !isAuthReady || (Boolean(clerkUserId) && !profileForUser),
+    loading: !authFailed && (!isAuthReady || (Boolean(clerkUserId) && !profileForUser)),
+    authFailed,
+    retryAuth: () => setAuthAttempt((n) => n + 1),
     displayName:
       [userProfile?.firstName, userProfile?.lastName].filter(Boolean).join(' ') ||
       clerkUser?.primaryEmailAddress?.emailAddress?.split('@')[0] ||

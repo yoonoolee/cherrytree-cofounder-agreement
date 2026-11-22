@@ -4,7 +4,6 @@
 from __future__ import annotations
 from typing import Annotated, Any, Dict, Literal
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
-from typing_extensions import TypeAliasType
 
 
 type Model = Any
@@ -258,12 +257,6 @@ class DraftBlock(BaseModel):
 type DraftStatus = Literal["queued", "drafting", "reviewing", "ready", "failed"]
 
 
-BlockVersionsAdditionalProperty = TypeAliasType(
-    "BlockVersionsAdditionalProperty",
-    Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)],
-)
-
-
 class Draft(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -271,9 +264,6 @@ class Draft(BaseModel):
     )
     template_version: Annotated[str, Field(alias="templateVersion")]
     version: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
-    block_versions: Annotated[
-        dict[str, BlockVersionsAdditionalProperty], Field(alias="blockVersions")
-    ]
     content: list[DraftBlock]
     updated_at: Annotated[AwareDatetime, Field(alias="updatedAt")]
 
@@ -286,6 +276,7 @@ class ThreadMessage(BaseModel):
     author: Literal["user", "agent"]
     uid: str | None
     text: str
+    suggestion: str | None
     sources: list[WebSource]
     created_at: Annotated[AwareDatetime, Field(alias="createdAt")]
 
@@ -297,31 +288,27 @@ class Thread(BaseModel):
     )
     status: Literal["open", "resolved", "deleted"]
     created_by: Annotated[Literal["user", "agent"], Field(alias="createdBy")]
+    quote: str
     messages: list[ThreadMessage]
     created_at: Annotated[AwareDatetime, Field(alias="createdAt")]
     updated_at: Annotated[AwareDatetime, Field(alias="updatedAt")]
 
 
-class Edit(BaseModel):
+class AgentEdit(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
         populate_by_name=True,
     )
-    id: str
-    op: Literal["replace", "insert_after", "delete"]
-    para: str
-    old: str | None
-    new: str | None
-    status: Literal["pending", "accepted", "rejected", "withdrawn", "stale"]
-
-
-class Suggestion(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-        populate_by_name=True,
-    )
-    thread_id: Annotated[str, Field(alias="threadId")]
-    edits: list[Edit]
+    uid: str
+    quote: str
+    instruction: str
+    replacement: str
+    message: str
+    title: str
+    status: Literal["applied", "undone"]
+    duration_ms: Annotated[
+        int, Field(alias="durationMs", ge=-9007199254740991, le=9007199254740991)
+    ]
     created_at: Annotated[AwareDatetime, Field(alias="createdAt")]
 
 
@@ -408,6 +395,69 @@ class StartDraftResponse(BaseModel):
     draft_status: Annotated[DraftStatus, Field(alias="draftStatus")]
 
 
+class SaveDraftRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    content: Annotated[list[DraftBlock], Field(min_length=1)]
+    version: Annotated[int, Field(ge=1, le=9007199254740991)]
+
+
+class SaveDraftResponse(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    version: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+
+
+class AgentEditRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    quote: Annotated[str, Field(max_length=10000, min_length=1)]
+    instruction: Annotated[str, Field(max_length=20000, min_length=1)]
+
+
+class AgentEditResponse(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    id: str
+    replacement: str
+    message: str
+    title: str
+
+
+class CreateThreadRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    thread_id: Annotated[str, Field(alias="threadId", pattern="^[A-Za-z0-9_-]{8,64}$")]
+    quote: Annotated[str, Field(max_length=10000, min_length=1)]
+    text: Annotated[str, Field(max_length=20000, min_length=1)]
+
+
+class ThreadReplyRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    text: Annotated[str, Field(max_length=20000, min_length=1)]
+
+
+class ThreadStatusRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        populate_by_name=True,
+    )
+    status: Literal["resolved", "deleted"]
+
+
 class AdvisorGreenHighlightEvent(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -481,10 +531,10 @@ class Project(BaseModel):
     )
     name: str
     members: dict[str, Member]
-    onboarding_completed: Annotated[dict[str, bool], Field(alias="onboardingCompleted")]
     current_plan: Annotated[Literal["starter", "pro"], Field(alias="currentPlan")]
     payments: dict[str, Payment]
     draft_status: Annotated[DraftStatus | None, Field(alias="draftStatus")]
+    draft_started_at: Annotated[AwareDatetime | None, Field(alias="draftStartedAt")] = None
     created_at: Annotated[AwareDatetime, Field(alias="createdAt")]
     last_updated: Annotated[AwareDatetime, Field(alias="lastUpdated")]
     last_opened: Annotated[AwareDatetime, Field(alias="lastOpened")]

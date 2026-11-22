@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     draft_document_url: str
     """URL of the `draftDocument` Cloud Function (Plate document code)."""
 
+    dev_tools: bool = False
+    """Test shortcuts such as ending the interview early. Local and dev only."""
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -3,9 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router';
 
 import ProtectedRoute from './components/ProtectedRoute.tsx';
 import ResetPagePosition from './components/ResetPagePosition.tsx';
+import ProjectSkeleton from './components/status/ProjectSkeleton.tsx';
 import DashboardPage from './pages/DashboardPage.tsx';
 import LandingPage from './pages/LandingPage.tsx';
-import EquityCalculatorPage from './pages/EquityCalculatorPage.tsx';
 import AttorneyPage from './pages/AttorneyPage.tsx';
 import PricingPage from './pages/PricingPage.tsx';
 import AboutPage from './pages/AboutPage.tsx';
@@ -25,7 +25,6 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
-        <Route path="/equity-calculator" element={<EquityCalculatorPage />} />
         <Route path="/attorney" element={<AttorneyPage />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/about" element={<AboutPage />} />
@@ -48,8 +47,8 @@ function App() {
         <Route
           path="/projects/:projectId"
           element={
-            <ProtectedRoute>
-              <Suspense fallback={null}>
+            <ProtectedRoute loading={<ProjectSkeleton />}>
+              <Suspense fallback={<ProjectSkeleton />}>
                 <ProjectPage />
               </Suspense>
             </ProtectedRoute>

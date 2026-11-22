@@ -1,9 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { UserButton, useClerk } from '@clerk/react';
 
 import { useUser } from '../hooks/useUser.ts';
 import PaymentModal from '../components/PaymentModal.tsx';
+import ErrorState from '../components/status/ErrorState.tsx';
+import Skeleton from '../components/status/Skeleton.tsx';
+import { PROJECT_LOAD_ERROR } from '../constants/project.ts';
 import { useProjects } from '../hooks/useProjects.ts';
 import { formatTimeAgo } from '../utils/dateUtils.ts';
 
@@ -12,48 +15,30 @@ const PROJECT_PROGRESS_PERCENT = 0;
 
 function DashboardPage() {
   const navigate = useNavigate();
-  const { currentUser, loading: authLoading, userMemberships, orgsLoaded } = useUser();
+  const {
+    currentUser,
+    loading: authLoading,
+    authFailed,
+    retryAuth,
+    userMemberships,
+    orgsLoaded,
+  } = useUser();
   const { openUserProfile } = useClerk();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const { projects, loading } = useProjects(currentUser, userMemberships, orgsLoaded, authLoading);
 
-  const welcomeRef = useRef<HTMLHeadingElement>(null);
-  const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const projectsLoading = authLoading || loading;
 
+  // Cards rise in as they scroll into view, once the projects are in.
   useEffect(() => {
-    if (authLoading || loading) return;
-
-    const welcome = welcomeRef.current;
-    const sub = subtitleRef.current;
-
-    if (welcome) {
-      welcome.style.opacity = '0';
-      welcome.style.transform = 'translateY(12px)';
-      welcome.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-    }
-    if (sub) {
-      sub.style.opacity = '0';
-      sub.style.transform = 'translateY(10px)';
-      sub.style.transition = 'opacity 0.5s ease 0.12s, transform 0.5s ease 0.12s';
-    }
+    if (projectsLoading) return;
 
     const cards = document.querySelectorAll<HTMLElement>('[data-animate-card]');
     cards.forEach((card) => {
       card.style.opacity = '0';
       card.style.transform = 'translateY(16px)';
     });
-
-    const timer = setTimeout(() => {
-      if (welcome) {
-        welcome.style.opacity = '1';
-        welcome.style.transform = 'translateY(0)';
-      }
-      if (sub) {
-        sub.style.opacity = '1';
-        sub.style.transform = 'translateY(0)';
-      }
-    }, 60);
 
     const cardArray: Element[] = Array.from(cards);
     const observer = new IntersectionObserver(
@@ -73,24 +58,13 @@ function DashboardPage() {
 
     cards.forEach((card) => observer.observe(card));
 
-    return () => {
-      clearTimeout(timer);
-      observer.disconnect();
-    };
-  }, [authLoading, loading]);
+    return () => observer.disconnect();
+  }, [projectsLoading]);
 
-  if (authLoading || loading) {
+  if (authFailed) {
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: '#F6F3EE',
-        }}
-      >
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black" />
+      <div className="flex min-h-screen bg-paper px-6 font-ui text-ink sm:px-14">
+        <ErrorState {...PROJECT_LOAD_ERROR.signIn} onRetry={retryAuth} />
       </div>
     );
   }
@@ -238,7 +212,7 @@ function DashboardPage() {
 
         {/* Welcome */}
         <h1
-          ref={welcomeRef}
+          className="animate-rise"
           style={{
             fontFamily: 'Instrument Serif, serif',
             fontSize: '44px',
@@ -251,7 +225,7 @@ function DashboardPage() {
           Welcome back, <em>{currentUser?.firstName || 'there'}</em>.
         </h1>
         <p
-          ref={subtitleRef}
+          className="animate-rise [animation-delay:80ms]"
           style={{
             fontSize: '14px',
             fontWeight: 300,
@@ -261,153 +235,163 @@ function DashboardPage() {
             marginBottom: '40px',
           }}
         >
-          {projects.length > 0
-            ? "Let's jump back into your open agreements."
-            : 'Create your first cofounder agreement to get started.'}
+          {projectsLoading
+            ? '\u00a0'
+            : projects.length > 0
+              ? "Let's jump back into your open agreements."
+              : 'Create your first cofounder agreement to get started.'}
         </p>
 
-        {/* Agreement cards */}
-        {projects.map((project) => {
-          const progress = PROJECT_PROGRESS_PERCENT;
+        {/* Agreement cards: placeholders in their shape until the projects are in */}
+        {projectsLoading && (
+          <div role="status">
+            <span className="sr-only">Loading your agreements</span>
+            <Skeleton className="mb-3 h-38 rounded-[5px]" />
+            <Skeleton className="mb-3 h-24 rounded-[5px] opacity-70" />
+          </div>
+        )}
+        {!projectsLoading &&
+          projects.map((project) => {
+            const progress = PROJECT_PROGRESS_PERCENT;
 
-          const lastEditTime = project.lastUpdated || project.createdAt;
-          const timeAgo = lastEditTime ? formatTimeAgo(lastEditTime) : '';
+            const lastEditTime = project.lastUpdated || project.createdAt;
+            const timeAgo = lastEditTime ? formatTimeAgo(lastEditTime) : '';
 
-          return (
-            <div
-              key={project.id}
-              data-card
-              data-animate-card
-              style={{
-                background: '#e3dfd8',
-                borderRadius: '5px',
-                padding: '22px 24px 0',
-                marginBottom: '12px',
-                overflow: 'hidden',
-              }}
-            >
+            return (
               <div
+                key={project.id}
+                data-card
+                data-animate-card
                 style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'stretch',
-                  gap: '16px',
+                  background: '#e3dfd8',
+                  borderRadius: '5px',
+                  padding: '22px 24px 0',
+                  marginBottom: '12px',
+                  overflow: 'hidden',
                 }}
               >
-                {/* Left */}
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      fontSize: '11.5px',
-                      fontWeight: 200,
-                      color: '#888',
-                      marginBottom: '10px',
-                      letterSpacing: '0.01em',
-                    }}
-                  >
-                    Cofounder Agreement
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: 'Instrument Serif, serif',
-                      fontSize: '32px',
-                      fontWeight: 400,
-                      letterSpacing: '-0.3px',
-                      marginBottom: '44px',
-                      lineHeight: 1.1,
-                    }}
-                  >
-                    {project.name || 'Untitled Project'}
-                  </div>
-
-                  {/* Meta */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '20px',
-                      paddingBottom: '18px',
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    {timeAgo && (
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '5px',
-                          fontSize: '12px',
-                          fontWeight: 300,
-                          color: '#666',
-                        }}
-                      >
-                        <svg
-                          style={{ width: '13px', height: '13px', opacity: 0.6, flexShrink: 0 }}
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                        >
-                          <circle cx="12" cy="12" r="9" />
-                          <path d="M12 7v5l3 3" strokeLinecap="round" />
-                        </svg>
-                        Edited {timeAgo}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right */}
                 <div
                   style={{
                     display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-end',
                     justifyContent: 'space-between',
-                    paddingTop: '2px',
-                    paddingBottom: '18px',
-                    flexShrink: 0,
+                    alignItems: 'stretch',
+                    gap: '16px',
                   }}
                 >
+                  {/* Left */}
+                  <div style={{ flex: 1 }}>
+                    <div
+                      style={{
+                        fontSize: '11.5px',
+                        fontWeight: 200,
+                        color: '#888',
+                        marginBottom: '10px',
+                        letterSpacing: '0.01em',
+                      }}
+                    >
+                      Cofounder Agreement
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: 'Instrument Serif, serif',
+                        fontSize: '32px',
+                        fontWeight: 400,
+                        letterSpacing: '-0.3px',
+                        marginBottom: '44px',
+                        lineHeight: 1.1,
+                      }}
+                    >
+                      {project.name || 'Untitled Project'}
+                    </div>
+
+                    {/* Meta */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '20px',
+                        paddingBottom: '18px',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      {timeAgo && (
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            fontSize: '12px',
+                            fontWeight: 300,
+                            color: '#666',
+                          }}
+                        >
+                          <svg
+                            style={{ width: '13px', height: '13px', opacity: 0.6, flexShrink: 0 }}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                          >
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M12 7v5l3 3" strokeLinecap="round" />
+                          </svg>
+                          Edited {timeAgo}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right */}
                   <div
                     style={{
-                      background: '#C7CECB',
-                      borderRadius: '4px',
-                      padding: '14px 20px 10px',
-                      textAlign: 'center',
-                      minWidth: '100px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-end',
+                      justifyContent: 'space-between',
+                      paddingTop: '2px',
+                      paddingBottom: '18px',
+                      flexShrink: 0,
                     }}
                   >
                     <div
                       style={{
-                        fontFamily: 'Instrument Serif, serif',
-                        fontSize: '40px',
-                        fontWeight: 400,
-                        color: '#4B7263',
-                        lineHeight: 1,
-                        letterSpacing: '2px',
+                        background: '#C7CECB',
+                        borderRadius: '4px',
+                        padding: '14px 20px 10px',
+                        textAlign: 'center',
+                        minWidth: '100px',
                       }}
                     >
-                      {progress}%
+                      <div
+                        style={{
+                          fontFamily: 'Instrument Serif, serif',
+                          fontSize: '40px',
+                          fontWeight: 400,
+                          color: '#4B7263',
+                          lineHeight: 1,
+                          letterSpacing: '2px',
+                        }}
+                      >
+                        {progress}%
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 300,
+                          color: '#4B7263',
+                          marginTop: '2px',
+                        }}
+                      >
+                        Completed
+                      </div>
                     </div>
-                    <div
-                      style={{
-                        fontSize: '11px',
-                        fontWeight: 300,
-                        color: '#4B7263',
-                        marginTop: '2px',
-                      }}
-                    >
-                      Completed
-                    </div>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      const card = e.currentTarget.closest('[data-card]') ?? e.currentTarget;
-                      const rect = card.getBoundingClientRect();
+                    <button
+                      onClick={(e) => {
+                        const card = e.currentTarget.closest('[data-card]') ?? e.currentTarget;
+                        const rect = card.getBoundingClientRect();
 
-                      const overlay = document.createElement('div');
-                      overlay.style.cssText = `
+                        const overlay = document.createElement('div');
+                        overlay.style.cssText = `
                         position: fixed;
                         top: ${rect.top}px;
                         left: ${rect.left}px;
@@ -424,127 +408,129 @@ function DashboardPage() {
                                     border-radius 0.4s ease,
                                     background 0.12s ease 0.05s;
                       `;
-                      document.body.appendChild(overlay);
+                        document.body.appendChild(overlay);
 
-                      // Force reflow then expand to fullscreen + shift to the project page background
-                      overlay.getBoundingClientRect();
-                      requestAnimationFrame(() => {
-                        overlay.style.top = '0';
-                        overlay.style.left = '0';
-                        overlay.style.width = '100vw';
-                        overlay.style.height = '100vh';
-                        overlay.style.borderRadius = '0';
-                        overlay.style.background = '#F6F3EE';
-                      });
+                        // Force reflow then expand to fullscreen + shift to the project page background
+                        overlay.getBoundingClientRect();
+                        requestAnimationFrame(() => {
+                          overlay.style.top = '0';
+                          overlay.style.left = '0';
+                          overlay.style.width = '100vw';
+                          overlay.style.height = '100vh';
+                          overlay.style.borderRadius = '0';
+                          overlay.style.background = '#F6F3EE';
+                        });
 
-                      setTimeout(() => {
-                        void navigate(`/projects/${project.id}`);
-                        // Give React a couple frames to render the project page, then fade the overlay out
                         setTimeout(() => {
-                          overlay.style.transition = 'opacity 0.35s ease';
-                          overlay.style.opacity = '0';
-                          setTimeout(() => overlay.remove(), 380);
-                        }, 80);
-                      }, 560);
-                    }}
-                    style={{
-                      background: '#4e7068',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '3px',
-                      padding: '9px 24px',
-                      fontFamily: 'Outfit, sans-serif',
-                      fontSize: '13px',
-                      fontWeight: 200,
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap',
-                      transition: 'background 0.2s',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#3d5a54')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = '#4e7068')}
-                  >
-                    Continue
-                  </button>
+                          void navigate(`/projects/${project.id}`);
+                          // Give React a couple frames to render the project page, then fade the overlay out
+                          setTimeout(() => {
+                            overlay.style.transition = 'opacity 0.35s ease';
+                            overlay.style.opacity = '0';
+                            setTimeout(() => overlay.remove(), 380);
+                          }, 80);
+                        }, 560);
+                      }}
+                      style={{
+                        background: '#4e7068',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '3px',
+                        padding: '9px 24px',
+                        fontFamily: 'Outfit, sans-serif',
+                        fontSize: '13px',
+                        fontWeight: 200,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        transition: 'background 0.2s',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = '#3d5a54')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = '#4e7068')}
+                    >
+                      Continue
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* Progress bar */}
-              <div
-                style={{
-                  height: '4px',
-                  background: '#c4c0b7',
-                  margin: '0 -24px',
-                  position: 'relative',
-                }}
-              >
+                {/* Progress bar */}
                 <div
                   style={{
-                    height: '100%',
-                    width: `${progress}%`,
-                    background: '#4B7263',
-                    transition: 'width 0.8s ease',
+                    height: '4px',
+                    background: '#c4c0b7',
+                    margin: '0 -24px',
+                    position: 'relative',
                   }}
-                />
+                >
+                  <div
+                    style={{
+                      height: '100%',
+                      width: `${progress}%`,
+                      background: '#4B7263',
+                      transition: 'width 0.8s ease',
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
 
         {/* Create new card */}
-        <button
-          data-animate-card
-          onClick={() => setShowPaymentModal(true)}
-          style={{
-            width: '100%',
-            background: '#b6c8c0',
-            borderRadius: '5px',
-            padding: '26px 28px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            border: 'none',
-            cursor: 'pointer',
-            marginBottom: '12px',
-            transition: 'background 0.2s',
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = '#A8BCB3')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = '#b6c8c0')}
-        >
-          <div style={{ textAlign: 'left' }}>
-            <div
-              style={{
-                fontFamily: 'Instrument Serif, serif',
-                fontSize: '26px',
-                fontWeight: 200,
-                color: '#1a1a1a',
-                letterSpacing: '-0.2px',
-                marginBottom: '4px',
-              }}
-            >
-              Create a new agreement
-            </div>
-            <div style={{ fontSize: '12.5px', fontWeight: 200, color: '#3a3a3a' }}>
-              One document per company.
-            </div>
-          </div>
-          <div
+        {!projectsLoading && (
+          <button
+            data-animate-card
+            onClick={() => setShowPaymentModal(true)}
             style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: '#dedad2',
+              width: '100%',
+              background: '#b6c8c0',
+              borderRadius: '5px',
+              padding: '26px 28px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '22px',
-              color: '#333',
-              flexShrink: 0,
+              justifyContent: 'space-between',
+              border: 'none',
+              cursor: 'pointer',
+              marginBottom: '12px',
               transition: 'background 0.2s',
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#A8BCB3')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#b6c8c0')}
           >
-            +
-          </div>
-        </button>
+            <div style={{ textAlign: 'left' }}>
+              <div
+                style={{
+                  fontFamily: 'Instrument Serif, serif',
+                  fontSize: '26px',
+                  fontWeight: 200,
+                  color: '#1a1a1a',
+                  letterSpacing: '-0.2px',
+                  marginBottom: '4px',
+                }}
+              >
+                Create a new agreement
+              </div>
+              <div style={{ fontSize: '12.5px', fontWeight: 200, color: '#3a3a3a' }}>
+                One document per company.
+              </div>
+            </div>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: '#dedad2',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '22px',
+                color: '#333',
+                flexShrink: 0,
+                transition: 'background 0.2s',
+              }}
+            >
+              +
+            </div>
+          </button>
+        )}
       </main>
 
       {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} />}

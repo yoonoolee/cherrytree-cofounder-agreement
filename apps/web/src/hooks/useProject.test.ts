@@ -38,22 +38,30 @@ describe('useProject', () => {
   });
 
   it.each([
-    ['a missing project', () => undefined],
+    ['a missing project', () => undefined, true],
     [
       'a malformed one',
       () => {
         throw new Error('invalid');
       },
+      false,
     ],
-  ])('reports %s as an error', (_, data) => {
+  ])('reports %s as an error', (_, data, missing) => {
     const { result } = renderHook(() => useProject('org_1'));
     emit(data);
-    expect(result.current).toEqual({ status: 'error' });
+    expect(result.current).toMatchObject({ status: 'error', missing });
   });
 
-  it('reports a listener error', () => {
+  it('reports a listener error, and a retry listens again until its first snapshot', () => {
     const { result } = renderHook(() => useProject('org_1'));
     act(() => mocks.listener?.error(new Error('permission-denied')));
-    expect(result.current).toEqual({ status: 'error' });
+    expect(result.current).toMatchObject({ status: 'error', missing: false });
+
+    act(() => {
+      if (result.current.status === 'error') result.current.retry();
+    });
+    expect(result.current).toEqual({ status: 'loading' });
+    emit(() => makeProject());
+    expect(result.current).toMatchObject({ status: 'ready' });
   });
 });

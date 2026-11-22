@@ -1,6 +1,6 @@
 # apps/agent
 
-The agent service: Python 3.13, FastAPI on Cloud Run, managed with [uv](https://docs.astral.sh/uv/). It runs the agents (the Advisor, and Drafting + Review as a background job; Editing next) and owns every agent write to Firestore. Design: [ARCHITECTURE.md](../../ARCHITECTURE.md).
+The agent service: Python 3.13, FastAPI on Cloud Run, managed with [uv](https://docs.astral.sh/uv/). It runs the agents (the Advisor, Drafting + Review as a background job, and Editing) and owns every agent write to Firestore. Design: [ARCHITECTURE.md](../../ARCHITECTURE.md).
 
 ## Layout
 
@@ -16,9 +16,10 @@ src/cherrytree_agent/
 ├── advisor/             # Advisor config, session start, turn and btw (run + atomic save), stream parser, transcript
 ├── drafting/            # Drafting config, job start (browser) and the job itself (Cloud Tasks worker)
 ├── review/              # Review config and its first-draft run
+├── editing/             # Editing agent: rewrites selected text and answers comment threads
 ├── draft/               # Shared draft context (template, transcript), the draft with block ids
 │                        # and the run's proposed edits/threads, client of the draftDocument function
-├── prompts/             # One system prompt per agent (advisor.md, drafting.md, review.md)
+├── prompts/             # One system prompt per agent (advisor.md, drafting.md, review.md, editing.md)
 └── content/             # interview.json, rag_seed.json, agreement-template.md
 tests/                   # pytest; Firestore tests run against the emulator
 Dockerfile               # The Cloud Run image (npm run deploy:agent:dev)
@@ -107,9 +108,9 @@ Where each agent's behavior and content live. Paths are under `src/cherrytree_ag
 
 | What | Where | Notes |
 |------|-------|-------|
-| System prompts | `prompts/advisor.md`, `drafting.md`, `review.md` | When and why to use each tool; tone; what never to state |
+| System prompts | `prompts/advisor.md`, `drafting.md`, `review.md`, `editing.md` | When and why to use each tool; tone; what never to state |
 | Tool descriptions | `tools/checklist.py` (Advisor), `tools/draft.py` (Review), `tools/rag.py`, `tools/project.py` | What a tool does and what each field means. Don't repeat the prompt |
-| Model, effort, tools per agent | `advisor/config.py`, `drafting/config.py`, `review/config.py` | `max_tokens` default in `llm/config.py` |
+| Model, effort, tools per agent | `advisor/config.py`, `drafting/config.py`, `review/config.py`, `editing/config.py` | `max_tokens` default in `llm/config.py` |
 | Web search and fetch | `tools/registry.py` (`web_search`, `web_fetch`) | Tool versions; fetch size limit |
 | Interview | `content/interview.json` | `opener` (the first question), then sections (`id`, `name`, `guide`), each with a `checklist` of `{item, guide?}`. Guides go to the Advisor's system prompt; the checklist starts each project, and the Advisor adds to it |
 | RAG content | `content/rag_seed.json` | One entry per chunk (`id`, `text`, `title`, `url`, `section`, `dateAdded`); searched by keyword in `tools/rag.py` until the vector store is chosen |

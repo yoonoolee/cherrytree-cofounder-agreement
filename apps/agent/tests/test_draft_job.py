@@ -141,6 +141,8 @@ async def test_starts_once_the_interview_is_finished(
     assert response.status_code == 200
     assert response.json() == {"draftStatus": "queued"}
     assert await draft_status(db) == "queued"
+    started = ((await project_ref(db, PROJECT_ID).get()).to_dict() or {})["draftStartedAt"]
+    assert started is not None
     assert fake_cloud_tasks == [PROJECT_ID]
 
     again = await client.post(DRAFT, headers=headers())
@@ -245,7 +247,6 @@ async def test_the_job_drafts_reviews_and_saves_the_draft_with_its_threads(
     draft = (await draft_ref(db, PROJECT_ID).get()).to_dict() or {}
     assert draft["version"] == 1
     assert draft["templateVersion"].startswith("agreement-template.md@")
-    assert draft["blockVersions"] == {"b0": 1, "b1": 1}
     assert draft["content"][1] == {
         "type": "p",
         "id": "b1",
@@ -257,8 +258,10 @@ async def test_the_job_drafts_reviews_and_saves_the_draft_with_its_threads(
     ).to_dict() or {}
     assert thread["status"] == "open"
     assert thread["createdBy"] == "agent"
-    assert [(m["author"], m["uid"], m["text"]) for m in thread["messages"]] == [
-        ("agent", None, "Is 50/50 final?")
+    anchored = next(b for b in draft["content"] if b["id"] == anchor.para)
+    assert thread["quote"] == "".join(leaf["text"] for leaf in anchored["children"])
+    assert [(m["author"], m["uid"], m["text"], m["suggestion"]) for m in thread["messages"]] == [
+        ("agent", None, "Is 50/50 final?", None)
     ]
 
 

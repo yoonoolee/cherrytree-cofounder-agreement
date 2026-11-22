@@ -34,7 +34,6 @@ const PROJECT = 'org_1';
 const project = {
   name: 'Acme',
   members: { [ADMIN]: { role: 'admin' } },
-  onboardingCompleted: { [ADMIN]: false },
   currentPlan: 'starter',
   payments: { cs_1: { plan: 'starter' } },
   draftStatus: null,
@@ -118,9 +117,8 @@ describe('projects: lifecycle', () => {
 });
 
 describe('projects: updating', () => {
-  it('allows the onboarding flag and lastOpened', async () => {
+  it('allows lastOpened', async () => {
     const ref = doc(asUser(ADMIN), 'projects', PROJECT);
-    await assertSucceeds(updateDoc(ref, { [`onboardingCompleted.${ADMIN}`]: true }));
     await assertSucceeds(updateDoc(ref, { lastOpened: serverTimestamp() }));
   });
 
@@ -152,7 +150,7 @@ describe('projects: agent data', () => {
     ['advisor', 'state'],
     ['turns', '00000'],
     ['draft', 'current'],
-    ['suggestions', 'sug_1'],
+    ['edits', 'edit_1'],
     ['threads', 'open_1'],
   ] as const;
 

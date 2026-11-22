@@ -149,6 +149,19 @@ describe('AdvisorView', () => {
     expect(replyBox()).toHaveValue('');
   });
 
+  it('says what the Advisor is doing until its answer starts', async () => {
+    const stream = controlledStream(mocks.streamAdvisorTurn, [
+      { type: 'green_highlight', highlight: { text: 'Oakland', start: 28, end: 35 } },
+      { type: 'done', index: 0, message: makeMessage({ answer: 'Nice.' }) },
+    ]);
+    render(ui());
+    sendReply(REPLY);
+
+    expect(screen.getByText('Reading your answer')).toBeInTheDocument();
+    expect(await screen.findByText('Highlighting the main points')).toBeInTheDocument();
+    await stream.release();
+  });
+
   it('moves an answered follow-up up under the reply, and settles its highlight green', () => {
     const when = makeFollowup('f_when', 'What month in 2023?', 'in 2023', { status: 'done' });
     const who = makeFollowup('f_who', 'Who suggested it?', 'climbing gym', { status: 'current' });

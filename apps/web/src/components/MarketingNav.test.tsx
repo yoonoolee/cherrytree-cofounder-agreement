@@ -22,8 +22,8 @@ function renderNav() {
 describe('MarketingNav', () => {
   it('routes the logo, product links, sign-in and CTA through the router', () => {
     renderNav();
-    fireEvent.click(screen.getByRole('button', { name: /^Equity Calculator/ }));
-    expect(screen.getByTestId('path')).toHaveTextContent('/equity-calculator');
+    fireEvent.click(screen.getAllByRole('button', { name: /^Attorney Review/ })[0]!);
+    expect(screen.getByTestId('path')).toHaveTextContent('/attorney');
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
     expect(screen.getByTestId('path')).toHaveTextContent('/login');
     fireEvent.click(screen.getByRole('button', { name: 'Get started' }));

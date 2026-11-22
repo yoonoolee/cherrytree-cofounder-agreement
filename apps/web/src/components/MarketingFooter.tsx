@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router';
 
 import { goToDashboard } from '../utils/goToDashboard.ts';
+import BrandMark from './BrandMark.tsx';
 
 function MarketingFooter() {
   const navigate = useNavigate();
@@ -10,9 +11,12 @@ function MarketingFooter() {
     <footer className="lp-footer">
       <div className="lp-footer-top">
         <div className="lp-footer-brand">
-          <button className="lp-footer-logo" onClick={() => navigate('/')}>
-            <img src="/images/cherries.png" alt="Cherrytree" width={20} height={20} />
-            <span className="lp-footer-logo-name">Cherrytree</span>
+          <button
+            className="lp-footer-logo"
+            onClick={() => navigate('/')}
+            aria-label="Cherrytree home"
+          >
+            <BrandMark small />
           </button>
           <span className="lp-footer-copy">© 2026 Cherrytree, LLC</span>
         </div>
@@ -22,9 +26,6 @@ function MarketingFooter() {
             <ul className="lp-footer-links">
               <li>
                 <button onClick={goDash}>Contract Creator</button>
-              </li>
-              <li>
-                <button onClick={() => navigate('/equity-calculator')}>Equity Calculator</button>
               </li>
               <li>
                 <button onClick={() => navigate('/pricing')}>Pricing</button>

@@ -11,6 +11,8 @@ const flag = (value: string | undefined): boolean => value === 'true';
 export const env = {
   isDev: import.meta.env.DEV,
   isProd: import.meta.env.PROD,
+  /** Test shortcuts, such as skipping to the end of the interview: the dev project's builds only. */
+  devTools: import.meta.env.MODE === 'dev',
 
   firebase: {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,

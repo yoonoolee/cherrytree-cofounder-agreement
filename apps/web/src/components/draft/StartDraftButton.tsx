@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { draftErrorMessage } from '../../constants/draft.ts';
+import { DRAFT_STATUS_COPY, draftErrorMessage } from '../../constants/draft.ts';
 import { AgentError, startDraft } from '../../lib/agent.ts';
 
 /**
@@ -29,12 +29,19 @@ function StartDraftButton({ projectId, label }: { projectId: string; label: stri
         type="button"
         onClick={() => void start()}
         disabled={pending}
-        className="rounded-full bg-ink px-6 py-2.5 text-sm text-paper disabled:opacity-50"
+        aria-busy={pending}
+        className="inline-flex items-center gap-2.5 rounded-full bg-ink px-6 py-2.5 text-sm text-paper transition-opacity hover:opacity-85 disabled:cursor-default disabled:opacity-80"
       >
-        {label}
+        {pending && (
+          <span
+            aria-hidden
+            className="size-3.5 animate-spin rounded-full border-2 border-paper/30 border-t-paper"
+          />
+        )}
+        {pending ? DRAFT_STATUS_COPY.starting : label}
       </button>
       {error && (
-        <p role="alert" className="text-sm text-danger">
+        <p role="alert" className="animate-fade text-sm text-danger">
           {error}
         </p>
       )}

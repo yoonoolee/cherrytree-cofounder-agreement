@@ -1,5 +1,5 @@
 {
-  "opener": "What are you building, and how far along is it?",
+  "opener": "Welcome! Let's get started. Tell me a bit about your company.",
   "sections": [
     {
       "id": "company",

@@ -3,7 +3,12 @@ is marked `queued` and a task is queued. From then on the Advisor is closed."""
 
 import logging
 
-from google.cloud.firestore import AsyncClient, AsyncTransaction, async_transactional
+from google.cloud.firestore import (
+    SERVER_TIMESTAMP,
+    AsyncClient,
+    AsyncTransaction,
+    async_transactional,
+)
 
 from cherrytree_agent.contracts.models import AdvisorState, Project
 from cherrytree_agent.firebase import advisor_state_ref, project_ref, read
@@ -27,7 +32,7 @@ async def start_draft(db: AsyncClient, project_id: str) -> None:
             raise DraftNotStartableError("A draft job already started")
         if state is None or not state.complete:
             raise DraftNotStartableError("The interview is not finished")
-        transaction.update(ref, {"draftStatus": "queued"})
+        transaction.update(ref, {"draftStatus": "queued", "draftStartedAt": SERVER_TIMESTAMP})
 
     await queue(db.transaction())
     try:

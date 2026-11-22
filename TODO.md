@@ -10,6 +10,7 @@ Outstanding tasks for the Cherrytree platform.
 - [ ] Delete the `MAKE_WEBHOOK_URL` secret on dev and prod: `firebase functions:secrets:destroy MAKE_WEBHOOK_URL --project <id>`.
 - [ ] Clerk webhook endpoints (dev and prod): unsubscribe `organization.created`, `organizationMembership.created` and `organizationMembership.deleted`; only `user.*` events are handled.
 - [ ] Delete the unused Google Maps key: GitHub secrets `DEV_GOOGLE_MAPS_API_KEY` / `PROD_GOOGLE_MAPS_API_KEY` and the key itself in Google Cloud.
+- [ ] Prod project documents still carry the removed `onboardingCompleted` field: delete it before the agent service ships to prod (its models reject unknown fields). Dev is done.
 - [ ] Delete the existing project documents on dev and prod: they predate `members` (old `admin`/`collaborators`/survey shape), so the rules deny them and the schema rejects them.
 - [x] Local files (git-ignored): delete `apps/functions/.env` (only a stale comment); remove the `VITE_GOOGLE_MAPS_API_KEY` lines from `apps/web/.env.dev` and `apps/web/.env.production`.
 
@@ -48,7 +49,7 @@ Anyone with Firebase CLI auth can run `firebase deploy --project cherrytree-cofo
 
 ### Prerender the marketing pages
 
-Crawlers and link-preview bots that don't run JavaScript see `index.html`'s defaults (title, description, canonical, og:*) on every route; `usePageMeta` only fixes them for browsers. Prerender the public routes (`/`, `/pricing`, `/about`, `/contact`, `/attorney`, `/equity-calculator`, `/privacy`, `/terms`) to static HTML at build time so each serves its own meta tags and content.
+Crawlers and link-preview bots that don't run JavaScript see `index.html`'s defaults (title, description, canonical, og:*) on every route; `usePageMeta` only fixes them for browsers. Prerender the public routes (`/`, `/pricing`, `/about`, `/contact`, `/attorney`, `/privacy`, `/terms`) to static HTML at build time so each serves its own meta tags and content.
 
 ---
 
@@ -57,7 +58,6 @@ Crawlers and link-preview bots that don't run JavaScript see `index.html`'s defa
 - [ ] **Langfuse keys expire 2027-11-09** (`cherrytree-dev` project: `cherrytree-local` in the keychain, `cherrytree-dev-run` in dev Secret Manager; `claude-mcp` has no expiry). Create new ones before then and replace them in the same places.
 
 - `sendContactMessage` is unauthenticated and un-rate-limited (App Check only). Add rate limiting before marketing pushes traffic at it.
-- `UserContext` has no error state when the Clerk → Firebase exchange fails: `loading` stays `true` forever (pinned by `UserContext.test.tsx`). Surface an error / retry.
 - Dependency advisories left open on purpose (both `npm audit --audit-level=high` gates pass):
   - `@grpc/grpc-js` is forced to 1.14.6 by the root `overrides`: `@firebase/firestore` pins `~1.9`, which has two high server-side advisories (GHSA-m9gg-hp2v-232j, GHSA-f596-whhp-79r4) that don't affect a client. Only Node-side Firestore (the rules tests) loads it. **Remove the override once Firebase moves its pin past 1.13.5.**
   - `uuid@9` under `firebase-admin → @google-cloud/storage@8 → gaxios@6` (functions) — Cloud Storage is unused; not fixable without overriding a transitive pin.
@@ -74,11 +74,11 @@ Crawlers and link-preview bots that don't run JavaScript see `index.html`'s defa
 
 Each file already has small, made-up sample data in its real format, so everything runs and is tested end to end. Replace the samples with real content. Where each file lives and its format: `apps/agent/README.md` → Tuning the agents.
 
-- [ ] **Interview:** `content/interview.json` has all 8 phases. Review the wording; the `opener` (the first question) is a placeholder.
+- [ ] **Interview:** `content/interview.json` has all 8 phases. Review the wording.
 - [ ] **Advisor system prompt and tool descriptions:** `prompts/advisor.md`, `tools/checklist.py`. Being reviewed; check the tone and wording.
 - [ ] **RAG content and store:** `content/rag_seed.json`. Sample: 5 chunks. Choose the vector store; it loads the same chunks.
 - [ ] **Agreement template:** `content/agreement-template.md`. Sample: a short generic two-founder agreement, 14 sections.
-- [ ] **Drafting and Review system prompts:** `prompts/drafting.md`, `prompts/review.md`, Claude's drafts from the Working Doc; review the instructions and tone. `editing.md` comes with the Editing Agent.
+- [ ] **Drafting and Review system prompts:** `prompts/drafting.md`, `prompts/review.md`, `prompts/editing.md`, Claude's drafts; review the instructions and tone.
 - [ ] **Disclaimer wording** (not a law firm / not legal advice / recommend attorney review) at session start, on every draft and at finalize. Sample: `DISCLAIMER` in `apps/web/src/constants/project.ts` (footer of every project screen). Other sample copy: `constants/advisor.ts` (end-of-interview text, error messages) and `constants/draft.ts` (draft status screen).
 - [ ] **Legal reviewer** for the template and disclaimers. Until then all legal text is unreviewed.
 - [ ] **State-specific rules** (non-compete by state, LLC vs C-corp language). Parking lot; where they load is not designed yet.

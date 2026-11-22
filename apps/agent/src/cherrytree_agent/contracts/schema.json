@@ -16,15 +16,6 @@
             "$ref": "#/$defs/Member"
           }
         },
-        "onboardingCompleted": {
-          "type": "object",
-          "propertyNames": {
-            "type": "string"
-          },
-          "additionalProperties": {
-            "type": "boolean"
-          }
-        },
         "currentPlan": {
           "type": "string",
           "enum": [
@@ -51,6 +42,17 @@
             }
           ]
         },
+        "draftStartedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time"
@@ -67,7 +69,6 @@
       "required": [
         "name",
         "members",
-        "onboardingCompleted",
         "currentPlan",
         "payments",
         "draftStatus",
@@ -794,17 +795,6 @@
           "minimum": -9007199254740991,
           "maximum": 9007199254740991
         },
-        "blockVersions": {
-          "type": "object",
-          "propertyNames": {
-            "type": "string"
-          },
-          "additionalProperties": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          }
-        },
         "content": {
           "type": "array",
           "items": {
@@ -819,7 +809,6 @@
       "required": [
         "templateVersion",
         "version",
-        "blockVersions",
         "content",
         "updatedAt"
       ],
@@ -844,6 +833,12 @@
         "text": {
           "type": "string"
         },
+        "suggestion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "sources": {
           "type": "array",
           "items": {
@@ -859,6 +854,7 @@
         "author",
         "uid",
         "text",
+        "suggestion",
         "sources",
         "createdAt"
       ],
@@ -882,6 +878,9 @@
             "agent"
           ]
         },
+        "quote": {
+          "type": "string"
+        },
         "messages": {
           "type": "array",
           "items": {
@@ -900,73 +899,45 @@
       "required": [
         "status",
         "createdBy",
+        "quote",
         "messages",
         "createdAt",
         "updatedAt"
       ],
       "additionalProperties": false
     },
-    "Edit": {
+    "AgentEdit": {
       "type": "object",
       "properties": {
-        "id": {
+        "uid": {
           "type": "string"
         },
-        "op": {
-          "type": "string",
-          "enum": [
-            "replace",
-            "insert_after",
-            "delete"
-          ]
-        },
-        "para": {
+        "quote": {
           "type": "string"
         },
-        "old": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "instruction": {
+          "type": "string"
         },
-        "new": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "replacement": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
         },
         "status": {
           "type": "string",
           "enum": [
-            "pending",
-            "accepted",
-            "rejected",
-            "withdrawn",
-            "stale"
+            "applied",
+            "undone"
           ]
-        }
-      },
-      "required": [
-        "id",
-        "op",
-        "para",
-        "old",
-        "new",
-        "status"
-      ],
-      "additionalProperties": false
-    },
-    "Suggestion": {
-      "type": "object",
-      "properties": {
-        "threadId": {
-          "type": "string"
         },
-        "edits": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Edit"
-          }
+        "durationMs": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
         },
         "createdAt": {
           "type": "string",
@@ -974,8 +945,14 @@
         }
       },
       "required": [
-        "threadId",
-        "edits",
+        "uid",
+        "quote",
+        "instruction",
+        "replacement",
+        "message",
+        "title",
+        "status",
+        "durationMs",
         "createdAt"
       ],
       "additionalProperties": false
@@ -1202,6 +1179,141 @@
       },
       "required": [
         "draftStatus"
+      ],
+      "additionalProperties": false
+    },
+    "SaveDraftRequest": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DraftBlock"
+          }
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "content",
+        "version"
+      ],
+      "additionalProperties": false
+    },
+    "SaveDraftResponse": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "version"
+      ],
+      "additionalProperties": false
+    },
+    "AgentEditRequest": {
+      "type": "object",
+      "properties": {
+        "quote": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10000
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "quote",
+        "instruction"
+      ],
+      "additionalProperties": false
+    },
+    "AgentEditResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "replacement": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "replacement",
+        "message",
+        "title"
+      ],
+      "additionalProperties": false
+    },
+    "CreateThreadRequest": {
+      "type": "object",
+      "properties": {
+        "threadId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{8,64}$"
+        },
+        "quote": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10000
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "threadId",
+        "quote",
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "ThreadReplyRequest": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "ThreadStatusRequest": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "resolved",
+            "deleted"
+          ]
+        }
+      },
+      "required": [
+        "status"
       ],
       "additionalProperties": false
     },

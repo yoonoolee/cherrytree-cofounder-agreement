@@ -5,14 +5,19 @@
  */
 import { z } from 'zod';
 
-import { draftBlockSchema, editSchema } from './domain/draft.ts';
+import { draftBlockSchema } from './domain/draft.ts';
 
 /**
  * One of the Review Agent's first-draft fixes, applied directly. `replace`: `old` (exactly once in
  * block `para`'s text) → `new`. `insert_after`: markdown `new` after block `para`. `delete`:
  * removes block `para`. Every fix targets the text as Drafting wrote it.
  */
-export const draftFixSchema = editSchema.pick({ op: true, para: true, old: true, new: true });
+export const draftFixSchema = z.object({
+  op: z.enum(['replace', 'insert_after', 'delete']),
+  para: z.string(),
+  old: z.string().nullable(),
+  new: z.string().nullable(),
+});
 export type DraftFix = z.infer<typeof draftFixSchema>;
 
 /** A Review Agent thread, anchored by a comment mark over block `para`. */

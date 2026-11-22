@@ -15,7 +15,12 @@ export const ADVISOR_COPY = {
   followupPlaceholder: 'Say as much as you want.',
   selectHint: 'Select to ask',
   btwPlaceholder: 'Ask a question…',
-  thinking: 'Thinking…',
+  /** While the Advisor works on a reply: before its highlights, then while they come in. */
+  thinking: { reading: 'Reading your answer', highlighting: 'Highlighting the main points' },
+  /** While a btw is answered. */
+  btwThinking: 'Looking into it',
+  loadError: "We couldn't load your conversation.",
+  loadErrorBody: 'Check your connection and try again. Your answers are saved.',
 };
 
 /** Shown once the Advisor ends the interview; `action` starts the draft. */

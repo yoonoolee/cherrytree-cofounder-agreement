@@ -1,5 +1,5 @@
-"""Draft tools for the Review and Editing agents: edits are proposals against the saved draft, and
-the Review Agent raises open items as threads. Nothing is applied during the run."""
+"""Draft tools for the Review Agent: fixes are proposals against the first draft, applied with it,
+and open items become comment threads. Nothing is applied during the run."""
 
 from pydantic import BaseModel, ConfigDict, Field
 

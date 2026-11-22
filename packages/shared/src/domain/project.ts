@@ -52,12 +52,12 @@ export const projectSchema = z.object({
   name: z.string(),
   /** Keyed by Clerk user id. A project has exactly one member, the purchaser, as `admin`. */
   members: z.record(z.string(), memberSchema),
-  /** Keyed by Clerk user id. */
-  onboardingCompleted: z.record(z.string(), z.boolean()),
   currentPlan: planSchema,
   /** Keyed by Stripe checkout session id. */
   payments: z.record(z.string(), paymentSchema),
   draftStatus: draftStatusSchema.nullable(),
+  /** When the latest draft job started (written by the agent service). Missing until the first. */
+  draftStartedAt: timestampSchema.nullable().optional(),
   createdAt: timestampSchema,
   lastUpdated: timestampSchema,
   lastOpened: timestampSchema,

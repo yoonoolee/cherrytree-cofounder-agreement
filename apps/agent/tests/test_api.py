@@ -1,6 +1,7 @@
 """The HTTP API against the Firestore emulator, with token verification and the model faked."""
 
 import json
+from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -10,6 +11,7 @@ from google.cloud.firestore import AsyncClient
 
 from cherrytree_agent.firebase import advisor_state_ref, project_ref
 from cherrytree_agent.rate_limit import AGENT_RUNS_PER_WINDOW
+from cherrytree_agent.settings import get_settings
 from tests.helpers import (
     ADMIN,
     PROJECT_ID,
@@ -29,6 +31,7 @@ from tests.helpers import (
 SESSION = f"/v1/projects/{PROJECT_ID}/advisor/session"
 TURNS = f"/v1/projects/{PROJECT_ID}/advisor/turns"
 BTW = f"/v1/projects/{PROJECT_ID}/advisor/btw"
+SKIP = f"/v1/projects/{PROJECT_ID}/advisor/skip"
 REPLY = "We met at a park in middle school. We talked about starting something for years."
 
 
@@ -125,6 +128,37 @@ async def test_starting_the_session_copies_the_checklist_once(
     await advisor_state_ref(db, PROJECT_ID).update({"turnCount": 3})
     again = await client.post(SESSION, headers=headers())
     assert again.json() == {"turnCount": 3}
+
+
+@pytest.fixture
+def dev_tools(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    monkeypatch.setenv("DEV_TOOLS", "true")
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
+
+
+async def test_skipping_ends_the_interview_with_the_answers_so_far(
+    client: httpx.AsyncClient, db: AsyncClient, dev_tools: None
+) -> None:
+    await client.post(SESSION, headers=headers())
+    before = await state(db)
+    response = await client.post(SKIP, headers=headers())
+    assert response.status_code == 204
+    after = await state(db)
+    assert after["complete"] is True
+    unchanged = {k: v for k, v in after.items() if k not in ("complete", "updatedAt")}
+    assert unchanged == {k: v for k, v in before.items() if k not in ("complete", "updatedAt")}
+
+    again = await client.post(SKIP, headers=headers())
+    assert again.status_code == 409
+
+
+async def test_skipping_does_not_exist_without_dev_tools(client: httpx.AsyncClient) -> None:
+    get_settings.cache_clear()
+    await client.post(SESSION, headers=headers())
+    response = await client.post(SKIP, headers=headers())
+    assert response.status_code == 404
 
 
 # ---------------------------------------------------------------------------

@@ -14,12 +14,84 @@
   --color-ink-muted: #6b6560;
   --color-ink-faint: #9a958c;
   --color-line: #e3dfd8;
+  --color-wash: #f3efe8;
+  --color-desk: #ebe6de;
+  --color-sheet: #fffefb;
+  --color-sheet-edge: #ddd8cf;
+  --color-mark: #e7efea;
+  --color-thread: #eef1f6;
   --color-accent: #4e7068;
   --color-kept: #bfd6c6;
   --color-kept-ink: #3d5e52;
   --color-needs: #efc3a8;
   --color-needs-ink: #c85a32;
   --color-danger: #a8402f;
+
+  /* Motion: entrances ease out (quick start, soft landing) and stay under half a second. */
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-rise: rise 420ms var(--ease-soft) both;
+  --animate-fade: fade 260ms ease-out both;
+  --animate-shimmer: shimmer 1.8s ease-in-out infinite;
+  --animate-progress: progress 1.9s var(--ease-soft) infinite;
+  --animate-dot: dot 1.2s ease-in-out infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: 100% 0;
+    }
+    to {
+      background-position: -100% 0;
+    }
+  }
+  @keyframes progress {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(260%);
+    }
+  }
+  @keyframes dot {
+    0%,
+    80%,
+    100% {
+      opacity: 0.25;
+    }
+    40% {
+      opacity: 1;
+    }
+  }
+}
+
+/* Text selected for the Cherrytree Agent stays marked while focus is in the agent box. */
+::highlight(draft-selection) {
+  background-color: var(--color-mark);
+}
+
+/* Reduced motion: entrances only fade, and looping decoration stops. Progress stays visible. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise {
+    animation-name: fade;
+  }
+  .animate-shimmer,
+  .animate-dot {
+    animation: none;
+  }
+  .animate-progress {
+    animation: none;
+    transform: none;
+  }
 }
 
 /* Clickable controls show the pointer cursor (Preflight's default is `default`). */
@@ -360,14 +432,6 @@ body {
   border: none;
   cursor: pointer;
   padding: 0;
-}
-.lp-nav-logo img {
-  object-fit: contain;
-}
-.lp-nav-logo-text {
-  font-family: 'Instrument Serif', serif;
-  font-size: 17px;
-  color: var(--lp-ink);
 }
 .lp-nav-links {
   display: flex;
@@ -2345,14 +2409,6 @@ body {
   cursor: pointer;
   padding: 0;
 }
-.lp-footer-logo img {
-  object-fit: contain;
-}
-.lp-footer-logo-name {
-  font-family: 'Instrument Serif', serif;
-  font-size: 16px;
-  color: var(--lp-ink);
-}
 .lp-footer-copy {
   font-size: 12px;
   font-weight: 300;
@@ -2570,189 +2626,6 @@ body {
 @media (max-width: 700px) {
   .lp-legal-section {
     padding: 10px 24px;
-  }
-}
-
-/* ── Equity calculator page ── */
-.lp-eq-section {
-  padding: 150px 24px 100px;
-}
-.lp-eq-wrap {
-  max-width: 600px;
-  margin: 0 auto;
-}
-.lp-eq-card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 48px;
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-}
-.lp-eq-hero {
-  text-align: center;
-  margin-bottom: 36px;
-}
-.lp-eq-form {
-  max-width: 420px;
-  margin: 0 auto;
-}
-.lp-eq-field-group {
-  margin-bottom: 22px;
-}
-.lp-eq-label {
-  display: block;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--lp-ink);
-  margin-bottom: 12px;
-}
-.lp-eq-name-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.lp-eq-name-row {
-  position: relative;
-}
-input.lp-eq-input[type='text'] {
-  width: 100%;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-family: 'Outfit', sans-serif;
-  border: 1.5px solid var(--lp-bg3);
-  border-radius: 8px;
-  background: #fff;
-  color: var(--lp-ink);
-  font-weight: 400;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
-  box-sizing: border-box;
-}
-input.lp-eq-input[type='text']:focus {
-  outline: none;
-  border-color: var(--lp-green);
-  box-shadow: 0 0 0 3px var(--lp-green-bg);
-}
-.lp-eq-remove-btn {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--lp-faint);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color 0.15s;
-  display: flex;
-}
-.lp-eq-remove-btn:hover {
-  color: var(--lp-muted);
-}
-.lp-eq-add-btn {
-  margin-top: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-}
-.lp-eq-back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 20px;
-  font-size: 13px;
-}
-.lp-eq-instructions {
-  margin-bottom: 20px;
-  padding: 14px 16px;
-  background: var(--lp-bg2);
-  border-radius: 10px;
-}
-.lp-eq-instructions p {
-  font-size: 13px;
-  font-weight: 300;
-  color: var(--lp-muted);
-  line-height: 1.6;
-  margin: 0;
-}
-.lp-eq-instructions strong {
-  font-weight: 500;
-  color: var(--lp-ink);
-}
-.lp-eq-bar-wrap {
-  padding: 24px 0;
-}
-.lp-eq-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(26, 26, 26, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
-}
-.lp-eq-modal {
-  background: #fff;
-  border-radius: 14px;
-  padding: 26px;
-  max-width: 420px;
-  width: 100%;
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.18);
-}
-.lp-eq-modal-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-}
-.lp-eq-modal-head h3 {
-  font-family: 'Instrument Serif', serif;
-  font-size: 20px;
-  font-weight: 400;
-  color: var(--lp-ink);
-  margin: 0;
-}
-.lp-eq-modal-close {
-  color: var(--lp-faint);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color 0.15s;
-  display: flex;
-}
-.lp-eq-modal-close:hover {
-  color: var(--lp-muted);
-}
-.lp-eq-modal-desc {
-  font-size: 13px;
-  font-weight: 300;
-  color: var(--lp-muted);
-  line-height: 1.6;
-  margin-bottom: 16px;
-}
-.lp-eq-modal-row {
-  display: flex;
-  gap: 8px;
-}
-input.lp-eq-modal-input[type='text'] {
-  flex: 1;
-  padding: 10px 12px;
-  font-size: 13px;
-  border: 1.5px solid var(--lp-bg3);
-  border-radius: 8px;
-  background: var(--lp-bg2);
-  color: var(--lp-muted);
-  min-width: 0;
-  width: auto;
-}
-@media (max-width: 600px) {
-  .lp-eq-section {
-    padding: 120px 16px 70px;
-  }
-  .lp-eq-card {
-    padding: 28px 20px;
   }
 }
 

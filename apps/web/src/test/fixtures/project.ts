@@ -18,7 +18,6 @@ export function makeProject(overrides: Partial<Project> = {}): Project {
   return {
     name: 'Acme',
     members: { [ADMIN_ID]: { role: 'admin' } },
-    onboardingCompleted: { [ADMIN_ID]: false },
     currentPlan: 'starter',
     payments: {},
     draftStatus: null,

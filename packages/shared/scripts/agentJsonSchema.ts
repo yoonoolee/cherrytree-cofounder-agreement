@@ -6,6 +6,9 @@
 import { z } from 'zod';
 
 import {
+  agentEditRequestSchema,
+  agentEditResponseSchema,
+  agentEditSchema,
   advisorBtwRequestSchema,
   advisorBtwTurnSchema,
   advisorMessageSchema,
@@ -24,7 +27,11 @@ import {
   draftSchema,
   draftStatusSchema,
   draftThreadAnchorSchema,
-  editSchema,
+  createThreadRequestSchema,
+  saveDraftRequestSchema,
+  saveDraftResponseSchema,
+  threadReplyRequestSchema,
+  threadStatusRequestSchema,
   checklistItemSchema,
   checklistSectionSchema,
   checklistStatusSchema,
@@ -40,7 +47,6 @@ import {
   rateLimitSchema,
   screenSchema,
   startDraftResponseSchema,
-  suggestionSchema,
   threadMessageSchema,
   threadSchema,
   transcriptEntrySchema,
@@ -80,8 +86,7 @@ const AGENT_SCHEMAS: Record<string, z.ZodType> = {
   Draft: draftSchema,
   ThreadMessage: threadMessageSchema,
   Thread: threadSchema,
-  Edit: editSchema,
-  Suggestion: suggestionSchema,
+  AgentEdit: agentEditSchema,
   DraftFix: draftFixSchema,
   DraftThreadAnchor: draftThreadAnchorSchema,
   DraftDocumentRequest: draftDocumentRequestSchema,
@@ -93,6 +98,13 @@ const AGENT_SCHEMAS: Record<string, z.ZodType> = {
   AdvisorBtwRequest: advisorBtwRequestSchema,
   AdvisorStreamEvent: advisorStreamEventSchema,
   StartDraftResponse: startDraftResponseSchema,
+  SaveDraftRequest: saveDraftRequestSchema,
+  SaveDraftResponse: saveDraftResponseSchema,
+  AgentEditRequest: agentEditRequestSchema,
+  AgentEditResponse: agentEditResponseSchema,
+  CreateThreadRequest: createThreadRequestSchema,
+  ThreadReplyRequest: threadReplyRequestSchema,
+  ThreadStatusRequest: threadStatusRequestSchema,
   // One class per event, e.g. `answer_delta` → AdvisorAnswerDeltaEvent.
   ...Object.fromEntries(
     advisorStreamEventSchema.options.map((event) => [
