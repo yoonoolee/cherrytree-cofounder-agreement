@@ -278,7 +278,7 @@
             "added_by_agent"
           ]
         },
-        "note": {
+        "answer": {
           "type": [
             "string",
             "null"
@@ -290,7 +290,7 @@
         "item",
         "status",
         "source",
-        "note"
+        "answer"
       ],
       "additionalProperties": false
     },
@@ -429,7 +429,7 @@
         "item": {
           "type": "string"
         },
-        "guide": {
+        "notes": {
           "type": "string"
         }
       },

@@ -30,7 +30,7 @@ def initial_state() -> AdvisorState:
                     item=item.item,
                     status="todo",
                     source="initial",
-                    note=None,
+                    answer=None,
                 )
                 for number, item in enumerate(section.checklist, start=1)
             ],
@@ -50,11 +50,11 @@ def initial_state() -> AdvisorState:
 
 
 def render_guides() -> str:
-    """Every section's guide and its items' guides, for the system prompt."""
+    """Every section's guide and its items' notes, for the system prompt."""
     parts = ["# Section guides"]
     for number, section in enumerate(INTERVIEW.sections, start=1):
         parts.append(f"## Section {number}: {section.name} [id: {section.id}]\n\n{section.guide}")
-        items = [f"- {item.item}: {item.guide}" for item in section.checklist if item.guide]
+        items = [f"- {item.item}: {item.notes}" for item in section.checklist if item.notes]
         if items:
-            parts.append("Checklist guides:\n" + "\n".join(items))
+            parts.append("Checklist notes:\n" + "\n".join(items))
     return "\n\n".join(parts)

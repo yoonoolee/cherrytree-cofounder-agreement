@@ -23,7 +23,7 @@ function SkipToEnd({ projectId }: { projectId: string }) {
       onClick={() => void skip()}
       disabled={state === 'working'}
       title="Dev only: end the interview with the answers so far"
-      className="rounded-full border border-dashed border-ink-faint px-3 py-1 text-[12px] text-ink-muted transition hover:border-ink hover:text-ink disabled:opacity-50"
+      className="rounded-full border border-dashed border-ink-faint px-3 py-1 text-[0.75rem] text-ink-muted transition hover:border-ink hover:text-ink disabled:opacity-50"
     >
       {state === 'working'
         ? 'Skipping…'

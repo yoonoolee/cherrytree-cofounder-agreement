@@ -112,7 +112,7 @@ Where each agent's behavior and content live. Paths are under `src/cherrytree_ag
 | Tool descriptions | `tools/checklist.py` (Advisor), `tools/draft.py` (Review), `tools/rag.py`, `tools/project.py` | What a tool does and what each field means. Don't repeat the prompt |
 | Model, effort, tools per agent | `advisor/config.py`, `drafting/config.py`, `review/config.py`, `editing/config.py` | `max_tokens` default in `llm/config.py` |
 | Web search and fetch | `tools/registry.py` (`web_search`, `web_fetch`) | Tool versions; fetch size limit |
-| Interview | `content/interview.json` | `opener` (the first question), then sections (`id`, `name`, `guide`), each with a `checklist` of `{item, guide?}`. Guides go to the Advisor's system prompt; the checklist starts each project, and the Advisor adds to it |
+| Interview | `content/interview.json` | `opener` (the first question), then sections (`id`, `name`, `guide`), each with a `checklist` of `{item, notes?}`. Section guides and item notes go to the Advisor's system prompt; the checklist starts each project, and the Advisor adds to it. Guides and notes apply from the next Advisor reply; the opener and checklist only to interviews started after the edit |
 | RAG content | `content/rag_seed.json` | One entry per chunk (`id`, `text`, `title`, `url`, `section`, `dateAdded`); searched by keyword in `tools/rag.py` until the vector store is chosen |
 | Agreement template | `content/agreement-template.md` | Bracketed fill-ins; unnumbered headings, cross-references by heading name. Each draft records its version (`agreement-template.md@<hash>`) |
 | UI copy | `apps/web/src/constants/project.ts` (`DISCLAIMER`), `advisor.ts`, `draft.ts` | Disclaimer, end-of-interview text, errors, draft status screen |

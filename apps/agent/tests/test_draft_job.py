@@ -94,7 +94,7 @@ async def finish_interview(client: httpx.AsyncClient, db: AsyncClient) -> None:
     for section in state["sections"]:
         for item in section["checklist"]:
             item["status"] = "done"
-    state["sections"][0]["checklist"][0]["note"] = "Avery and Sam split equity 50/50."
+    state["sections"][0]["checklist"][0]["answer"] = "Avery and Sam split equity 50/50."
     state["complete"] = True
     await ref.set(state)
 

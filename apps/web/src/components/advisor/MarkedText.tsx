@@ -27,7 +27,7 @@ export function NumberTag({
     <span
       aria-hidden="true"
       data-number-tag
-      className={`inline-flex items-center justify-center rounded-md font-ui leading-none font-semibold select-none ${size} ${color}`}
+      className={`inline-flex items-center justify-center rounded-md font-ui leading-none select-none ${size} ${color}`}
     >
       {number}
     </span>

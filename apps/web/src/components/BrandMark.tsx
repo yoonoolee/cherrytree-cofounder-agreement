@@ -10,7 +10,9 @@ function BrandMark({ small = false }: { small?: boolean }) {
         height={size}
         className="object-contain"
       />
-      <span className={`font-serif leading-none text-ink ${small ? 'text-base' : 'text-[17px]'}`}>
+      <span
+        className={`font-serif leading-none text-ink ${small ? 'text-base' : 'text-[1.0625rem]'}`}
+      >
         Cherrytree
       </span>
     </span>

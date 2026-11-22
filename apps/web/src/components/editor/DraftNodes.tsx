@@ -17,7 +17,7 @@ export function H1Element(props: PlateElementProps) {
   return (
     <PlateElement
       as="h1"
-      className="mb-6 font-serif text-[30px] leading-[1.15] tracking-[-0.02em]"
+      className="mb-6 font-ui text-[1.875rem] leading-[1.15] tracking-[-0.011em]"
       {...props}
     />
   );
@@ -27,14 +27,14 @@ export function H2Element(props: PlateElementProps) {
   return (
     <PlateElement
       as="h2"
-      className="mt-8 mb-3 font-serif text-[20px] leading-[1.25] tracking-[-0.02em]"
+      className="mt-8 mb-3 font-ui text-[1.25rem] leading-[1.25] tracking-[-0.011em]"
       {...props}
     />
   );
 }
 
 export function H3Element(props: PlateElementProps) {
-  return <PlateElement as="h3" className="mt-6 mb-2 font-medium" {...props} />;
+  return <PlateElement as="h3" className="mt-6 mb-2" {...props} />;
 }
 
 export function BlockquoteElement(props: PlateElementProps) {

@@ -207,29 +207,15 @@ describe('AdvisorView', () => {
 
     expect(screen.getByText('Co-workers often make strong cofounders.')).toBeInTheDocument();
     expect(
-      screen.getByText("We're good for this part. Click Next to move on."),
+      screen.getByText("That's all we need here. Click Next to continue."),
     ).toBeInTheDocument();
     expect(screen.queryByLabelText('Your answer')).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Next question' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     expect(
       screen.getByRole('heading', { name: 'Whose idea was the company?' }),
     ).toBeInTheDocument();
     expect(screen.queryByText('Co-workers often make strong cofounders.')).toBeNull();
-  });
-
-  it('labels a move into another section Next section', () => {
-    const move = makeMessage({
-      type: 'next_section',
-      question: 'What will each of you be responsible for?',
-      followupId: null,
-    });
-    setData({
-      state: withScreen(makeAdvisorState({ turnCount: 1 }), 'roles', 'What will each of you own?'),
-      turns: [makeTurn(0, { message: move })],
-    });
-    render(ui());
-    expect(screen.getByRole('button', { name: 'Next section' })).toBeInTheDocument();
   });
 
   it('shows sources collapsed under the follow-up, only as http(s) links', () => {

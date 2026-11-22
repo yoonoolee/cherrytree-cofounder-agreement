@@ -44,8 +44,11 @@ export const checklistItemSchema = z.object({
   item: z.string(),
   status: checklistStatusSchema,
   source: checklistSourceSchema,
-  /** What was settled, in the Advisor's words, or why it was skipped. */
-  note: z.string().nullable(),
+  /**
+   * The item's conclusion so far, in the Advisor's words: what was settled, what is still open
+   * (revisit), or why it was skipped.
+   */
+  answer: z.string().nullable(),
 });
 export type ChecklistItem = z.infer<typeof checklistItemSchema>;
 
@@ -58,8 +61,8 @@ export type ChecklistSection = z.infer<typeof checklistSectionSchema>;
 
 /**
  * The interview in the repo (`content/interview.json`). Its checklist is copied into
- * `AdvisorState.sections` when a project's first session opens; the guides go to the Advisor's
- * system prompt.
+ * `AdvisorState.sections` when a project's first session opens; the section guides and item notes
+ * go to the Advisor's system prompt.
  */
 export const interviewSchema = z.object({
   /** The first screen's question, shown before the Advisor has run. */
@@ -69,7 +72,7 @@ export const interviewSchema = z.object({
       id: z.string(),
       name: z.string(),
       guide: z.string(),
-      checklist: z.array(z.object({ item: z.string(), guide: z.string().optional() })),
+      checklist: z.array(z.object({ item: z.string(), notes: z.string().optional() })),
     }),
   ),
 });

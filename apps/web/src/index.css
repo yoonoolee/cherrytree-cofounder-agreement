@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@200;300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@200..400&family=Outfit:wght@200;300;400;500;600&display=swap');
 
 /* Scan from apps/web, not the working directory, so root-level Vitest runs see the classes. */
 @import 'tailwindcss' source('..');
@@ -7,9 +7,10 @@
   --font-sans: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Product UI tokens (the agent screens use only these): restyle here, not per component. */
+  /* The wordmark only (BrandMark); every other product screen uses font-ui. */
   --font-serif: 'Instrument Serif', Georgia, serif;
-  --font-ui: 'Outfit', sans-serif;
-  --color-paper: #f6f3ee;
+  --font-ui: 'Manrope', sans-serif;
+  --color-paper: #ffffff;
   --color-ink: #1a1a1a;
   --color-ink-muted: #6b6560;
   --color-ink-faint: #9a958c;
@@ -102,6 +103,12 @@
   }
 }
 
+/* Product screens (font-ui): one knob for their size. Their text is in rem, so this scales it all
+   proportionally; 100% is the original size. */
+:root:has(.font-ui) {
+  font-size: 87.5%;
+}
+
 /* Reduce overscroll bounce effect */
 html {
   overscroll-behavior-y: contain;
@@ -127,6 +134,22 @@ body {
 /* Default form control look. In the base layer and without !important, so a component's own
    classes or rules always override it. */
 @layer base {
+  /* Product screens (font-ui): one weight for everything, placeholders included. */
+  .font-ui {
+    font-weight: 200;
+  }
+  /* 10% wider gaps than Manrope's own (letters ~0.092em apart, a space 0.2em). Set on every
+     element because em spacing inherits as a fixed length; explicit tracking adds the same 0.009em. */
+  .font-ui,
+  .font-ui * {
+    letter-spacing: 0.009em;
+    word-spacing: 0.02em;
+  }
+  .font-ui ::placeholder {
+    font-family: inherit;
+    font-weight: inherit;
+  }
+
   /* Make all placeholders lighter */
   ::placeholder {
     color: #bbb;

@@ -2,16 +2,12 @@ import type { AgentErrorCode } from '../lib/agent.ts';
 
 /** The bottom box once a screen is covered; the button opens the next screen. */
 export const ADVISOR_MOVE_ON = {
-  text: "We're good for this part. Click Next to move on.",
-  next_question: 'Next question',
-  next_section: 'Next section',
+  text: "That's all we need here. Click Next to continue.",
+  button: 'Next',
 };
 
-/** The highlight legend in the bottom box. */
-export const ADVISOR_LEGEND = { kept: 'Kept', needs: 'Needs more' };
-
 export const ADVISOR_COPY = {
-  replyPlaceholder: 'Start anywhere. Say as much as you want.',
+  replyPlaceholder: 'The more you share, the better. Just brain dump.',
   followupPlaceholder: 'Say as much as you want.',
   selectHint: 'Select to ask',
   btwPlaceholder: 'Ask a question…',

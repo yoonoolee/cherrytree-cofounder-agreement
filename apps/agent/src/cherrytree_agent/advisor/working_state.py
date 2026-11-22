@@ -156,7 +156,7 @@ class AdvisorWorkingState:
                 item=item,
                 status="todo",
                 source="added_by_agent",
-                note=None,
+                answer=None,
             )
         )
 
@@ -171,20 +171,20 @@ class AdvisorWorkingState:
             )
         )
 
-    def set_status(self, item_id: str, status: ChecklistStatus, note: str | None) -> None:
-        """A checklist item's status and note, or the status of a follow-up on this screen."""
+    def set_status(self, item_id: str, status: ChecklistStatus, answer: str | None) -> None:
+        """A checklist item's status and answer, or the status of a follow-up on this screen."""
         self._refuse_in_btw()
         item = self._item(item_id)
         if item is not None:
             item.status = status
-            if note is not None:
-                item.note = note
+            if answer is not None:
+                item.answer = answer
             return
         followup = next((f for f in self.screen.followups if f.id == item_id), None)
         if followup is None:
             raise ChecklistError(f"Unknown id: {item_id} (follow-ups: this screen's only)")
-        if note is not None or status == "revisit":
-            raise ChecklistError("Notes and revisit are for checklist items only.")
+        if answer is not None or status == "revisit":
+            raise ChecklistError("Answers and revisit are for checklist items only.")
         followup.status = status
 
     def snapshot(self) -> "AdvisorWorkingState":
@@ -263,14 +263,14 @@ class AdvisorWorkingState:
 
 
 def render_checklist(sections: list[ChecklistSection]) -> str:
-    """The checklist as the agents read it: every item with its status and note."""
+    """The checklist as the agents read it: every item with its status and answer."""
     lines: list[str] = []
     for number, section in enumerate(sections, start=1):
         lines.append(f"Section {number}: {section.name} [id: {section.id}]")
         for item in section.checklist:
             lines.append(f"  [{item.status}] {item.item} [id: {item.id}]")
-            if item.note:
-                lines.append(f"      Note: {item.note}")
+            if item.answer:
+                lines.append(f"      Answer: {item.answer}")
     return "\n".join(lines)
 
 

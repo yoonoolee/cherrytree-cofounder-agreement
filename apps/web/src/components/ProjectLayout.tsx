@@ -34,7 +34,7 @@ function ProjectLayout({ children, nav, footer }: ProjectLayoutProps) {
       </main>
       <footer className="pointer-events-none sticky bottom-0 px-4 sm:px-14">
         {footer && <div className="pointer-events-auto mx-auto w-full max-w-282">{footer}</div>}
-        <p className="pointer-events-auto mx-auto w-full max-w-282 bg-paper py-2 text-[11px] font-light text-ink-faint">
+        <p className="pointer-events-auto mx-auto w-full max-w-282 bg-paper py-2 text-center text-[0.6875rem] text-ink-faint">
           {DISCLAIMER}
         </p>
       </footer>

@@ -26,6 +26,11 @@ Outstanding tasks for the Cherrytree platform.
 
 - [ ] `SKIP_PAYMENT` makes checkout create the project without Stripe, for testing on dev. Delete the flag (`apps/functions/src/config.ts`, both `apps/functions/.env.*` files), its branch at the top of `createCheckoutSession` (`apps/functions/src/stripe.ts`) and its test, then redeploy functions.
 
+### Dev-only test shortcuts
+
+- [ ] The interview's **Skip to the end** button is for testing on localhost and dev only. It shows only in dev builds (`env.devTools`), and its agent endpoint returns 404 unless `DEV_TOOLS=true` (set only in `apps/agent/.env.cherrytree-cofounder-agree-dev`). Keep `DEV_TOOLS` out of the prod agent settings.
+- [ ] **Use latest interview** button (ad hoc, for writing the interview content): moves a project's interview onto the edited `interview.json`, keeping its answers. Dev and local only, behind the same `DEV_TOOLS` / `env.devTools` gates. Delete when the content is done: `apps/agent/src/cherrytree_agent/devtools/`, its `/advisor/upgrade` route in `main.py`, `upgradeInterview` in `apps/web/src/lib/agent.ts`, `UseLatestInterview.tsx` and its line in `AdvisorView.tsx`.
+
 ### Stripe go-live (prod is on test mode today)
 
 The canonical account is "Cherrytree Technologies, LLC" (`acct_1Si69sEbFwh64Boe`). Its **test-mode** endpoint `cherrytree-prod-dev` points at prod's `stripeWebhook`, so every test-card purchase on dev also creates a project + Clerk org in prod. To go live:
@@ -75,6 +80,7 @@ Crawlers and link-preview bots that don't run JavaScript see `index.html`'s defa
 Each file already has small, made-up sample data in its real format, so everything runs and is tested end to end. Replace the samples with real content. Where each file lives and its format: `apps/agent/README.md` → Tuning the agents.
 
 - [ ] **Interview:** `content/interview.json` has all 8 phases. Review the wording.
+- [ ] **Keep existing interviews on the latest `interview.json`** (before launch): when the template changes, update every project's copy of it, keeping the answers recorded so far. Record the version each project's copy is on (like the draft's `templateVersion`). Needs: a stable `id` per item in `interview.json`, so a reworded item keeps its answer (matching on wording loses it); a server-side update run on deploy; and a decision on interviews that have ended or already have a draft. Replaces the ad hoc **Use latest interview** dev button.
 - [ ] **Advisor system prompt and tool descriptions:** `prompts/advisor.md`, `tools/checklist.py`. Being reviewed; check the tone and wording.
 - [ ] **RAG content and store:** `content/rag_seed.json`. Sample: 5 chunks. Choose the vector store; it loads the same chunks.
 - [ ] **Agreement template:** `content/agreement-template.md`. Sample: a short generic two-founder agreement, 14 sections.

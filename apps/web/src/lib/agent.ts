@@ -190,6 +190,11 @@ export async function skipInterview(projectId: string): Promise<void> {
   await post(`${advisorPath(projectId)}/skip`, {});
 }
 
+/** Ad hoc, dev and local only: moves the interview onto the current `interview.json`. */
+export async function upgradeInterview(projectId: string): Promise<void> {
+  await post(`${advisorPath(projectId)}/upgrade`, {});
+}
+
 // ---------------------------------------------------------------------------
 // The draft editor
 // ---------------------------------------------------------------------------

@@ -70,9 +70,9 @@ class ChecklistUpdate(BaseModel):
     status: Literal["todo", "revisit", "done", "skipped"] | None = Field(
         description="status: the new status. revisit: the user doesn't know yet."
     )
-    note: str | None = Field(
-        description="status, checklist item: what was settled, or why it was skipped. null keeps "
-        "the current note."
+    answer: str | None = Field(
+        description="status, checklist item: what was settled, what is still open (revisit), or "
+        "why it was skipped. null keeps the current answer."
     )
 
 
@@ -92,7 +92,7 @@ def _apply(state: AdvisorWorkingState, update: ChecklistUpdate) -> None:
     if update.op == "status":
         if update.status is None:
             raise ChecklistError("A status change needs a status.")
-        state.set_status(update.id, update.status, update.note)
+        state.set_status(update.id, update.status, update.answer)
     elif update.op == "add_item":
         if update.section is None or not update.text:
             raise ChecklistError("add_item needs section and text.")

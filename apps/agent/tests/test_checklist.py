@@ -31,7 +31,7 @@ REPLY = "we met at a park in middle school. we talked about starting something f
 
 
 def item(item_id: str) -> ChecklistItem:
-    return ChecklistItem(id=item_id, item=item_id, status="todo", source="initial", note=None)
+    return ChecklistItem(id=item_id, item=item_id, status="todo", source="initial", answer=None)
 
 
 def two_sections() -> AdvisorState:
@@ -92,7 +92,7 @@ def test_initial_state_has_every_item_to_do_and_the_opener_on_screen() -> None:
     first = INTERVIEW.sections[0]
     assert [i.id for i in state.sections[0].checklist][:2] == [f"{first.id}_1", f"{first.id}_2"]
     assert all(
-        (i.status, i.source, i.note) == ("todo", "initial", None)
+        (i.status, i.source, i.answer) == ("todo", "initial", None)
         for s in state.sections
         for i in s.checklist
     )
@@ -100,13 +100,13 @@ def test_initial_state_has_every_item_to_do_and_the_opener_on_screen() -> None:
     assert (state.complete, state.turn_count) == (False, 0)
 
 
-def test_the_guides_name_every_section_and_each_item_guide() -> None:
+def test_the_guides_name_every_section_and_each_item_note() -> None:
     guides = render_guides()
     for section in INTERVIEW.sections:
         assert section.guide in guides
         for entry in section.checklist:
-            if entry.guide:
-                assert f"- {entry.item}: {entry.guide}" in guides
+            if entry.notes:
+                assert f"- {entry.item}: {entry.notes}" in guides
 
 
 # ---------------------------------------------------------------------------
@@ -160,7 +160,7 @@ async def test_adds_follow_ups_on_one_highlight_and_finds_it_in_any_reply_on_scr
     assert all(f.status == "todo" for f in followups)
 
 
-async def test_adds_items_and_marks_them_with_notes() -> None:
+async def test_adds_items_and_marks_them_with_answers() -> None:
     state = working_state()
     result = await update_checklist(
         context(state),
@@ -173,14 +173,14 @@ async def test_adds_items_and_marks_them_with_notes() -> None:
     added = state.sections[1].checklist[-1]
     assert (added.id, added.source, added.status) == ("ip_prior", "added_by_agent", "todo")
     done = state.sections[0].checklist[0]
-    assert (done.status, done.note) == ("done", "Acme, AI scheduling for dentists.")
+    assert (done.status, done.answer) == ("done", "Acme, AI scheduling for dentists.")
     assert "[id: ip_prior]" in result
-    assert "Note: Not incorporated yet." in result
+    assert "Answer: Not incorporated yet." in result
 
 
-async def test_a_follow_up_status_takes_no_note() -> None:
+async def test_a_follow_up_status_takes_no_answer() -> None:
     state = working_state()
-    with pytest.raises(ToolError, match="Notes and revisit are for checklist items"):
+    with pytest.raises(ToolError, match="Answers and revisit are for checklist items"):
         await update_checklist(
             context(state),
             updates(followup_update("f_a", "middle school"), status_update("f_a", "done", "x")),
@@ -222,11 +222,11 @@ async def test_the_checklist_is_refused_in_a_btw() -> None:
         await update_checklist(context(state), updates(status_update("c_1", "done")))
 
 
-def test_the_checklist_shows_every_item_with_its_note() -> None:
+def test_the_checklist_shows_every_item_with_its_answer() -> None:
     state = working_state()
     state.set_status("c_1", "done", "Acme")
     rendered = render_checklist(state.sections)
-    assert "  [done] c_1 [id: c_1]\n      Note: Acme" in rendered
+    assert "  [done] c_1 [id: c_1]\n      Answer: Acme" in rendered
     assert "Section 2: The cofounders [id: people]" in rendered
 
 

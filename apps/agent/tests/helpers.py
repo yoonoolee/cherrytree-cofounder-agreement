@@ -88,7 +88,7 @@ def btw_json(answer: str) -> str:
 
 
 def _update(op: str, item_id: str, **fields: Any) -> dict[str, Any]:
-    empty = {"section": None, "text": None, "highlight": None, "status": None, "note": None}
+    empty = {"section": None, "text": None, "highlight": None, "status": None, "answer": None}
     return {"op": op, "id": item_id, **empty, **fields}
 
 
@@ -102,8 +102,8 @@ def item_update(item_id: str, section: str, text: str) -> dict[str, Any]:
     return _update("add_item", item_id, section=section, text=text)
 
 
-def status_update(item_id: str, status: str, note: str | None = None) -> dict[str, Any]:
-    return _update("status", item_id, status=status, note=note)
+def status_update(item_id: str, status: str, answer: str | None = None) -> dict[str, Any]:
+    return _update("status", item_id, status=status, answer=answer)
 
 
 type Step = BetaMessage | Callable[[], Any]

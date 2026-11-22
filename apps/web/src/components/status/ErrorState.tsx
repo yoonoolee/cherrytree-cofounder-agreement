@@ -11,8 +11,8 @@ interface ErrorStateProps {
 function ErrorState({ title, body, onRetry }: ErrorStateProps) {
   return (
     <div role="alert" className="flex min-h-[55vh] flex-1 flex-col justify-center">
-      <h1 className="animate-rise font-serif text-4xl sm:text-5xl">{title}</h1>
-      <p className="mt-4 max-w-xl animate-rise text-base font-light text-ink-muted [animation-delay:60ms]">
+      <h1 className="animate-rise font-ui text-4xl sm:text-5xl">{title}</h1>
+      <p className="mt-4 max-w-xl animate-rise text-base text-ink-muted [animation-delay:60ms]">
         {body}
       </p>
       <div className="mt-10 flex animate-rise items-center gap-6 [animation-delay:120ms]">
