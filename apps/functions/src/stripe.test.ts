@@ -338,7 +338,6 @@ describe('stripeWebhook', () => {
     expect(written).toEqual({
       name: 'Acme & Co',
       members: { [USER]: { role: 'admin' } },
-      onboardingCompleted: { [USER]: false },
       currentPlan: 'starter',
       payments: {
         cs_test_1: {

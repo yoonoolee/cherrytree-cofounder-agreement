@@ -4,9 +4,9 @@ import { timestampSchema } from '../time.ts';
 import { webSourceSchema } from './webSource.ts';
 
 /**
- * The agreement draft and its comment threads and suggestions, under `projects/{clerkOrgId}`.
- * Every document edit runs Plate's own code; the agent service saves the results, so none of
- * these documents is client-writable.
+ * The agreement draft, its comment threads and the agent's edits, under `projects/{clerkOrgId}`.
+ * The editor in the browser applies every change with Plate and saves through the agent service,
+ * so none of these documents is client-writable.
  */
 
 /** Drafting + Review background job, on the project. `null` until the Advisor finishes. */
@@ -17,7 +17,7 @@ export type DraftStatus = z.infer<typeof draftStatusSchema>;
 // Plate value
 // ---------------------------------------------------------------------------
 
-/** A Plate leaf. Marks (bold, comments, suggestions, ...) are extra keys owned by Plate. */
+/** A Plate leaf. Marks (bold, comment anchors, ...) are extra keys owned by Plate. */
 export interface PlateText {
   text: string;
   [key: string]: unknown;
@@ -33,7 +33,7 @@ export interface PlateElement {
 
 export type PlateNode = PlateElement | PlateText;
 
-/** A top-level block (heading, paragraph, ...): the unit agents edit, always with an id. */
+/** A top-level block (heading, paragraph, ...), always with an id. */
 export type DraftBlock = PlateElement & { id: string };
 
 export const plateTextSchema = z.looseObject({ text: z.string() });
@@ -65,12 +65,7 @@ export const draftSchema = z.object({
   templateVersion: z.string(),
   /** Bumped on every save; a save based on an older version is rejected. */
   version: z.number().int(),
-  /**
-   * Per-block version, keyed by block id, bumped by the server when a save changes the block.
-   * An agent run whose edited blocks changed during the run restarts.
-   */
-  blockVersions: z.record(z.string(), z.number().int()),
-  /** Plate value. Pending suggestions and thread anchors are marks inside the text. */
+  /** Plate value. Each comment thread is anchored by a comment mark inside the text. */
   content: z.array(draftBlockSchema),
   updatedAt: timestampSchema,
 });
@@ -92,6 +87,8 @@ export const threadMessageSchema = z.object({
   /** Clerk user id of the member who wrote it; `null` for agent messages. */
   uid: z.string().nullable(),
   text: z.string(),
+  /** An agent message's proposed wording for the commented text, applied by Approve. */
+  suggestion: z.string().nullable(),
   /** Web pages an agent reply used, shown as links. Empty for user messages. */
   sources: z.array(webSourceSchema),
   createdAt: timestampSchema,
@@ -103,6 +100,8 @@ export const threadSchema = z.object({
   status: threadStatusSchema,
   /** `agent` for the Review Agent's open items. */
   createdBy: authorSchema,
+  /** The commented text, as it read when the thread started. */
+  quote: z.string(),
   messages: z.array(threadMessageSchema),
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
@@ -110,39 +109,28 @@ export const threadSchema = z.object({
 export type Thread = z.infer<typeof threadSchema>;
 
 // ---------------------------------------------------------------------------
-// projects/{clerkOrgId}/suggestions/{suggestionId}
+// projects/{clerkOrgId}/edits/{editId}
 // ---------------------------------------------------------------------------
 
-/**
- * `replace`: `old` → `new` inside block `para`. `insert_after`: markdown `new` after block `para`.
- * `delete`: removes block `para`.
- */
-export const editOpSchema = z.enum(['replace', 'insert_after', 'delete']);
-export type EditOp = z.infer<typeof editOpSchema>;
+export const agentEditStatusSchema = z.enum(['applied', 'undone']);
+export type AgentEditStatus = z.infer<typeof agentEditStatusSchema>;
 
 /**
- * `accepted` / `rejected` by the user, `withdrawn` by the agent, `stale` when the user accepts a
- * conflicting edit.
+ * One rewrite the user asked the agent for. The editor applies `replacement` in place of `quote`
+ * at once; undoing it puts `quote` back.
  */
-export const editStatusSchema = z.enum(['pending', 'accepted', 'rejected', 'withdrawn', 'stale']);
-export type EditStatus = z.infer<typeof editStatusSchema>;
-
-export const editSchema = z.object({
-  /** Same id as the edit's suggestion marks in the draft. */
-  id: z.string(),
-  op: editOpSchema,
-  /** Block id the edit targets (`insert_after`: the block it follows). */
-  para: z.string(),
-  old: z.string().nullable(),
-  new: z.string().nullable(),
-  status: editStatusSchema,
-});
-export type Edit = z.infer<typeof editSchema>;
-
-/** The edits one agent run proposed in a thread, shown as tracked changes. */
-export const suggestionSchema = z.object({
-  threadId: z.string(),
-  edits: z.array(editSchema),
+export const agentEditSchema = z.object({
+  uid: z.string(),
+  quote: z.string(),
+  instruction: z.string(),
+  replacement: z.string(),
+  /** What the agent did, in one sentence. */
+  message: z.string(),
+  /** A short label for the change, such as "Smoothed the wording". */
+  title: z.string(),
+  status: agentEditStatusSchema,
+  /** How long the agent took. */
+  durationMs: z.number().int(),
   createdAt: timestampSchema,
 });
-export type Suggestion = z.infer<typeof suggestionSchema>;
+export type AgentEdit = z.infer<typeof agentEditSchema>;

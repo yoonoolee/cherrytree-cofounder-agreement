@@ -1,15 +1,18 @@
-"""The draft as the agents read it (each block's text with its id), and the edits and threads one
-run proposes against it.
+"""The draft as the agents read it (each block's text with its id), and the fixes and threads the
+Review Agent proposes against it.
 
-Proposals target the saved draft text, never another pending edit. A proposal that overlaps one of
-the run's pending edits replaces it (the older edit becomes `withdrawn`), so the pending edits never
-overlap and Plate can apply them all.
+Fixes target the saved draft text, never another pending fix. A fix that overlaps one of the run's
+pending fixes replaces it (the older one is withdrawn), so the pending fixes never overlap and Plate
+can apply them all.
 """
 
 from dataclasses import dataclass
+from typing import Literal
 from uuid import uuid4
 
-from cherrytree_agent.contracts.models import DraftBlock, DraftFix, Edit, PlateElement, PlateText
+from cherrytree_agent.contracts.models import DraftBlock, DraftFix, PlateElement, PlateText
+
+type FixOp = Literal["replace", "insert_after", "delete"]
 
 _HEADINGS = {f"h{level}": "#" * level for level in range(1, 7)}
 
@@ -41,6 +44,18 @@ def render_draft(blocks: list[DraftBlock]) -> str:
 
 class DraftEditError(ValueError):
     """A proposal that does not fit the draft. Nothing is changed."""
+
+
+@dataclass
+class Edit:
+    """A fix the agent proposed; `pending` until it is withdrawn."""
+
+    id: str
+    op: FixOp
+    para: str
+    old: str | None
+    new: str | None
+    status: Literal["pending", "withdrawn"] = "pending"
 
 
 @dataclass(frozen=True)
@@ -75,11 +90,10 @@ class WorkingDraft:
             return start, start + len(edit.old)
         return 0, len(text)
 
-    def _add(self, op: str, para: str, old: str | None, new: str | None) -> tuple[Edit, list[str]]:
-        edit = Edit.model_validate(
-            {"id": f"edit_{uuid4().hex[:8]}", "op": op, "para": para, "old": old, "new": new}
-            | {"status": "pending"}
-        )
+    def _add(
+        self, op: FixOp, para: str, old: str | None, new: str | None
+    ) -> tuple[Edit, list[str]]:
+        edit = Edit(id=f"edit_{uuid4().hex[:8]}", op=op, para=para, old=old, new=new)
         withdrawn: list[str] = []
         if op != "insert_after":
             start, end = self._span(edit)

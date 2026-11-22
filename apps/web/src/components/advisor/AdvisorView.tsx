@@ -6,13 +6,17 @@ import BottomBox, { type BottomBoxContent } from './BottomBox.tsx';
 import BtwPopup from './BtwPopup.tsx';
 import ScreenThread, { type SelectedText } from './ScreenThread.tsx';
 import SectionMenu from './SectionMenu.tsx';
+import SkipToEnd from './SkipToEnd.tsx';
 import StartDraftButton from '../draft/StartDraftButton.tsx';
 import ProjectLayout from '../ProjectLayout.tsx';
-import { ADVISOR_COMPLETE, advisorErrorMessage } from '../../constants/advisor.ts';
+import ErrorState from '../status/ErrorState.tsx';
+import ProjectSkeleton from '../status/ProjectSkeleton.tsx';
+import { ADVISOR_COMPLETE, ADVISOR_COPY, advisorErrorMessage } from '../../constants/advisor.ts';
 import { useAdvisor } from '../../hooks/useAdvisor.ts';
 import { useAdvisorBtw } from '../../hooks/useAdvisorBtw.ts';
 import { useAdvisorTurn } from '../../hooks/useAdvisorTurn.ts';
 import { AgentError } from '../../lib/agent.ts';
+import { env } from '../../lib/env.ts';
 import {
   advisorProgress,
   advisorView,
@@ -46,28 +50,19 @@ function AdvisorView({ projectId }: { projectId: string }) {
     setSelected(null);
   }, [btws]);
 
-  if (advisor.status === 'loading') {
-    return (
-      <ProjectLayout>
-        <p className="text-sm font-light text-ink-muted">Loading your conversation…</p>
-      </ProjectLayout>
-    );
-  }
+  if (advisor.status === 'loading') return <ProjectSkeleton />;
   if (advisor.status === 'error') {
     return (
       <ProjectLayout>
-        <p className="text-base">
-          {advisor.error instanceof AgentError
-            ? advisorErrorMessage(advisor.error.code, advisor.error.retryAfterSeconds)
-            : "We couldn't load your conversation."}
-        </p>
-        <button
-          type="button"
-          onClick={advisor.retry}
-          className="mt-4 text-sm text-accent underline"
-        >
-          Try again
-        </button>
+        <ErrorState
+          title={ADVISOR_COPY.loadError}
+          body={
+            advisor.error instanceof AgentError
+              ? advisorErrorMessage(advisor.error.code, advisor.error.retryAfterSeconds)
+              : ADVISOR_COPY.loadErrorBody
+          }
+          onRetry={advisor.retry}
+        />
       </ProjectLayout>
     );
   }
@@ -77,10 +72,18 @@ function AdvisorView({ projectId }: { projectId: string }) {
   if (!view || view.kind === 'complete') {
     return (
       <ProjectLayout>
-        {view?.answer && <p className="mb-8 text-lg whitespace-pre-line">{view.answer}</p>}
-        <h1 className="font-serif text-4xl sm:text-5xl">{ADVISOR_COMPLETE.title}</h1>
-        <p className="mt-4 text-base font-light text-ink-muted">{ADVISOR_COMPLETE.body}</p>
-        <StartDraftButton projectId={projectId} label={ADVISOR_COMPLETE.action} />
+        {view?.answer && (
+          <p className="mb-8 max-w-2xl animate-rise text-lg whitespace-pre-line">{view.answer}</p>
+        )}
+        <h1 className="animate-rise font-serif text-4xl sm:text-5xl [animation-delay:80ms]">
+          {ADVISOR_COMPLETE.title}
+        </h1>
+        <p className="mt-4 max-w-2xl animate-rise text-base font-light text-ink-muted [animation-delay:140ms]">
+          {ADVISOR_COMPLETE.body}
+        </p>
+        <div className="animate-rise [animation-delay:200ms]">
+          <StartDraftButton projectId={projectId} label={ADVISOR_COMPLETE.action} />
+        </div>
       </ProjectLayout>
     );
   }
@@ -101,7 +104,12 @@ function AdvisorView({ projectId }: { projectId: string }) {
   const last = screen.turns.at(-1);
   let box: BottomBoxContent | null = null;
   if (liveTurn) {
-    box = { kind: 'thinking', answer: liveTurn.answer };
+    const highlighting = liveTurn.greenHighlights.length + liveTurn.redHighlights.length > 0;
+    box = {
+      kind: 'thinking',
+      answer: liveTurn.answer,
+      status: highlighting ? ADVISOR_COPY.thinking.highlighting : ADVISOR_COPY.thinking.reading,
+    };
   } else if (moving && last) {
     box = {
       kind: 'moving',
@@ -138,10 +146,13 @@ function AdvisorView({ projectId }: { projectId: string }) {
   return (
     <ProjectLayout
       nav={
-        <SectionMenu
-          sectionName={screen.sectionName}
-          progress={advisorProgress(state, screen.sectionName)}
-        />
+        <div className="flex items-center gap-4">
+          {env.devTools && <SkipToEnd projectId={projectId} />}
+          <SectionMenu
+            sectionName={screen.sectionName}
+            progress={advisorProgress(state, screen.sectionName)}
+          />
+        </div>
       }
       footer={box && <BottomBox content={box}>{errorAlert}</BottomBox>}
     >

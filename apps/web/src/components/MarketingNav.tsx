@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router';
 
 import { goToDashboard } from '../utils/goToDashboard.ts';
+import BrandMark from './BrandMark.tsx';
 
 function MarketingNav() {
   const navigate = useNavigate();
@@ -8,9 +9,8 @@ function MarketingNav() {
 
   return (
     <nav className="lp-nav">
-      <button className="lp-nav-logo" onClick={() => navigate('/')}>
-        <img src="/images/cherries.png" alt="Cherrytree" width={22} height={22} />
-        <span className="lp-nav-logo-text">Cherrytree</span>
+      <button className="lp-nav-logo" onClick={() => navigate('/')} aria-label="Cherrytree home">
+        <BrandMark />
       </button>
       <ul className="lp-nav-links">
         <li className="lp-has-dd">
@@ -19,10 +19,6 @@ function MarketingNav() {
           </button>
           <div className="lp-dd">
             <div className="lp-dd-inner">
-              <button className="lp-dd-item" onClick={() => navigate('/equity-calculator')}>
-                <span className="lp-dd-name">Equity Calculator</span>
-                <span className="lp-dd-sub">Fair splits, instantly</span>
-              </button>
               <button className="lp-dd-item" onClick={goDash}>
                 <span className="lp-dd-name">Contract Creator</span>
                 <span className="lp-dd-sub">Guided agreement builder</span>

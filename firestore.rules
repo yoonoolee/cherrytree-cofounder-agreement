@@ -30,12 +30,10 @@ service cloud.firestore {
         return request.auth.uid in resource.data.members;
       }
 
-      // Per-user preferences the app writes from the browser. Everything else — members,
-      // payments, currentPlan, name, ... — is written server-side only.
+      // The only field the app writes from the browser. Everything else — members, payments,
+      // currentPlan, name, ... — is written server-side only.
       function onlyClientFields() {
-        return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'lastOpened', 'onboardingCompleted'
-        ]);
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastOpened']);
       }
 
       // Created by the Stripe webhook; never deleted from the client.
@@ -59,7 +57,7 @@ service cloud.firestore {
       match /draft/{docId} {
         allow read: if isMemberOf(projectId);
       }
-      match /suggestions/{suggestionId} {
+      match /edits/{editId} {
         allow read: if isMemberOf(projectId);
       }
       // Soft-deleted threads stay hidden; a list query must filter them out to be allowed.

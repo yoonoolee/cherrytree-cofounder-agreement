@@ -181,16 +181,20 @@ describe('UserProvider', () => {
     expect(read()).toMatchObject({ loading: false, displayName: 'Grace Hopper', userId: 'user_2' });
   });
 
-  it('stays loading when the Firebase exchange fails (pinned; no error state today)', async () => {
+  it('reports a failed Firebase exchange, and a retry signs in', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    mocks.callFunction.mockRejectedValue(new Error('app-check'));
-    renderProvider();
+    mocks.callFunction.mockRejectedValueOnce(new Error('app-check'));
+    const { result } = renderHook(() => useUser(), { wrapper: UserProvider });
 
-    await waitFor(() => expect(mocks.callFunction).toHaveBeenCalled());
-    await act(async () => {});
+    await waitFor(() => expect(result.current.authFailed).toBe(true));
+    expect(result.current.loading).toBe(false);
     expect(mocks.signInWithCustomToken).not.toHaveBeenCalled();
-    expect(mocks.onSnapshot).not.toHaveBeenCalled();
-    expect(read().loading).toBe(true);
+
+    act(() => result.current.retryAuth());
+    await waitFor(() =>
+      expect(mocks.signInWithCustomToken).toHaveBeenCalledWith({ name: 'auth' }, 'custom-token'),
+    );
+    expect(result.current.authFailed).toBe(false);
   });
 
   it('exposes the organization memberships untouched', () => {

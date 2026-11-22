@@ -23,7 +23,6 @@ describe('MarketingFooter', () => {
       expect(screen.getByTestId('path')).toHaveTextContent(path);
     };
     expectRoute('Contract Creator', '/dashboard');
-    expectRoute('Equity Calculator', '/equity-calculator');
     expectRoute('Pricing', '/pricing');
     expectRoute('Attorney', '/attorney');
     expectRoute('Privacy', '/privacy');

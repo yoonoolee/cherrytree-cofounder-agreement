@@ -28,19 +28,20 @@ export function useProjects(
       if (!currentUser || !orgsLoaded || authLoading) return;
 
       try {
-        const allProjects: ProjectWithId[] = [];
         const orgIds = userMemberships?.data?.map((m) => m.organization.id) || [];
-
-        for (const orgId of orgIds) {
-          try {
-            const projectDoc = await getDoc(projectRef(orgId));
-            if (projectDoc.exists()) {
-              allProjects.push({ id: projectDoc.id, ...projectDoc.data() });
+        // Every project is read in parallel.
+        const results = await Promise.all(
+          orgIds.map(async (orgId) => {
+            try {
+              const projectDoc = await getDoc(projectRef(orgId));
+              return projectDoc.exists() ? { id: projectDoc.id, ...projectDoc.data() } : null;
+            } catch (err) {
+              console.error(`Error fetching project ${orgId}:`, (err as Error).message);
+              return null;
             }
-          } catch (err) {
-            console.error(`Error fetching project ${orgId}:`, (err as Error).message);
-          }
-        }
+          }),
+        );
+        const allProjects = results.filter((p): p is ProjectWithId => p !== null);
 
         // Sort by lastOpened (most recent first)
         allProjects.sort((a, b) => {

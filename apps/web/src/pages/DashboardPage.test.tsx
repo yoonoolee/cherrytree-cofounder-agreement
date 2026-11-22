@@ -12,6 +12,8 @@ const mocks = vi.hoisted(() => ({
       firstName: string | null;
     } | null,
     loading: false,
+    authFailed: false,
+    retryAuth: vi.fn(),
     userMemberships: undefined,
     orgsLoaded: true,
   },
@@ -84,7 +86,6 @@ function renderDashboard() {
 
 const path = () => screen.getByTestId('path').textContent;
 const cards = () => Array.from(document.querySelectorAll<HTMLElement>('[data-card]'));
-const spinner = () => document.querySelector('.animate-spin');
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -93,6 +94,8 @@ beforeEach(() => {
   FakeIntersectionObserver.instances = [];
   mocks.user.currentUser = { id: 'user_admin', firstName: 'Ada' };
   mocks.user.loading = false;
+  mocks.user.authFailed = false;
+  mocks.user.retryAuth = vi.fn();
   mocks.projects = { projects: [], loading: false };
   mocks.openUserProfile = vi.fn();
   mocks.paymentModalProps = null;
@@ -104,18 +107,26 @@ afterEach(() => {
 });
 
 describe('DashboardPage', () => {
-  it('shows only a spinner while the session or the projects are loading', () => {
+  it('shows the page with card placeholders while the session or the projects load', () => {
     mocks.user.loading = true;
     const { unmount } = renderDashboard();
-    expect(spinner()).toBeInTheDocument();
-    expect(screen.queryByText(/Welcome back/)).toBeNull();
+    expect(screen.getByRole('status')).toHaveTextContent('Loading your agreements');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Welcome back, Ada.');
+    expect(screen.queryByText(/Create a new agreement/)).toBeNull();
     unmount();
 
     mocks.user.loading = false;
     mocks.projects = { projects: [], loading: true };
     renderDashboard();
-    expect(spinner()).toBeInTheDocument();
-    expect(screen.queryByText(/Welcome back/)).toBeNull();
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  it('offers a retry when signing in fails', () => {
+    mocks.user.authFailed = true;
+    renderDashboard();
+    expect(screen.getByRole('heading', { name: "We couldn't sign you in." })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(mocks.user.retryAuth).toHaveBeenCalled();
   });
 
   it('greets the user by first name, falling back to "there"', () => {
@@ -234,18 +245,12 @@ describe('DashboardPage', () => {
     expect(screen.queryByTestId('payment-modal')).toBeNull();
   });
 
-  it('fades the heading in and reveals cards as they scroll into view, staggered', () => {
+  it('reveals cards as they scroll into view, staggered', () => {
     mocks.projects = { projects: [project({ id: 'a' }), project({ id: 'b' })], loading: false };
     renderDashboard();
-    const heading = screen.getByRole('heading', { level: 1 });
     const animated = Array.from(document.querySelectorAll<HTMLElement>('[data-animate-card]'));
     expect(animated).toHaveLength(3); // two cards + the create button
-    expect(heading.style.opacity).toBe('0');
     expect(animated.every((el) => el.style.opacity === '0')).toBe(true);
-
-    act(() => vi.advanceTimersByTime(60));
-    expect(heading.style.opacity).toBe('1');
-    expect(heading.style.transform).toBe('translateY(0)');
 
     const [observer] = FakeIntersectionObserver.instances;
     expect(observer?.options).toEqual({ threshold: 0.05 });

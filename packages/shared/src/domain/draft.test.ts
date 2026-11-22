@@ -1,13 +1,12 @@
 import { z } from 'zod';
 
-import { draftSchema, suggestionSchema, threadSchema } from './draft.ts';
+import { agentEditSchema, draftSchema, threadSchema } from './draft.ts';
 
 const timestamp = { toDate: () => new Date(0), toMillis: () => 0 };
 
 const draft = {
   templateVersion: '0.1.0',
   version: 4,
-  blockVersions: { blk_1: 2 },
   content: [
     {
       type: 'p',
@@ -39,15 +38,17 @@ describe('draftSchema', () => {
 });
 
 describe('threadSchema', () => {
-  it('accepts user and agent messages', () => {
+  it('accepts user and agent messages, an agent one with suggested wording', () => {
     const thread = {
       status: 'open',
       createdBy: 'agent',
+      quote: 'Each founder vests over four years',
       messages: [
         {
           author: 'agent',
           uid: null,
           text: 'The vesting terms conflict.',
+          suggestion: null,
           sources: [],
           createdAt: timestamp,
         },
@@ -55,6 +56,15 @@ describe('threadSchema', () => {
           author: 'user',
           uid: 'user_1',
           text: 'Use four years.',
+          suggestion: null,
+          sources: [],
+          createdAt: timestamp,
+        },
+        {
+          author: 'agent',
+          uid: null,
+          text: 'Here is the wording:',
+          suggestion: 'Each Founder vests over four years.',
           sources: [],
           createdAt: timestamp,
         },
@@ -67,30 +77,21 @@ describe('threadSchema', () => {
   });
 });
 
-describe('suggestionSchema', () => {
-  it('accepts each edit op and rejects an unknown status', () => {
+describe('agentEditSchema', () => {
+  it('accepts an applied rewrite and rejects an unknown status', () => {
     const edit = {
-      id: 'e1',
-      op: 'replace',
-      para: 'blk_1',
-      old: 'four',
-      new: 'three',
-      status: 'pending',
-    };
-    const suggestion = {
-      threadId: 'c1',
-      edits: [
-        edit,
-        { ...edit, id: 'e2', op: 'insert_after', old: null, new: '## Vesting' },
-        { ...edit, id: 'e3', op: 'delete', old: null, new: null },
-      ],
+      uid: 'user_1',
+      quote: 'four years',
+      instruction: 'make it plainer',
+      replacement: '4 years',
+      message: 'I made it plainer.',
+      title: 'Smoothed the wording',
+      status: 'applied',
+      durationMs: 2400,
       createdAt: timestamp,
     };
-    expect(suggestionSchema.parse(suggestion)).toEqual(suggestion);
-    expect(
-      suggestionSchema.safeParse({ ...suggestion, edits: [{ ...edit, status: 'applied' }] })
-        .success,
-    ).toBe(false);
+    expect(agentEditSchema.parse(edit)).toEqual(edit);
+    expect(agentEditSchema.safeParse({ ...edit, status: 'pending' }).success).toBe(false);
   });
 });
 

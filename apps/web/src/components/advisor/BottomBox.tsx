@@ -3,15 +3,17 @@ import { ADVISOR_REPLY_MAX_LENGTH, type AdvisorMessage } from '@cherrytree/share
 
 import { NumberTag } from './MarkedText.tsx';
 import SourceLinks from './SourceLinks.tsx';
+import Working from '../status/Working.tsx';
 import { ADVISOR_COPY, ADVISOR_LEGEND, ADVISOR_MOVE_ON } from '../../constants/advisor.ts';
 
 /**
- * - `thinking`: the Advisor is writing; its answer shows as it streams.
+ * - `thinking`: the Advisor is working: `status` until its answer starts, then the answer as it
+ *   streams.
  * - `followup`: the follow-up to answer, under the Advisor's answer, with the reply input.
  * - `moving`: the screen is covered; Next opens the next one.
  */
 export type BottomBoxContent =
-  | { kind: 'thinking'; answer: string }
+  | { kind: 'thinking'; answer: string; status: string }
   | {
       kind: 'followup';
       message: AdvisorMessage;
@@ -62,14 +64,14 @@ function FollowupForm(content: Extract<BottomBoxContent, { kind: 'followup' }>) 
       <div className="mb-4 text-[22px] leading-[1.35]" aria-live="polite">
         <Answer text={content.message.answer} />
         {content.question && (
-          <h2 className="font-normal">
+          <h2 className="animate-rise font-normal [animation-delay:60ms]">
             {content.number !== undefined && <NumberTag number={content.number} large />}
             {content.question}
           </h2>
         )}
         <Sources message={content.message} />
       </div>
-      <div className="flex items-center gap-4 border-b border-line pb-2.5 transition-colors focus-within:border-ink">
+      <div className="flex animate-rise items-center gap-4 border-b border-line pb-2.5 transition-colors [animation-delay:120ms] focus-within:border-ink">
         <label htmlFor="advisor-followup-reply" className="sr-only">
           Your answer
         </label>
@@ -100,14 +102,14 @@ function FollowupForm(content: Extract<BottomBoxContent, { kind: 'followup' }>) 
 /** The panel pinned at the bottom of a screen: what the Advisor says or asks next. */
 function BottomBox({ content, children }: { content: BottomBoxContent; children?: ReactNode }) {
   return (
-    <div className="rounded-2xl bg-paper px-5 py-5.5 shadow-[0_12px_40px_rgb(45_42_34/12%)] sm:px-7">
+    <div className="animate-rise rounded-2xl bg-paper px-5 py-5.5 shadow-[0_12px_40px_rgb(45_42_34/12%)] sm:px-7">
       <Legend />
       {content.kind === 'thinking' && (
         <div className="text-[22px] leading-[1.35]" aria-live="polite" aria-busy>
           {content.answer ? (
-            <p className="whitespace-pre-line">{content.answer}</p>
+            <p className="animate-fade whitespace-pre-line">{content.answer}</p>
           ) : (
-            <p className="text-base text-ink-muted">{ADVISOR_COPY.thinking}</p>
+            <Working status={content.status} />
           )}
         </div>
       )}
@@ -117,12 +119,12 @@ function BottomBox({ content, children }: { content: BottomBoxContent; children?
           <div className="min-w-0 text-[22px] leading-[1.3]" aria-live="polite">
             <Answer text={content.message.answer} />
             <SourceLinks sources={content.message.sources} />
-            <p>{ADVISOR_MOVE_ON.text}</p>
+            <p className="animate-rise [animation-delay:60ms]">{ADVISOR_MOVE_ON.text}</p>
           </div>
           <button
             type="button"
             onClick={content.onNext}
-            className="shrink-0 self-start rounded-lg bg-accent px-6 py-2.5 sm:self-auto text-[13.5px] font-medium text-paper transition hover:-translate-y-px hover:opacity-90"
+            className="shrink-0 animate-rise self-start rounded-lg bg-accent px-6 py-2.5 text-[13.5px] font-medium text-paper transition hover:-translate-y-px hover:opacity-90 [animation-delay:160ms] sm:self-auto"
           >
             {content.message.type === 'next_section'
               ? ADVISOR_MOVE_ON.next_section

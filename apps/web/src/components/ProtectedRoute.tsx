@@ -1,11 +1,25 @@
 import type { ReactNode } from 'react';
-import { Show, RedirectToSignIn } from '@clerk/react';
+import { ClerkLoaded, ClerkLoading, RedirectToSignIn, Show } from '@clerk/react';
 
-function ProtectedRoute({ children }: { children: ReactNode }) {
+interface ProtectedRouteProps {
+  children: ReactNode;
+  /** Shown while Clerk loads, before it knows whether anyone is signed in. */
+  loading?: ReactNode;
+}
+
+function ProtectedRoute({
+  children,
+  loading = <div className="min-h-screen bg-paper" />,
+}: ProtectedRouteProps) {
   return (
-    <Show when="signed-in" fallback={<RedirectToSignIn />}>
-      {children}
-    </Show>
+    <>
+      <ClerkLoading>{loading}</ClerkLoading>
+      <ClerkLoaded>
+        <Show when="signed-in" fallback={<RedirectToSignIn />}>
+          {children}
+        </Show>
+      </ClerkLoaded>
+    </>
   );
 }
 

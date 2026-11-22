@@ -11,6 +11,7 @@ import {
   getFirestore,
   orderBy,
   query,
+  where,
   type DocumentReference,
   type Query,
 } from 'firebase/firestore';
@@ -19,12 +20,18 @@ import { initializeAppCheck, ReCaptchaV3Provider, type AppCheck } from 'firebase
 import {
   advisorStateSchema,
   advisorTurnSchema,
+  agentEditSchema,
+  draftSchema,
+  threadSchema,
   projectSchema,
   proWaitlistSignupSchema,
   userDocSchema,
   type AdvisorState,
   type AdvisorTurn,
+  type AgentEdit,
+  type Draft,
   type Project,
+  type Thread,
   type UserDoc,
 } from '@cherrytree/shared';
 
@@ -85,6 +92,25 @@ export const advisorTurnsQuery = (projectId: string): Query<AdvisorTurn> =>
       schemaConverter(advisorTurnSchema),
     ),
     orderBy('index'),
+  );
+/** `projects/{clerkOrgId}/draft/current` — saved only through the agent service. */
+export const draftRef = (projectId: string): DocumentReference<Draft> =>
+  doc(db, 'projects', projectId, 'draft', 'current').withConverter(schemaConverter(draftSchema));
+/**
+ * `projects/{clerkOrgId}/threads` that are not deleted (the rules allow no other list), oldest
+ * first — written only by the agent service.
+ */
+export const threadsQuery = (projectId: string): Query<Thread> =>
+  query(
+    collection(db, 'projects', projectId, 'threads').withConverter(schemaConverter(threadSchema)),
+    where('status', 'in', ['open', 'resolved']),
+    orderBy('createdAt'),
+  );
+/** `projects/{clerkOrgId}/edits`, oldest first — written only by the agent service. */
+export const agentEditsQuery = (projectId: string): Query<AgentEdit> =>
+  query(
+    collection(db, 'projects', projectId, 'edits').withConverter(schemaConverter(agentEditSchema)),
+    orderBy('createdAt'),
   );
 /** `proWaitlist` — append-only from the client (`addDoc`). */
 export const proWaitlist = collection(db, 'proWaitlist').withConverter(

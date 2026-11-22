@@ -8,7 +8,6 @@ const { stub } = vi.hoisted(() => ({
   stub: (name: string) => ({ default: () => <div data-testid="page">{name}</div> }),
 }));
 vi.mock('./pages/LandingPage', () => stub('LandingPage'));
-vi.mock('./pages/EquityCalculatorPage', () => stub('EquityCalculatorPage'));
 vi.mock('./pages/AttorneyPage', () => stub('AttorneyPage'));
 vi.mock('./pages/PricingPage', () => stub('PricingPage'));
 vi.mock('./pages/AboutPage', () => stub('AboutPage'));
@@ -37,7 +36,6 @@ const isProtected = () => screen.queryByTestId('protected') !== null;
 describe('App', () => {
   it.each([
     ['/', 'LandingPage'],
-    ['/equity-calculator', 'EquityCalculatorPage'],
     ['/attorney', 'AttorneyPage'],
     ['/pricing', 'PricingPage'],
     ['/about', 'AboutPage'],

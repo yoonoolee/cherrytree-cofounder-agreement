@@ -14,16 +14,13 @@ export const DRAFT_STATUS_COPY = {
     title: 'Writing your draft…',
     body: 'This takes a few minutes. You can close this page; your draft keeps going and will be here when you come back.',
   },
-  // Placeholder until the draft editor exists.
-  ready: {
-    title: 'Your draft is ready.',
-    body: 'The editor to read and work on it is coming next.',
-  },
   failed: {
     title: "We couldn't write your draft.",
     body: 'Your answers are saved. Try again.',
     action: 'Try again',
   },
+  /** On the button while the draft is being started. */
+  starting: 'Starting…',
 };
 
 /** What the user sees when starting the draft fails. */

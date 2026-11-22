@@ -28,7 +28,7 @@ function AskView({ question, value, onChange, onSubmit }: AskViewProps) {
   return (
     <form onSubmit={submit} className="flex min-h-[55vh] flex-1 flex-col justify-center">
       <h1
-        className="mb-9 text-4xl leading-[1.1] font-normal tracking-[-0.015em] sm:text-[64px]"
+        className="mb-9 animate-rise text-4xl leading-[1.1] font-normal tracking-[-0.015em] sm:text-[64px]"
         style={{ viewTransitionName: 'advisor-question' }}
       >
         {question}
@@ -44,16 +44,10 @@ function AskView({ question, value, onChange, onSubmit }: AskViewProps) {
         maxLength={ADVISOR_REPLY_MAX_LENGTH}
         placeholder={ADVISOR_COPY.replyPlaceholder}
         autoFocus
-        className="field-sizing-content min-h-9.5 w-full resize-none border-b border-line bg-transparent pb-4 text-[19px] leading-[1.65] transition-colors outline-none placeholder:font-light placeholder:text-ink-faint focus:border-ink"
+        className="field-sizing-content min-h-9.5 w-full animate-rise resize-none border-b border-line bg-transparent pb-4 text-[19px] leading-[1.65] transition-colors outline-none [animation-delay:90ms] placeholder:font-light placeholder:text-ink-faint focus:border-ink"
         style={{ viewTransitionName: 'advisor-reply' }}
       />
-      <div className="mt-5 flex items-center justify-between">
-        <p className="flex items-center gap-2 text-[12.5px] text-ink-muted">
-          <kbd className="rounded bg-[#eceae3] px-2 py-0.75 font-ui text-[11px] font-medium text-[#555]">
-            Enter
-          </kbd>{' '}
-          to send
-        </p>
+      <div className="mt-5 flex animate-rise justify-end [animation-delay:150ms]">
         <button
           type="submit"
           disabled={!canSend}

@@ -25,7 +25,7 @@ from cherrytree_agent.contracts.models import (
 )
 from cherrytree_agent.draft.context import TEMPLATE_VERSION, DraftContext, load_draft_context
 from cherrytree_agent.draft.plate import DraftDocument
-from cherrytree_agent.draft.working import NewThread
+from cherrytree_agent.draft.working import NewThread, node_text
 from cherrytree_agent.drafting.config import DRAFTING
 from cherrytree_agent.firebase import draft_ref, project_ref, read, thread_ref, to_firestore
 from cherrytree_agent.llm.loop import CallModel, RefusalError, run_agent
@@ -102,18 +102,18 @@ async def _save(
         if project is None or project.draft_status not in ACTIVE or existing.exists:
             return False
         now = datetime.now(UTC)
-        draft = Draft(
-            template_version=TEMPLATE_VERSION,
-            version=1,
-            block_versions={block.id: 1 for block in content},
-            content=content,
-            updated_at=now,
-        )
+        draft = Draft(template_version=TEMPLATE_VERSION, version=1, content=content, updated_at=now)
+        texts = {block.id: node_text(block) for block in content}
         # Plate nodes exactly as Plate wrote them: no keys the models would add as defaults.
         transaction.create(current, draft.model_dump(by_alias=True, exclude_unset=True))
         for thread in threads:
             message = ThreadMessage(
-                author="agent", uid=None, text=thread.message, sources=[], created_at=now
+                author="agent",
+                uid=None,
+                text=thread.message,
+                suggestion=None,
+                sources=[],
+                created_at=now,
             )
             transaction.create(
                 thread_ref(db, project_id, thread.id),
@@ -121,6 +121,7 @@ async def _save(
                     Thread(
                         status="open",
                         created_by="agent",
+                        quote=texts.get(thread.para, ""),
                         messages=[message],
                         created_at=now,
                         updated_at=now,

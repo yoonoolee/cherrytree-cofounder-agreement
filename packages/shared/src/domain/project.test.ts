@@ -6,7 +6,6 @@ const timestamp = { toDate: () => new Date(0), toMillis: () => 0 };
 const project = {
   name: 'Acme',
   members: { user_1: { role: 'admin' } },
-  onboardingCompleted: { user_1: false },
   currentPlan: 'starter',
   payments: {
     cs_1: {

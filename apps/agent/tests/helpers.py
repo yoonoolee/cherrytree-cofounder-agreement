@@ -17,7 +17,6 @@ STRANGER = "user_stranger"
 PROJECT = {
     "name": "Acme",
     "members": {ADMIN: {"role": "admin"}},
-    "onboardingCompleted": {ADMIN: False},
     "currentPlan": "starter",
     "payments": {},
     "draftStatus": None,

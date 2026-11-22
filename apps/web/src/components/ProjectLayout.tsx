@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 
 import { DISCLAIMER } from '../constants/project.ts';
+import BrandMark from './BrandMark.tsx';
 
 interface ProjectLayoutProps {
   children: ReactNode;
@@ -22,10 +23,9 @@ function ProjectLayout({ children, nav, footer }: ProjectLayoutProps) {
         <Link
           to="/dashboard"
           aria-label="Cherrytree dashboard"
-          className="inline-flex items-center gap-2 hover:opacity-80"
+          className="transition-opacity hover:opacity-75"
         >
-          <img src="/images/cherries.png" alt="" className="h-9 w-auto" />
-          <span className="text-xl tracking-[-0.02em]">Cherrytree</span>
+          <BrandMark />
         </Link>
         {nav}
       </header>

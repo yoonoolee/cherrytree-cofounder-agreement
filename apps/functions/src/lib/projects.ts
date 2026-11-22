@@ -25,7 +25,6 @@ export async function createProject({ userId, name, plan, payments }: NewProject
   const project: Omit<Project, 'createdAt' | 'lastUpdated' | 'lastOpened'> = {
     name,
     members: { [userId]: { role: 'admin' } },
-    onboardingCompleted: { [userId]: false },
     currentPlan: plan,
     payments,
     draftStatus: null,

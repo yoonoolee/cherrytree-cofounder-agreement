@@ -1,0 +1,42 @@
+/** User-facing copy of the draft editor. */
+export const EDITOR_COPY = {
+  title: 'Cofounder Agreement',
+  modes: { agent: 'Cherrytree Agent', comments: 'Comments' },
+  hints: {
+    agent: 'Select text to edit it with Cherrytree',
+    comments: 'Select text to comment or rewrite',
+  },
+  save: {
+    saving: 'Saving…',
+    saved: 'Saved',
+    failed: "Couldn't save",
+    stale: 'Reload to keep editing',
+  },
+  staleBody: 'This draft changed in another tab. Reload to see the latest version.',
+  agent: {
+    title: 'Cherrytree Agent',
+    empty: 'Select any part of the agreement and say how to change it.',
+    placeholder: 'Say what to change…',
+    needsSelection: 'Select the text to change first.',
+    working: 'Working on this…',
+    worked: (seconds: number) => `Worked for ${seconds}s`,
+    showChanges: 'Show changes',
+    hideChanges: 'Hide changes',
+    undo: 'Undo',
+    undone: 'Reverted',
+    cantUndo: 'This text has changed since, so it can’t be undone here.',
+    failed: 'That didn’t work. Try again.',
+  },
+  comments: {
+    placeholder: 'Write a comment or a rewrite…',
+    comment: 'Add comment',
+    apply: 'Apply',
+    approve: 'Approve',
+    dismiss: 'Dismiss',
+    reply: 'Reply…',
+    replying: 'Cherrytree is replying',
+    you: 'You',
+    agent: 'Cherrytree',
+  },
+  loadError: "We couldn't load your draft.",
+};
