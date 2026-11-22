@@ -40,7 +40,7 @@ function SelectionPopover({ quote, rect, onComment, onApply, onClose }: Selectio
       >
         ×
       </button>
-      <p className="mb-2.5 line-clamp-3 rounded-[10px] bg-mark px-3 py-2.5 text-[14px] leading-[1.45]">
+      <p className="mb-2.5 line-clamp-3 rounded-[10px] bg-mark px-3 py-2.5 text-[0.875rem] leading-[1.45]">
         {quote}
       </p>
       <textarea
@@ -50,14 +50,14 @@ function SelectionPopover({ quote, rect, onComment, onApply, onClose }: Selectio
         onChange={(event) => setText(event.target.value)}
         onKeyDown={(event) => event.key === 'Escape' && onClose()}
         placeholder={EDITOR_COPY.comments.placeholder}
-        className="mb-3 block min-h-[72px] w-full resize-y rounded-xl border border-[#d8d3ca] bg-white px-3 py-2.5 text-[14px] leading-[1.45] outline-none placeholder:text-ink-faint focus:border-ink"
+        className="mb-3 block min-h-[72px] w-full resize-y rounded-xl border border-[#d8d3ca] bg-white px-3 py-2.5 text-[0.875rem] leading-[1.45] outline-none placeholder:text-ink-faint focus:border-ink"
       />
       <div className="flex justify-end gap-2">
         <button
           type="button"
           disabled={!value}
           onClick={() => onComment(value)}
-          className="rounded-full border border-[#d4cfc6] bg-white px-3.5 py-2 text-[13px] font-normal transition-opacity disabled:opacity-40"
+          className="rounded-full border border-[#d4cfc6] bg-white px-3.5 py-2 text-[0.8125rem] transition-opacity disabled:opacity-40"
         >
           {EDITOR_COPY.comments.comment}
         </button>
@@ -65,7 +65,7 @@ function SelectionPopover({ quote, rect, onComment, onApply, onClose }: Selectio
           type="button"
           disabled={!value}
           onClick={() => onApply(value)}
-          className="rounded-full bg-ink px-3.5 py-2 text-[13px] font-normal text-paper transition-opacity disabled:opacity-30"
+          className="rounded-full bg-ink px-3.5 py-2 text-[0.8125rem] text-paper transition-opacity disabled:opacity-30"
         >
           {EDITOR_COPY.comments.apply}
         </button>

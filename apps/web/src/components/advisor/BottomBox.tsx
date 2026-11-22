@@ -4,7 +4,7 @@ import { ADVISOR_REPLY_MAX_LENGTH, type AdvisorMessage } from '@cherrytree/share
 import { NumberTag } from './MarkedText.tsx';
 import SourceLinks from './SourceLinks.tsx';
 import Working from '../status/Working.tsx';
-import { ADVISOR_COPY, ADVISOR_LEGEND, ADVISOR_MOVE_ON } from '../../constants/advisor.ts';
+import { ADVISOR_COPY, ADVISOR_MOVE_ON } from '../../constants/advisor.ts';
 
 /**
  * - `thinking`: the Advisor is working: `status` until its answer starts, then the answer as it
@@ -24,19 +24,6 @@ export type BottomBoxContent =
       onSubmit: () => void;
     }
   | { kind: 'moving'; message: AdvisorMessage; onNext: () => void };
-
-function Legend() {
-  return (
-    <div className="mb-4 flex items-center gap-5 text-xs text-ink-muted">
-      <span className="flex items-center gap-1.75">
-        <span className="inline-block h-1.25 w-3.5 rounded-[2px] bg-kept" /> {ADVISOR_LEGEND.kept}
-      </span>
-      <span className="flex items-center gap-1.75">
-        <span className="inline-block h-1.25 w-3.5 rounded-[2px] bg-needs" /> {ADVISOR_LEGEND.needs}
-      </span>
-    </div>
-  );
-}
 
 function Answer({ text }: { text: string | null }) {
   return text ? <p className="mb-2 whitespace-pre-line">{text}</p> : null;
@@ -61,10 +48,10 @@ function FollowupForm(content: Extract<BottomBoxContent, { kind: 'followup' }>) 
   };
   return (
     <form onSubmit={submit}>
-      <div className="mb-4 text-[22px] leading-[1.35]" aria-live="polite">
+      <div className="mb-4 text-[1.375rem] leading-[1.35]" aria-live="polite">
         <Answer text={content.message.answer} />
         {content.question && (
-          <h2 className="animate-rise font-normal [animation-delay:60ms]">
+          <h2 className="animate-rise [animation-delay:60ms]">
             {content.number !== undefined && <NumberTag number={content.number} large />}
             {content.question}
           </h2>
@@ -84,13 +71,13 @@ function FollowupForm(content: Extract<BottomBoxContent, { kind: 'followup' }>) 
           placeholder={ADVISOR_COPY.followupPlaceholder}
           autoFocus
           autoComplete="off"
-          className="min-w-0 flex-1 border-0 bg-transparent p-0 text-lg leading-normal outline-none placeholder:font-light placeholder:text-ink-faint"
+          className="min-w-0 flex-1 border-0 bg-transparent p-0 text-lg leading-normal outline-none placeholder:text-ink-faint"
         />
         <button
           type="submit"
           disabled={!canSend}
           aria-label="Send"
-          className="flex size-7.5 shrink-0 items-center justify-center rounded-md bg-ink text-[15px] text-paper transition-opacity disabled:opacity-25"
+          className="flex size-7.5 shrink-0 items-center justify-center rounded-md bg-ink text-[0.9375rem] text-paper transition-opacity disabled:opacity-25"
         >
           ↑
         </button>
@@ -103,9 +90,8 @@ function FollowupForm(content: Extract<BottomBoxContent, { kind: 'followup' }>) 
 function BottomBox({ content, children }: { content: BottomBoxContent; children?: ReactNode }) {
   return (
     <div className="animate-rise rounded-2xl bg-paper px-5 py-5.5 shadow-[0_12px_40px_rgb(45_42_34/12%)] sm:px-7">
-      <Legend />
       {content.kind === 'thinking' && (
-        <div className="text-[22px] leading-[1.35]" aria-live="polite" aria-busy>
+        <div className="text-[1.375rem] leading-[1.35]" aria-live="polite" aria-busy>
           {content.answer ? (
             <p className="animate-fade whitespace-pre-line">{content.answer}</p>
           ) : (
@@ -116,7 +102,7 @@ function BottomBox({ content, children }: { content: BottomBoxContent; children?
       {content.kind === 'followup' && <FollowupForm {...content} />}
       {content.kind === 'moving' && (
         <div className="flex flex-col gap-4 py-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
-          <div className="min-w-0 text-[22px] leading-[1.3]" aria-live="polite">
+          <div className="min-w-0 text-[1.375rem] leading-[1.3]" aria-live="polite">
             <Answer text={content.message.answer} />
             <SourceLinks sources={content.message.sources} />
             <p className="animate-rise [animation-delay:60ms]">{ADVISOR_MOVE_ON.text}</p>
@@ -124,11 +110,9 @@ function BottomBox({ content, children }: { content: BottomBoxContent; children?
           <button
             type="button"
             onClick={content.onNext}
-            className="shrink-0 animate-rise self-start rounded-lg bg-accent px-6 py-2.5 text-[13.5px] font-medium text-paper transition hover:-translate-y-px hover:opacity-90 [animation-delay:160ms] sm:self-auto"
+            className="shrink-0 animate-rise self-start rounded-lg bg-ink px-6 py-2.5 text-[0.84375rem] text-white transition hover:-translate-y-px hover:opacity-90 [animation-delay:160ms] sm:self-auto"
           >
-            {content.message.type === 'next_section'
-              ? ADVISOR_MOVE_ON.next_section
-              : ADVISOR_MOVE_ON.next_question}
+            {ADVISOR_MOVE_ON.button}
           </button>
         </div>
       )}

@@ -19,18 +19,18 @@ function Message({ message, first }: { message: ThreadMessage; first: boolean })
             <img src="/images/cherries.png" alt="" className="size-[22px] object-contain" />
           </span>
         ) : (
-          <span className="flex size-7 flex-none items-center justify-center rounded-full bg-sheet-edge text-[12px] font-medium">
+          <span className="flex size-7 flex-none items-center justify-center rounded-full bg-sheet-edge text-[0.75rem]">
             Y
           </span>
         )}
         <span className="flex min-w-0 flex-col gap-px leading-[1.2]">
-          <span className="text-[13px] font-medium">
+          <span className="text-[0.8125rem]">
             {agent ? EDITOR_COPY.comments.agent : EDITOR_COPY.comments.you}
           </span>
-          <span className="text-[12px] text-ink-faint">{time(message)}</span>
+          <span className="text-[0.75rem] text-ink-faint">{time(message)}</span>
         </span>
       </div>
-      <p className="mt-2 text-[14px] leading-[1.45] whitespace-pre-line">{message.text}</p>
+      <p className="mt-2 text-[0.875rem] leading-[1.45] whitespace-pre-line">{message.text}</p>
     </div>
   );
 }
@@ -99,12 +99,12 @@ function ThreadCard({
       ))}
       {waiting && (
         <div className={DIVIDED}>
-          <Working status={EDITOR_COPY.comments.replying} className="text-[13px]" />
+          <Working status={EDITOR_COPY.comments.replying} className="text-[0.8125rem]" />
         </div>
       )}
       {suggestion && (
         <div className="animate-rise">
-          <p className="mt-2 rounded-lg bg-white px-2.5 py-2 text-[13.5px] leading-[1.45]">
+          <p className="mt-2 rounded-lg bg-white px-2.5 py-2 text-[0.84375rem] leading-[1.45]">
             {suggestion}
           </p>
           <div className="mt-2.5 flex justify-end">
@@ -114,7 +114,7 @@ function ThreadCard({
                 event.stopPropagation();
                 onApprove(suggestion);
               }}
-              className="rounded-full bg-ink px-3 py-1.5 text-[12.5px] font-normal text-paper transition-opacity hover:opacity-85"
+              className="rounded-full bg-ink px-3 py-1.5 text-[0.78125rem] text-paper transition-opacity hover:opacity-85"
             >
               {EDITOR_COPY.comments.approve}
             </button>
@@ -133,7 +133,7 @@ function ThreadCard({
             value={reply}
             onChange={(event) => setReply(event.target.value)}
             placeholder={EDITOR_COPY.comments.reply}
-            className="w-full border-0 bg-transparent p-0 text-[14px] outline-none placeholder:text-ink-faint"
+            className="w-full border-0 bg-transparent p-0 text-[0.875rem] outline-none placeholder:text-ink-faint"
           />
         </form>
       )}

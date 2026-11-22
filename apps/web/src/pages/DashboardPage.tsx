@@ -75,7 +75,7 @@ function DashboardPage() {
         minHeight: '100vh',
         display: 'flex',
         background: '#F6F3EE',
-        fontFamily: "'Outfit', sans-serif",
+        fontFamily: 'var(--font-ui)',
         color: '#1a1a1a',
       }}
     >
@@ -111,11 +111,10 @@ function DashboardPage() {
         <div style={{ marginTop: '8px' }}>
           <div
             style={{
-              fontSize: '11px',
-              fontWeight: 200,
+              fontSize: '0.6875rem',
               color: '#aaa',
               padding: '0 20px 10px',
-              letterSpacing: '0.01em',
+              letterSpacing: '0.019em',
             }}
           >
             Platform
@@ -136,8 +135,7 @@ function DashboardPage() {
                     width: active ? 'calc(100% - 20px)' : '100%',
                     textAlign: 'left',
                     padding: '10px 20px',
-                    fontSize: '13.5px',
-                    fontWeight: active ? 500 : 100,
+                    fontSize: '0.84375rem',
                     color: active ? '#1a1a1a' : !action ? '#ccc' : '#666',
                     background: active ? '#e3dfd8' : 'none',
                     border: 'none',
@@ -158,11 +156,10 @@ function DashboardPage() {
         <div style={{ marginTop: '40px' }}>
           <div
             style={{
-              fontSize: '11px',
-              fontWeight: 200,
+              fontSize: '0.6875rem',
               color: '#aaa',
               padding: '0 20px 10px',
-              letterSpacing: '0.01em',
+              letterSpacing: '0.019em',
             }}
           >
             Resources
@@ -186,8 +183,7 @@ function DashboardPage() {
                     width: '100%',
                     textAlign: 'left',
                     padding: '10px 20px',
-                    fontSize: '13.5px',
-                    fontWeight: 100,
+                    fontSize: '0.84375rem',
                     color: '#666',
                     background: 'none',
                     border: 'none',
@@ -214,10 +210,9 @@ function DashboardPage() {
         <h1
           className="animate-rise"
           style={{
-            fontFamily: 'Instrument Serif, serif',
-            fontSize: '44px',
-            fontWeight: 200,
-            letterSpacing: '-0.5px',
+            fontFamily: 'var(--font-ui)',
+            fontSize: '2.75rem',
+            letterSpacing: 'calc(-0.5px + 0.009em)',
             marginBottom: '12px',
             lineHeight: 1.1,
           }}
@@ -227,8 +222,7 @@ function DashboardPage() {
         <p
           className="animate-rise [animation-delay:80ms]"
           style={{
-            fontSize: '14px',
-            fontWeight: 300,
+            fontSize: '0.875rem',
             color: '#555',
             lineHeight: 1.55,
             maxWidth: '440px',
@@ -282,21 +276,19 @@ function DashboardPage() {
                   <div style={{ flex: 1 }}>
                     <div
                       style={{
-                        fontSize: '11.5px',
-                        fontWeight: 200,
+                        fontSize: '0.71875rem',
                         color: '#888',
                         marginBottom: '10px',
-                        letterSpacing: '0.01em',
+                        letterSpacing: '0.019em',
                       }}
                     >
                       Cofounder Agreement
                     </div>
                     <div
                       style={{
-                        fontFamily: 'Instrument Serif, serif',
-                        fontSize: '32px',
-                        fontWeight: 400,
-                        letterSpacing: '-0.3px',
+                        fontFamily: 'var(--font-ui)',
+                        fontSize: '2rem',
+                        letterSpacing: 'calc(-0.3px + 0.009em)',
                         marginBottom: '44px',
                         lineHeight: 1.1,
                       }}
@@ -320,8 +312,7 @@ function DashboardPage() {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '5px',
-                            fontSize: '12px',
-                            fontWeight: 300,
+                            fontSize: '0.75rem',
                             color: '#666',
                           }}
                         >
@@ -364,20 +355,18 @@ function DashboardPage() {
                     >
                       <div
                         style={{
-                          fontFamily: 'Instrument Serif, serif',
-                          fontSize: '40px',
-                          fontWeight: 400,
+                          fontFamily: 'var(--font-ui)',
+                          fontSize: '2.5rem',
                           color: '#4B7263',
                           lineHeight: 1,
-                          letterSpacing: '2px',
+                          letterSpacing: 'calc(2px + 0.009em)',
                         }}
                       >
                         {progress}%
                       </div>
                       <div
                         style={{
-                          fontSize: '11px',
-                          fontWeight: 300,
+                          fontSize: '0.6875rem',
                           color: '#4B7263',
                           marginTop: '2px',
                         }}
@@ -437,9 +426,8 @@ function DashboardPage() {
                         border: 'none',
                         borderRadius: '3px',
                         padding: '9px 24px',
-                        fontFamily: 'Outfit, sans-serif',
-                        fontSize: '13px',
-                        fontWeight: 200,
+                        fontFamily: 'var(--font-ui)',
+                        fontSize: '0.8125rem',
                         cursor: 'pointer',
                         whiteSpace: 'nowrap',
                         transition: 'background 0.2s',
@@ -498,17 +486,16 @@ function DashboardPage() {
             <div style={{ textAlign: 'left' }}>
               <div
                 style={{
-                  fontFamily: 'Instrument Serif, serif',
-                  fontSize: '26px',
-                  fontWeight: 200,
+                  fontFamily: 'var(--font-ui)',
+                  fontSize: '1.625rem',
                   color: '#1a1a1a',
-                  letterSpacing: '-0.2px',
+                  letterSpacing: 'calc(-0.2px + 0.009em)',
                   marginBottom: '4px',
                 }}
               >
                 Create a new agreement
               </div>
-              <div style={{ fontSize: '12.5px', fontWeight: 200, color: '#3a3a3a' }}>
+              <div style={{ fontSize: '0.78125rem', color: '#3a3a3a' }}>
                 One document per company.
               </div>
             </div>
@@ -521,7 +508,7 @@ function DashboardPage() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '22px',
+                fontSize: '1.375rem',
                 color: '#333',
                 flexShrink: 0,
                 transition: 'background 0.2s',

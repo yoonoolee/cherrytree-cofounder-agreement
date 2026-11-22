@@ -71,7 +71,7 @@ class Price:
 
 PRICES: dict[str, Price] = {
     "claude-sonnet-5-5": Price(
-        input=2.0, output=10.0, cache_read=0.20, cache_write_5m=2.50, cache_write_1h=4.0
+        input=2.0, output=10.0, cache_read=0.10, cache_write_5m=2.50, cache_write_1h=4.0
     ),
     # Refusal fallback target of Claude Sonnet 5.5 (`fallbacks: "default"`).
     "claude-sonnet-5": Price(

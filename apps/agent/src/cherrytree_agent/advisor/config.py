@@ -11,7 +11,7 @@ ADVISOR = AgentConfig(
     name="advisor",
     prompt_file="advisor.md",
     prompt_appendix=render_guides(),
-    model=ModelSettings(model="claude-sonnet-5-5", effort="medium"),
+    model=ModelSettings(model="claude-opus-5-5", effort="medium"),
     tools=(
         "add_green_highlights",
         "update_checklist",

@@ -7,6 +7,7 @@ import BtwPopup from './BtwPopup.tsx';
 import ScreenThread, { type SelectedText } from './ScreenThread.tsx';
 import SectionMenu from './SectionMenu.tsx';
 import SkipToEnd from './SkipToEnd.tsx';
+import UseLatestInterview from './UseLatestInterview.tsx';
 import StartDraftButton from '../draft/StartDraftButton.tsx';
 import ProjectLayout from '../ProjectLayout.tsx';
 import ErrorState from '../status/ErrorState.tsx';
@@ -75,10 +76,10 @@ function AdvisorView({ projectId }: { projectId: string }) {
         {view?.answer && (
           <p className="mb-8 max-w-2xl animate-rise text-lg whitespace-pre-line">{view.answer}</p>
         )}
-        <h1 className="animate-rise font-serif text-4xl sm:text-5xl [animation-delay:80ms]">
+        <h1 className="animate-rise font-ui text-4xl sm:text-5xl [animation-delay:80ms]">
           {ADVISOR_COMPLETE.title}
         </h1>
-        <p className="mt-4 max-w-2xl animate-rise text-base font-light text-ink-muted [animation-delay:140ms]">
+        <p className="mt-4 max-w-2xl animate-rise text-base text-ink-muted [animation-delay:140ms]">
           {ADVISOR_COMPLETE.body}
         </p>
         <div className="animate-rise [animation-delay:200ms]">
@@ -147,6 +148,7 @@ function AdvisorView({ projectId }: { projectId: string }) {
     <ProjectLayout
       nav={
         <div className="flex items-center gap-4">
+          {env.devTools && <UseLatestInterview projectId={projectId} />}
           {env.devTools && <SkipToEnd projectId={projectId} />}
           <SectionMenu
             sectionName={screen.sectionName}

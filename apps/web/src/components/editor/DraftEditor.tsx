@@ -56,7 +56,7 @@ function readMode(): Mode {
 function SaveState({ status, onRetry }: { status: SaveStatus; onRetry: () => void }) {
   if (status === 'failed') {
     return (
-      <button type="button" onClick={onRetry} className="text-[12.5px] text-danger underline">
+      <button type="button" onClick={onRetry} className="text-[0.78125rem] text-danger underline">
         {EDITOR_COPY.save.failed}
       </button>
     );
@@ -64,7 +64,7 @@ function SaveState({ status, onRetry }: { status: SaveStatus; onRetry: () => voi
   return (
     <span
       key={status}
-      className={`animate-fade text-[12.5px] ${status === 'stale' ? 'text-danger' : 'text-ink-faint'}`}
+      className={`animate-fade text-[0.78125rem] ${status === 'stale' ? 'text-danger' : 'text-ink-faint'}`}
     >
       {EDITOR_COPY.save[status]}
     </span>
@@ -267,23 +267,22 @@ function DraftEditor({
   };
 
   return (
-    <div className="flex h-screen flex-col bg-paper font-ui font-light text-ink">
+    <div className="flex h-screen flex-col bg-paper font-ui text-ink">
       <header className="flex flex-none items-center gap-3.5 border-b border-line bg-white px-5 py-3 sm:px-7">
         <Link to="/dashboard" aria-label="Cherrytree dashboard" className="mr-2.5 hover:opacity-75">
           <BrandMark />
         </Link>
-        <p
-          key={mode}
-          className="hidden animate-fade text-[13.5px] font-normal text-ink-muted md:block"
-        >
+        <p key={mode} className="hidden animate-fade text-[0.84375rem] text-ink-muted md:block">
           {EDITOR_COPY.hints[mode]}
         </p>
-        <span className="hidden text-[13px] text-ink-muted sm:inline">{EDITOR_COPY.title}</span>
+        <span className="hidden text-[0.8125rem] text-ink-muted sm:inline">
+          {EDITOR_COPY.title}
+        </span>
         <SaveState status={save.status} onRetry={() => void save.retry()} />
         <div
           role="group"
           aria-label="Editing mode"
-          className="ml-auto flex gap-0.5 rounded-full bg-wash p-[3px] text-[12.5px]"
+          className="ml-auto flex gap-0.5 rounded-full bg-wash p-[3px] text-[0.78125rem]"
         >
           {(['agent', 'comments'] as const).map((value) => (
             <button
@@ -302,7 +301,7 @@ function DraftEditor({
       </header>
 
       {save.status === 'stale' && (
-        <p role="alert" className="flex-none bg-needs/30 px-8 py-2 text-center text-[13px]">
+        <p role="alert" className="flex-none bg-needs/30 px-8 py-2 text-center text-[0.8125rem]">
           {EDITOR_COPY.staleBody}
         </p>
       )}
@@ -336,7 +335,9 @@ function DraftEditor({
               )
             }
           />
-          <p className="mx-auto mt-8 max-w-[720px] text-[11px] text-ink-faint">{DISCLAIMER}</p>
+          <p className="mx-auto mt-8 max-w-[720px] text-center text-[0.6875rem] text-ink-faint">
+            {DISCLAIMER}
+          </p>
         </main>
 
         {mode === 'agent' &&
@@ -354,7 +355,7 @@ function DraftEditor({
             <button
               type="button"
               onClick={() => setRailOpen(true)}
-              className="absolute top-4 right-4 z-20 animate-fade rounded-lg border border-line bg-white px-3 py-2 text-[13px] leading-none font-normal shadow-[0_2px_10px_rgb(45_42_34/6%)]"
+              className="absolute top-4 right-4 z-20 animate-fade rounded-lg border border-line bg-white px-3 py-2 text-[0.8125rem] leading-none shadow-[0_2px_10px_rgb(45_42_34/6%)]"
             >
               {EDITOR_COPY.agent.title}
             </button>

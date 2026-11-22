@@ -37,7 +37,7 @@ interface ScreenThreadProps {
   children?: ReactNode;
 }
 
-const ADVISOR_TEXT = 'text-[22px] leading-[1.1] tracking-[-0.015em] sm:text-[26px]';
+const ADVISOR_TEXT = 'text-[1.375rem] leading-[1.1] tracking-[-0.006em] sm:text-[1.625rem]';
 
 /** What the Advisor said and asked before the reply below it, moved up from the bottom box. */
 function AnsweredQuestion({
@@ -119,7 +119,7 @@ function ScreenThread({
   return (
     <div ref={threadRef} className="group relative pb-8">
       <h1
-        className="mb-2 text-[26px] leading-[1.1] font-normal tracking-[-0.015em] sm:text-[32px]"
+        className="mb-2 text-[1.5rem] leading-[1.1] tracking-[-0.006em] sm:text-[1.875rem]"
         style={{ viewTransitionName: 'advisor-question' }}
       >
         {screen.question}
@@ -139,7 +139,7 @@ function ScreenThread({
               )}
               <p
                 data-reply
-                className="text-[19px] leading-[1.65] whitespace-pre-line"
+                className="text-[1.1875rem] leading-[1.65] whitespace-pre-line"
                 style={i === 0 ? { viewTransitionName: 'advisor-reply' } : undefined}
               >
                 <MarkedText
@@ -155,7 +155,7 @@ function ScreenThread({
         <span
           ref={hintRef}
           aria-hidden="true"
-          className="pointer-events-none absolute top-0 left-0 rounded-md bg-[#f8f7f4] px-2.5 py-1 text-[13px] whitespace-nowrap text-ink-faint opacity-0 shadow-[0_1px_4px_rgb(45_42_34/8%)] transition-opacity duration-200 group-has-[[data-reply]:hover]:opacity-100"
+          className="pointer-events-none absolute top-0 left-0 rounded-md bg-[#f8f7f4] px-2.5 py-1 text-[0.8125rem] whitespace-nowrap text-ink-faint opacity-0 shadow-[0_1px_4px_rgb(45_42_34/8%)] transition-opacity duration-200 group-has-[[data-reply]:hover]:opacity-100"
         >
           {ADVISOR_COPY.selectHint}
         </span>

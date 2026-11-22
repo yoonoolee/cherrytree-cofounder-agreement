@@ -1,5 +1,5 @@
 {
-  "opener": "Welcome! Let's get started. Tell me a bit about your company.",
+  "opener": "So, what are you building?",
   "sections": [
     {
       "id": "company",
@@ -17,26 +17,18 @@
         },
         {
           "item": "Formation date",
-          "guide": "Only if they're incorporated; skip it otherwise."
+          "notes": "Only if they're incorporated; skip it otherwise."
         },
         {
           "item": "Entity type",
-          "guide": "Some people get stuck here. Help them with what's common for startups like theirs, such as a Delaware C-Corp if they plan to raise money, rather than guessing for them."
+          "notes": "Some people get stuck here. Help them with what's common for startups like theirs, such as a Delaware C-Corp if they plan to raise money, rather than guessing for them."
         },
         {
           "item": "State of incorporation",
-          "guide": "If they haven't incorporated yet, ask where they plan to."
+          "notes": "If they haven't incorporated yet, ask where they plan to."
         },
         {
           "item": "Mailing address for notices"
-        },
-        {
-          "item": "Venture-scale, bootstrapped or undecided",
-          "guide": "This matters most. Cofounders rarely split over the product; they split because one wants to sell in a few years and another wants to build for a decade, or one wants to raise money and the other doesn't. Get a real sense of what each cofounder wants, including what kind of exit they'd accept."
-        },
-        {
-          "item": "Rough exit timeline, and how each cofounder's view differs",
-          "guide": "Roughly when each would accept an exit. If the cofounders want different things, say so plainly, help them see where they differ, and note each person's view."
         }
       ]
     },
@@ -47,54 +39,50 @@
       "checklist": [
         {
           "item": "Who the cofounders are",
-          "guide": "Be precise about who counts. A cofounder works on the company full-time and will typically hold more than 10% of the equity, which is different from founding team members like founding engineers; employees, advisors and contractors don't count. If someone isn't full-time, they aren't a cofounder for this agreement: explain that gently and suggest they come on as an advisor or early employee instead."
+          "notes": "Be precise about who counts. A cofounder works on the company full-time and will typically hold more than 10% of the equity, which is different from founding team members like founding engineers; employees, advisors and contractors don't count. If someone isn't full-time, they aren't a cofounder for this agreement: explain that gently and suggest they come on as an advisor or early employee instead."
         },
         {
           "item": "How they met and how long they've known each other",
-          "guide": "It doesn't go into the agreement, but it tells you how much trust and history there is. Listen for a personal relationship, like family, a partner, or close friends. That's common and fine, but it means taking extra care later with how disagreements and departures are handled, so keep it in mind."
+          "notes": "It doesn't go into the agreement, but it tells you how much trust and history there is. Listen for a personal relationship, like family, a partner, or close friends. That's common and fine, but it means taking extra care later with how disagreements and departures are handled, so keep it in mind."
         },
         {
           "item": "Each cofounder's legal name"
         },
         {
           "item": "Each cofounder's email",
-          "guide": "Each one must be different."
-        },
-        {
-          "item": "Each cofounder's mailing address",
-          "guide": "The state matters for non-competes."
+          "notes": "Each one must be different."
         },
         {
           "item": "Each cofounder's title",
-          "guide": "Titles may overlap."
+          "notes": "Titles may overlap."
         },
         {
           "item": "What each cofounder owns day to day",
-          "guide": "Roles can overlap, but if two cofounders both claim the same area, ask who has the final call, since that comes back when you cover decisions."
+          "notes": "Roles can overlap, but if two cofounders both claim the same area, ask who has the final call, since that comes back when you cover decisions."
         },
         {
           "item": "Who the CEO is",
-          "guide": "Exactly one. If they haven't settled it, help them think it through rather than picking for them."
+          "notes": "Exactly one. If they haven't settled it, help them think it through rather than picking for them."
         },
         {
           "item": "Each cofounder's start date",
-          "guide": "If one cofounder started earlier, ask whether that head start should count toward their vesting."
+          "notes": "If one cofounder started earlier, ask whether that head start should count toward their vesting."
         },
         {
           "item": "Each cofounder's outside work",
-          "guide": "Other projects, or advising other companies. Note each one, or that there is none."
+          "notes": "Other projects, or advising other companies. Note each one, or that there is none."
         },
         {
           "item": "Whether outside work is allowed",
-          "guide": "A sensible default is that outside work is fine if it doesn't compete and is disclosed."
+          "notes": "A sensible default is that outside work is fine if it doesn't compete and is disclosed."
         },
         {
           "item": "Existing conflicts of interest",
-          "guide": "A connection to anything the company might do business with, like hiring a relative or buying from a company a cofounder owns. Note each one, or that there is none."
+          "notes": "A connection to anything the company might do business with, like hiring a relative or buying from a company a cofounder owns. Note each one, or that there is none."
         },
         {
           "item": "How conflicts of interest are handled",
-          "guide": "Disclosed and approved, or disclosed only. A sensible default is that conflicts are disclosed in writing and approved by the other cofounders."
+          "notes": "Disclosed and approved, or disclosed only. A sensible default is that conflicts are disclosed in writing and approved by the other cofounders."
         }
       ]
     },
@@ -105,47 +93,47 @@
       "checklist": [
         {
           "item": "Each cofounder's equity percentage",
-          "guide": "Start by finding out whether they've already agreed on a split. Listen for hesitation like \"I guess\" or \"I think he's fine with it.\" If you hear it, gently walk through the factors below, and mark this revisit if the respondent isn't sure the others agree. If they haven't decided, help them get there. Reflect back what you already know, like who started first and who built what. Ask whether anyone is putting in money or bringing something hard to replace, like code, key customers, or expertise the company depends on. Equal splits are common when contributions are similar, but don't let them land on 50/50 without thinking about it. A different split should rest on a clear, lasting difference, not on who had the idea, and vesting protects everyone if the split turns out to be wrong. Then ask what split feels right. If they still can't decide, note a tentative split and mark this revisit, since the agreement can't be finished without one. The percentages total 100% or less; if less, ask what the rest is for."
+          "notes": "Start by finding out whether they've already agreed on a split. Listen for hesitation like \"I guess\" or \"I think he's fine with it.\" If you hear it, gently walk through the factors below, and mark this revisit if the respondent isn't sure the others agree. If they haven't decided, help them get there. Reflect back what you already know, like who started first and who built what. Ask whether anyone is putting in money or bringing something hard to replace, like code, key customers, or expertise the company depends on. Equal splits are common when contributions are similar, but don't let them land on 50/50 without thinking about it. A different split should rest on a clear, lasting difference, not on who had the idea, and vesting protects everyone if the split turns out to be wrong. Then ask what split feels right. If they still can't decide, note a tentative split and mark this revisit, since the agreement can't be finished without one. The percentages total 100% or less; if less, ask what the rest is for."
         },
         {
           "item": "Why the split is what it is",
-          "guide": "Note the reasoning in their own words. If anyone wants to revisit the split later, this is the reference point."
+          "notes": "Note the reasoning in their own words. If anyone wants to revisit the split later, this is the reference point."
         },
         {
           "item": "Vesting schedule length",
-          "guide": "Explain vesting simply: each cofounder earns their shares over time, so someone who leaves early doesn't walk away with a full stake. The standard is four years (48 months) with a one-year cliff, vesting monthly after that. Offer it as the default, and recommend it strongly even if they lean toward something else."
+          "notes": "Explain vesting simply: each cofounder earns their shares over time, so someone who leaves early doesn't walk away with a full stake. The standard is four years (48 months) with a one-year cliff, vesting monthly after that. Offer it as the default, and recommend it strongly even if they lean toward something else."
         },
         {
           "item": "Vesting cliff",
-          "guide": "Standard is 12 months. It must be shorter than the schedule."
+          "notes": "Standard is 12 months. It must be shorter than the schedule."
         },
         {
           "item": "How often shares vest after the cliff",
-          "guide": "Monthly or quarterly. Standard is monthly."
+          "notes": "Monthly or quarterly. Standard is monthly."
         },
         {
           "item": "Each cofounder's vesting start date",
-          "guide": "Use the start dates from the cofounders section. If a cofounder's earlier work should count, start their vesting from when they started. Otherwise, use the formation date if the company is incorporated, or the signing date if it isn't. Don't credit the same work twice by also giving them shares up front."
+          "notes": "Use the start dates from the cofounders section. If a cofounder's earlier work should count, start their vesting from when they started. Otherwise, use the formation date if the company is incorporated, or the signing date if it isn't. Don't credit the same work twice by also giving them shares up front."
         },
         {
           "item": "Vesting during extended leave",
-          "guide": "Like parental or medical leave: vesting continues or pauses. The default is that vesting continues for the first 30 days, then pauses until they return."
+          "notes": "Like parental or medical leave: vesting continues or pauses. The default is that vesting continues for the first 30 days, then pauses until they return."
         },
         {
           "item": "What happens to unvested shares if the company is sold",
-          "guide": "None, single-trigger or double-trigger. Unvested shares can vest right away on a sale (single-trigger), or only if the cofounder is let go or their role is cut after the sale (double-trigger). Buyers generally prefer double-trigger because it keeps the team in place. Recommend double-trigger unless they have a reason to want something else. Use standard definitions of \"let go\" and \"role cut,\" and don't negotiate them in conversation."
+          "notes": "None, single-trigger or double-trigger. Unvested shares can vest right away on a sale (single-trigger), or only if the cofounder is let go or their role is cut after the sale (double-trigger). Buyers generally prefer double-trigger because it keeps the team in place. Recommend double-trigger unless they have a reason to want something else. Use standard definitions of \"let go\" and \"role cut,\" and don't negotiate them in conversation."
         },
         {
           "item": "How much of the unvested shares vest on a sale",
-          "guide": "Skip it if nothing vests on a sale. The default is full acceleration (100%)."
+          "notes": "Skip it if nothing vests on a sale. The default is full acceleration (100%)."
         },
         {
           "item": "How long after a sale double-trigger applies",
-          "guide": "Only for double-trigger; skip it otherwise. The default is 12 months after the sale."
+          "notes": "Only for double-trigger; skip it otherwise. The default is 12 months after the sale."
         },
         {
           "item": "Whether everyone goes along with a sale the majority agrees to",
-          "guide": "Ask whether everyone should go along with a sale if the cofounders holding most of the shares agree to it. This is called drag-along, and it stops one holdout from blocking a sale. The default is yes. Note it as their intent, since the formal terms come later in other documents."
+          "notes": "Ask whether everyone should go along with a sale if the cofounders holding most of the shares agree to it. This is called drag-along, and it stops one holdout from blocking a sale. The default is yes. Note it as their intent, since the formal terms come later in other documents."
         }
       ]
     },
@@ -156,38 +144,38 @@
       "checklist": [
         {
           "item": "A real disagreement they've had and how it got resolved",
-          "guide": "A good way into this section. It doesn't go into the agreement, but it shows you how they actually work together and makes the rules that follow feel grounded rather than hypothetical. If they say they never disagree, ask about a decision coming up where they might see things differently."
+          "notes": "A good way into this section. It doesn't go into the agreement, but it shows you how they actually work together and makes the rules that follow feel grounded rather than hypothetical. If they say they never disagree, ask about a decision coming up where they might see things differently."
         },
         {
           "item": "Decisions every cofounder must agree to",
-          "guide": "Ask which decisions feel important enough that every cofounder should have to agree. Common ones are selling or merging the company, raising money or issuing new shares, adding a cofounder, granting equity, major pivots, large contracts, and taking on significant debt. Offer these as suggestions, not a checklist. Removing a cofounder shouldn't be on the list, because that person could block it."
+          "notes": "Ask which decisions feel important enough that every cofounder should have to agree. Common ones are selling or merging the company, raising money or issuing new shares, adding a cofounder, granting equity, major pivots, large contracts, and taking on significant debt. Offer these as suggestions, not a checklist. Removing a cofounder shouldn't be on the list, because that person could block it."
         },
         {
           "item": "Whether votes are equal or weighted by ownership",
-          "guide": "Equal is most common between cofounders, and it's the default."
+          "notes": "Equal is most common between cofounders, and it's the default."
         },
         {
           "item": "Who gets the final call on everyday decisions when they're split",
-          "guide": "The CEO, by area, or no one. Usually it's the CEO, which is the default. Some teams split authority by area, like the CTO deciding technical questions. With two cofounders and equal votes, every disagreement is a tie, so make sure they've chosen a tie-break, or that they understand every split will go to the deadlock process."
+          "notes": "The CEO, by area, or no one. Usually it's the CEO, which is the default. Some teams split authority by area, like the CTO deciding technical questions. With two cofounders and equal votes, every disagreement is a tie, so make sure they've chosen a tie-break, or that they understand every split will go to the deadlock process."
         },
         {
           "item": "Which cofounder decides each area",
-          "guide": "Only if they split authority by area; skip it otherwise. Map each area to a cofounder using what you learned about roles, and make clear the big decisions still need everyone."
+          "notes": "Only if they split authority by area; skip it otherwise. Map each area to a cofounder using what you learned about roles, and make clear the big decisions still need everyone."
         },
         {
           "item": "What happens when they're stuck on something big",
-          "guide": "The default is mediation with a neutral third party, and if that doesn't work, nothing changes and the proposed action doesn't happen. Some teams would rather name a trusted advisor or board member to decide. If the cofounders have a personal relationship, recommend mediation. For two-cofounder teams, mention that a trusted advisor is the only way to actually break a deadlock rather than leave it standing, which matters later if one of them ever needs to be removed."
+          "notes": "The default is mediation with a neutral third party, and if that doesn't work, nothing changes and the proposed action doesn't happen. Some teams would rather name a trusted advisor or board member to decide. If the cofounders have a personal relationship, recommend mediation. For two-cofounder teams, mention that a trusted advisor is the only way to actually break a deadlock rather than leave it standing, which matters later if one of them ever needs to be removed."
         },
         {
           "item": "The trusted advisor's name",
-          "guide": "Only if a trusted advisor decides deadlocks; skip it otherwise."
+          "notes": "Only if a trusted advisor decides deadlocks; skip it otherwise."
         },
         {
           "item": "Who leads conversations with investors"
         },
         {
           "item": "Who signs the funding documents",
-          "guide": "The default is the CEO."
+          "notes": "The default is the CEO."
         }
       ]
     },
@@ -198,42 +186,42 @@
       "checklist": [
         {
           "item": "Money any cofounder has put into company costs",
-          "guide": "Ask whether anyone has paid for company costs out of pocket, like contractors, software, or incorporation fees, and move on quickly if not. If they have, find out who paid, how much, and whether they want it repaid as a loan (with its terms), counted toward their equity, reimbursed as an expense, or left as a contribution. If any of it should count toward equity, go back to the equity split and make sure it still reflects that."
+          "notes": "Ask whether anyone has paid for company costs out of pocket, like contractors, software, or incorporation fees, and move on quickly if not. If they have, find out who paid, how much, and whether they want it repaid as a loan (with its terms), counted toward their equity, reimbursed as an expense, or left as a contribution. If any of it should count toward equity, go back to the equity split and make sure it still reflects that."
         },
         {
           "item": "Personal guarantees for the company",
-          "guide": "Anything a cofounder has personally guaranteed, like an office lease, a loan, or a credit card: who, what, and how much. Note that there are none if so."
+          "notes": "Anything a cofounder has personally guaranteed, like an office lease, a loan, or a credit card: who, what, and how much. Note that there are none if so."
         },
         {
           "item": "What the company does about those guarantees",
-          "guide": "Only if there are any; skip it otherwise. The default is that the company works to release the guarantor as soon as it can."
+          "notes": "Only if there are any; skip it otherwise. The default is that the company works to release the guarantor as soon as it can."
         },
         {
           "item": "Whether any cofounder is paid now or soon",
-          "guide": "Most early cofounders aren't."
+          "notes": "Most early cofounders aren't."
         },
         {
           "item": "Each paid cofounder's salary",
-          "guide": "Only if someone is paid; skip it otherwise."
+          "notes": "Only if someone is paid; skip it otherwise."
         },
         {
           "item": "Deferred salary for the others",
-          "guide": "If one cofounder needs pay before the others, ask whether the rest should get deferred salary, and how it builds up. That evens things out without touching the equity split. If someone thinks the pay difference should change the split, mark the equity percentage item revisit with a note, since all the cofounders should decide that together."
+          "notes": "If one cofounder needs pay before the others, ask whether the rest should get deferred salary, and how it builds up. That evens things out without touching the equity split. If someone thinks the pay difference should change the split, mark the equity percentage item revisit with a note, since all the cofounders should decide that together."
         },
         {
           "item": "When deferred salary is paid out",
-          "guide": "Only if there's deferred salary; skip it otherwise. The default is at the first priced round or a sale, whichever comes first."
+          "notes": "Only if there's deferred salary; skip it otherwise. The default is at the first priced round or a sale, whichever comes first."
         },
         {
           "item": "How much one cofounder can spend without checking with the others",
-          "guide": "Most early teams haven't set a limit, and having one avoids arguments. If they have no view, suggest $1,000 per purchase."
+          "notes": "Most early teams haven't set a limit, and having one avoids arguments. If they have no view, suggest $1,000 per purchase."
         },
         {
           "item": "Whether the spending limit is per purchase or per month"
         },
         {
           "item": "How expenses are reimbursed",
-          "guide": "The default is that normal business expenses are reimbursed with receipts."
+          "notes": "The default is that normal business expenses are reimbursed with receipts."
         }
       ]
     },
@@ -244,19 +232,19 @@
       "checklist": [
         {
           "item": "What the company uses that was made before it existed",
-          "guide": "Like code, designs, a prototype, a domain, a brand, or research. For each one, note what it is and who made it. The default is that anything the company uses is assigned to it. If anything was made with someone who isn't a cofounder, like a friend at a hackathon, that person would need to sign their rights over. Note that there is nothing if so."
+          "notes": "Like code, designs, a prototype, a domain, a brand, or research. For each one, note what it is and who made it. The default is that anything the company uses is assigned to it. If anything was made with someone who isn't a cofounder, like a friend at a hackathon, that person would need to sign their rights over. Note that there is nothing if so."
         },
         {
           "item": "Anything a cofounder keeps",
-          "guide": "The default is nothing: everything the company uses is assigned to it. If a cofounder wants to keep something the company depends on, mark this revisit with a note, because the company would then need permission to keep using it."
+          "notes": "The default is nothing: everything the company uses is assigned to it. If a cofounder wants to keep something the company depends on, mark this revisit with a note, because the company would then need permission to keep using it."
         },
         {
           "item": "Each cofounder's agreements with past or current employers",
-          "guide": "Anything they signed about inventions, side projects, or non-competes. If it came up in the cofounders section, confirm it instead of asking again. Building while employed is the most common way a startup's ownership of its own code gets challenged."
+          "notes": "Anything they signed about inventions, side projects, or non-competes. If it came up in the cofounders section, confirm it instead of asking again. Building while employed is the most common way a startup's ownership of its own code gets challenged."
         },
         {
           "item": "Who controls the company's accounts",
-          "guide": "The domain, code repositories, social accounts, and cloud services. The default is that they're held in the company's name with more than one cofounder having access, because accounts on someone's personal login are hard to recover if that person leaves."
+          "notes": "The domain, code repositories, social accounts, and cloud services. The default is that they're held in the company's name with more than one cofounder having access, because accounts on someone's personal login are hard to recover if that person leaves."
         }
       ]
     },
@@ -267,90 +255,90 @@
       "checklist": [
         {
           "item": "What not pulling their weight would look like",
-          "guide": "Use each cofounder's role and their full-time commitment as the baseline."
+          "notes": "Use each cofounder's role and their full-time commitment as the baseline."
         },
         {
           "item": "What happens when a cofounder underperforms",
-          "guide": "The default is a written warning and a plan to fix it before anything more serious, like a role change or removal. Agreeing on this now gives them a fair process to point to instead of an argument."
+          "notes": "The default is a written warning and a plan to fix it before anything more serious, like a role change or removal. Agreeing on this now gives them a fair process to point to instead of an argument."
         },
         {
           "item": "How long an underperforming cofounder has to improve",
-          "guide": "The default is 30 days."
+          "notes": "The default is 30 days."
         },
         {
           "item": "Notice a cofounder gives before leaving",
-          "guide": "The default is 30 days, with their work handed off during that time. Vesting continues through the notice period and stops when it ends."
+          "notes": "The default is 30 days, with their work handed off during that time. Vesting continues through the notice period and stops when it ends."
         },
         {
           "item": "What happens to a departing cofounder's vested shares",
-          "guide": "The standard is that unvested shares go back to the company at what the cofounder paid for them. For vested shares: no buyback, an optional buyback, or a required buyback, at fair market value. The default is that the company has the option, but not the obligation, to buy them back. Some teams prefer the company always buy them back, so former cofounders don't stay on as shareholders. If the respondent says the reason for leaving should matter, mark this revisit with a note."
+          "notes": "The standard is that unvested shares go back to the company at what the cofounder paid for them. For vested shares: no buyback, an optional buyback, or a required buyback, at fair market value. The default is that the company has the option, but not the obligation, to buy them back. Some teams prefer the company always buy them back, so former cofounders don't stay on as shareholders. If the respondent says the reason for leaving should matter, mark this revisit with a note."
         },
         {
           "item": "How long the company has to buy back vested shares",
-          "guide": "The default is 90 days."
+          "notes": "The default is 90 days."
         },
         {
           "item": "How a cofounder could be asked to leave",
-          "guide": "The default is that the other cofounders decide together, or the board decides by majority, and the cofounder in question doesn't vote. With only two cofounders, neither can remove the other without agreement, so tell them that plainly. If they chose mediation for deadlocks, a failed mediation means nothing changes, so in practice neither can be removed, even after the performance process runs its course. If they want removal to be possible, they'd need a trusted advisor to break the deadlock."
+          "notes": "The default is that the other cofounders decide together, or the board decides by majority, and the cofounder in question doesn't vote. With only two cofounders, neither can remove the other without agreement, so tell them that plainly. If they chose mediation for deadlocks, a failed mediation means nothing changes, so in practice neither can be removed, even after the performance process runs its course. If they want removal to be possible, they'd need a trusted advisor to break the deadlock."
         },
         {
           "item": "Vested shares if a cofounder dies or becomes permanently unable to work",
-          "guide": "Be gentle with this one. Unvested shares go back to the company. For vested shares: an optional buyback, a required buyback, or they pass to the estate. The default is that the company can buy them back from the estate at fair market value."
+          "notes": "Be gentle with this one. Unvested shares go back to the company. For vested shares: an optional buyback, a required buyback, or they pass to the estate. The default is that the company can buy them back from the estate at fair market value."
         },
         {
           "item": "Whether any unvested shares vest if a cofounder dies or becomes unable to work",
-          "guide": "The default is none."
+          "notes": "The default is none."
         },
         {
           "item": "Not competing after leaving",
-          "guide": "The default is no competing for 12 months where that's allowed. Non-competes are often unenforceable in some states, including California. If any cofounder lives in one of those states, leave the non-compete out for everyone rather than applying it unevenly, and suggest they confirm with a lawyer."
+          "notes": "The default is no competing for 12 months where that's allowed. Non-competes are often unenforceable in some states, including California. If any cofounder lives in one of those states, leave the non-compete out for everyone rather than applying it unevenly, and suggest they confirm with a lawyer."
         },
         {
           "item": "Not recruiting the company's employees or customers after leaving",
-          "guide": "The default is 12 months."
+          "notes": "The default is 12 months."
         },
         {
           "item": "Not criticizing each other or the company publicly after a split",
-          "guide": "The default is yes, applied to all of them equally."
+          "notes": "The default is yes, applied to all of them equally."
         },
         {
           "item": "What happens to the company's IP and accounts if it shuts down",
-          "guide": "The IP, code, and accounts. The default is that everything stays with the company until it's wound up."
+          "notes": "The IP, code, and accounts. The default is that everything stays with the company until it's wound up."
         },
         {
           "item": "Whether a cofounder can restart the idea after a shutdown",
-          "guide": "If so, note who and on what terms."
+          "notes": "If so, note who and on what terms."
         },
         {
           "item": "What happens to the company's name and brand if it shuts down",
-          "guide": "The default is that they stay with the company, but some teams let a named cofounder keep them or agree to sell them."
+          "notes": "The default is that they stay with the company, but some teams let a named cofounder keep them or agree to sell them."
         }
       ]
     },
     {
       "id": "wrap_up",
       "name": "Wrap-up",
-      "guide": "You're trying to settle the last few terms that keep the agreement working over time. The hard conversations are done, so let them know they're almost finished and keep this quick. A good conversation here ends with a way to resolve disputes, a governing state, and a plan for reviewing and amending the agreement.",
+      "guide": "You're trying to settle the last few terms that keep the agreement working over time. The hard conversations are done, so keep this quick. A good conversation here ends with a way to resolve disputes, a governing state, and a plan for reviewing and amending the agreement.",
       "checklist": [
         {
           "item": "How disputes about the agreement are resolved",
-          "guide": "Make clear this is different from the deadlock process in the governance section, which covers business decisions. This one covers disagreements about what the agreement means or whether someone kept to it. The default is mediation first, then binding arbitration if that fails. Explain that arbitration is usually faster and more private than court, but harder to appeal. Don't say whether arbitration is enforceable in their situation; suggest a lawyer instead."
+          "notes": "Make clear this is different from the deadlock process in the governance section, which covers business decisions. This one covers disagreements about what the agreement means or whether someone kept to it. The default is mediation first, then binding arbitration if that fails. Explain that arbitration is usually faster and more private than court, but harder to appeal. Don't say whether arbitration is enforceable in their situation; suggest a lawyer instead."
         },
         {
           "item": "Which state's law governs the agreement",
-          "guide": "Confirm it. The default is the state of incorporation, or the state they plan to incorporate in if they haven't yet."
+          "notes": "Confirm it. The default is the state of incorporation, or the state they plan to incorporate in if they haven't yet."
         },
         {
           "item": "How often they review the agreement",
-          "guide": "Every 3, 6 or 12 months. Companies change fast early on, so the default is once a year."
+          "notes": "Every 3, 6 or 12 months. Companies change fast early on, so the default is once a year."
         },
         {
           "item": "Whether any cofounder can request a review sooner",
-          "guide": "The default is yes."
+          "notes": "The default is yes."
         },
         {
           "item": "How the agreement gets changed",
-          "guide": "Confirm it. The default is that every current cofounder agrees in writing."
+          "notes": "Confirm it. The default is that every current cofounder agrees in writing."
         }
       ]
     }

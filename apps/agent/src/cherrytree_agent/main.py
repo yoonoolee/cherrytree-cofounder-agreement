@@ -40,6 +40,7 @@ from cherrytree_agent.contracts.models import (
     ThreadReplyRequest,
     ThreadStatusRequest,
 )
+from cherrytree_agent.devtools.upgrade_interview import UpgradeRefusedError, upgrade_interview
 from cherrytree_agent.draft.plate import DraftDocument
 from cherrytree_agent.draft.save import InvalidDraftError, StaleDraftError, save_draft
 from cherrytree_agent.drafting.job import run_draft_job
@@ -206,6 +207,21 @@ def create_app() -> FastAPI:
             await end_interview(db, caller.project_id)
         except InterviewNotOpenError as error:
             raise HTTPException(status.HTTP_409_CONFLICT, "The interview is not open") from error
+
+    # Ad hoc dev tool (devtools/upgrade_interview.py); delete with that folder.
+    @app.post(
+        "/v1/projects/{project_id}/advisor/upgrade",
+        status_code=status.HTTP_204_NO_CONTENT,
+        dependencies=[Depends(require_dev_tools)],
+    )
+    async def advisor_upgrade(
+        caller: Annotated[Caller, Depends(require_project_admin)],
+        db: Annotated[AsyncClient, Depends(get_db)],
+    ) -> None:
+        try:
+            await upgrade_interview(db, caller.project_id)
+        except UpgradeRefusedError as error:
+            raise HTTPException(status.HTTP_409_CONFLICT, str(error)) from error
 
     @app.post("/v1/projects/{project_id}/draft")
     async def draft(

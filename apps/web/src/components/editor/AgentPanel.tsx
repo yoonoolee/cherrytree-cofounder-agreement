@@ -44,7 +44,7 @@ function UndoIcon() {
 /** What was asked: the selected text, then the instruction. */
 function Ask({ quote, instruction }: { quote: string; instruction: string }) {
   return (
-    <div className="flex flex-col items-end gap-1.5 text-[13px] leading-[1.35]">
+    <div className="flex flex-col items-end gap-1.5 text-[0.8125rem] leading-[1.35]">
       <p className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-wash px-2.5 py-1.5 text-ink-muted">
         <QuoteIcon />
         <span className="truncate">{quote}</span>
@@ -58,7 +58,7 @@ function Ask({ quote, instruction }: { quote: string; instruction: string }) {
 
 function Diff({ before, after }: { before: string; after: string }) {
   return (
-    <p className="text-[13.5px] leading-[1.5]">
+    <p className="text-[0.84375rem] leading-[1.5]">
       {wordDiff(before, after).map((part, i) =>
         part.kind === 'same' ? (
           <span key={i}>{part.text}</span>
@@ -83,14 +83,14 @@ function EditEntry({ edit, onUndo }: { edit: WithId<AgentEdit>; onUndo: () => bo
   return (
     <article className="animate-rise">
       <Ask quote={edit.data.quote} instruction={edit.data.instruction} />
-      <p className="mt-[18px] text-[12.5px] text-ink-faint">
+      <p className="mt-[18px] text-[0.78125rem] text-ink-faint">
         {EDITOR_COPY.agent.worked(Math.max(1, Math.round(edit.data.durationMs / 1000)))}
       </p>
-      <p className="mt-2 text-[14px] leading-[1.45]">
+      <p className="mt-2 text-[0.875rem] leading-[1.45]">
         {undone ? EDITOR_COPY.agent.undone : edit.data.message}
       </p>
       <div className="mt-2.5 flex flex-col items-start gap-2.5 rounded-xl border border-line px-3 py-2.5">
-        <p className={`text-[13.5px] leading-[1.35] ${undone ? 'text-ink-faint' : ''}`}>
+        <p className={`text-[0.84375rem] leading-[1.35] ${undone ? 'text-ink-faint' : ''}`}>
           {undone ? EDITOR_COPY.agent.undone : edit.data.title}
         </p>
         {showChanges && !undone && <Diff before={edit.data.quote} after={edit.data.replacement} />}
@@ -99,7 +99,7 @@ function EditEntry({ edit, onUndo }: { edit: WithId<AgentEdit>; onUndo: () => bo
             <button
               type="button"
               onClick={() => setShowChanges((v) => !v)}
-              className="rounded-lg bg-mark px-2 py-[5px] text-[12.5px] text-kept-ink"
+              className="rounded-lg bg-mark px-2 py-[5px] text-[0.78125rem] text-kept-ink"
             >
               {showChanges ? EDITOR_COPY.agent.hideChanges : EDITOR_COPY.agent.showChanges}
             </button>
@@ -114,7 +114,9 @@ function EditEntry({ edit, onUndo }: { edit: WithId<AgentEdit>; onUndo: () => bo
             </button>
           </div>
         )}
-        {cantUndo && <p className="text-[12.5px] text-ink-muted">{EDITOR_COPY.agent.cantUndo}</p>}
+        {cantUndo && (
+          <p className="text-[0.78125rem] text-ink-muted">{EDITOR_COPY.agent.cantUndo}</p>
+        )}
       </div>
     </article>
   );
@@ -126,11 +128,11 @@ function PendingEntry({ pending }: { pending: PendingEdit }) {
       <Ask quote={pending.quote} instruction={pending.instruction} />
       <div className="mt-[18px]">
         {pending.failed ? (
-          <p role="alert" className="text-[14px] text-danger">
+          <p role="alert" className="text-[0.875rem] text-danger">
             {EDITOR_COPY.agent.failed}
           </p>
         ) : (
-          <Working status={EDITOR_COPY.agent.working} className="text-[12.5px]" />
+          <Working status={EDITOR_COPY.agent.working} className="text-[0.78125rem]" />
         )}
       </div>
     </article>
@@ -189,7 +191,7 @@ function AgentPanel({
       className="flex w-[360px] max-w-full flex-none animate-fade flex-col border-l border-line bg-white"
     >
       <div className="flex items-center gap-2 px-5 pt-[18px]">
-        <h2 className="text-[14px] font-medium">{EDITOR_COPY.agent.title}</h2>
+        <h2 className="text-[0.875rem]">{EDITOR_COPY.agent.title}</h2>
         <button
           type="button"
           onClick={onClose}
@@ -201,7 +203,9 @@ function AgentPanel({
       </div>
       <div ref={logRef} className="flex flex-1 flex-col gap-[18px] overflow-y-auto p-4">
         {edits.length === 0 && pending.length === 0 && (
-          <p className="text-[13.5px] leading-[1.45] text-ink-faint">{EDITOR_COPY.agent.empty}</p>
+          <p className="text-[0.84375rem] leading-[1.45] text-ink-faint">
+            {EDITOR_COPY.agent.empty}
+          </p>
         )}
         {edits.map((edit) => (
           <EditEntry key={edit.id} edit={edit} onUndo={() => onUndo(edit)} />
@@ -213,7 +217,7 @@ function AgentPanel({
       <form onSubmit={submit} className="flex-none p-3">
         <div className="flex flex-col rounded-2xl border border-line bg-white px-3 pt-3 pb-2 transition-colors focus-within:border-ink/40">
           {quote && (
-            <p className="mb-2 inline-flex max-w-full animate-fade items-center gap-1.5 self-start rounded-full bg-wash py-1 pr-1 pl-2.5 text-[13px] leading-[1.35] text-ink-muted">
+            <p className="mb-2 inline-flex max-w-full animate-fade items-center gap-1.5 self-start rounded-full bg-wash py-1 pr-1 pl-2.5 text-[0.8125rem] leading-[1.35] text-ink-muted">
               <QuoteIcon />
               <span className="truncate">{quote}</span>
               <button
@@ -237,14 +241,14 @@ function AgentPanel({
             onChange={(event) => setInstruction(event.target.value)}
             onKeyDown={onKeyDown}
             placeholder={quote ? EDITOR_COPY.agent.placeholder : EDITOR_COPY.agent.needsSelection}
-            className="field-sizing-content max-h-[120px] min-h-10 w-full resize-none border-0 bg-transparent px-0.5 pt-0.5 pb-2 text-[14px] leading-[1.4] outline-none placeholder:text-[#b7b2a8]"
+            className="field-sizing-content max-h-[120px] min-h-10 w-full resize-none border-0 bg-transparent px-0.5 pt-0.5 pb-2 text-[0.875rem] leading-[1.4] outline-none placeholder:text-[#b7b2a8]"
           />
           <div className="flex justify-end">
             <button
               type="submit"
               disabled={!canSend}
               aria-label="Send"
-              className="grid size-7 place-items-center rounded-full bg-ink text-[14px] leading-none text-paper disabled:bg-[#eceae6] disabled:text-[#b7b2a8]"
+              className="grid size-7 place-items-center rounded-full bg-ink text-[0.875rem] leading-none text-paper disabled:bg-[#eceae6] disabled:text-[#b7b2a8]"
             >
               ↑
             </button>

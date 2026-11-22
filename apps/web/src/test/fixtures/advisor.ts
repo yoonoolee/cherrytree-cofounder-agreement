@@ -17,7 +17,7 @@ const item = (id: string, text: string): ChecklistItem => ({
   item: text,
   status: 'todo',
   source: 'initial',
-  note: null,
+  answer: null,
 });
 
 /** Two sections, as a session starts: every item to do. */

@@ -28,7 +28,7 @@ function DraftDocument({ editor, onChange, onSelectEnd, margin }: DraftDocumentP
             spellCheck={false}
             onMouseUp={() => setTimeout(onSelectEnd, 0)}
             onKeyUp={(event) => event.shiftKey && onSelectEnd()}
-            className="min-h-[880px] px-8 pt-14 pb-18 font-ui text-[13.5px] leading-[1.6] font-light text-ink outline-none selection:bg-mark sm:px-16 [&_li]:mb-1.5 [&_ol]:list-decimal [&_ol]:pl-[1.2em] [&_ul]:list-disc [&_ul]:pl-[1.2em]"
+            className="min-h-[880px] px-8 pt-14 pb-18 font-ui text-[0.84375rem] leading-[1.6] text-ink outline-none selection:bg-mark sm:px-16 [&_li]:mb-1.5 [&_ol]:list-decimal [&_ol]:pl-[1.2em] [&_ul]:list-disc [&_ul]:pl-[1.2em]"
           />
         </div>
         {margin}

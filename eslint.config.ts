@@ -35,6 +35,8 @@ export default tseslint.config(
       'apps/agent/',
       'coverage/',
       '.firebase/',
+      // VS Code Local History extension snapshots.
+      '.history/',
     ],
   },
 

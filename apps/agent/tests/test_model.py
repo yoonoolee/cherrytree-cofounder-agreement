@@ -20,7 +20,7 @@ def test_every_call_uses_the_designed_settings() -> None:
         tools=definitions(ADVISOR.tools),
         output_schema=ADVISOR.output_schema,
     )
-    assert params["model"] == "claude-sonnet-5-5"
+    assert params["model"] == "claude-opus-5-5"
     assert params["thinking"] == {"type": "adaptive"}
     assert params["output_config"]["effort"] == "medium"
     assert params["output_config"]["format"]["type"] == "json_schema"
@@ -160,4 +160,4 @@ async def test_call_model_streams_text_and_tool_input_to_the_handler(
     assert handler.starts == 1
     assert handler.text == '{"a": 1}'
     assert handler.tool_inputs == {"t1": '{"quotes": ["x"]}'}
-    assert stream.params["model"] == "claude-sonnet-5-5"
+    assert stream.params["model"] == "claude-opus-5-5"

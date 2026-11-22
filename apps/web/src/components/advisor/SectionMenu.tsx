@@ -46,12 +46,12 @@ function SectionMenu({
           <p className="mt-2.5 text-sm text-ink-muted">
             {remaining} {remaining === 1 ? 'section' : 'sections'} remaining
           </p>
-          <p className="mt-5 mb-2 text-xs tracking-wide text-ink-muted uppercase">Sections</p>
+          <p className="mt-5 mb-2 text-xs tracking-[0.034em] text-ink-muted uppercase">Sections</p>
           <ul className="flex flex-col gap-2.5">
             {progress.sections.map((section) => (
               <li
                 key={section.name}
-                className={`flex items-center gap-2 font-light ${
+                className={`flex items-center gap-2 ${
                   section.active ? 'text-ink' : 'text-ink-muted'
                 }`}
               >

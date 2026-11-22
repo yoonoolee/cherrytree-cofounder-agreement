@@ -22,7 +22,7 @@ const item = {
   item: "Each cofounder's percentage",
   status: 'done',
   source: 'initial',
-  note: '50/50',
+  answer: '50/50',
 };
 
 const message = {
@@ -57,7 +57,7 @@ describe('advisorStateSchema', () => {
 });
 
 describe('interviewSchema', () => {
-  it('takes a guide per section and an optional guide per item', () => {
+  it('takes a guide per section and optional notes per item', () => {
     const file = {
       opener: 'What are you building?',
       sections: [
@@ -65,7 +65,7 @@ describe('interviewSchema', () => {
           id: 'company',
           name: 'The company',
           guide: 'Let them tell the story.',
-          checklist: [{ item: 'Company name' }, { item: 'Entity type', guide: 'Suggest C-Corp.' }],
+          checklist: [{ item: 'Company name' }, { item: 'Entity type', notes: 'Suggest C-Corp.' }],
         },
       ],
     };

@@ -83,7 +83,7 @@ class ChecklistItem(BaseModel):
     item: str
     status: ChecklistStatus
     source: Literal["initial", "added_by_agent"]
-    note: str | None
+    answer: str | None
 
 
 class ChecklistSection(BaseModel):
@@ -127,7 +127,7 @@ class InterviewItem(BaseModel):
         populate_by_name=True,
     )
     item: str
-    guide: str | None = None
+    notes: str | None = None
 
 
 class AdvisorState(BaseModel):

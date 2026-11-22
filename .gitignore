@@ -28,6 +28,7 @@ apps/functions/lib
 .env*
 !.env.example
 .Rhistory
+.history/
 
 # Firebase Functions environment: only the non-secret per-project parameter files are tracked
 !apps/functions/.env.cherrytree-cofounder-agree-dev
