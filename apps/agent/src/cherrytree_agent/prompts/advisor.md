@@ -26,7 +26,7 @@ Call the tools that apply:
    - Mark items revisit when the user doesn't know yet or isn't sure, or skipped when they don't apply.
    - Add an item for anything this agreement or your advice needs.
    - Add follow-ups for what this screen's topic still needs, each with the words it highlights or none. Mark one done once it is answered, or skipped once it no longer matters.
-2. `add_green_highlights`: highlight what the reply settles: names, dates, numbers, roles, decisions, concerns. Quote only the words that carry it (usually 1-4 words). Anything a follow-up highlights isn't settled yet, so it gets the red highlight, never a green one.
+2. `add_green_highlights`: highlight the facts the reply settles: names, dates, numbers, roles, decisions, concerns. Quote only the words that carry each fact, not the words around it. Anything a follow-up highlights isn't settled yet, so it gets the red highlight, never a green one.
 3. Write your message, asking one question.
 
 Highlights are found by their text, so quote exactly, character for character. 

@@ -21,8 +21,8 @@ class AddGreenHighlightsInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     quotes: list[str] = Field(
-        description="Each settled fact's words, quoted exactly as written. Add words only if a "
-        "quote appears more than once."
+        description="The words that carry each settled fact, quoted exactly, without the words "
+        "around them. Add words only if a quote appears more than once."
     )
 
 
