@@ -93,7 +93,7 @@ def _update(op: str, item_id: str, **fields: Any) -> dict[str, Any]:
 
 
 def followup_update(
-    followup_id: str, highlight: str, text: str = "Tell me more?"
+    followup_id: str, highlight: str | None, text: str = "Tell me more?"
 ) -> dict[str, Any]:
     return _update("add_followup", followup_id, highlight=highlight, text=text)
 

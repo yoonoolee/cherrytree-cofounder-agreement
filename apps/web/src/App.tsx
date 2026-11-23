@@ -1,8 +1,13 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router';
+import {
+  createBrowserRouter,
+  Navigate,
+  Outlet,
+  RouterProvider,
+  ScrollRestoration,
+} from 'react-router';
 
 import ProtectedRoute from './components/ProtectedRoute.tsx';
-import ResetPagePosition from './components/ResetPagePosition.tsx';
 import ProjectSkeleton from './components/status/ProjectSkeleton.tsx';
 import DashboardPage from './pages/DashboardPage.tsx';
 import LandingPage from './pages/LandingPage.tsx';
@@ -18,45 +23,51 @@ import SignUpPage from './pages/SignUpPage.tsx';
 // The agent product loads as its own chunk, so the marketing pages and dashboard don't ship it.
 const ProjectPage = lazy(() => import('./pages/ProjectPage.tsx'));
 
+// Every page, in a data router so pages can use its navigation APIs (useBlocker). A new page
+// opens at the top; Back and Forward return to where it was scrolled.
+const router = createBrowserRouter([
+  {
+    element: (
+      <>
+        <ScrollRestoration />
+        <Outlet />
+      </>
+    ),
+    children: [
+      { path: '/', element: <LandingPage /> },
+      { path: '/attorney', element: <AttorneyPage /> },
+      { path: '/pricing', element: <PricingPage /> },
+      { path: '/about', element: <AboutPage /> },
+      { path: '/contact', element: <ContactPage /> },
+      { path: '/privacy', element: <PrivacyPage /> },
+      { path: '/terms', element: <TermsPage /> },
+      { path: '/login/*', element: <LoginPage /> },
+      { path: '/signup/*', element: <SignUpPage /> },
+      {
+        path: '/dashboard',
+        element: (
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/projects/:projectId',
+        element: (
+          <ProtectedRoute loading={<ProjectSkeleton />}>
+            <Suspense fallback={<ProjectSkeleton />}>
+              <ProjectPage />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      { path: '*', element: <Navigate to="/" replace /> },
+    ],
+  },
+]);
+
 function App() {
-  return (
-    <Router>
-      <ResetPagePosition />
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/attorney" element={<AttorneyPage />} />
-        <Route path="/pricing" element={<PricingPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/terms" element={<TermsPage />} />
-        <Route path="/login/*" element={<LoginPage />} />
-        <Route path="/signup/*" element={<SignUpPage />} />
-
-        {/* Protected Routes */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/projects/:projectId"
-          element={
-            <ProtectedRoute loading={<ProjectSkeleton />}>
-              <Suspense fallback={<ProjectSkeleton />}>
-                <ProjectPage />
-              </Suspense>
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </Router>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

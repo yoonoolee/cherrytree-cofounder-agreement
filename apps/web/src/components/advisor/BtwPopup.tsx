@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ADVISOR_REPLY_MAX_LENGTH } from '@cherrytree/shared';
 
+import AdvisorText from './AdvisorText.tsx';
 import SourceLinks from './SourceLinks.tsx';
 import Working from '../status/Working.tsx';
 import { ADVISOR_COPY, advisorErrorMessage } from '../../constants/advisor.ts';
 import type { Btw } from '../../hooks/useAdvisorBtw.ts';
+import { submitOnEnter } from '../../utils/submitOnEnter.ts';
 
 interface BtwPopupProps {
   btw: Btw;
@@ -29,7 +31,7 @@ function BtwPopup({ btw, top, left, busy, onAsk, onClose }: BtwPopupProps) {
     const onPointerDown = (event: MouseEvent) => {
       if (!popupRef.current?.contains(event.target as Node)) onClose();
     };
-    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+    const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
     document.addEventListener('mousedown', onPointerDown);
@@ -43,12 +45,6 @@ function BtwPopup({ btw, top, left, busy, onAsk, onClose }: BtwPopupProps) {
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (canAsk) onAsk(question.trim());
-  };
-  const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      if (canAsk) onAsk(question.trim());
-    }
   };
 
   return (
@@ -72,7 +68,7 @@ function BtwPopup({ btw, top, left, busy, onAsk, onClose }: BtwPopupProps) {
         <div aria-live="polite" className="text-sm leading-normal">
           <p className="mb-1.5 text-ink">{btw.question}</p>
           {btw.answer ? (
-            <p className="animate-fade whitespace-pre-line text-ink-muted">{btw.answer}</p>
+            <AdvisorText text={btw.answer} className="animate-fade text-ink-muted" />
           ) : (
             <Working status={ADVISOR_COPY.btwThinking} className="text-sm" />
           )}
@@ -88,7 +84,7 @@ function BtwPopup({ btw, top, left, busy, onAsk, onClose }: BtwPopupProps) {
             rows={3}
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
-            onKeyDown={onKeyDown}
+            onKeyDown={submitOnEnter}
             maxLength={ADVISOR_REPLY_MAX_LENGTH}
             placeholder={ADVISOR_COPY.btwPlaceholder}
             autoFocus

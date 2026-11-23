@@ -1,6 +1,7 @@
 import { useRef, type MouseEvent, type ReactNode } from 'react';
 import type { AdvisorMessage, AdvisorState, Highlight } from '@cherrytree/shared';
 
+import AdvisorText from './AdvisorText.tsx';
 import MarkedText, { NumberTag } from './MarkedText.tsx';
 import { ADVISOR_COPY } from '../../constants/advisor.ts';
 import {
@@ -51,14 +52,12 @@ function AnsweredQuestion({
 }) {
   return (
     <div className="mt-7 mb-3">
-      {message.answer && (
-        <p className={`mb-3 whitespace-pre-line ${ADVISOR_TEXT}`}>{message.answer}</p>
-      )}
+      {message.answer && <AdvisorText text={message.answer} className={`mb-3 ${ADVISOR_TEXT}`} />}
       {text && (
-        <p className={ADVISOR_TEXT}>
+        <div className={`flex items-start ${ADVISOR_TEXT}`}>
           {number !== undefined && <NumberTag number={number} large />}
-          {text}
-        </p>
+          <AdvisorText text={text} />
+        </div>
       )}
     </div>
   );
@@ -118,12 +117,12 @@ function ScreenThread({
 
   return (
     <div ref={threadRef} className="group relative pb-8">
-      <h1
+      <AdvisorText
+        text={screen.question}
+        heading="h1"
         className="mb-2 text-[1.5rem] leading-[1.1] tracking-[-0.006em] sm:text-[1.875rem]"
         style={{ viewTransitionName: 'advisor-question' }}
-      >
-        {screen.question}
-      </h1>
+      />
       <div onMouseUp={onMouseUp} onMouseMove={onMouseMove} className="mt-12">
         {exchanges.map((exchange, i) => {
           const asked = exchange.answers?.followupId ?? null;

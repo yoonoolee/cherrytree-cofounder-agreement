@@ -238,8 +238,7 @@ async def test_a_turn_streams_highlights_and_saves_with_its_checklist_changes(
     [entry] = await saved(db, "transcript")
     replay = json.loads(entry["messages"])
     assert [m["role"] for m in replay] == ["user", "assistant", "user", "assistant"]
-    assert replay[0]["content"][1] == {"type": "text", "text": REPLY}
-    assert "<checklist>" in replay[0]["content"][0]["text"]
+    assert replay[0]["content"] == [{"type": "text", "text": REPLY}]
 
     saved_state = await state(db)
     assert saved_state["turnCount"] == 1
@@ -330,8 +329,9 @@ async def test_a_btw_answers_and_changes_only_the_history(
     assert tool_result["is_error"] is True
     assert "btw" in tool_result["content"]
     sent = model.calls[0]["messages"][-1]["content"]
-    assert "<selected_text>\nmiddle school\n</selected_text>" in sent[0]["text"]
-    assert sent[1]["text"] == "Is that unusual?"
+    assert "<checklist>" in sent[0]["text"]
+    assert "<selected_text>\nmiddle school\n</selected_text>" in sent[1]["text"]
+    assert sent[2]["text"] == "Is that unusual?"
 
     [turn] = await saved(db, "turns")
     assert (turn["kind"], turn["quote"], turn["question"]) == (
@@ -360,8 +360,17 @@ async def test_the_next_turn_replays_the_saved_history_exactly(
 
     assert events(response)[-1]["type"] == "done"
     sent = model.calls[0]["messages"]
-    assert sent[:-1] == json.loads(entry["messages"])
-    assert sent[-1]["content"][1]["text"] == "Second reply."
+    history = json.loads(entry["messages"])
+    *earlier, last = sent[:-1]
+    assert earlier == history[:-1]
+    assert last["content"][:-1] == history[-1]["content"][:-1]
+    assert last["content"][-1] == {
+        **history[-1]["content"][-1],
+        "cache_control": {"type": "ephemeral", "ttl": "1h"},
+    }
+    current = sent[-1]["content"]
+    assert "<checklist>" in current[0]["text"] and "<screen>" in current[0]["text"]
+    assert current[1]["text"] == "Second reply."
 
 
 async def test_a_stale_send_is_rejected_before_streaming(

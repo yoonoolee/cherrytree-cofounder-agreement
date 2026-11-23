@@ -1,7 +1,9 @@
-import type { FormEvent, KeyboardEvent } from 'react';
+import type { FormEvent } from 'react';
 import { ADVISOR_REPLY_MAX_LENGTH } from '@cherrytree/shared';
 
+import AdvisorText from './AdvisorText.tsx';
 import { ADVISOR_COPY } from '../../constants/advisor.ts';
+import { submitOnEnter } from '../../utils/submitOnEnter.ts';
 
 interface AskViewProps {
   question: string;
@@ -18,21 +20,15 @@ function AskView({ question, value, onChange, onSubmit }: AskViewProps) {
     event.preventDefault();
     if (canSend) onSubmit();
   };
-  const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      if (canSend) onSubmit();
-    }
-  };
 
   return (
     <form onSubmit={submit} className="flex min-h-[55vh] flex-1 flex-col justify-center">
-      <h1
+      <AdvisorText
+        text={question}
+        heading="h1"
         className="mb-9 animate-rise text-[2.125rem] leading-[1.1] tracking-[-0.006em] sm:text-[3.875rem]"
         style={{ viewTransitionName: 'advisor-question' }}
-      >
-        {question}
-      </h1>
+      />
       <label htmlFor="advisor-reply" className="sr-only">
         Your answer
       </label>
@@ -40,7 +36,7 @@ function AskView({ question, value, onChange, onSubmit }: AskViewProps) {
         id="advisor-reply"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        onKeyDown={onKeyDown}
+        onKeyDown={submitOnEnter}
         maxLength={ADVISOR_REPLY_MAX_LENGTH}
         placeholder={ADVISOR_COPY.replyPlaceholder}
         autoFocus

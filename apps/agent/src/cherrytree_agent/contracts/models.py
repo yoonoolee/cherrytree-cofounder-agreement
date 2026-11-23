@@ -107,7 +107,7 @@ class Followup(BaseModel):
     id: str
     text: str
     status: FollowupStatus
-    highlight: TurnHighlight
+    highlight: TurnHighlight | None
 
 
 class Screen(BaseModel):

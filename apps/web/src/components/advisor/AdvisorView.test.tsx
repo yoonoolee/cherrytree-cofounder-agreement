@@ -25,6 +25,11 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('../../hooks/useAdvisor.ts', () => ({ useAdvisor: () => mocks.advisor }));
+// Tested on its own (LeavePrompt.test.tsx); here, only whether it's on.
+vi.mock('../LeavePrompt.tsx', () => ({
+  default: ({ when }: { when: boolean }) => <div data-testid="leave-prompt" data-when={when} />,
+}));
+
 vi.mock('../../lib/firebase.ts', () => ({ auth: {}, appCheck: null }));
 vi.mock('../../lib/agent.ts', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../lib/agent.ts')>()),
@@ -83,6 +88,10 @@ function sendReply(text: string) {
 const markText = (text: string) =>
   screen.getAllByText((_, el) => el?.tagName === 'MARK' && el.textContent?.endsWith(text) === true);
 
+/** The number tag beside a follow-up question, if it has one. */
+const numberBeside = (question: string) =>
+  screen.getByText(question).parentElement?.previousElementSibling?.textContent ?? null;
+
 beforeEach(() => {
   mocks.streamAdvisorTurn.mockReset();
   mocks.streamAdvisorBtw.mockReset();
@@ -97,6 +106,7 @@ describe('AdvisorView', () => {
     expect(screen.getByRole('button', { name: 'Background' })).toBeInTheDocument();
     expect(screen.getByText(/not a law firm/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+    expect(screen.getByTestId('leave-prompt')).toHaveAttribute('data-when', 'false');
   });
 
   it('shows progress over every section from the section menu', () => {
@@ -142,9 +152,8 @@ describe('AdvisorView', () => {
     // The saved turn and question list arrive through Firestore.
     oneReplyIn();
     rerender(ui());
-    expect(screen.getByRole('heading', { name: 'What month in 2023?' })).toHaveTextContent(
-      '1What month in 2023?',
-    );
+    expect(screen.getByRole('heading', { name: 'What month in 2023?' })).toBeInTheDocument();
+    expect(numberBeside('What month in 2023?')).toBe('1');
     expect(screen.getAllByText('Nice.')).toHaveLength(1);
     expect(replyBox()).toHaveValue('');
   });
@@ -158,6 +167,7 @@ describe('AdvisorView', () => {
     sendReply(REPLY);
 
     expect(screen.getByText('Reading your answer')).toBeInTheDocument();
+    expect(screen.getByTestId('leave-prompt')).toHaveAttribute('data-when', 'true');
     expect(await screen.findByText('Highlighting the main points')).toBeInTheDocument();
     await stream.release();
   });
@@ -183,9 +193,50 @@ describe('AdvisorView', () => {
     expect(markText('in 2023')[0]).toHaveTextContent('2in 2023');
     expect(markText('climbing gym')[0]).toHaveClass('bg-needs');
     expect(markText('March')[0]).toHaveClass('bg-kept');
-    expect(screen.getByRole('heading', { name: 'Who suggested it?' })).toHaveTextContent(
-      '1Who suggested it?',
-    );
+    expect(screen.getByRole('heading', { name: 'Who suggested it?' })).toBeInTheDocument();
+    expect(numberBeside('Who suggested it?')).toBe('1');
+  });
+
+  it('asks a follow-up on something the replies left out without a number', () => {
+    const when = makeFollowup('f_when', 'What month in 2023?', 'in 2023', { status: 'done' });
+    const office = makeFollowup('f_office', 'Where is the office?', null, { status: 'current' });
+    setData({
+      state: withFollowups(makeAdvisorState({ turnCount: 2 }), 'screen_1', [when, office]),
+      turns: [
+        makeTurn(0, { message: makeMessage({ followupId: 'f_when' }) }),
+        makeTurn(1, { reply: 'March.', message: makeMessage({ followupId: 'f_office' }) }),
+      ],
+    });
+    render(ui());
+
+    expect(numberBeside('What month in 2023?')).toBe('1');
+    expect(screen.getByRole('heading', { name: 'Where is the office?' })).toBeInTheDocument();
+    expect(numberBeside('Where is the office?')).toBeNull();
+  });
+
+  it('shows a question with bullets as a list under it, and Shift+Enter adds a line', () => {
+    const facts = makeFollowup('f_facts', 'A few details:\n- Entity type\n- State', null, {
+      status: 'current',
+    });
+    setData({
+      state: withFollowups(makeAdvisorState({ turnCount: 1 }), 'screen_1', [facts]),
+      turns: [makeTurn(0, { message: makeMessage({ followupId: 'f_facts' }) })],
+    });
+    render(ui());
+
+    expect(screen.getByRole('heading', { name: 'A few details:' })).toBeInTheDocument();
+    const list = screen.getByRole('list');
+    expect(
+      within(list)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent),
+    ).toEqual(['Entity type', 'State']);
+
+    fireEvent.change(replyBox(), { target: { value: 'C-corp' } });
+    fireEvent.keyDown(replyBox(), { key: 'Enter', shiftKey: true });
+    expect(mocks.streamAdvisorTurn).not.toHaveBeenCalled();
+    fireEvent.keyDown(replyBox(), { key: 'Enter' });
+    expect(mocks.streamAdvisorTurn).toHaveBeenCalled();
   });
 
   it('holds a move on the screen until Next, then opens the next question blank', () => {

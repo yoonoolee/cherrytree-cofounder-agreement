@@ -93,7 +93,7 @@ Zod schemas in `packages/shared/src/domain/` are the source of truth; TypeScript
 ```
 projects/{clerkOrgId}         Project — name, members{uid → {role}}, currentPlan, payments{checkoutSessionId → Payment},
                               draftStatus, draftStartedAt, createdAt, lastUpdated, lastOpened
-  advisor/state               AdvisorState — checklist by section, screens (the Advisor's questions, with follow-ups on reply highlights), complete, turnCount
+  advisor/state               AdvisorState — checklist by section, screens (one topic each: the Advisor's question and its follow-ups), complete, turnCount
   turns/{index}               AdvisorTurn — kind (turn: reply, greenHighlights, message | btw: quote, question, answer), uid, screen, traceId
   transcript/{index}          TranscriptEntry — the turn's or btw's raw Messages API content, server-only
   draft/current               Draft — Plate value, templateVersion, version (the editor saves it through the agent service)

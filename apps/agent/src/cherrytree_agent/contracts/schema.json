@@ -339,7 +339,14 @@
           "$ref": "#/$defs/FollowupStatus"
         },
         "highlight": {
-          "$ref": "#/$defs/TurnHighlight"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TurnHighlight"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [

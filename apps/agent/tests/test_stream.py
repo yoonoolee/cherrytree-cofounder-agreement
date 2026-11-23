@@ -73,6 +73,7 @@ async def test_red_highlights_stream_and_a_rejected_change_withdraws_them() -> N
         "updates": [
             status_update("company_2", "skipped"),
             followup_update("f_park", "at a park"),
+            followup_update("f_gap", None),
             followup_update("f_bad", "not in the reply"),
         ]
     }

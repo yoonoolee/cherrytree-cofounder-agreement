@@ -80,16 +80,18 @@ export function withFollowups(
 export const REPLY = 'We met at a climbing gym in Oakland in 2023.';
 
 /** A follow-up on `quote` in the reply of turn `turn` (REPLY by default). */
+/** A follow-up on `quote` in a reply, or on something the replies don't cover (`null`). */
 export function makeFollowup(
   id: string,
   text: string,
-  quote: string,
+  quote: string | null,
   {
     turn = 0,
     status = 'todo',
     reply = REPLY,
   }: { turn?: number; status?: FollowupStatus; reply?: string } = {},
 ): Followup {
+  if (quote === null) return { id, text, status, highlight: null };
   const start = reply.indexOf(quote);
   return { id, text, status, highlight: { turn, text: quote, start, end: start + quote.length } };
 }

@@ -15,6 +15,9 @@ export const ADVISOR_COPY = {
   thinking: { reading: 'Reading your answer', highlighting: 'Highlighting the main points' },
   /** While a btw is answered. */
   btwThinking: 'Looking into it',
+  /** Asked before leaving while the Advisor answers: leaving cancels the reply, unsaved. */
+  leaveWhileAnswering:
+    "The Advisor is still answering. If you leave now, what you just sent won't be saved. Leave anyway?",
   loadError: "We couldn't load your conversation.",
   loadErrorBody: 'Check your connection and try again. Your answers are saved.',
 };

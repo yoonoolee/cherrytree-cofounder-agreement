@@ -85,16 +85,22 @@ export type Interview = z.infer<typeof interviewSchema>;
 export const followupStatusSchema = z.enum(['todo', 'current', 'done', 'skipped']);
 export type FollowupStatus = z.infer<typeof followupStatusSchema>;
 
-/** A follow-up on part of a reply (a red highlight). Done and skipped ones stay on the screen. */
+/**
+ * A question asked on a screen after its first reply. Done and skipped ones stay on the screen.
+ */
 export const followupSchema = z.object({
   id: z.string(),
   text: z.string(),
   status: followupStatusSchema,
-  highlight: turnHighlightSchema,
+  /**
+   * The words in a reply it asks about, shown as a numbered red highlight; asked before any
+   * follow-up without one. null: it asks about something the replies don't cover yet.
+   */
+  highlight: turnHighlightSchema.nullable(),
 });
 export type Followup = z.infer<typeof followupSchema>;
 
-/** One question the Advisor asked, with the follow-ups asked on its replies. */
+/** One topic of the interview: the question that opens it, and the follow-ups asked on it. */
 export const screenSchema = z.object({
   id: z.string(),
   /** The section it belongs to. */

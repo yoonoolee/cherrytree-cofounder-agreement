@@ -109,7 +109,8 @@ const highlightKey = ({ turn, start, end }: TurnHighlight) => `${turn}:${start}:
 
 /**
  * The screen's red highlights, numbered in order of first appearance (by reply, then position),
- * with each follow-up id's number. `live` adds those streamed in the running turn.
+ * with each follow-up id's number. `live` adds those streamed in the running turn. A follow-up
+ * without a highlight has no number.
  */
 export function numberHighlights(
   followups: readonly Followup[],
@@ -123,7 +124,9 @@ export function numberHighlights(
     byKey.set(key, { highlight, open: open || (existing?.open ?? false) });
     keyOf.set(id, key);
   };
-  for (const f of followups) add(f.id, f.highlight, f.status === 'todo' || f.status === 'current');
+  for (const f of followups) {
+    if (f.highlight) add(f.id, f.highlight, f.status === 'todo' || f.status === 'current');
+  }
   for (const r of live) if (!keyOf.has(r.followupId)) add(r.followupId, r.highlight, true);
 
   const ordered = [...byKey.entries()].sort(

@@ -16,6 +16,7 @@ import {
 } from './draftOps.ts';
 import SelectionPopover from './SelectionPopover.tsx';
 import ThreadCard from './ThreadCard.tsx';
+import BackToDashboard from '../BackToDashboard.tsx';
 import BrandMark from '../BrandMark.tsx';
 import { EDITOR_COPY } from '../../constants/editor.ts';
 import { DISCLAIMER } from '../../constants/project.ts';
@@ -269,6 +270,7 @@ function DraftEditor({
   return (
     <div className="flex h-screen flex-col bg-paper font-ui text-ink">
       <header className="flex flex-none items-center gap-3.5 border-b border-line bg-white px-5 py-3 sm:px-7">
+        <BackToDashboard />
         <Link to="/dashboard" aria-label="Cherrytree dashboard" className="mr-2.5 hover:opacity-75">
           <BrandMark />
         </Link>

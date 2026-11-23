@@ -160,14 +160,16 @@ class AdvisorWorkingState:
             )
         )
 
-    def add_followup(self, item_id: str, text: str, quote: str) -> None:
+    def add_followup(self, item_id: str, text: str, quote: str | None) -> None:
+        """A follow-up on this screen: on the words `quote` in a reply, or on something the
+        replies don't cover (`None`)."""
         self._refuse_in_btw()
         self.screen.followups.append(
             Followup(
                 id=self._new_id(item_id),
                 text=text,
                 status="todo",
-                highlight=self.followup_highlight(quote),
+                highlight=None if quote is None else self.followup_highlight(quote),
             )
         )
 
@@ -211,6 +213,11 @@ class AdvisorWorkingState:
             if followup is None:
                 raise MessageError(
                     f"followupId {message.followup_id} is not an open follow-up on this screen."
+                )
+            highlighted = [f.id for f in open_followups if f.highlight is not None]
+            if followup.highlight is None and highlighted:
+                raise MessageError(
+                    f"Ask the follow-ups on highlights first: {', '.join(highlighted)} are open."
                 )
             for other in open_followups:
                 if other.status == "current":
@@ -275,10 +282,9 @@ def render_checklist(sections: list[ChecklistSection]) -> str:
 
 
 def render_screen(screen: Screen) -> str:
-    """The screen on display: its question and follow-ups."""
+    """The screen on display: its question and follow-ups, each with the words it highlights."""
     lines = [f"Section: {screen.section}", f"Question: {screen.question}"]
-    lines.extend(
-        f'Follow-up [{f.status}] {f.text} [id: {f.id}] on "{f.highlight.text}"'
-        for f in screen.followups
-    )
+    for f in screen.followups:
+        on = f' on "{f.highlight.text}"' if f.highlight else ""
+        lines.append(f"Follow-up [{f.status}] {f.text} [id: {f.id}]{on}")
     return "\n".join(lines)

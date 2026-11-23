@@ -80,6 +80,13 @@ describe('numberHighlights', () => {
     expect(numberOf('f_new')).toBe(1);
   });
 
+  it('numbers only follow-ups on a highlight', () => {
+    const gap = makeFollowup('f_gap', 'Where is the office?', null);
+    const { highlights, numberOf } = numberHighlights([gap, when]);
+    expect(highlights.map((h) => [h.highlight.text, h.number])).toEqual([['in 2023', 1]]);
+    expect(numberOf('f_gap')).toBeUndefined();
+  });
+
   it('gives each reply its own marks', () => {
     const { highlights } = numberHighlights([
       when,

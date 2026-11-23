@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { flushSync } from 'react-dom';
 
+import AdvisorText from './AdvisorText.tsx';
 import AskView from './AskView.tsx';
 import BottomBox, { type BottomBoxContent } from './BottomBox.tsx';
 import BtwPopup from './BtwPopup.tsx';
@@ -9,6 +10,7 @@ import SectionMenu from './SectionMenu.tsx';
 import SkipToEnd from './SkipToEnd.tsx';
 import UseLatestInterview from './UseLatestInterview.tsx';
 import StartDraftButton from '../draft/StartDraftButton.tsx';
+import LeavePrompt from '../LeavePrompt.tsx';
 import ProjectLayout from '../ProjectLayout.tsx';
 import ErrorState from '../status/ErrorState.tsx';
 import ProjectSkeleton from '../status/ProjectSkeleton.tsx';
@@ -74,7 +76,7 @@ function AdvisorView({ projectId }: { projectId: string }) {
     return (
       <ProjectLayout>
         {view?.answer && (
-          <p className="mb-8 max-w-2xl animate-rise text-lg whitespace-pre-line">{view.answer}</p>
+          <AdvisorText text={view.answer} className="mb-8 max-w-2xl animate-rise text-lg" />
         )}
         <h1 className="animate-rise font-ui text-4xl sm:text-5xl [animation-delay:80ms]">
           {ADVISOR_COMPLETE.title}
@@ -158,6 +160,7 @@ function AdvisorView({ projectId }: { projectId: string }) {
       }
       footer={box && <BottomBox content={box}>{errorAlert}</BottomBox>}
     >
+      <LeavePrompt when={busy} message={ADVISOR_COPY.leaveWhileAnswering} />
       {screen.turns.length === 0 && !liveTurn ? (
         <>
           <AskView
