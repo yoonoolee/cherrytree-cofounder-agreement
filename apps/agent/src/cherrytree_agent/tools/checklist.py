@@ -60,6 +60,10 @@ class ChecklistUpdate(BaseModel):
     text: str | None = Field(
         description="add_item: what to learn. add_followup: the question, as the user will see it."
     )
+    context: str | None = Field(
+        description="add_followup: what supports the question (why it matters, background, a "
+        "tip), shown in the answer box. null when there is none."
+    )
     highlight: str | None = Field(
         description="add_followup: the words in a reply on this screen it asks about, as few as "
         "make the point, quoted exactly. Add words only if the quote appears more than once. "
@@ -99,7 +103,7 @@ def _apply(state: AdvisorWorkingState, update: ChecklistUpdate) -> None:
     else:
         if not update.text:
             raise ChecklistError("add_followup needs text.")
-        state.add_followup(update.id, update.text, update.highlight)
+        state.add_followup(update.id, update.text, update.highlight, update.context)
 
 
 async def update_checklist(context: ToolContext, request: UpdateChecklistInput) -> str:

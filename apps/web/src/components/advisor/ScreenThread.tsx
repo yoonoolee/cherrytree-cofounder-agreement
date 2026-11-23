@@ -5,7 +5,7 @@ import AdvisorText from './AdvisorText.tsx';
 import MarkedText, { NumberTag } from './MarkedText.tsx';
 import { ADVISOR_COPY } from '../../constants/advisor.ts';
 import {
-  followupText,
+  findFollowup,
   marksFor,
   type AdvisorScreen,
   type NumberedHighlight,
@@ -153,7 +153,7 @@ function ScreenThread({
               {exchange.answers && (
                 <AnsweredQuestion
                   message={exchange.answers}
-                  text={asked ? followupText(state, asked) : null}
+                  text={asked ? (findFollowup(state, asked)?.text ?? null) : null}
                   number={number}
                 />
               )}

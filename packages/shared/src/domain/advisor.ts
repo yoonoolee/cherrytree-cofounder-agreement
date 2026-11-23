@@ -91,6 +91,8 @@ export type FollowupStatus = z.infer<typeof followupStatusSchema>;
 export const followupSchema = z.object({
   id: z.string(),
   text: z.string(),
+  /** What supports the question (why it matters, background, a tip), shown in the answer box. */
+  context: z.string().nullable().optional(),
   status: followupStatusSchema,
   /**
    * The words in a reply it asks about, shown as a numbered red highlight; asked before any
@@ -106,6 +108,8 @@ export const screenSchema = z.object({
   /** The section it belongs to. */
   section: z.string(),
   question: z.string(),
+  /** What supports the question (why it matters, background, a tip), shown in the answer box. */
+  context: z.string().nullable().optional(),
   followups: z.array(followupSchema),
 });
 export type Screen = z.infer<typeof screenSchema>;
@@ -151,6 +155,8 @@ export const advisorMessageSchema = z.object({
   type: advisorMessageTypeSchema,
   /** The new screen's question, for `next_question` and `next_section`. */
   question: z.string().nullable(),
+  /** What supports the new screen's question, shown in its answer box. */
+  context: z.string().nullable(),
   /** The follow-up asked on this screen, for `followup`. */
   followupId: z.string().nullable(),
   /** The Advisor's reply to anything the user asked in their reply, shown before the question. */

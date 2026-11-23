@@ -28,6 +28,7 @@ const item = {
 const message = {
   type: 'followup',
   question: null,
+  context: null,
   followupId: 'f_idea',
   answer: null,
   sources: [],
@@ -106,7 +107,14 @@ describe('advisorTurnSchema', () => {
 describe('advisorOutputSchema as JSON Schema', () => {
   it('requires every message property, so structured output keeps the streaming order', () => {
     const jsonSchema = z.toJSONSchema(advisorMessageSchema);
-    expect(jsonSchema.required).toEqual(['type', 'question', 'followupId', 'answer', 'sources']);
+    expect(jsonSchema.required).toEqual([
+      'type',
+      'question',
+      'context',
+      'followupId',
+      'answer',
+      'sources',
+    ]);
     expect(Object.keys(jsonSchema.properties ?? {})).toEqual(jsonSchema.required);
   });
 

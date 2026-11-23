@@ -220,6 +220,7 @@ async def test_a_turn_streams_highlights_and_saves_with_its_checklist_changes(
     done_message = {
         "type": "followup",
         "question": None,
+        "context": None,
         "followupId": "f_idea",
         "answer": "That's a long friendship.",
         "sources": [],

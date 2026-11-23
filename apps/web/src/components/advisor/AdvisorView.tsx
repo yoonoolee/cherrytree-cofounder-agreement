@@ -24,7 +24,7 @@ import { env } from '../../lib/env.ts';
 import {
   advisorProgress,
   advisorView,
-  followupText,
+  findFollowup,
   numberHighlights,
 } from '../../utils/advisorScreen.ts';
 
@@ -160,10 +160,12 @@ function AdvisorView({ projectId }: { projectId: string }) {
         }, 'next-screen'),
     };
   } else if (last?.message.followupId) {
+    const followup = findFollowup(state, last.message.followupId);
     box = {
       kind: 'followup',
       message: last.message,
-      question: followupText(state, last.message.followupId),
+      question: followup?.text ?? null,
+      context: followup?.context ?? null,
       number: numberOf(last.message.followupId),
       value: reply,
       onChange: setReply,
@@ -201,6 +203,7 @@ function AdvisorView({ projectId }: { projectId: string }) {
         <>
           <AskView
             question={screen.question}
+            context={screen.context ?? null}
             value={reply}
             onChange={setReply}
             onSubmit={submitFirstReply}

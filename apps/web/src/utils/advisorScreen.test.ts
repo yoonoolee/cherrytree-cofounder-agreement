@@ -1,7 +1,7 @@
 import {
   advisorProgress,
   advisorView,
-  followupText,
+  findFollowup,
   marksFor,
   numberHighlights,
 } from './advisorScreen.ts';
@@ -111,13 +111,13 @@ describe('numberHighlights', () => {
   });
 });
 
-describe('followupText and advisorProgress', () => {
+describe('findFollowup and advisorProgress', () => {
   it('finds follow-ups on any screen, and counts settled checklist items', () => {
     const state = withFollowups(withDone(makeAdvisorState(), 'background_1'), 'screen_1', [
       makeFollowup('f_when', 'When?', 'in 2023'),
     ]);
-    expect(followupText(state, 'f_when')).toBe('When?');
-    expect(followupText(state, 'nope')).toBeNull();
+    expect(findFollowup(state, 'f_when')?.text).toBe('When?');
+    expect(findFollowup(state, 'nope')).toBeNull();
 
     const progress = advisorProgress(state, 'Background');
     expect(progress.fraction).toBeCloseTo(1 / 3);

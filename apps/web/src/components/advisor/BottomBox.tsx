@@ -20,6 +20,8 @@ export type BottomBoxContent =
       kind: 'followup';
       message: AdvisorMessage;
       question: string | null;
+      /** What supports the question, shown as the reply box's placeholder. */
+      context: string | null;
       number: number | undefined;
       value: string;
       onChange: (value: string) => void;
@@ -71,7 +73,7 @@ function FollowupForm(content: Extract<BottomBoxContent, { kind: 'followup' }>) 
           onChange={(event) => content.onChange(event.target.value)}
           onKeyDown={submitOnEnter}
           maxLength={ADVISOR_REPLY_MAX_LENGTH}
-          placeholder={ADVISOR_COPY.followupPlaceholder}
+          placeholder={content.context ?? ADVISOR_COPY.followupPlaceholder}
           autoFocus
           autoComplete="off"
           className="field-sizing-content max-h-60 min-w-0 flex-1 resize-none border-0 bg-transparent p-0 text-lg leading-normal outline-none placeholder:text-ink-faint"

@@ -72,11 +72,16 @@ def statuses(state: AdvisorWorkingState) -> dict[str, str]:
 
 
 def message(
-    type: str, *, followup_id: str | None = None, question: str | None = None
+    type: str,
+    *,
+    followup_id: str | None = None,
+    question: str | None = None,
+    context: str | None = None,
 ) -> AdvisorMessage:
     return AdvisorMessage(
         type=type,  # type: ignore[arg-type]
         question=question,
+        context=context,
         followup_id=followup_id,
         answer=None,
         sources=[],
@@ -167,13 +172,20 @@ async def test_adds_a_follow_up_on_what_the_replies_dont_cover_without_a_highlig
         context(state),
         updates(
             followup_update("f_park", "a park", "Which park?"),
-            followup_update("f_address", None, "What mailing address should go on notices?"),
+            followup_update(
+                "f_address",
+                None,
+                "What mailing address should go on notices?",
+                context="Notices under the agreement go here.",
+            ),
         ),
     )
-    assert state.screen.followups[1].highlight is None
+    address = state.screen.followups[1]
+    assert (address.highlight, address.context) == (None, "Notices under the agreement go here.")
     assert render_screen(state.screen).splitlines()[2:] == [
         'Follow-up [todo] Which park? [id: f_park] on "a park"',
         "Follow-up [todo] What mailing address should go on notices? [id: f_address]",
+        "  Context: Notices under the agreement go here.",
     ]
 
 
@@ -278,12 +290,21 @@ def test_a_new_question_opens_a_screen_in_this_section_and_closes_the_last() -> 
     state = working_state()
     state.add_followup("f_a", "A?", "middle school")
 
-    saved = state.apply_message(message("next_question", question="Who is CEO?", followup_id="x"))
+    saved = state.apply_message(
+        message(
+            "next_question", question="Who is CEO?", context="It sets who signs.", followup_id="x"
+        )
+    )
 
     assert saved.followup_id is None
     first, second = state.screens
     assert first.followups[0].status == "skipped"
-    assert (second.id, second.section, second.question) == ("screen_2", "company", "Who is CEO?")
+    assert (second.id, second.section, second.question, second.context) == (
+        "screen_2",
+        "company",
+        "Who is CEO?",
+        "It sets who signs.",
+    )
 
 
 def test_the_next_section_skips_sections_with_nothing_to_do() -> None:

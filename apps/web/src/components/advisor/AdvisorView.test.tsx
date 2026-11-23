@@ -112,6 +112,15 @@ describe('AdvisorView', () => {
     expect(screen.getByTestId('leave-prompt')).toHaveAttribute('data-when', 'false');
   });
 
+  it("shows a question's context as its reply box placeholder", () => {
+    const state = makeAdvisorState();
+    const [first] = state.screens;
+    if (!first) throw new Error('expected a screen');
+    setData({ state: { ...state, screens: [{ ...first, context: 'Start wherever you like.' }] } });
+    render(ui());
+    expect(replyBox()).toHaveAttribute('placeholder', 'Start wherever you like.');
+  });
+
   it('shows progress over every section from the section menu', () => {
     setData({
       state: withScreen(
@@ -230,7 +239,10 @@ describe('AdvisorView', () => {
 
   it('asks a follow-up on something the replies left out without a number', () => {
     const when = makeFollowup('f_when', 'What month in 2023?', 'in 2023', { status: 'done' });
-    const office = makeFollowup('f_office', 'Where is the office?', null, { status: 'current' });
+    const office = {
+      ...makeFollowup('f_office', 'Where is the office?', null, { status: 'current' }),
+      context: 'Notices go to this address.',
+    };
     setData({
       state: withFollowups(makeAdvisorState({ turnCount: 2 }), 'screen_1', [when, office]),
       turns: [
@@ -243,6 +255,7 @@ describe('AdvisorView', () => {
     expect(numberBeside('What month in 2023?')).toBe('1');
     expect(screen.getByRole('heading', { name: 'Where is the office?' })).toBeInTheDocument();
     expect(numberBeside('Where is the office?')).toBeNull();
+    expect(replyBox()).toHaveAttribute('placeholder', 'Notices go to this address.');
   });
 
   it('shows a question with bullets as a list under it, and Shift+Enter adds a line', () => {

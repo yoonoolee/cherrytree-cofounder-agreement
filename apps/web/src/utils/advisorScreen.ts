@@ -179,11 +179,11 @@ export function marksFor(
   ];
 }
 
-/** The text of a follow-up by id. */
-export function followupText(state: AdvisorState, id: string): string | null {
+/** A follow-up by id, on any screen. */
+export function findFollowup(state: AdvisorState, id: string): Followup | null {
   for (const screen of state.screens) {
     const followup = screen.followups.find((f) => f.id === id);
-    if (followup) return followup.text;
+    if (followup) return followup;
   }
   return null;
 }

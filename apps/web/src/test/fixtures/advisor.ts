@@ -100,6 +100,7 @@ export function makeMessage(overrides: Partial<AdvisorMessage> = {}): AdvisorMes
   return {
     type: 'followup',
     question: null,
+    context: null,
     followupId: 'f_when',
     answer: null,
     sources: [],
