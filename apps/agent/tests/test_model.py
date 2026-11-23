@@ -37,7 +37,14 @@ def test_the_advisor_message_keeps_the_streaming_order() -> None:
     assert schema is not None
     assert schema["required"] == ["message"]
     turn_message = schema["$defs"]["AdvisorMessage"]
-    assert turn_message["required"] == ["type", "question", "followupId", "answer", "sources"]
+    assert turn_message["required"] == [
+        "type",
+        "question",
+        "context",
+        "followupId",
+        "answer",
+        "sources",
+    ]
     assert turn_message["additionalProperties"] is False
 
 

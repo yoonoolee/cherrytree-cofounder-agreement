@@ -106,8 +106,9 @@ class Followup(BaseModel):
     )
     id: str
     text: str
+    context: str | None = None
     status: FollowupStatus
-    highlight: TurnHighlight
+    highlight: TurnHighlight | None
 
 
 class Screen(BaseModel):
@@ -118,6 +119,7 @@ class Screen(BaseModel):
     id: str
     section: str
     question: str
+    context: str | None = None
     followups: list[Followup]
 
 
@@ -149,6 +151,7 @@ class AdvisorMessage(BaseModel):
     )
     type: Literal["followup", "next_question", "next_section", "interview_complete"]
     question: str | None
+    context: str | None
     followup_id: Annotated[str | None, Field(alias="followupId")]
     answer: str | None
     sources: list[WebSource]

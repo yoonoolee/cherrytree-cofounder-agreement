@@ -1,7 +1,7 @@
 import {
   advisorProgress,
   advisorView,
-  followupText,
+  findFollowup,
   marksFor,
   numberHighlights,
 } from './advisorScreen.ts';
@@ -80,26 +80,44 @@ describe('numberHighlights', () => {
     expect(numberOf('f_new')).toBe(1);
   });
 
+  it('numbers only follow-ups on a highlight', () => {
+    const gap = makeFollowup('f_gap', 'Where is the office?', null);
+    const { highlights, numberOf } = numberHighlights([gap, when]);
+    expect(highlights.map((h) => [h.highlight.text, h.number])).toEqual([['in 2023', 1]]);
+    expect(numberOf('f_gap')).toBeUndefined();
+  });
+
   it('gives each reply its own marks', () => {
     const { highlights } = numberHighlights([
       when,
       makeFollowup('f_x', 'X?', 'yes', { turn: 1, reply: 'yes' }),
     ]);
     expect(marksFor(0, [{ start: 0, end: 2 }], highlights)).toEqual([
-      { start: 0, end: 2, kind: 'kept' },
-      { start: 36, end: 43, kind: 'resolved', number: 1 },
+      { start: 0, end: 2, kind: 'kept', sweep: false },
+      { start: 36, end: 43, kind: 'resolved', number: 1, sweep: false },
     ]);
-    expect(marksFor(1, [], highlights)).toEqual([{ start: 0, end: 3, kind: 'needs', number: 2 }]);
+    expect(marksFor(1, [], highlights)).toEqual([
+      { start: 0, end: 3, kind: 'needs', number: 2, sweep: false },
+    ]);
+  });
+
+  it('sweeps in the highlights of the reply being answered', () => {
+    const live = [{ followupId: 'f_new', highlight: { turn: 1, text: 'We', start: 0, end: 2 } }];
+    const { highlights } = numberHighlights([when], live);
+    expect(marksFor(1, [{ start: 3, end: 5 }], highlights, true)).toEqual([
+      { start: 3, end: 5, kind: 'kept', sweep: true },
+      { start: 0, end: 2, kind: 'needs', number: 2, sweep: true },
+    ]);
   });
 });
 
-describe('followupText and advisorProgress', () => {
+describe('findFollowup and advisorProgress', () => {
   it('finds follow-ups on any screen, and counts settled checklist items', () => {
     const state = withFollowups(withDone(makeAdvisorState(), 'background_1'), 'screen_1', [
       makeFollowup('f_when', 'When?', 'in 2023'),
     ]);
-    expect(followupText(state, 'f_when')).toBe('When?');
-    expect(followupText(state, 'nope')).toBeNull();
+    expect(findFollowup(state, 'f_when')?.text).toBe('When?');
+    expect(findFollowup(state, 'nope')).toBeNull();
 
     const progress = advisorProgress(state, 'Background');
     expect(progress.fraction).toBeCloseTo(1 / 3);

@@ -9,6 +9,7 @@ from cherrytree_agent.advisor.working_state import (
     MessageError,
     RunKind,
     render_checklist,
+    render_screen,
 )
 from cherrytree_agent.contracts.models import (
     AdvisorMessage,
@@ -71,11 +72,16 @@ def statuses(state: AdvisorWorkingState) -> dict[str, str]:
 
 
 def message(
-    type: str, *, followup_id: str | None = None, question: str | None = None
+    type: str,
+    *,
+    followup_id: str | None = None,
+    question: str | None = None,
+    context: str | None = None,
 ) -> AdvisorMessage:
     return AdvisorMessage(
         type=type,  # type: ignore[arg-type]
         question=question,
+        context=context,
         followup_id=followup_id,
         answer=None,
         sources=[],
@@ -147,17 +153,40 @@ async def test_adds_follow_ups_on_one_highlight_and_finds_it_in_any_reply_on_scr
             followup_update("f_mine", "my idea"),
         ),
     )
-    followups = state.screen.followups
-    assert [f.id for f in followups] == ["f_idea", "f_when", "f_mine"]
-    assert followups[0].highlight == followups[1].highlight
-    assert followups[0].highlight.model_dump() == {
+    idea, when, mine = state.screen.followups
+    assert [f.id for f in (idea, when, mine)] == ["f_idea", "f_when", "f_mine"]
+    assert idea.highlight == when.highlight
+    assert idea.highlight is not None and idea.highlight.model_dump() == {
         "turn": 2,
         "text": "talked about starting something",
         "start": 38,
         "end": 69,
     }
-    assert followups[2].highlight.turn == 0
-    assert all(f.status == "todo" for f in followups)
+    assert mine.highlight is not None and mine.highlight.turn == 0
+    assert all(f.status == "todo" for f in (idea, when, mine))
+
+
+async def test_adds_a_follow_up_on_what_the_replies_dont_cover_without_a_highlight() -> None:
+    state = working_state()
+    await update_checklist(
+        context(state),
+        updates(
+            followup_update("f_park", "a park", "Which park?"),
+            followup_update(
+                "f_address",
+                None,
+                "What mailing address should go on notices?",
+                context="Notices under the agreement go here.",
+            ),
+        ),
+    )
+    address = state.screen.followups[1]
+    assert (address.highlight, address.context) == (None, "Notices under the agreement go here.")
+    assert render_screen(state.screen).splitlines()[2:] == [
+        'Follow-up [todo] Which park? [id: f_park] on "a park"',
+        "Follow-up [todo] What mailing address should go on notices? [id: f_address]",
+        "  Context: Notices under the agreement go here.",
+    ]
 
 
 async def test_adds_items_and_marks_them_with_answers() -> None:
@@ -174,8 +203,7 @@ async def test_adds_items_and_marks_them_with_answers() -> None:
     assert (added.id, added.source, added.status) == ("ip_prior", "added_by_agent", "todo")
     done = state.sections[0].checklist[0]
     assert (done.status, done.answer) == ("done", "Acme, AI scheduling for dentists.")
-    assert "[id: ip_prior]" in result
-    assert "Answer: Not incorporated yet." in result
+    assert result == "Applied 3 changes."
 
 
 async def test_a_follow_up_status_takes_no_answer() -> None:
@@ -245,16 +273,38 @@ def test_a_follow_up_message_makes_it_current() -> None:
     assert {f.id: f.status for f in state.screen.followups} == {"f_a": "todo", "f_b": "current"}
 
 
+def test_follow_ups_on_highlights_are_asked_before_the_others() -> None:
+    state = working_state()
+    state.add_followup("f_gap", "Where is the office?", None)
+    state.add_followup("f_park", "Which park?", "a park")
+
+    with pytest.raises(MessageError, match="highlights first: f_park"):
+        state.apply_message(message("followup", followup_id="f_gap"))
+
+    state.set_status("f_park", "done", None)
+    state.apply_message(message("followup", followup_id="f_gap"))
+    assert state.screen.followups[0].status == "current"
+
+
 def test_a_new_question_opens_a_screen_in_this_section_and_closes_the_last() -> None:
     state = working_state()
     state.add_followup("f_a", "A?", "middle school")
 
-    saved = state.apply_message(message("next_question", question="Who is CEO?", followup_id="x"))
+    saved = state.apply_message(
+        message(
+            "next_question", question="Who is CEO?", context="It sets who signs.", followup_id="x"
+        )
+    )
 
     assert saved.followup_id is None
     first, second = state.screens
     assert first.followups[0].status == "skipped"
-    assert (second.id, second.section, second.question) == ("screen_2", "company", "Who is CEO?")
+    assert (second.id, second.section, second.question, second.context) == (
+        "screen_2",
+        "company",
+        "Who is CEO?",
+        "It sets who signs.",
+    )
 
 
 def test_the_next_section_skips_sections_with_nothing_to_do() -> None:

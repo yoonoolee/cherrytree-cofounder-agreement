@@ -1,23 +1,27 @@
 import type { FormEvent, ReactNode } from 'react';
 import { ADVISOR_REPLY_MAX_LENGTH, type AdvisorMessage } from '@cherrytree/shared';
 
+import AdvisorText from './AdvisorText.tsx';
 import { NumberTag } from './MarkedText.tsx';
 import SourceLinks from './SourceLinks.tsx';
 import Working from '../status/Working.tsx';
 import { ADVISOR_COPY, ADVISOR_MOVE_ON } from '../../constants/advisor.ts';
+import { submitOnEnter } from '../../utils/submitOnEnter.ts';
 
 /**
- * - `thinking`: the Advisor is working: `status` until its answer starts, then the answer as it
+ * - `thinking`: the Advisor is working: dots until its answer starts, then the answer as it
  *   streams.
  * - `followup`: the follow-up to answer, under the Advisor's answer, with the reply input.
  * - `moving`: the screen is covered; Next opens the next one.
  */
 export type BottomBoxContent =
-  | { kind: 'thinking'; answer: string; status: string }
+  | { kind: 'thinking'; answer: string }
   | {
       kind: 'followup';
       message: AdvisorMessage;
       question: string | null;
+      /** What supports the question, shown as the reply box's placeholder. */
+      context: string | null;
       number: number | undefined;
       value: string;
       onChange: (value: string) => void;
@@ -26,7 +30,7 @@ export type BottomBoxContent =
   | { kind: 'moving'; message: AdvisorMessage; onNext: () => void };
 
 function Answer({ text }: { text: string | null }) {
-  return text ? <p className="mb-2 whitespace-pre-line">{text}</p> : null;
+  return text ? <AdvisorText text={text} className="mb-2" /> : null;
 }
 
 /** Collapsed under the question: the web pages the answer used. */
@@ -51,27 +55,28 @@ function FollowupForm(content: Extract<BottomBoxContent, { kind: 'followup' }>) 
       <div className="mb-4 text-[1.375rem] leading-[1.35]" aria-live="polite">
         <Answer text={content.message.answer} />
         {content.question && (
-          <h2 className="animate-rise [animation-delay:60ms]">
+          <div className="flex animate-rise items-start [animation-delay:60ms]">
             {content.number !== undefined && <NumberTag number={content.number} large />}
-            {content.question}
-          </h2>
+            <AdvisorText text={content.question} heading="h2" />
+          </div>
         )}
         <Sources message={content.message} />
       </div>
-      <div className="flex animate-rise items-center gap-4 border-b border-line pb-2.5 transition-colors [animation-delay:120ms] focus-within:border-ink">
+      <div className="flex animate-rise items-end gap-4 border-b border-line pb-2.5 transition-colors [animation-delay:120ms] focus-within:border-ink">
         <label htmlFor="advisor-followup-reply" className="sr-only">
           Your answer
         </label>
-        <input
+        <textarea
           id="advisor-followup-reply"
-          type="text"
+          rows={1}
           value={content.value}
           onChange={(event) => content.onChange(event.target.value)}
+          onKeyDown={submitOnEnter}
           maxLength={ADVISOR_REPLY_MAX_LENGTH}
-          placeholder={ADVISOR_COPY.followupPlaceholder}
+          placeholder={content.context ?? ADVISOR_COPY.followupPlaceholder}
           autoFocus
           autoComplete="off"
-          className="min-w-0 flex-1 border-0 bg-transparent p-0 text-lg leading-normal outline-none placeholder:text-ink-faint"
+          className="field-sizing-content max-h-60 min-w-0 flex-1 resize-none border-0 bg-transparent p-0 text-lg leading-normal outline-none placeholder:text-ink-faint"
         />
         <button
           type="submit"
@@ -93,9 +98,9 @@ function BottomBox({ content, children }: { content: BottomBoxContent; children?
       {content.kind === 'thinking' && (
         <div className="text-[1.375rem] leading-[1.35]" aria-live="polite" aria-busy>
           {content.answer ? (
-            <p className="animate-fade whitespace-pre-line">{content.answer}</p>
+            <AdvisorText text={content.answer} className="animate-fade" />
           ) : (
-            <Working status={content.status} />
+            <Working label={ADVISOR_COPY.thinking} />
           )}
         </div>
       )}

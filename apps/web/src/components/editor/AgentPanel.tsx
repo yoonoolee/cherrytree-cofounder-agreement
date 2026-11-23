@@ -132,7 +132,7 @@ function PendingEntry({ pending }: { pending: PendingEdit }) {
             {EDITOR_COPY.agent.failed}
           </p>
         ) : (
-          <Working status={EDITOR_COPY.agent.working} className="text-[0.78125rem]" />
+          <Working label={EDITOR_COPY.agent.working} className="text-[0.78125rem]" />
         )}
       </div>
     </article>

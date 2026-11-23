@@ -64,6 +64,7 @@ def advisor_json(
     followup_id: str | None = None,
     *,
     question: str | None = None,
+    context: str | None = None,
     type: str | None = None,
     answer: str | None = None,
 ) -> str:
@@ -75,6 +76,7 @@ def advisor_json(
             "message": {
                 "type": type,
                 "question": question,
+                "context": context,
                 "followupId": followup_id,
                 "answer": answer,
                 "sources": [],
@@ -88,14 +90,24 @@ def btw_json(answer: str) -> str:
 
 
 def _update(op: str, item_id: str, **fields: Any) -> dict[str, Any]:
-    empty = {"section": None, "text": None, "highlight": None, "status": None, "answer": None}
+    empty = {
+        "section": None,
+        "text": None,
+        "context": None,
+        "highlight": None,
+        "status": None,
+        "answer": None,
+    }
     return {"op": op, "id": item_id, **empty, **fields}
 
 
 def followup_update(
-    followup_id: str, highlight: str, text: str = "Tell me more?"
+    followup_id: str,
+    highlight: str | None,
+    text: str = "Tell me more?",
+    context: str | None = None,
 ) -> dict[str, Any]:
-    return _update("add_followup", followup_id, highlight=highlight, text=text)
+    return _update("add_followup", followup_id, highlight=highlight, text=text, context=context)
 
 
 def item_update(item_id: str, section: str, text: str) -> dict[str, Any]:

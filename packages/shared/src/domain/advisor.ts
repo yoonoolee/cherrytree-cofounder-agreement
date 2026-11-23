@@ -85,21 +85,31 @@ export type Interview = z.infer<typeof interviewSchema>;
 export const followupStatusSchema = z.enum(['todo', 'current', 'done', 'skipped']);
 export type FollowupStatus = z.infer<typeof followupStatusSchema>;
 
-/** A follow-up on part of a reply (a red highlight). Done and skipped ones stay on the screen. */
+/**
+ * A question asked on a screen after its first reply. Done and skipped ones stay on the screen.
+ */
 export const followupSchema = z.object({
   id: z.string(),
   text: z.string(),
+  /** What supports the question (why it matters, background, a tip), shown in the answer box. */
+  context: z.string().nullable().optional(),
   status: followupStatusSchema,
-  highlight: turnHighlightSchema,
+  /**
+   * The words in a reply it asks about, shown as a numbered red highlight; asked before any
+   * follow-up without one. null: it asks about something the replies don't cover yet.
+   */
+  highlight: turnHighlightSchema.nullable(),
 });
 export type Followup = z.infer<typeof followupSchema>;
 
-/** One question the Advisor asked, with the follow-ups asked on its replies. */
+/** One topic of the interview: the question that opens it, and the follow-ups asked on it. */
 export const screenSchema = z.object({
   id: z.string(),
   /** The section it belongs to. */
   section: z.string(),
   question: z.string(),
+  /** What supports the question (why it matters, background, a tip), shown in the answer box. */
+  context: z.string().nullable().optional(),
   followups: z.array(followupSchema),
 });
 export type Screen = z.infer<typeof screenSchema>;
@@ -145,6 +155,8 @@ export const advisorMessageSchema = z.object({
   type: advisorMessageTypeSchema,
   /** The new screen's question, for `next_question` and `next_section`. */
   question: z.string().nullable(),
+  /** What supports the new screen's question, shown in its answer box. */
+  context: z.string().nullable(),
   /** The follow-up asked on this screen, for `followup`. */
   followupId: z.string().nullable(),
   /** The Advisor's reply to anything the user asked in their reply, shown before the question. */

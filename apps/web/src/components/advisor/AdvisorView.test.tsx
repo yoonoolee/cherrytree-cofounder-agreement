@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import type { AdvisorStreamEvent } from '@cherrytree/shared';
 
@@ -25,6 +25,11 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('../../hooks/useAdvisor.ts', () => ({ useAdvisor: () => mocks.advisor }));
+// Tested on its own (LeavePrompt.test.tsx); here, only whether it's on.
+vi.mock('../LeavePrompt.tsx', () => ({
+  default: ({ when }: { when: boolean }) => <div data-testid="leave-prompt" data-when={when} />,
+}));
+
 vi.mock('../../lib/firebase.ts', () => ({ auth: {}, appCheck: null }));
 vi.mock('../../lib/agent.ts', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../lib/agent.ts')>()),
@@ -83,6 +88,13 @@ function sendReply(text: string) {
 const markText = (text: string) =>
   screen.getAllByText((_, el) => el?.tagName === 'MARK' && el.textContent?.endsWith(text) === true);
 
+const redMark = (text: string) =>
+  screen.queryAllByText((_, el) => el?.tagName === 'MARK' && el.textContent === `1${text}`);
+
+/** The number tag beside a follow-up question, if it has one. */
+const numberBeside = (question: string) =>
+  screen.getByText(question).parentElement?.previousElementSibling?.textContent ?? null;
+
 beforeEach(() => {
   mocks.streamAdvisorTurn.mockReset();
   mocks.streamAdvisorBtw.mockReset();
@@ -97,6 +109,16 @@ describe('AdvisorView', () => {
     expect(screen.getByRole('button', { name: 'Background' })).toBeInTheDocument();
     expect(screen.getByText(/not a law firm/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+    expect(screen.getByTestId('leave-prompt')).toHaveAttribute('data-when', 'false');
+  });
+
+  it("shows a question's context as its reply box placeholder", () => {
+    const state = makeAdvisorState();
+    const [first] = state.screens;
+    if (!first) throw new Error('expected a screen');
+    setData({ state: { ...state, screens: [{ ...first, context: 'Start wherever you like.' }] } });
+    render(ui());
+    expect(replyBox()).toHaveAttribute('placeholder', 'Start wherever you like.');
   });
 
   it('shows progress over every section from the section menu', () => {
@@ -113,7 +135,7 @@ describe('AdvisorView', () => {
     expect(screen.getByText('1 section remaining')).toBeInTheDocument();
   });
 
-  it('streams a reply in place: highlights as written, the answer, then the follow-up', async () => {
+  it('streams a reply in place: highlights one by one, the answer, then the follow-up', async () => {
     const stream = controlledStream(mocks.streamAdvisorTurn, [
       { type: 'green_highlight', highlight: { text: 'Oakland', start: 28, end: 35 } },
       {
@@ -127,10 +149,13 @@ describe('AdvisorView', () => {
     const { rerender } = render(ui());
     sendReply(REPLY);
 
-    expect(await screen.findByText('Nice.')).toBeInTheDocument();
-    expect(markText('Oakland')[0]).toHaveClass('bg-kept');
-    expect(markText('in 2023')[0]).toHaveClass('bg-needs');
+    await waitFor(() => expect(markText('Oakland')[0]).toHaveClass('from-kept', 'animate-sweep'));
+    // The second highlight arrived with the first; it sweeps in a moment later, then the answer.
+    expect(redMark('in 2023')).toEqual([]);
+    expect(screen.queryByText('Nice.')).toBeNull();
+    await waitFor(() => expect(markText('in 2023')[0]).toHaveClass('from-needs', 'animate-sweep'));
     expect(markText('in 2023')[0]).toHaveTextContent('1in 2023');
+    expect(await screen.findByText('Nice.')).toBeInTheDocument();
     expect(screen.queryByLabelText('Your answer')).toBeNull();
     expect(mocks.streamAdvisorTurn).toHaveBeenCalledWith(
       'org_1',
@@ -142,23 +167,48 @@ describe('AdvisorView', () => {
     // The saved turn and question list arrive through Firestore.
     oneReplyIn();
     rerender(ui());
-    expect(screen.getByRole('heading', { name: 'What month in 2023?' })).toHaveTextContent(
-      '1What month in 2023?',
-    );
+    expect(screen.getByRole('heading', { name: 'What month in 2023?' })).toBeInTheDocument();
+    expect(numberBeside('What month in 2023?')).toBe('1');
     expect(screen.getAllByText('Nice.')).toHaveLength(1);
     expect(replyBox()).toHaveValue('');
   });
 
-  it('says what the Advisor is doing until its answer starts', async () => {
+  it('keeps highlights first when the turn is saved before they are all in', async () => {
     const stream = controlledStream(mocks.streamAdvisorTurn, [
       { type: 'green_highlight', highlight: { text: 'Oakland', start: 28, end: 35 } },
+      {
+        type: 'red_highlight',
+        followupId: 'f_when',
+        highlight: { turn: 0, text: 'in 2023', start: 36, end: 43 },
+      },
+      { type: 'done', index: 0, message: makeMessage({ answer: 'Nice.' }) },
+    ]);
+    const { rerender } = render(ui());
+    sendReply(REPLY);
+    await stream.release();
+    // A fast turn: saved while its second highlight still waits to sweep in.
+    oneReplyIn();
+    rerender(ui());
+
+    expect(redMark('in 2023')).toEqual([]);
+    expect(screen.queryByText('What month in 2023?')).toBeNull();
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    await waitFor(() => expect(markText('in 2023')[0]).toHaveClass('from-needs', 'animate-sweep'));
+    expect(await screen.findByText('What month in 2023?')).toBeInTheDocument();
+  });
+
+  it('shows working dots until the answer starts', async () => {
+    const stream = controlledStream(mocks.streamAdvisorTurn, [
+      { type: 'answer_delta', text: 'Nice.' },
       { type: 'done', index: 0, message: makeMessage({ answer: 'Nice.' }) },
     ]);
     render(ui());
     sendReply(REPLY);
 
-    expect(screen.getByText('Reading your answer')).toBeInTheDocument();
-    expect(await screen.findByText('Highlighting the main points')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Working on your answer');
+    expect(screen.getByTestId('leave-prompt')).toHaveAttribute('data-when', 'true');
+    expect(await screen.findByText('Nice.')).toBeInTheDocument();
+    expect(screen.queryByRole('status')).toBeNull();
     await stream.release();
   });
 
@@ -179,13 +229,58 @@ describe('AdvisorView', () => {
     render(ui());
 
     expect(screen.getByText('What month in 2023?')).toBeInTheDocument();
-    expect(markText('in 2023')[0]).toHaveClass('bg-kept');
+    expect(markText('in 2023')[0]).toHaveClass('from-kept');
     expect(markText('in 2023')[0]).toHaveTextContent('2in 2023');
-    expect(markText('climbing gym')[0]).toHaveClass('bg-needs');
-    expect(markText('March')[0]).toHaveClass('bg-kept');
-    expect(screen.getByRole('heading', { name: 'Who suggested it?' })).toHaveTextContent(
-      '1Who suggested it?',
-    );
+    expect(markText('climbing gym')[0]).toHaveClass('from-needs');
+    expect(markText('March')[0]).toHaveClass('from-kept');
+    expect(screen.getByRole('heading', { name: 'Who suggested it?' })).toBeInTheDocument();
+    expect(numberBeside('Who suggested it?')).toBe('1');
+  });
+
+  it('asks a follow-up on something the replies left out without a number', () => {
+    const when = makeFollowup('f_when', 'What month in 2023?', 'in 2023', { status: 'done' });
+    const office = {
+      ...makeFollowup('f_office', 'Where is the office?', null, { status: 'current' }),
+      context: 'Notices go to this address.',
+    };
+    setData({
+      state: withFollowups(makeAdvisorState({ turnCount: 2 }), 'screen_1', [when, office]),
+      turns: [
+        makeTurn(0, { message: makeMessage({ followupId: 'f_when' }) }),
+        makeTurn(1, { reply: 'March.', message: makeMessage({ followupId: 'f_office' }) }),
+      ],
+    });
+    render(ui());
+
+    expect(numberBeside('What month in 2023?')).toBe('1');
+    expect(screen.getByRole('heading', { name: 'Where is the office?' })).toBeInTheDocument();
+    expect(numberBeside('Where is the office?')).toBeNull();
+    expect(replyBox()).toHaveAttribute('placeholder', 'Notices go to this address.');
+  });
+
+  it('shows a question with bullets as a list under it, and Shift+Enter adds a line', () => {
+    const facts = makeFollowup('f_facts', 'A few details:\n- Entity type\n- State', null, {
+      status: 'current',
+    });
+    setData({
+      state: withFollowups(makeAdvisorState({ turnCount: 1 }), 'screen_1', [facts]),
+      turns: [makeTurn(0, { message: makeMessage({ followupId: 'f_facts' }) })],
+    });
+    render(ui());
+
+    expect(screen.getByRole('heading', { name: 'A few details:' })).toBeInTheDocument();
+    const list = screen.getByRole('list');
+    expect(
+      within(list)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent),
+    ).toEqual(['Entity type', 'State']);
+
+    fireEvent.change(replyBox(), { target: { value: 'C-corp' } });
+    fireEvent.keyDown(replyBox(), { key: 'Enter', shiftKey: true });
+    expect(mocks.streamAdvisorTurn).not.toHaveBeenCalled();
+    fireEvent.keyDown(replyBox(), { key: 'Enter' });
+    expect(mocks.streamAdvisorTurn).toHaveBeenCalled();
   });
 
   it('holds a move on the screen until Next, then opens the next question blank', () => {

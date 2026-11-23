@@ -103,28 +103,41 @@ export interface NumberedHighlight {
   number: number;
   /** A follow-up on it is still to do. */
   open: boolean;
+  /** Asked by the turn whose highlights are sweeping in. */
+  sweep: boolean;
 }
 
 const highlightKey = ({ turn, start, end }: TurnHighlight) => `${turn}:${start}:${end}`;
 
 /**
  * The screen's red highlights, numbered in order of first appearance (by reply, then position),
- * with each follow-up id's number. `live` adds those streamed in the running turn.
+ * with each follow-up id's number. `sweeping`: the red highlights of the turn sweeping in, saved
+ * or not. A follow-up without a highlight has no number.
  */
 export function numberHighlights(
   followups: readonly Followup[],
-  live: readonly LiveRedHighlight[] = [],
+  sweeping: readonly LiveRedHighlight[] = [],
 ): { highlights: NumberedHighlight[]; numberOf: (followupId: string) => number | undefined } {
-  const byKey = new Map<string, { highlight: TurnHighlight; open: boolean }>();
+  const byKey = new Map<string, { highlight: TurnHighlight; open: boolean; sweep: boolean }>();
   const keyOf = new Map<string, string>();
-  const add = (id: string, highlight: TurnHighlight, open: boolean) => {
+  // A highlight sweeps in only if every follow-up on it is new.
+  const add = (id: string, highlight: TurnHighlight, open: boolean, sweep: boolean) => {
     const key = highlightKey(highlight);
     const existing = byKey.get(key);
-    byKey.set(key, { highlight, open: open || (existing?.open ?? false) });
+    byKey.set(key, {
+      highlight,
+      open: open || (existing?.open ?? false),
+      sweep: existing ? existing.sweep && sweep : sweep,
+    });
     keyOf.set(id, key);
   };
-  for (const f of followups) add(f.id, f.highlight, f.status === 'todo' || f.status === 'current');
-  for (const r of live) if (!keyOf.has(r.followupId)) add(r.followupId, r.highlight, true);
+  const sweepingIds = new Set(sweeping.map((r) => r.followupId));
+  for (const f of followups) {
+    const open = f.status === 'todo' || f.status === 'current';
+    if (f.highlight) add(f.id, f.highlight, open, sweepingIds.has(f.id));
+  }
+  for (const r of sweeping)
+    if (!keyOf.has(r.followupId)) add(r.followupId, r.highlight, true, true);
 
   const ordered = [...byKey.entries()].sort(
     ([, a], [, b]) =>
@@ -142,30 +155,35 @@ export function numberHighlights(
   };
 }
 
-/** The marks on the reply of turn `turn`: its green highlights and the screen's numbered ones. */
+/**
+ * The marks on the reply of turn `turn`: its green highlights and the screen's numbered ones.
+ * `sweep`: the turn's highlights are sweeping in.
+ */
 export function marksFor(
   turn: number,
   greenHighlights: readonly { start: number; end: number }[],
   numbered: readonly NumberedHighlight[],
+  sweep = false,
 ): Mark[] {
   return [
-    ...greenHighlights.map(({ start, end }) => ({ start, end, kind: 'kept' as const })),
+    ...greenHighlights.map(({ start, end }) => ({ start, end, kind: 'kept' as const, sweep })),
     ...numbered
       .filter(({ highlight }) => highlight.turn === turn)
-      .map(({ highlight, number, open }) => ({
-        start: highlight.start,
-        end: highlight.end,
-        kind: open ? ('needs' as const) : ('resolved' as const),
-        number,
+      .map((numberedHighlight) => ({
+        start: numberedHighlight.highlight.start,
+        end: numberedHighlight.highlight.end,
+        kind: numberedHighlight.open ? ('needs' as const) : ('resolved' as const),
+        number: numberedHighlight.number,
+        sweep: numberedHighlight.sweep,
       })),
   ];
 }
 
-/** The text of a follow-up by id. */
-export function followupText(state: AdvisorState, id: string): string | null {
+/** A follow-up by id, on any screen. */
+export function findFollowup(state: AdvisorState, id: string): Followup | null {
   for (const screen of state.screens) {
     const followup = screen.followups.find((f) => f.id === id);
-    if (followup) return followup.text;
+    if (followup) return followup;
   }
   return null;
 }

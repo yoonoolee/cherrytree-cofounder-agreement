@@ -6,8 +6,10 @@ saved together with the run's checklist and screen changes, or not at all.
 - btw: a one-off question about selected text, answered with the whole conversation as context.
   It changes nothing but the history.
 
-The prompt is rebuilt from Firestore every run (system prompt, full transcript, new input), so the
-service is stateless and a session resumes wherever it was left.
+The prompt is rebuilt from Firestore every run (system prompt, full transcript, new input with the
+current checklist and screen), so the service is stateless and a session resumes wherever it was
+left. Only the new input carries the checklist and screen: the transcript saves it without them,
+so the history holds no stale copies and stays the same, cacheable prefix from run to run.
 """
 
 import asyncio
@@ -142,21 +144,37 @@ async def prepare_run(
     )
 
 
-def user_message(run: PreparedRun) -> dict[str, Any]:
-    """A turn: the checklist and the screen as they stand, then the reply (each turn's copy stays in
-    the transcript). A btw: the selected text, then the question."""
+def user_message(run: PreparedRun, *, current_state: bool) -> dict[str, Any]:
+    """The run's input: a turn's reply, or a btw's selected text and question. With
+    `current_state`, as sent: led by the checklist and the screen as they stand. Without, as saved
+    in the transcript."""
     if isinstance(run.input, TurnInput):
+        content = [{"type": "text", "text": run.input.reply}]
+    else:
+        content = [
+            {
+                "type": "text",
+                "text": f"<btw>\n<selected_text>\n{run.input.quote}\n</selected_text>\n</btw>",
+            },
+            {"type": "text", "text": run.input.question},
+        ]
+    if current_state:
         checklist = render_checklist(run.state.sections)
         screen = render_screen(run.state.screens[-1])
-        context = f"<checklist>\n{checklist}\n</checklist>\n<screen>\n{screen}\n</screen>"
-        text = run.input.reply
-    else:
-        context = f"<btw>\n<selected_text>\n{run.input.quote}\n</selected_text>\n</btw>"
-        text = run.input.question
-    return {
-        "role": "user",
-        "content": [{"type": "text", "text": context}, {"type": "text", "text": text}],
-    }
+        state = f"<checklist>\n{checklist}\n</checklist>\n<screen>\n{screen}\n</screen>"
+        content.insert(0, {"type": "text", "text": state})
+    return {"role": "user", "content": content}
+
+
+def _cached_history(run: PreparedRun) -> list[dict[str, Any]]:
+    """The saved history with a cache breakpoint on its last block, so the next run reads it from
+    the cache although this run's input is sent with the current state."""
+    if not run.history:
+        return []
+    *earlier, last = run.history
+    *blocks, final = last["content"]
+    cache = {"type": "ephemeral", "ttl": ADVISOR.model.prefix_cache_ttl}
+    return [*earlier, {**last, "content": [*blocks, {**final, "cache_control": cache}]}]
 
 
 def _message(state: AdvisorWorkingState, text: str) -> AdvisorMessage | BtwMessage:
@@ -186,12 +204,13 @@ async def _run_until_valid(
 ) -> tuple[AdvisorMessage | BtwMessage, list[dict[str, Any]]]:
     """Runs the Advisor; a message that does not fit is sent back to be rewritten."""
     context = ToolContext(db=db, project_id=run.caller.project_id, advisor=state)
+    history = _cached_history(run)
     messages: list[dict[str, Any]] = []
-    new_messages = [user_message(run)]
+    new_messages = [user_message(run, current_state=True)]
     for attempt in range(MESSAGE_RETRIES + 1):
         result: AgentRun = await run_agent(
             ADVISOR,
-            history=[*run.history, *messages],
+            history=[*history, *messages],
             new_messages=new_messages,
             context=context,
             handler=parser,
@@ -300,7 +319,8 @@ async def _run_and_save(
     parser = AdvisorStreamParser(events, state)
     message, messages = await _run_until_valid(db, run, state, parser, call)
 
-    transcript = json.dumps(messages, ensure_ascii=False)
+    saved = [user_message(run, current_state=False), *messages[1:]]
+    transcript = json.dumps(saved, ensure_ascii=False)
     if len(transcript.encode()) > TRANSCRIPT_ENTRY_MAX_BYTES:
         raise ValueError(f"Run transcript is {len(transcript.encode())} bytes, over the limit")
 

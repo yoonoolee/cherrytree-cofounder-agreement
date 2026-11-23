@@ -1,6 +1,6 @@
 """The Advisor interview as the other agents read it: every turn and btw in order, then the final
-checklist. Built from the saved turns, so nothing is compacted, without the tool calls and
-checklist copies of the raw transcript."""
+checklist. Built from the saved turns, so nothing is compacted, without the tool calls of the raw
+transcript."""
 
 from google.cloud.firestore import AsyncClient
 

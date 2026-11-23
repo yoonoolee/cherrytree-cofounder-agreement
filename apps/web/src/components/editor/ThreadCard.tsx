@@ -99,7 +99,7 @@ function ThreadCard({
       ))}
       {waiting && (
         <div className={DIVIDED}>
-          <Working status={EDITOR_COPY.comments.replying} className="text-[0.8125rem]" />
+          <Working label={EDITOR_COPY.comments.replying} className="text-[0.8125rem]" />
         </div>
       )}
       {suggestion && (

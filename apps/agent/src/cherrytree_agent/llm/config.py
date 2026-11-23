@@ -22,8 +22,9 @@ class ModelSettings:
     system_cache_ttl: Literal["5m", "1h"] = "1h"
     """Explicit cache breakpoint on the system prompt (and the tool definitions before it)."""
     prefix_cache_ttl: Literal["5m", "1h"] = "1h"
-    """Drafting, Review and Editing: the breakpoint after their fixed prefix (template, transcript;
-    `draft/context.py`). An hour pays off only when runs repeat within it."""
+    """The breakpoint after an agent's fixed prefix: the Advisor's saved history
+    (`advisor/turn.py`); Drafting, Review and Editing's template and transcript
+    (`draft/context.py`). An hour pays off only when runs repeat within it."""
     cache_tail: bool = True
     """Automatic 5-minute breakpoint on the last block, so a turn's tool loop re-reads its own
     history from the cache."""

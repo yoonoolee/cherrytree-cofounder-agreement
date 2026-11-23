@@ -28,9 +28,13 @@
   --color-needs-ink: #c85a32;
   --color-danger: #a8402f;
 
-  /* Motion: entrances ease out (quick start, soft landing) and stay under half a second. */
-  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
-  --animate-rise: rise 420ms var(--ease-soft) both;
+  /*
+   * Motion eases out (quick start, soft landing). Entrances stay under half a second; a highlight
+   * filling in and the reply moving up take longer, so the eye can follow them.
+   */
+  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-rise: rise 360ms var(--ease-soft) both;
+  --animate-sweep: sweep 900ms var(--ease-soft) both;
   --animate-fade: fade 260ms ease-out both;
   --animate-shimmer: shimmer 1.8s ease-in-out infinite;
   --animate-progress: progress 1.9s var(--ease-soft) infinite;
@@ -45,6 +49,14 @@
   @keyframes fade {
     from {
       opacity: 0;
+    }
+  }
+  @keyframes sweep {
+    from {
+      background-size: 0% 100%;
+    }
+    to {
+      background-size: 100% 100%;
     }
   }
   @keyframes shimmer {
@@ -80,13 +92,59 @@
   background-color: var(--color-mark);
 }
 
+/* The first reply: the question and the reply move up into the thread as the question shrinks. */
+::view-transition-group(advisor-question),
+::view-transition-group(advisor-reply),
+::view-transition-old(advisor-question),
+::view-transition-new(advisor-question),
+::view-transition-old(advisor-reply),
+::view-transition-new(advisor-reply) {
+  animation-duration: 680ms;
+  animation-timing-function: var(--ease-soft);
+}
+
+/*
+ * Next in the Advisor: the finished screen slides out to the left as the next one slides in from
+ * the right, as one piece (its question and reply don't move on their own). The header and the
+ * bottom box crossfade.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html:active-view-transition-type(next-screen) {
+    & main {
+      view-transition-name: advisor-screen;
+    }
+    & main * {
+      view-transition-name: none !important;
+    }
+    &::view-transition-old(advisor-screen) {
+      animation: screen-out-left 420ms var(--ease-soft) both;
+    }
+    &::view-transition-new(advisor-screen) {
+      animation: screen-in-right 420ms var(--ease-soft) both;
+    }
+  }
+}
+@keyframes screen-out-left {
+  to {
+    opacity: 0;
+    transform: translateX(-40%);
+  }
+}
+@keyframes screen-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(40%);
+  }
+}
+
 /* Reduced motion: entrances only fade, and looping decoration stops. Progress stays visible. */
 @media (prefers-reduced-motion: reduce) {
   .animate-rise {
     animation-name: fade;
   }
   .animate-shimmer,
-  .animate-dot {
+  .animate-dot,
+  .animate-sweep {
     animation: none;
   }
   .animate-progress {

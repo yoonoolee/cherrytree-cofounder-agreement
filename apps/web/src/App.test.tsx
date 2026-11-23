@@ -1,8 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 
-import App from './App.tsx';
-
 // Every page has its own tests; each stub renders its name so the route table can be checked.
 const { stub } = vi.hoisted(() => ({
   stub: (name: string) => ({ default: () => <div data-testid="page">{name}</div> }),
@@ -21,12 +19,17 @@ vi.mock('./pages/ProjectPage', () => stub('ProjectPage'));
 vi.mock('./components/ProtectedRoute', () => ({
   default: ({ children }: { children: ReactNode }) => <div data-testid="protected">{children}</div>,
 }));
-vi.mock('./components/ResetPagePosition', () => ({
-  default: () => <div data-testid="reset-page-position" />,
-}));
 
-function renderAt(url: string) {
+beforeEach(() => {
+  // ScrollRestoration scrolls on every navigation; jsdom doesn't implement scrolling.
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+  // The router reads the URL when App.tsx loads, so each test loads it fresh.
+  vi.resetModules();
+});
+
+async function renderAt(url: string) {
   window.history.pushState({}, '', url);
+  const { default: App } = await import('./App.tsx');
   return render(<App />);
 }
 
@@ -46,26 +49,23 @@ describe('App', () => {
     ['/login/factor-one', 'LoginPage'],
     ['/signup', 'SignUpPage'],
     ['/signup/verify-email-address', 'SignUpPage'],
-  ])('serves %s publicly as %s', (url, name) => {
-    renderAt(url);
+  ])('serves %s publicly as %s', async (url, name) => {
+    await renderAt(url);
     expect(page()).toBe(name);
     expect(isProtected()).toBe(false);
-    expect(screen.getByTestId('reset-page-position')).toBeInTheDocument();
   });
 
   it.each([
     ['/dashboard', 'DashboardPage'],
     ['/projects/org_1', 'ProjectPage'],
   ])('serves %s behind ProtectedRoute as %s', async (url, name) => {
-    renderAt(url);
+    await renderAt(url);
     expect(await screen.findByTestId('page')).toHaveTextContent(name);
     expect(isProtected()).toBe(true);
   });
 
-  it('renders nothing for an unknown path', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    renderAt('/nope');
-    expect(screen.queryByTestId('page')).toBeNull();
-    warn.mockRestore();
+  it('sends an unknown path to the landing page', async () => {
+    await renderAt('/nope');
+    expect(await screen.findByTestId('page')).toHaveTextContent('LandingPage');
   });
 });

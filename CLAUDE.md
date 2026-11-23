@@ -1,6 +1,6 @@
 # cherrytree-cofounder-agreement — Claude Context
 
-Cherrytree is a SaaS platform where startup cofounders create a cofounder agreement with AI agents (Advisor, Drafting, Review, Editing). This repo is the whole product: the web app (marketing pages + dashboard), the Firebase Cloud Functions, the shared schemas, and the Python agent service. Cherrytree is not live; one engineer works on it.
+Cherrytree is a SaaS platform where startup cofounders of US companies create a cofounder agreement with AI agents (Advisor, Drafting, Review, Editing). This repo is the whole product: the web app (marketing pages + dashboard), the Firebase Cloud Functions, the shared schemas, and the Python agent service. Cherrytree is not live; one engineer works on it.
 
 The agent product is being built: the agent service runs the Advisor, the Drafting + Review background job and the Editing agent, and the web app has their UI: the interview, the draft status screen and the draft editor (Plate; agent rewrites with undo, and comment threads). Finalize comes next. Its design lives outside the repo, linked from `ARCHITECTURE.md` (Notion Working Doc + FigJam diagram). Read it before working on anything agent-related.
 
@@ -93,7 +93,7 @@ Zod schemas in `packages/shared/src/domain/` are the source of truth; TypeScript
 ```
 projects/{clerkOrgId}         Project — name, members{uid → {role}}, currentPlan, payments{checkoutSessionId → Payment},
                               draftStatus, draftStartedAt, createdAt, lastUpdated, lastOpened
-  advisor/state               AdvisorState — checklist by section, screens (the Advisor's questions, with follow-ups on reply highlights), complete, turnCount
+  advisor/state               AdvisorState — checklist by section, screens (one topic each: the Advisor's question and its follow-ups), complete, turnCount
   turns/{index}               AdvisorTurn — kind (turn: reply, greenHighlights, message | btw: quote, question, answer), uid, screen, traceId
   transcript/{index}          TranscriptEntry — the turn's or btw's raw Messages API content, server-only
   draft/current               Draft — Plate value, templateVersion, version (the editor saves it through the agent service)

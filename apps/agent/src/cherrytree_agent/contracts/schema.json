@@ -335,11 +335,24 @@
         "text": {
           "type": "string"
         },
+        "context": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "status": {
           "$ref": "#/$defs/FollowupStatus"
         },
         "highlight": {
-          "$ref": "#/$defs/TurnHighlight"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TurnHighlight"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -361,6 +374,12 @@
         },
         "question": {
           "type": "string"
+        },
+        "context": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "followups": {
           "type": "array",
@@ -494,6 +513,12 @@
             "null"
           ]
         },
+        "context": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "followupId": {
           "type": [
             "string",
@@ -516,6 +541,7 @@
       "required": [
         "type",
         "question",
+        "context",
         "followupId",
         "answer",
         "sources"

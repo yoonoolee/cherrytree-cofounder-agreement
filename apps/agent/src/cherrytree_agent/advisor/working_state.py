@@ -160,14 +160,19 @@ class AdvisorWorkingState:
             )
         )
 
-    def add_followup(self, item_id: str, text: str, quote: str) -> None:
+    def add_followup(
+        self, item_id: str, text: str, quote: str | None, context: str | None = None
+    ) -> None:
+        """A follow-up on this screen: on the words `quote` in a reply, or on something the
+        replies don't cover (`None`)."""
         self._refuse_in_btw()
         self.screen.followups.append(
             Followup(
                 id=self._new_id(item_id),
                 text=text,
+                context=context,
                 status="todo",
-                highlight=self.followup_highlight(quote),
+                highlight=None if quote is None else self.followup_highlight(quote),
             )
         )
 
@@ -212,11 +217,16 @@ class AdvisorWorkingState:
                 raise MessageError(
                     f"followupId {message.followup_id} is not an open follow-up on this screen."
                 )
+            highlighted = [f.id for f in open_followups if f.highlight is not None]
+            if followup.highlight is None and highlighted:
+                raise MessageError(
+                    f"Ask the follow-ups on highlights first: {', '.join(highlighted)} are open."
+                )
             for other in open_followups:
                 if other.status == "current":
                     other.status = "todo"
             followup.status = "current"
-            return message.model_copy(update={"question": None})
+            return message.model_copy(update={"question": None, "context": None})
 
         if message.type == "interview_complete":
             left = self._todo(self.sections)
@@ -227,7 +237,9 @@ class AdvisorWorkingState:
                 )
             self._close_screen(open_followups)
             self.complete = True
-            return message.model_copy(update={"question": None, "followup_id": None})
+            return message.model_copy(
+                update={"question": None, "context": None, "followup_id": None}
+            )
 
         if not (message.question or "").strip():
             raise MessageError(f"A {message.type} message needs the question.")
@@ -250,6 +262,7 @@ class AdvisorWorkingState:
                 id=f"screen_{len(self.screens) + 1}",
                 section=section.id,
                 question=message.question or "",
+                context=message.context,
                 followups=[],
             )
         )
@@ -275,10 +288,14 @@ def render_checklist(sections: list[ChecklistSection]) -> str:
 
 
 def render_screen(screen: Screen) -> str:
-    """The screen on display: its question and follow-ups."""
+    """The screen on display: its question and follow-ups, each follow-up with the words it
+    highlights, and the context shown with each."""
     lines = [f"Section: {screen.section}", f"Question: {screen.question}"]
-    lines.extend(
-        f'Follow-up [{f.status}] {f.text} [id: {f.id}] on "{f.highlight.text}"'
-        for f in screen.followups
-    )
+    if screen.context:
+        lines.append(f"  Context: {screen.context}")
+    for f in screen.followups:
+        on = f' on "{f.highlight.text}"' if f.highlight else ""
+        lines.append(f"Follow-up [{f.status}] {f.text} [id: {f.id}]{on}")
+        if f.context:
+            lines.append(f"  Context: {f.context}")
     return "\n".join(lines)

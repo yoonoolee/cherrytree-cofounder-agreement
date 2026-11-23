@@ -7,8 +7,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from cherrytree_agent.advisor.working_state import (
     AdvisorWorkingState,
     ChecklistError,
-    render_checklist,
-    render_screen,
 )
 from cherrytree_agent.tools.context import ToolContext, ToolError
 
@@ -23,8 +21,8 @@ class AddGreenHighlightsInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     quotes: list[str] = Field(
-        description="Each settled fact's words, quoted exactly as written. Add words only if a "
-        "quote appears more than once."
+        description="The words that carry each settled fact, quoted exactly, without the words "
+        "around them. Add words only if a quote appears more than once."
     )
 
 
@@ -62,10 +60,15 @@ class ChecklistUpdate(BaseModel):
     text: str | None = Field(
         description="add_item: what to learn. add_followup: the question, as the user will see it."
     )
+    context: str | None = Field(
+        description="add_followup: what supports the question (why it matters, background, a "
+        "tip), shown in the answer box. null when there is none."
+    )
     highlight: str | None = Field(
         description="add_followup: the words in a reply on this screen it asks about, as few as "
         "make the point, quoted exactly. Add words only if the quote appears more than once. "
-        "Several follow-ups can quote the same words."
+        "Several follow-ups can quote the same words. null when it asks about something the "
+        "replies don't cover."
     )
     status: Literal["todo", "revisit", "done", "skipped"] | None = Field(
         description="status: the new status. revisit: the user doesn't know yet."
@@ -84,8 +87,8 @@ class UpdateChecklistInput(BaseModel):
 
 UPDATE_CHECKLIST_DESCRIPTION = """\
 Change the checklist and this screen's follow-ups: add items or follow-ups, or set their status. \
-Changes apply in order, so a later one can use an id an earlier one added. Returns the updated \
-checklist and screen. If any change is invalid, none apply and the result says why."""
+Changes apply in order, so a later one can use an id an earlier one added. If any change is \
+invalid, none apply and the result says why."""
 
 
 def _apply(state: AdvisorWorkingState, update: ChecklistUpdate) -> None:
@@ -98,9 +101,9 @@ def _apply(state: AdvisorWorkingState, update: ChecklistUpdate) -> None:
             raise ChecklistError("add_item needs section and text.")
         state.add_item(update.id, update.section, update.text)
     else:
-        if not update.text or update.highlight is None:
-            raise ChecklistError("add_followup needs text and highlight.")
-        state.add_followup(update.id, update.text, update.highlight)
+        if not update.text:
+            raise ChecklistError("add_followup needs text.")
+        state.add_followup(update.id, update.text, update.highlight, update.context)
 
 
 async def update_checklist(context: ToolContext, request: UpdateChecklistInput) -> str:
@@ -113,4 +116,4 @@ async def update_checklist(context: ToolContext, request: UpdateChecklistInput) 
             state.restore(before)
             message = f"Change {number} ({update.id}): {error} Nothing was applied."
             raise ToolError(message) from error
-    return f"{render_checklist(state.sections)}\n\nOn screen:\n{render_screen(state.screen)}"
+    return f"Applied {len(request.updates)} changes."

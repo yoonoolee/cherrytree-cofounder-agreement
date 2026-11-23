@@ -11,10 +11,12 @@ export const ADVISOR_COPY = {
   followupPlaceholder: 'Say as much as you want.',
   selectHint: 'Select to ask',
   btwPlaceholder: 'Ask a question…',
-  /** While the Advisor works on a reply: before its highlights, then while they come in. */
-  thinking: { reading: 'Reading your answer', highlighting: 'Highlighting the main points' },
-  /** While a btw is answered. */
+  /** Read to screen readers while the Advisor works on a reply or a btw (the screen shows dots). */
+  thinking: 'Working on your answer',
   btwThinking: 'Looking into it',
+  /** Asked before leaving while the Advisor answers: leaving cancels the reply, unsaved. */
+  leaveWhileAnswering:
+    "The Advisor is still answering. If you leave now, what you just sent won't be saved. Leave anyway?",
   loadError: "We couldn't load your conversation.",
   loadErrorBody: 'Check your connection and try again. Your answers are saved.',
 };
