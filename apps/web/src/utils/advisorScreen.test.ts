@@ -93,10 +93,21 @@ describe('numberHighlights', () => {
       makeFollowup('f_x', 'X?', 'yes', { turn: 1, reply: 'yes' }),
     ]);
     expect(marksFor(0, [{ start: 0, end: 2 }], highlights)).toEqual([
-      { start: 0, end: 2, kind: 'kept' },
-      { start: 36, end: 43, kind: 'resolved', number: 1 },
+      { start: 0, end: 2, kind: 'kept', sweep: false },
+      { start: 36, end: 43, kind: 'resolved', number: 1, sweep: false },
     ]);
-    expect(marksFor(1, [], highlights)).toEqual([{ start: 0, end: 3, kind: 'needs', number: 2 }]);
+    expect(marksFor(1, [], highlights)).toEqual([
+      { start: 0, end: 3, kind: 'needs', number: 2, sweep: false },
+    ]);
+  });
+
+  it('sweeps in the highlights of the reply being answered', () => {
+    const live = [{ followupId: 'f_new', highlight: { turn: 1, text: 'We', start: 0, end: 2 } }];
+    const { highlights } = numberHighlights([when], live);
+    expect(marksFor(1, [{ start: 3, end: 5 }], highlights, true)).toEqual([
+      { start: 3, end: 5, kind: 'kept', sweep: true },
+      { start: 0, end: 2, kind: 'needs', number: 2, sweep: true },
+    ]);
   });
 });
 

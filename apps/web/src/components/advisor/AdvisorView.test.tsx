@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import type { AdvisorStreamEvent } from '@cherrytree/shared';
 
@@ -88,6 +88,9 @@ function sendReply(text: string) {
 const markText = (text: string) =>
   screen.getAllByText((_, el) => el?.tagName === 'MARK' && el.textContent?.endsWith(text) === true);
 
+const redMark = (text: string) =>
+  screen.queryAllByText((_, el) => el?.tagName === 'MARK' && el.textContent === `1${text}`);
+
 /** The number tag beside a follow-up question, if it has one. */
 const numberBeside = (question: string) =>
   screen.getByText(question).parentElement?.previousElementSibling?.textContent ?? null;
@@ -123,7 +126,7 @@ describe('AdvisorView', () => {
     expect(screen.getByText('1 section remaining')).toBeInTheDocument();
   });
 
-  it('streams a reply in place: highlights as written, the answer, then the follow-up', async () => {
+  it('streams a reply in place: highlights one by one, the answer, then the follow-up', async () => {
     const stream = controlledStream(mocks.streamAdvisorTurn, [
       { type: 'green_highlight', highlight: { text: 'Oakland', start: 28, end: 35 } },
       {
@@ -137,10 +140,13 @@ describe('AdvisorView', () => {
     const { rerender } = render(ui());
     sendReply(REPLY);
 
-    expect(await screen.findByText('Nice.')).toBeInTheDocument();
-    expect(markText('Oakland')[0]).toHaveClass('bg-kept');
-    expect(markText('in 2023')[0]).toHaveClass('bg-needs');
+    await waitFor(() => expect(markText('Oakland')[0]).toHaveClass('from-kept', 'animate-sweep'));
+    // The second highlight arrived with the first; it sweeps in a moment later, then the answer.
+    expect(redMark('in 2023')).toEqual([]);
+    expect(screen.queryByText('Nice.')).toBeNull();
+    await waitFor(() => expect(markText('in 2023')[0]).toHaveClass('from-needs', 'animate-sweep'));
     expect(markText('in 2023')[0]).toHaveTextContent('1in 2023');
+    expect(await screen.findByText('Nice.')).toBeInTheDocument();
     expect(screen.queryByLabelText('Your answer')).toBeNull();
     expect(mocks.streamAdvisorTurn).toHaveBeenCalledWith(
       'org_1',
@@ -158,17 +164,42 @@ describe('AdvisorView', () => {
     expect(replyBox()).toHaveValue('');
   });
 
-  it('says what the Advisor is doing until its answer starts', async () => {
+  it('keeps highlights first when the turn is saved before they are all in', async () => {
     const stream = controlledStream(mocks.streamAdvisorTurn, [
       { type: 'green_highlight', highlight: { text: 'Oakland', start: 28, end: 35 } },
+      {
+        type: 'red_highlight',
+        followupId: 'f_when',
+        highlight: { turn: 0, text: 'in 2023', start: 36, end: 43 },
+      },
+      { type: 'done', index: 0, message: makeMessage({ answer: 'Nice.' }) },
+    ]);
+    const { rerender } = render(ui());
+    sendReply(REPLY);
+    await stream.release();
+    // A fast turn: saved while its second highlight still waits to sweep in.
+    oneReplyIn();
+    rerender(ui());
+
+    expect(redMark('in 2023')).toEqual([]);
+    expect(screen.queryByText('What month in 2023?')).toBeNull();
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    await waitFor(() => expect(markText('in 2023')[0]).toHaveClass('from-needs', 'animate-sweep'));
+    expect(await screen.findByText('What month in 2023?')).toBeInTheDocument();
+  });
+
+  it('shows working dots until the answer starts', async () => {
+    const stream = controlledStream(mocks.streamAdvisorTurn, [
+      { type: 'answer_delta', text: 'Nice.' },
       { type: 'done', index: 0, message: makeMessage({ answer: 'Nice.' }) },
     ]);
     render(ui());
     sendReply(REPLY);
 
-    expect(screen.getByText('Reading your answer')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Working on your answer');
     expect(screen.getByTestId('leave-prompt')).toHaveAttribute('data-when', 'true');
-    expect(await screen.findByText('Highlighting the main points')).toBeInTheDocument();
+    expect(await screen.findByText('Nice.')).toBeInTheDocument();
+    expect(screen.queryByRole('status')).toBeNull();
     await stream.release();
   });
 
@@ -189,10 +220,10 @@ describe('AdvisorView', () => {
     render(ui());
 
     expect(screen.getByText('What month in 2023?')).toBeInTheDocument();
-    expect(markText('in 2023')[0]).toHaveClass('bg-kept');
+    expect(markText('in 2023')[0]).toHaveClass('from-kept');
     expect(markText('in 2023')[0]).toHaveTextContent('2in 2023');
-    expect(markText('climbing gym')[0]).toHaveClass('bg-needs');
-    expect(markText('March')[0]).toHaveClass('bg-kept');
+    expect(markText('climbing gym')[0]).toHaveClass('from-needs');
+    expect(markText('March')[0]).toHaveClass('from-kept');
     expect(screen.getByRole('heading', { name: 'Who suggested it?' })).toBeInTheDocument();
     expect(numberBeside('Who suggested it?')).toBe('1');
   });

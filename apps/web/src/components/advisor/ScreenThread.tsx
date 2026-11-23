@@ -24,13 +24,17 @@ interface Exchange {
   greenHighlights: readonly Highlight[];
   /** The follow-up this reply answers, asked by the turn before it. */
   answers: AdvisorMessage | null;
+  /** Its highlights are sweeping in. */
+  sweep: boolean;
 }
 
 interface ScreenThreadProps {
   screen: AdvisorScreen;
   state: AdvisorState;
-  /** The reply being sent from this screen, with what has streamed of it. */
-  live: Omit<Exchange, 'answers'> | null;
+  /** The reply being sent from this screen, until it is saved. */
+  live: { index: number; reply: string } | null;
+  /** The turn whose highlights are sweeping in, with the green ones shown so far. */
+  sweeping: { index: number; greenHighlights: readonly Highlight[] } | null;
   numbered: readonly NumberedHighlight[];
   numberOf: (followupId: string) => number | undefined;
   onSelect: (selection: SelectedText) => void;
@@ -39,6 +43,9 @@ interface ScreenThreadProps {
 }
 
 const ADVISOR_TEXT = 'text-[1.375rem] leading-[1.1] tracking-[-0.006em] sm:text-[1.625rem]';
+
+/** Every block in the thread (question, answers, follow-ups, replies) is this far apart. */
+const GAP = 'flex flex-col gap-6';
 
 /** What the Advisor said and asked before the reply below it, moved up from the bottom box. */
 function AnsweredQuestion({
@@ -51,15 +58,15 @@ function AnsweredQuestion({
   number: number | undefined;
 }) {
   return (
-    <div className="mt-7 mb-3">
-      {message.answer && <AdvisorText text={message.answer} className={`mb-3 ${ADVISOR_TEXT}`} />}
+    <>
+      {message.answer && <AdvisorText text={message.answer} className={ADVISOR_TEXT} />}
       {text && (
         <div className={`flex items-start ${ADVISOR_TEXT}`}>
           {number !== undefined && <NumberTag number={number} large />}
           <AdvisorText text={text} />
         </div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -72,6 +79,7 @@ function ScreenThread({
   screen,
   state,
   live,
+  sweeping,
   numbered,
   numberOf,
   onSelect,
@@ -79,13 +87,26 @@ function ScreenThread({
 }: ScreenThreadProps) {
   const threadRef = useRef<HTMLDivElement>(null);
 
+  // The turn sweeping in shows only the green highlights let through so far.
+  const exchangeOf = (index: number, text: string, greenHighlights: readonly Highlight[]) => {
+    const sweep = index === sweeping?.index;
+    return {
+      index,
+      reply: text,
+      sweep,
+      greenHighlights: sweep ? sweeping.greenHighlights : greenHighlights,
+    };
+  };
   const exchanges: Exchange[] = screen.turns.map((turn, i) => ({
-    index: turn.index,
-    reply: turn.reply,
-    greenHighlights: turn.greenHighlights,
+    ...exchangeOf(turn.index, turn.reply, turn.greenHighlights),
     answers: i > 0 ? (screen.turns[i - 1]?.message ?? null) : null,
   }));
-  if (live) exchanges.push({ ...live, answers: screen.turns.at(-1)?.message ?? null });
+  if (live) {
+    exchanges.push({
+      ...exchangeOf(live.index, live.reply, []),
+      answers: screen.turns.at(-1)?.message ?? null,
+    });
+  }
 
   const onMouseUp = () => {
     const selection = window.getSelection();
@@ -116,19 +137,19 @@ function ScreenThread({
   };
 
   return (
-    <div ref={threadRef} className="group relative pb-8">
+    <div ref={threadRef} className={`group relative pb-8 ${GAP}`}>
       <AdvisorText
         text={screen.question}
         heading="h1"
-        className="mb-2 text-[1.5rem] leading-[1.1] tracking-[-0.006em] sm:text-[1.875rem]"
+        className="text-[1.5rem] leading-[1.1] tracking-[-0.006em] sm:text-[1.875rem]"
         style={{ viewTransitionName: 'advisor-question' }}
       />
-      <div onMouseUp={onMouseUp} onMouseMove={onMouseMove} className="mt-12">
+      <div onMouseUp={onMouseUp} onMouseMove={onMouseMove} className={GAP}>
         {exchanges.map((exchange, i) => {
           const asked = exchange.answers?.followupId ?? null;
           const number = asked ? numberOf(asked) : undefined;
           return (
-            <section key={exchange.index}>
+            <section key={exchange.index} className={GAP}>
               {exchange.answers && (
                 <AnsweredQuestion
                   message={exchange.answers}
@@ -143,7 +164,12 @@ function ScreenThread({
               >
                 <MarkedText
                   text={exchange.reply}
-                  marks={marksFor(exchange.index, exchange.greenHighlights, numbered)}
+                  marks={marksFor(
+                    exchange.index,
+                    exchange.greenHighlights,
+                    numbered,
+                    exchange.sweep,
+                  )}
                 />
               </p>
             </section>

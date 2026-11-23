@@ -70,7 +70,7 @@ function BtwPopup({ btw, top, left, busy, onAsk, onClose }: BtwPopupProps) {
           {btw.answer ? (
             <AdvisorText text={btw.answer} className="animate-fade text-ink-muted" />
           ) : (
-            <Working status={ADVISOR_COPY.btwThinking} className="text-sm" />
+            <Working label={ADVISOR_COPY.btwThinking} className="text-sm" />
           )}
           <SourceLinks sources={btw.sources} />
         </div>

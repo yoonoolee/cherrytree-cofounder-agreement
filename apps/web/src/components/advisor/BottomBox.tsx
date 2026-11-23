@@ -9,13 +9,13 @@ import { ADVISOR_COPY, ADVISOR_MOVE_ON } from '../../constants/advisor.ts';
 import { submitOnEnter } from '../../utils/submitOnEnter.ts';
 
 /**
- * - `thinking`: the Advisor is working: `status` until its answer starts, then the answer as it
+ * - `thinking`: the Advisor is working: dots until its answer starts, then the answer as it
  *   streams.
  * - `followup`: the follow-up to answer, under the Advisor's answer, with the reply input.
  * - `moving`: the screen is covered; Next opens the next one.
  */
 export type BottomBoxContent =
-  | { kind: 'thinking'; answer: string; status: string }
+  | { kind: 'thinking'; answer: string }
   | {
       kind: 'followup';
       message: AdvisorMessage;
@@ -98,7 +98,7 @@ function BottomBox({ content, children }: { content: BottomBoxContent; children?
           {content.answer ? (
             <AdvisorText text={content.answer} className="animate-fade" />
           ) : (
-            <Working status={content.status} />
+            <Working label={ADVISOR_COPY.thinking} />
           )}
         </div>
       )}

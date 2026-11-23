@@ -11,6 +11,8 @@ export interface Mark {
   end: number;
   kind: MarkKind;
   number?: number;
+  /** Fills in from the left as it appears: a highlight on the reply being answered now. */
+  sweep?: boolean;
 }
 
 export interface TextSegment {
