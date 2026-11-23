@@ -28,7 +28,8 @@
           "notes": "If they haven't incorporated yet, ask where they plan to."
         },
         {
-          "item": "Mailing address for notices"
+          "item": "Mailing address for notices",
+          "notes": "Must be a full postal address: street, city, state and ZIP code. If a part is missing, ask for it."
         }
       ]
     },
@@ -50,7 +51,7 @@
         },
         {
           "item": "Each cofounder's email",
-          "notes": "Each one must be different."
+          "notes": "Each one must be different and look like a real address: one @, a domain with a period, and no spaces. If one doesn't, ask them to check it."
         },
         {
           "item": "Each cofounder's title",
