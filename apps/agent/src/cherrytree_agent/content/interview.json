@@ -4,7 +4,7 @@
     {
       "id": "company",
       "name": "The company",
-      "guide": "You're trying to understand what they're building, how far along it is, and what the cofounders want out of it. Approach it like a friend asking what they're working on: let them tell the story, and pick up details as they come. The basics are mostly setup. Don't stay on this section too long, or it'll feel like they aren't making progress at the start. A good conversation here ends with a clear picture of the company, its legal status or a plan for it, and each cofounder's ambition.",
+      "guide": "You're trying to understand what they're building, how far along it is, and what the cofounders want out of it. Approach it like a human conversation sharing a story: let them tell the story, and pick up details as they come. The basics are mostly setup. Don't stay on this section too long, or it'll feel like they aren't making progress at the start. A good conversation here ends with a clear picture of the company, its legal status or a plan for it, and each cofounder's ambition.",
       "checklist": [
         {
           "item": "Company name"
@@ -284,7 +284,7 @@
         },
         {
           "item": "Vested shares if a cofounder dies or becomes permanently unable to work",
-          "notes": "Be gentle with this one. Unvested shares go back to the company. For vested shares: an optional buyback, a required buyback, or they pass to the estate. The default is that the company can buy them back from the estate at fair market value."
+          "notes": "Unvested shares go back to the company. For vested shares: an optional buyback, a required buyback, or they pass to the estate. The default is that the company can buy them back from the estate at fair market value."
         },
         {
           "item": "Whether any unvested shares vest if a cofounder dies or becomes unable to work",
